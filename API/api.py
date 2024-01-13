@@ -1,9 +1,12 @@
+import logging
 from config import TBA_POLLING, TBA_POLLING_INTERVAL
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
-from logging import info
 
+
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logging.info("Initialized Logger")
 
 app = FastAPI()
 
@@ -30,7 +33,7 @@ def read_root():
 @app.on_event("startup")
 @repeat_every(seconds=TBA_POLLING_INTERVAL)
 def update_database():
-    info("Starting Polar Forecast")
+    logging.info("Starting Polar Forecast")
         
 
 
