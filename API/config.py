@@ -1,5 +1,5 @@
 import os
-
+import logging
 # REDIS Parameters
 REDIS_HOST = os.environ.get("PF_REDIS_HOST", "localhost")
 REDIS_PORT = os.environ.get("PF_REDIS_PORT", 6379)
@@ -14,10 +14,10 @@ TBA_API_KEY = os.environ.get("PF_TBA_API_KEY", "")
 TOA_API_KEY = os.environ.get("PF_TOA_API_KEY", "")
 
 if TBA_API_KEY == "":
-    print("No API KEY for Blue alliance specified.")
+    logging.warn("No API KEY for Blue alliance specified.")
 
 if TOA_API_KEY == "":
-    print("No API Key for the Orange alliance specified.")
+    logging.warn("No API Key for the Orange alliance specified.")
 
 
 

@@ -1,18 +1,13 @@
-import analysis.analysis
-import data.data as source
-
-from config import TBA_POLLING, TBA_POLLING_INTERVAL, FORCE_BACKPOP_ONCE
+from config import TBA_POLLING, TBA_POLLING_INTERVAL
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
+from logging import info
 
-
-from analysis.analysis import lookup_game, update, update_global
 
 app = FastAPI()
 
 origins = [
-    "*",
     "http://localhost",
     "http://localhost:3000",
     "https://polarforecastfrc.com",
@@ -35,7 +30,7 @@ def read_root():
 @app.on_event("startup")
 @repeat_every(seconds=TBA_POLLING_INTERVAL)
 def update_database():
-    print("Starting Polar Forecast")
+    info("Starting Polar Forecast")
         
 
 
