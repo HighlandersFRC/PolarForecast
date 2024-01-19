@@ -4,7 +4,7 @@ import logging
 from loguru import logger
 
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
-
+TBA_API_URL = "https://www.thebluealliance.com/api/v3/"
 class InterceptHandler(logging.Handler):
     def emit(self, record):
         # get corresponding Loguru level if it exists
@@ -72,3 +72,12 @@ REDIS_STRICT = os.environ.get("PF_REDIS_STRICT", False)
 
 # Mongo Parameters
 MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb+srv://admin:admin@localhost:27017/PolarForecast")
+print(MONGO_CONNECTION)
+
+APP_HOST = os.environ.get("APP_HOST", "")
+ALLOW_ORIGINS = [
+    "127.0.0.1:8000",
+    "http://192.168.56.1:3000",
+    "http://localhost:3000",
+    "http://localhost:8080",
+]
