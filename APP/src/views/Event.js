@@ -33,6 +33,7 @@ import Snowfall from "react-snowfall";
 import CircularProgress from "@mui/material/CircularProgress";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import BarChartWithSwitches from "../components/BarChartWithSwitches";
+import BarChartWithWeights from "components/BarChartWithWeights";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
 
@@ -504,7 +505,7 @@ const Tables = () => {
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
             <ThemeProvider theme={switchTheme}>
-              <BarChartWithSwitches
+              <BarChartWithWeights
                 data={rankings}
                 number={chartNumber}
                 startingFields={[
@@ -515,7 +516,7 @@ const Tables = () => {
                 ]}
               />
               <br />
-              <BarChartWithSwitches
+              <BarChartWithWeights
                 data={rankings}
                 number={chartNumber}
                 startingFields={[
@@ -524,7 +525,7 @@ const Tables = () => {
                 ]}
               />
               <br />
-              <BarChartWithSwitches
+              <BarChartWithWeights
                 data={rankings}
                 number={chartNumber}
                 startingFields={[

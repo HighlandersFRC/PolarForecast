@@ -67,9 +67,11 @@ def analyzeData(m_data: list):
         "station1": 0,
         "station2": 0,
         "station3": 0,
+        "links": 0,
         "match_number": 0,
         "allianceStr": "",
     }
+    print(len(data), "matches")
     for row in data:
         for j in range(2):
             if j == 1:
@@ -84,6 +86,7 @@ def analyzeData(m_data: list):
                     "team_keys"
                 ][k][3:]
                 oprMatchEntry["station" + str(k + 1)+"_autodocking"] = row["score_breakdown"][allianceStr]["autoChargeStationRobot" + str(k+1)]
+                oprMatchEntry["station" + str(k + 1)+"_mobility"] = row["score_breakdown"][allianceStr]["mobilityRobot" + str(k+1)]
                 oprMatchEntry["station" + str(k + 1)+"_teledocking"] = row["score_breakdown"][allianceStr]["endGameChargeStationRobot" + str(k+1)]
             oprMatchEntry["autoCS"] = row["score_breakdown"][allianceStr]["autoBridgeState"]
             oprMatchEntry["teleCS"] = row["score_breakdown"][allianceStr]["endGameBridgeState"]
@@ -99,41 +102,51 @@ def analyzeData(m_data: list):
             oprMatchEntry["teleop_mco"] = piecesScored[2]
             oprMatchEntry["teleop_mcu"] = piecesScored[3]
             oprMatchEntry["teleop_lp"] = piecesScored[4]
+            oprMatchEntry["links"] = len(row["score_breakdown"][allianceStr]["links"])
             oprMatchList.append(copy.deepcopy(oprMatchEntry))
     oprMatchDataFrame = pd.DataFrame(oprMatchList)
     teams = []
-    teamMatchCount = []
-    teamTeleDocking = []
-    teamAutoDocking = []
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
             exists = False
-            for team in teams:
-                if matchTeam == team:
-                    exists = True
+            exists = teams.__contains__(matchTeam)
             if not exists:
                 teams.append(matchTeam)
-                teamMatchCount.append(0)
-                teamTeleDocking.append(0)
-                teamAutoDocking.append(0)
-            teamMatchCount[teams.index(matchTeam)] += 1
     teams.sort()
     # print("made list of teams")
+    teamMatchCount = np.zeros(len(teams))
+    teamTeleDocking = np.zeros(len(teams))
+    teamAutoDocking = np.zeros(len(teams))
+    teamParking = np.zeros(len(teams))
+    teamMobility = np.zeros(len(teams))
+    gridPoints = np.zeros(len(teams))
+    piecesScored = np.zeros(len(teams))
+    autoPieces = np.zeros(len(teams))
+    teleopPieces = np.zeros(len(teams))
+    linkpoints = np.zeros(len(teams))
+    autoPoints = np.zeros(len(teams))
+    teleopPoints = np.zeros(len(teams))
+    for k in range(3):
+        for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
+            teamMatchCount[teams.index(matchTeam)] += 1
     for index, row in oprMatchDataFrame.iterrows():
         for k in range(3):
-
+            matchTeam = row["station" + str(k + 1)]
+            idx = teams.index(matchTeam)
             if row["station" + str(k + 1) + "_autodocking"] == "Docked":
                 if row["autoCS"] == "Level":
-                    teamTeleDocking[teams.index(matchTeam)] += 12
+                    teamAutoDocking[idx] += 12
                 else:
-                    teamTeleDocking[teams.index(matchTeam)] += 8
+                    teamAutoDocking[idx] += 8
             if row["station" + str(k + 1) + "_teledocking"] == "Docked":
                 if row["teleCS"] == "Level":
-                    teamTeleDocking[teams.index(matchTeam)] += 10
+                    teamTeleDocking[idx] += 10
                 else:
-                    teamTeleDocking[teams.index(matchTeam)] += 6
+                    teamTeleDocking[idx] += 6
             elif row["station" + str(k + 1) + "_teledocking"] == "Park":
-                teamTeleDocking[teams.index(matchTeam)] += 2
+                teamParking[idx] += 2
+            if row["station" + str(k + 1)+"_mobility"] == "Yes":
+                teamMobility[idx] += 3
     # print("made Docking data")
     # TBA Data for Y Matrix
     YKeys = [
@@ -148,13 +161,28 @@ def analyzeData(m_data: list):
         "teleop_mcu",
         "teleop_lp",
     ]
+    OPRWeights = [
+        6,
+        6,
+        4,
+        4,
+        3,
+        5,
+        5,
+        3,
+        3,
+        2,
+        5,
+    ]
 
     scoutingBaseData = m_data[1]
     numEntries = len(scoutingBaseData)
     j = numEntries
     # TBA Data
     YMatrix = pd.DataFrame(None, columns=YKeys)
+    linksY = pd.DataFrame(None, columns=["links"])
     YMatrix = oprMatchDataFrame[YKeys]
+    linksY = pd.DataFrame(oprMatchDataFrame["links"])
     matchTeamMatrix = oprMatchDataFrame[["station1", "station2", "station3"]]
     blankAEntry = {}
     for team in teams:
@@ -165,6 +193,7 @@ def analyzeData(m_data: list):
         for team in game:
             AEntry[team] = 1
         Alist.append(AEntry)
+    linksAlist = copy.deepcopy(Alist)
     # Fitting Scouting Data to Matrices A and Y
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
@@ -220,9 +249,11 @@ def analyzeData(m_data: list):
     # Compiling data into matrices
     AMatrix = pd.DataFrame(Alist, columns=teams)
     APseudoInverse = np.linalg.pinv(AMatrix[teams])
+    linksAPseudoInverse = np.linalg.pinv(pd.DataFrame(linksAlist)[teams])
     # print("ready for regression")
     # Multivariate Regression
     XMatrix = pd.DataFrame(APseudoInverse @ YMatrix)
+    linksX = linksAPseudoInverse @ linksY
     # Run Genetic Algorithm
     def createfitness_func(min: float, max: float):
         def func(solution, functionInputs):
@@ -242,8 +273,8 @@ def analyzeData(m_data: list):
             return error
         return func
 
-    maxGamePieces = [6, 3, 6, 3, 9, 6, 3, 6, 3, 9]
-    minGamePieces = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    maxGamePieces = [6, 3, 6, 3, 9, 6, 3, 6, 3, 9, 9]
+    minGamePieces = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     mutation_percent_genes = 0.02
 
     # Define a function to perform the genetic algorithm operation
@@ -257,14 +288,70 @@ def analyzeData(m_data: list):
         )
         result = ga.run()
         return result[0], i
-    
     # Number of processes to run simultaneously
     num_processes = 10  # Adjust this value based on your system's capabilities
     results = []
     for i in range (len(YKeys)):
         results.append(perform_genetic_algorithm(i))
+    ga = geneticAlg(
+        createfitness_func(minGamePieces[10], maxGamePieces[10]),
+        [pd.DataFrame(linksAlist), pd.DataFrame(linksY)],
+        pd.DataFrame(linksX),
+        mutation_percent_genes
+    )
+    results.append((ga.run()[0], 10))
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
+    YKeys = [
+        "auto_hco",
+        "auto_hcu",
+        "auto_mco",
+        "auto_mcu",
+        "auto_lp",
+        "teleop_hco",
+        "teleop_hcu",
+        "teleop_mco",
+        "teleop_mcu",
+        "teleop_lp",
+        "links",
+    ]
     for result, i in results:
+        array = np.array(result).ravel()
         XMatrix[YKeys[i]] = result
+        if i < 5:
+            autoPoints += array*OPRWeights[i]
+            autoPieces += array
+        elif i < 10:
+            teleopPoints += array*OPRWeights[i]
+            teleopPieces += array
+        else:
+            linkpoints += array * 5
+        
+    
+    teamParking/=teamMatchCount
+    teamAutoDocking/=teamMatchCount
+    teamTeleDocking/=teamMatchCount
+    teamMobility/=teamMatchCount
+    gridPoints = autoPoints+teleopPoints
+    autoPoints += teamAutoDocking + teamMobility
+    endgamePoints = teamTeleDocking + teamParking
+    teamOPR = gridPoints + linkpoints + endgamePoints + teamAutoDocking + teamMobility
+    piecesScored=autoPieces+teleopPieces
+    
+    
+    XMatrix.insert(0, 'auto_docking', pd.Series(teamAutoDocking))
+    XMatrix.insert(0, 'teleop_docking', pd.Series(teamTeleDocking))
+    XMatrix.insert(0, 'parking', pd.Series(teamParking))
+    XMatrix.insert(0, 'mobility', pd.Series(teamMobility))
+    XMatrix.insert(0, 'auto_pieces', pd.Series(autoPieces))
+    XMatrix.insert(0, 'teleop_pieces', pd.Series(teleopPieces))
+    XMatrix.insert(0, 'pieces_scored', pd.Series(piecesScored))
+    XMatrix.insert(0, 'grid_points', pd.Series(gridPoints))
+    XMatrix.insert(0, 'link_points', pd.Series(linkpoints))
+    XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
+    XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))
+    XMatrix.insert(0, 'endgame_points', pd.Series(endgamePoints))
+    XMatrix.insert(0, 'opr', pd.Series(teamOPR))
+    XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
+    print(sum(teamMatchCount))
     return XMatrix

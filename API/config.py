@@ -48,7 +48,7 @@ setup_logging(LOG_LEVEL)
 
 ENABLE_TBA = os.environ.get("PF_TBA_ENABLE", True) # Enable Blue ALliance
 TBA_POLLING = os.environ.get("PF_TBA_POLLING", True) # Specifies if the Polar Forecast API should Poll Blue Alliance for Data.
-TBA_POLLING_INTERVAL = os.environ.get("PF_TBA_POLLING_INTERVAL", 10 * 60) # Polling invterval in seconds.
+TBA_POLLING_INTERVAL = os.environ.get("PF_TBA_POLLING_INTERVAL", 20 * 60) # Polling invterval in seconds.
 TBA_API_KEY = os.environ.get("PF_TBA_API_KEY", "")
 
 if len(TBA_API_KEY) == 0:
@@ -77,7 +77,7 @@ print(MONGO_CONNECTION)
 APP_HOST = os.environ.get("APP_HOST", "")
 ALLOW_ORIGINS = [
     "127.0.0.1:8000",
-    "http://192.168.56.1:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:3000",
     "http://localhost:8080",
 ]
