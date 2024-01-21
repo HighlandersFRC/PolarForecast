@@ -388,28 +388,28 @@
       {
         "stat_key": "mobility",
         "solve_strategy": "linked",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "mobility",
         "stat": {}
       },
       {
         "stat_key": "autoChargeStation",
         "solve_strategy": "linked",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoChargeStation",
         "stat": {}
       },
       {
         "stat_key": "endGameChargeStation",
         "solve_strategy": "linked",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "endGameChargeStation",
         "stat": {}
       },
       {
         "stat_key": "autoHighCubes",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoHighCubes",
         "stat": {
           "component_stats": [
@@ -422,7 +422,7 @@
       {
         "stat_key": "autoHighCones",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoHighCones",
         "stat": {
           "component_stats": [
@@ -438,7 +438,7 @@
       {
         "stat_key": "autoMidCubes",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoMidCubes",
         "stat": {
           "component_stats": [
@@ -451,7 +451,7 @@
       {
         "stat_key": "autoMidCones",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoMidCones",
         "stat": {
           "component_stats": [
@@ -467,7 +467,7 @@
       {
         "stat_key": "autoLow",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoLow",
         "stat": {
           "component_stats": [
@@ -486,7 +486,7 @@
       {
         "stat_key": "teleopHighCubes",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopHighCubes",
         "stat": {
           "component_stats": [
@@ -499,7 +499,7 @@
       {
         "stat_key": "teleopHighCones",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopHighCones",
         "stat": {
           "component_stats": [
@@ -515,7 +515,7 @@
       {
         "stat_key": "teleopMidCubes",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopMidCubes",
         "stat": {
           "component_stats": [
@@ -528,7 +528,7 @@
       {
         "stat_key": "teleopMidCones",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopMidCones",
         "stat": {
           "component_stats": [
@@ -544,7 +544,7 @@
       {
         "stat_key": "teleopLow",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopLow",
         "stat": {
           "component_stats": [
@@ -563,7 +563,7 @@
       {
         "stat_key": "autoElementsScored",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "autoElementsScored",
         "stat": {
           "component_stats": [
@@ -578,7 +578,7 @@
       {
         "stat_key": "teleopElementsScored",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "teleopElementsScored",
         "stat": {
           "component_stats": [
@@ -605,7 +605,7 @@
       {
         "stat_key": "links",
         "solve_strategy": "custom",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "links",
         "stat": {}
       },
@@ -680,7 +680,7 @@
       {
         "stat_key": "simulatedRanking",
         "solve_strategy": "sum",
-        "report_stat": false,
+        "report_stat": true,
         "display_name": "simulatedRanking",
         "stat": {
           "component_stats": []

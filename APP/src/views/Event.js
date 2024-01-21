@@ -534,6 +534,27 @@ const Tables = () => {
                   { index: 2, name: "High", key: "elementsHigh", enabled: true },
                 ]}
               />
+              <br />
+              <BarChartWithWeights
+                data={rankings}
+                number={chartNumber}
+                startingFields={[
+                  { index: 0, name: "AHCU", key: "autoHighCubes", enabled: true},
+                  { index: 1, name: "AHCO", key: "autoHighCones", enabled: true},
+                  { index: 2, name: "AMCU", key: "autoMidCubes", enabled: true},
+                  { index: 3, name: "AMCO", key: "autoMidCones", enabled: true},
+                  { index: 4, name: "ALP", key: "autoLow", enabled: true},
+                  { index: 5, name: "THCU", key: "teleopHighCubes", enabled: true},
+                  { index: 6, name: "THCO", key: "teleopHighCones", enabled: true},
+                  { index: 7, name: "TMCU", key: "teleopMidCubes", enabled: true},
+                  { index: 8, name: "TMCO", key: "teleopMidCones", enabled: true},
+                  { index: 9, name: "TLP", key: "teleopLow", enabled: true},
+                  { index: 10, name: "ACS", key: "autoChargeStation", enabled: true},
+                  { index: 11, name: "EGCS", key: "endGameChargeStation", enabled: true},
+                  { index: 12, name: "Links", key: "links", enabled: true},
+                  { index: 13, name: "Taxi", key: "mobility", enabled: true},
+                ]}
+              />
             </ThemeProvider>
           </div>
         </TabPanel>

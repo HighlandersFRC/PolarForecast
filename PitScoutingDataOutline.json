@@ -1,0 +1,19 @@
+{
+    "event_code": "",
+    "team_number": 0,
+    "match_number": 0,
+    "time": 0,
+    "scout_info":{
+        "name": ""
+    },
+    "data": {
+        "amp_scoring": false,
+        "speaker_scoring": false,
+        "trap_scoring": false,
+        "climbing": false,
+        "go_under_stage": false,
+        "drive_train": "",
+        "ground_pick_up": false,
+        "feeder_pick_up": false
+    }
+}

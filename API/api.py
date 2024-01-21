@@ -192,7 +192,7 @@ def updateData(event_code: str):
                 print("couldn't update")
 
 @app.on_event("startup")
-@repeat_every(seconds=TBA_POLLING_INTERVAL)
+@repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():
     logging.info("Starting Polar Forecast")
     try:
@@ -224,7 +224,6 @@ def update_database():
         numRuns += 1
     except Exception as e:
         print(e.with_traceback())
-
 # @app.on_event("startup")
 # @repeat_every(seconds=20)
 # def code():

@@ -17,13 +17,21 @@ const styles = {
   },
 };
 
+const predefinedPalette = [
+  "#4D9DE0", "#E15554", "#7768AE", "#3BB273",
+  "#FFD700", "#8A2BE2", "#FF6347", "#32CD32",
+  "#9370DB", "#FFA07A", "#00CED1", "#FF4500",
+  "#4169E1", "#FF69B4", "#20B2AA", "#FF8C00",
+  "#483D8B", "#FFDAB9", "#00FA9A", "#8B4513",
+];
+
 function BarChartWithWeights({ data, number, startingFields }) {
   const [fields, setFields] = useState(startingFields || []);
   const [originalData, setOriginalData] = useState(data || []);
   const [chartData, setChartData] = useState(originalData);
   const [chartDataKey, setChartDataKey] = useState(Date.now().toString());
 
-  const chartPalette = ["#4D9DE0", "#E15554", "#7768AE", "#3BB273"];
+  const chartPalette = predefinedPalette;
 
   const handleWeightChange = (event, key) => {
     let newFields = [...fields];
@@ -81,13 +89,13 @@ function BarChartWithWeights({ data, number, startingFields }) {
           <XAxis dataKey="key" angle={-90} textAnchor="end" interval={0} />
           <YAxis />
           <Tooltip formatter={(value) => (typeof value === 'number' ? value.toFixed(1) : value)} />
-          {fields.map((item) => {
+          {fields.map((item, index) => {
             return (
               item.enabled && (
                 <Bar
                   key={item.key}
                   dataKey={item.key}
-                  fill={chartPalette[item.index]}
+                  fill={chartPalette[index]}
                   name={item.name}
                   stackId="a"
                   animationDuration={500} // Set animation duration (milliseconds)
@@ -99,16 +107,21 @@ function BarChartWithWeights({ data, number, startingFields }) {
       </ResponsiveContainer>
 
       <br />
-      <div style={{ display: "flex" }}>
-        {fields.map((item) => {
+      <div style={{ display: "flex", flexWrap: "wrap" }}>
+        {fields.map((item, index) => {
           return (
             item.enabled && (
-              <Box key={item.key} style={styles.weightInput}>
+              <Box key={item.key} style={{ ...styles.weightInput, color: chartPalette[index] }}>
                 <TextField
                   type="number"
                   label={item.name}
                   value={item.weight || 1}
                   onChange={(event) => handleWeightChange(event, item.key)}
+                  InputProps={{
+                    style: {
+                      color: chartPalette[index],
+                    },
+                  }}
                 />
               </Box>
             )
