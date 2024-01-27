@@ -1,8 +1,10 @@
-import copy
+import io
 import json
 import logging
-import traceback
-from fastapi import FastAPI, HTTPException
+from typing import Annotated
+import zipfile
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from pymongo import MongoClient
 from datetime import datetime
@@ -31,26 +33,24 @@ app.add_middleware(
 
 client = MongoClient(MONGO_CONNECTION)
 testDB = client["Database_Test"]
+
 testCollection = testDB["Test"]
 TBACollection = testDB["TBA"]
 TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 ScoutDataCollection = testDB["ScoutingData"]
+ScoutingData2024Collection = testDB["Scouting2024Data"]
 CalculatedDataCollection = testDB["CalculatedData"]
+PictureCollection = testDB["Pictures"]
+PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
 
-class Name(BaseModel):
-    firstName: str
-    lastName: str
 
-
-def searchName(name):
-    return testCollection.find({'name': name}, {'_id': 0})
-
-
-def addNameEntry(myDict: dict):
-    entry = testCollection.insert_one(myDict)
-
+class ScoutingPicture(BaseModel):
+    file: Annotated[bytes, File()]
+    year: int
+    event: str
+    team: str
 
 @app.on_event("startup")
 def onStart():
@@ -126,9 +126,82 @@ def getEventPredictions():
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
     return json.load(open("StatDescription.json"))
+
 events = []
 etag = []
 numRuns = 0
+@app.get("/{year}/{event}/{match_key}/match_details")
+def get_Match_Details(match_key: str):
+    matchData = TBACollection.find_one({"key": match_key})
+    if matchData is not None:
+        matchData.pop("_id")
+    return matchData
+    
+@app.post("/MatchScouting/")
+def post_match_scouting(data: dict):
+    ScoutingData2024Collection.insert_one(data)
+    data.pop("_id")
+    return data
+
+@app.post("/{year}/{event}/{team}/pictures/")
+def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int):
+    file_content = data.file.read()
+    additional_fields = {
+        "key": str(year) + event + "_" + team,
+        "team": team,
+        "eventCode": str(year) + event,
+    }
+
+    file_data = {
+        "filename": data.filename,
+        "content_type": data.content_type,
+        "file": file_content,
+        **additional_fields,
+    }
+    try :
+        PictureCollection.insert_one(file_data)
+    except :
+        PictureCollection.find_one_and_replace({"key": additional_fields["key"]}, file_data)
+    return {"message": "File uploaded successfully"}
+
+from fastapi import FastAPI, HTTPException
+from pymongo import MongoClient
+from bson import ObjectId
+from fastapi.responses import StreamingResponse
+import io
+
+app = FastAPI()
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["your_database_name"]
+picture_collection = db["your_collection_name"]
+
+def get_pictures(team: str, event: str, year: int):
+    key = str(year) + event + "_" + team
+
+    # Query the collection using the key
+    pictures = picture_collection.find({"key": key})
+
+    if pictures:
+        return pictures
+    else:
+        raise HTTPException(status_code=404, detail="Pictures not found")
+
+@app.get("/{year}/{event}/{team}/getPictures")
+async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: list = Depends(get_pictures)):
+    if not pictures:
+        raise HTTPException(status_code=404, detail="Pictures not found")
+
+    # Create a list of image data
+    image_data = []
+    for picture in pictures:
+        content_type = picture["content_type"]
+        file_content = picture["file"]
+        image_data.append({"content_type": content_type, "file": file_content.decode("utf-8")})
+
+    # Return the list of image data as a JSON response
+    return image_data
 
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
@@ -224,11 +297,3 @@ def update_database():
         numRuns += 1
     except Exception as e:
         print(e.with_traceback())
-# @app.on_event("startup")
-# @repeat_every(seconds=20)
-# def code():
-#     try:
-#         updateData("code")
-#     except Exception as e:
-#         print(e)
-#         traceback.print_exc()

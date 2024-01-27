@@ -223,3 +223,23 @@ export const getLeaderboard = async (year, callback) => {
     console.error(error);
   }
 };
+
+export const postMatchScouting = async (data, callback) => {
+  try {
+      const endpoint = `${API_ENDPOINT}/MatchScouting/`;
+      console.log(endpoint)
+      let retval;
+      let json = JSON.stringify(data)
+      const response = await fetch(endpoint, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      });
+      callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e){
+    callback(0)
+    return 0
+  }
+}

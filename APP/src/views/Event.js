@@ -36,6 +36,7 @@ import BarChartWithSwitches from "../components/BarChartWithSwitches";
 import BarChartWithWeights from "components/BarChartWithWeights";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
+import MatchScouting from "components/Scouting/MatchScouting";
 
 const switchTheme = createTheme({
   palette: {
@@ -56,7 +57,11 @@ const switchTheme = createTheme({
 
 const Tables = () => {
   const history = useHistory();
-  const tabDict = ["rankings", "charts", "quals", "elims"];
+  const tabDict = ["rankings", "charts", "match-scouting"];
+  const url = new URL(window.location.href);
+  const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
+  const year = url.pathname.split("/")[3]
+  const eventCode = url.pathname.split("/")[4]
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
@@ -434,8 +439,7 @@ const Tables = () => {
         >
           <Tab label="Rankings" {...a11yProps(0)} />
           <Tab label="Charts" {...a11yProps(1)} />
-          {qualPredictions.length > 0 && <Tab label="Quals" {...a11yProps(2)} />}
-          {elimPredictions.length > 0 && <Tab label="Elims" {...a11yProps(3)} />}
+          <Tab label="Match Scouting" {...a11yProps(2)} />
           {/* <Tab label="Polar Power" {...a11yProps(2)} /> */}
         </Tabs>
       </AppBar>
@@ -562,81 +566,15 @@ const Tables = () => {
           <div style={{ height: containerHeight, width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent">
-                <h3 className="text-white mb-0">Qualifications - {eventTitle}</h3>
+                <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
               </CardHeader>
-              <div style={{ height: containerHeight, width: "100%" }}>
-                <StripedDataGrid
-                  disableColumnMenu
-                  rows={qualPredictions}
-                  getRowId={(row) => {
-                    return row.key;
-                  }}
-                  columns={matchPredictionColumns}
-                  pageSize={100}
-                  rowsPerPageOptions={[100]}
-                  rowHeight={35}
-                  disableExtendRowFullWidth={true}
-                  sx={{
-                    boxShadow: 2,
-                    border: 0,
-                    borderColor: "white",
-                    "& .MuiDataGrid-cell:hover": {
-                      color: "white",
-                    },
-                  }}
-                  components={{
-                    NoRowsOverlay: () => (
-                      <Stack height="100%" alignItems="center" justifyContent="center">
-                        No Match Data
-                      </Stack>
-                    ),
-                  }}
-                  getRowClassName={(params) =>
-                    params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                  }
-                />
-              </div>
+              <MatchScouting 
+                defaultEventCode={eventName}
+                year={year}
+                event={eventCode}
+              />
             </Card>
           </div>
-        </TabPanel>
-        <TabPanel value={tabIndex} index={3} dir={darkTheme.direction}>
-          <Card className="polar-box">
-            <CardHeader className="bg-transparent">
-              <h3 className="text-white mb-0">Eliminations - {eventTitle}</h3>
-            </CardHeader>
-            <div style={{ height: containerHeight, width: "100%" }}>
-              <StripedDataGrid
-                disableColumnMenu
-                rows={elimPredictions}
-                getRowId={(row) => {
-                  return row.key;
-                }}
-                columns={matchPredictionColumns}
-                pageSize={100}
-                rowsPerPageOptions={[100]}
-                rowHeight={35}
-                disableExtendRowFullWidth={true}
-                sx={{
-                  boxShadow: 2,
-                  border: 0,
-                  borderColor: "white",
-                  "& .MuiDataGrid-cell:hover": {
-                    color: "white",
-                  },
-                }}
-                components={{
-                  NoRowsOverlay: () => (
-                    <Stack height="100%" alignItems="center" justifyContent="center">
-                      No Match Data
-                    </Stack>
-                  ),
-                }}
-                getRowClassName={(params) =>
-                  params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                }
-              />
-            </div>
-          </Card>
         </TabPanel>
       </div>
       <Snowfall
