@@ -243,3 +243,27 @@ export const postMatchScouting = async (data, callback) => {
     return 0
   }
 }
+
+export const getTeamPictures = async (year, event, team, callback) => {
+  try {
+    const storage_name = `${year}${event}_${team}_Pictures`;
+    const data = getWithExpiry(storage_name);
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/getPictures`
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.ok) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback({ data: [] });
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}

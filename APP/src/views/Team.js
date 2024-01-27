@@ -32,10 +32,16 @@ import { useHistory } from "react-router-dom";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MoodBadIcon from "@mui/icons-material/MoodBad";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import { getTeamPictures } from "api";
 
 const Team = () => {
   const history = useHistory();
-
+  const url = new URL(window.location.href);
+  const params = url.pathname.split("/");
+  const team = params[5].replace("team-", "frc");
+  const eventCode = params[4]
+  const year = params[3]
+  const [pictures,  setPictures] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [teamInfo, setTeamInfo] = React.useState("");
   const [statDescription, setStatDescription] = useState([]);
@@ -360,7 +366,18 @@ const Team = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+    if (newValue === "Pictures"){
+      getTeamPictures(year, eventCode, team, picturesCallback)
+    }
   };
+
+  const picturesCallback = (data) => {
+    const rows = [];
+    for (let i = 0; i < numrows; i++) {
+      rows.push(<img src={`data:image/jpeg;base64,${data[i]}`} />);
+    }
+    setPictures(rows)
+  }
 
   return (
     <>
@@ -375,6 +392,7 @@ const Team = () => {
         >
           <Tab label="Schedule" {...a11yProps(0)} />
           <Tab label="Team Stats" {...a11yProps(1)} />
+          <Tab label="Pictures" {...a11yProps(2)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -489,6 +507,11 @@ const Team = () => {
               </Box>
             )}
           </Container>
+        </div>
+      </TabPanel>
+      <TabPanel>
+        <div style={{ height: "calc(100vh - 220px)", width: "100%", overflow: "auto" }}>
+          {}
         </div>
       </TabPanel>
     </>
