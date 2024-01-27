@@ -366,15 +366,13 @@ const Team = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    if (newValue === "Pictures"){
-      getTeamPictures(year, eventCode, team, picturesCallback)
-    }
+    getTeamPictures(year, eventCode, team, picturesCallback)
   };
 
   const picturesCallback = (data) => {
     const rows = [];
-    for (let i = 0; i < numrows; i++) {
-      rows.push(<img src={`data:image/jpeg;base64,${data[i]}`} />);
+    for (let i = 0; i < data.length; i++) {
+      rows.push(<div><img src={`data:image/jpeg;base64,${data[i].file}`} /><br /><br /><br /></div>);
     }
     setPictures(rows)
   }
@@ -509,10 +507,12 @@ const Team = () => {
           </Container>
         </div>
       </TabPanel>
-      <TabPanel>
-        <div style={{ height: "calc(100vh - 220px)", width: "100%", overflow: "auto" }}>
-          {}
-        </div>
+      <TabPanel value={value} index={2} dir={darkTheme.direction}>
+        <Card className="polar-box">
+          <div style={{ width: "100%", overflow: "auto", display: 'flex', marginTop: '0px', alignItems:'center'} }>
+            {pictures}
+          </div>
+        </Card>
       </TabPanel>
     </>
   );
