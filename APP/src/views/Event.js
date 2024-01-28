@@ -76,6 +76,7 @@ const Tables = () => {
   const [elimPredictions, setElimPredictions] = useState([]);
   const [showKeys, setShowKeys] = useState([]);
   const [statColumns, setStatColumns] = useState([]);
+  const [pitScoutingStatColumns, setPitScoutingStatColumns] = useState([]);
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
       field: "match_number",
@@ -156,6 +157,7 @@ const Tables = () => {
   const statDescriptionCallback = async (data) => {
     const keys = [];
     const statColumns = [];
+    const pitScoutingStatColumns = [];
     statColumns.push({
       field: "id",
       headerName: "",
@@ -163,9 +165,37 @@ const Tables = () => {
       renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
       disableExport: true,
       flex: 0.1,
+
     });
+    pitScoutingStatColumns.push({
+      field: "id",
+      headerName: "",
+      filterable: false,
+      renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
+      disableExport: true,
+      flex: 0.1,
+
+    });
+ 
 
     statColumns.push({
+      field: "key",
+      headerName: "Team",
+      filterable: false,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => statisticsTeamOnClick(params.row);
+        return (
+          <Link component="button" onClick={onClick} underline="always">
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
       field: "key",
       headerName: "Team",
       filterable: false,
@@ -193,6 +223,26 @@ const Tables = () => {
       minWidth: 80,
       flex: 0.5,
     });
+    pitScoutingStatColumns.push({
+      field: "Pit Scouting",
+      headerName: "Pit Scouting",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+    });
+    pitScoutingStatColumns.push({
+      field: "Pit Scouting Pictures",
+      headerName: "Pit Scouting Pictures",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+    });
 
     for (let i = 0; i < data.data.length; i++) {
       const stat = data.data[i];
@@ -210,9 +260,26 @@ const Tables = () => {
         });
       }
     }
+    for (let i = 0; i > data.data.length; i++) {
+      const stat = data.data[i];
+      if (stat.report_stat && stat.stat_key !== "OPR") {
+        keys.push(stat.stat_key);
+        pitScoutingStatColumns.push({
+          field: stat.stat_key,
+          headerName: stat.display_name,
+          type: "number",
+          sortable: true,
+          headerAlign: "center",
+          align: "center",
+          minWidth: 80,
+          flex: 0.5,
+        });
+      }
+    }
     setShowKeys(keys);
     setStatDescription(data.data);
     setStatColumns(statColumns);
+    setPitScoutingStatColumns(pitScoutingStatColumns);
   };
 
   const statisticsTeamOnClick = (cellValues) => {
@@ -359,6 +426,7 @@ const Tables = () => {
         setEventTitle(array[i]?.display.split("[")[0]);
       }
     }
+
   };
 
   useEffect(() => {
@@ -441,6 +509,8 @@ const Tables = () => {
           <Tab label="Rankings" {...a11yProps(0)} />
           <Tab label="Charts" {...a11yProps(1)} />
           <Tab label="Match Scouting" {...a11yProps(2)} />
+          <Tab label="Pit Scouting" {...a11yProps(3)} />
+
           {/* <Tab label="Polar Power" {...a11yProps(2)} /> */}
         </Tabs>
       </AppBar>
@@ -491,6 +561,7 @@ const Tables = () => {
                   getRowClassName={(params) =>
                     params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
                   }
+
                 />
               ) : (
                 <Box
@@ -569,7 +640,7 @@ const Tables = () => {
               <CardHeader className="bg-transparent">
                 <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
               </CardHeader>
-              <MatchScouting 
+              <MatchScouting
                 defaultEventCode={eventName}
                 year={year}
                 event={eventCode}
@@ -577,6 +648,69 @@ const Tables = () => {
             </Card>
           </div>
         </TabPanel>
+        <TabPanel value={tabIndex} index={3} dir={darkTheme.direction}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Pit Scounting - {eventTitle}</h3>
+            </CardHeader>
+            <div style={{ height: containerHeight, width: "100%" }}>
+              {rankings.length > 0 ? (
+                <StripedDataGrid
+                  initialState={{
+                    sorting: {
+                      sortModel: [{ field: "OPR", sort: "desc" }],
+                      pagination: { paginationModel: { pageSize: 50 } },
+                    },
+                  }}
+                  disableColumnMenu
+                  sortingOrder={["desc", "asc"]}
+                  rows={rankings}
+                  getRowId={(row) => {
+                    return row.key;
+                  }}
+                  columns={pitScoutingStatColumns}
+                  pageSize={100}
+                  rowsPerPageOptions={[100]}
+                  rowHeight={35}
+                  slots={{ toolbar: GridToolbar }}
+                  slotProps={{
+                    toolbar: {
+                      showQuickFilter: true,
+                      quickFilterProps: { debounceMs: 500 },
+                    },
+                  }}
+                  disableColumnFilter={!isDesktop}
+                  disableColumnSelector={!isDesktop}
+                  disableDensitySelector={!isDesktop}
+                  disableExportSelector={!isDesktop}
+                  sx={{
+                    mx: 0.5,
+                    border: 0,
+                    borderColor: "white",
+                    "& .MuiDataGrid-cell:hover": {
+                      color: "white",
+                    },
+                  }}
+                  getRowClassName={(params) =>
+                    params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                  }
+                />
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "calc(100vh - 300px)",
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              )}
+            </div>
+          </Card>
+        </TabPanel>
+
       </div>
       <Snowfall
         snowflakeCount={50}
