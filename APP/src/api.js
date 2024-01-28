@@ -257,7 +257,7 @@ export const getTeamPictures = async (year, event, team, callback) => {
         setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
-        callback({ data: [] });
+        callback([]);
       }
     } else {
       console.log("Using cached data for: " + storage_name);
