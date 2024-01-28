@@ -34,7 +34,6 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 const Match = () => {
   const history = useHistory();
-
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [matchTitle, setMatchTitle] = useState(false);

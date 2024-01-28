@@ -37,6 +37,7 @@ import BarChartWithWeights from "components/BarChartWithWeights";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
+import PitScouting from "./PitScouting";
 
 const switchTheme = createTheme({
   palette: {

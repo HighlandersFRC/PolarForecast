@@ -509,7 +509,7 @@ const Team = () => {
       </TabPanel>
       <TabPanel value={value} index={2} dir={darkTheme.direction}>
         <Card className="polar-box">
-          <div style={{ width: "100%", overflow: "auto", display: 'flex', marginTop: '0px', alignItems:'center'} }>
+          <div style={{ width: "100%", overflow: "auto", display: 'flex', marginTop: '0px'} }>
             {pictures}
           </div>
         </Card>
