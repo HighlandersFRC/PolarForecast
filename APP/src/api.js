@@ -267,3 +267,23 @@ export const getTeamPictures = async (year, event, team, callback) => {
     console.error(error);
   }
 }
+
+export const postTeamPictures = async (year, event, team, data, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/pictures/`;
+    console.log(endpoint)
+    let retval;
+    let json = JSON.stringify(data)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      body: data, // body data type must match "Content-Type" header
+    });
+    callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e){
+    callback(0)
+    return 0
+  }
+}

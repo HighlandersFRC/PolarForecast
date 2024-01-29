@@ -43,6 +43,10 @@ ScoutingData2024Collection = testDB["Scouting2024Data"]
 CalculatedDataCollection = testDB["CalculatedData"]
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
+PitScoutingCollection = testDB["PitScouting"]
+PitScoutingCollection.create_index( [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
+PitStatusCollection = testDB["PitScoutingStatus"]
+PitStatusCollection.create_index( [("event_code", pymongo.ASCENDING)], unique=True)
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
 
@@ -60,15 +64,34 @@ def onStart():
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
     events = json.loads(requests.get(
         TBA_API_URL+"events/"+YEAR, headers=headers).text)
+    eventTeams = []
+    for event in events:
+        key = event["key"]
+        try :
+            teams = json.loads(requests.get(TBA_API_URL+f"event/{key}/teams/keys", headers=headers).text)
+            eventTeams.append([{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"}for x in teams])
+        except :
+            eventTeams.append([])
+            pass
+        
     for i in range(len(events)):
         etag.append('')
-        
-    for event in events:
+
+    print("new request")
+    for i in range(len(events)):
+        event = events[i]
+        eventCode = YEAR+event["event_code"]
+        teams = eventTeams[i]
+        print(eventCode)
         try:
-            CalculatedDataCollection.insert_one({"event_code": YEAR+event["event_code"], "data": {}})
+            CalculatedDataCollection.insert_one({"event_code": (YEAR+event["event_code"]), "data": {}})
         except:
             pass
-
+        try:
+            PitStatusCollection.insert_one({"event_code": eventCode, "data": teams })
+        except Exception as e:
+            pass
+        
 @app.get("/{year}/{event}/{team}/stats")
 def event_Team_Stats(year: int, event: str, team: str):
     print(team, str(year)+event)
@@ -121,13 +144,53 @@ def get_Search_Keys():
     return retval
 
 @app.get("/{year}/{event}/predictions")
-def getEventPredictions():
+def get_Event_Predictions():
     return {"data": []}
 
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
     return json.load(open("StatDescription.json"))
 
+@app.get("/{year}/{event}/{team}/PitScouting")
+def get_pit_scouting_data(year: int, event:str, team:str):
+    data = PitScoutingCollection.find_one({"eventCode": str(year)+ event, "team_number": team})
+    data.pop("_id")
+    return data
+    
+@app.get("/{year}/{event}/PitScoutingStatus")
+def get_pit_scouting_status(year: int, event:str):
+    data = PitStatusCollection.find_one({"event_code": str(year)+ event})
+    return data
+    
+@app.post("/PitScouting/")
+def post_pit_scouting_data(data: dict):
+    status = getStatus(data, PitStatusCollection.find_one({"event_code": data["event_code"]}))
+    status.pop("_id")
+    PitStatusCollection.find_one_and_replace({"event_code": data["event_code"]}, status)
+    try :
+        PitScoutingCollection.insert_one(data)
+    except:
+        data.pop("_id")
+        PitScoutingCollection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"]}, data)
+    return {"message": "added it to the DB"}
+
+def getStatus(data: dict, originalStatus: dict):
+    status = "In Progress"
+    found = False
+    if not data["data"]["drive_train"] == "":
+        if not data["data"]["favorite_color"] == "":
+            status = "Done"
+    print(originalStatus)
+    print(data["team_number"])
+    for entry in originalStatus["data"]:
+        if entry["key"] == str(data["team_number"]):
+            found = True
+            entry["pit_status"] = status
+    if (not found):
+        raise HTTPException(400, "No Such Team")
+    else :
+        return originalStatus
+    
 events = []
 etag = []
 numRuns = 0
@@ -171,6 +234,33 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: 
 
     # Return the list of image data as a JSON response
     return image_data
+
+@app.post("/{year}/{event}/{team}/pictures/")
+def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int):
+    status = PitStatusCollection.find_one({"event_code": str(year)+event})
+    picStatus = "Done"
+    found = False
+    for entry in status["data"]:
+        if entry["key"] == team[3:]:
+            found = True
+            entry["picture_status"] = picStatus
+    if not found:
+        raise HTTPException(400, detail="No such team")
+    PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
+    file_content = data.file.read()
+    additional_fields = {
+        "key": str(year) + event + "_" + team,
+        "team": team,
+        "eventCode": str(year) + event,
+    }
+    file_data = {
+        "filename": data.filename,
+        "content_type": data.content_type,
+        "file": file_content,
+        **additional_fields,
+    }
+    PictureCollection.insert_one(file_data)
+    return {"message": "File uploaded successfully"}
 
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"

@@ -38,6 +38,9 @@ import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
 import PitScouting from "./PitScouting";
+import PitImages from "./PitImages";
+import Dropzone from 'react-dropzone'
+
 
 const switchTheme = createTheme({
   palette: {
@@ -223,6 +226,7 @@ const Tables = () => {
       minWidth: 80,
       flex: 0.5,
     });
+
     pitScoutingStatColumns.push({
       field: "Pit Scouting",
       headerName: "Pit Scouting",
@@ -233,6 +237,7 @@ const Tables = () => {
       minWidth: 80,
       flex: 0.5,
     });
+
     pitScoutingStatColumns.push({
       field: "Pit Scouting Pictures",
       headerName: "Pit Scouting Pictures",
@@ -295,6 +300,7 @@ const Tables = () => {
   };
 
   const rankingsCallback = async (data) => {
+    console.log(data)
     data.data = data.data.filter((obj) => {
       if (obj.key) {
         return true;
@@ -336,6 +342,10 @@ const Tables = () => {
     const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
 
     setRankings(sortedData);
+  };
+
+  const pitScoutingStatusCallback = async (data) => {
+
   };
 
   const predictionsCallback = async (data) => {
@@ -640,7 +650,7 @@ const Tables = () => {
               <CardHeader className="bg-transparent">
                 <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
               </CardHeader>
-              <MatchScouting
+              <PitImages
                 defaultEventCode={eventName}
                 year={year}
                 event={eventCode}
@@ -658,7 +668,7 @@ const Tables = () => {
                 <StripedDataGrid
                   initialState={{
                     sorting: {
-                      sortModel: [{ field: "OPR", sort: "desc" }],
+                      sortModel: [{ field: "key", sort: "asc" }],
                       pagination: { paginationModel: { pageSize: 50 } },
                     },
                   }}
