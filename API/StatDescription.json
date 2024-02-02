@@ -1,389 +1,518 @@
-{
+{   
+    "pitData": [
+      {
+        "stat_key": "amp_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Amp Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "speaker_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Speaker Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "trap_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Trap Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "climbing",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Climbing",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "go_under_stage",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Go Under Stage",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "drive_train",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Drive Train",
+        "stat_type": "str",
+        "stat": {}
+      },
+      {
+        "stat_key": "ground_pick_up",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Ground Pick Up",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "feeder_pick_up",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Feeder Pick Up",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "favorite_color",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Favorite Color",
+        "stat_type": "str",
+        "stat": {}
+      }
+    ],
     "data": [
       {
         "stat_key": "rank",
         "solve_strategy": "custom",
         "report_stat": true,
         "display_name": "rank",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_T_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_T_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_M_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_M_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_autoCommunity_B_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_autoCommunity_B_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_T_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_T_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_M_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_M_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_0",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_0",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_1",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_1",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_2",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_2",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_3",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_3",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_4",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_4",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_5",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_5",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_6",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_6",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_7",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_7",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "_teleopCommunity_B_8",
         "solve_strategy": "smart_solve",
         "report_stat": false,
         "display_name": "_teleopCommunity_B_8",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "mobility",
@@ -397,14 +526,16 @@
         "solve_strategy": "linked",
         "report_stat": true,
         "display_name": "autoChargeStation",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "endGameChargeStation",
         "solve_strategy": "linked",
         "report_stat": true,
         "display_name": "endGameChargeStation",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       },
       {
         "stat_key": "autoHighCubes",
@@ -417,7 +548,8 @@
             "_autoCommunity_T_4",
             "_autoCommunity_T_7"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoHighCones",
@@ -433,7 +565,8 @@
             "_autoCommunity_T_6",
             "_autoCommunity_T_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoMidCubes",
@@ -446,7 +579,8 @@
             "_autoCommunity_M_4",
             "_autoCommunity_M_7"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoMidCones",
@@ -462,7 +596,8 @@
             "_autoCommunity_M_6",
             "_autoCommunity_M_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoLow",
@@ -481,7 +616,8 @@
             "_autoCommunity_B_7",
             "_autoCommunity_B_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "teleopHighCubes",
@@ -510,7 +646,8 @@
             "_teleopCommunity_T_6",
             "_teleopCommunity_T_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "teleopMidCubes",
@@ -539,7 +676,8 @@
             "_teleopCommunity_M_6",
             "_teleopCommunity_M_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "teleopLow",
@@ -558,7 +696,8 @@
             "_teleopCommunity_B_7",
             "_teleopCommunity_B_8"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoElementsScored",
@@ -588,7 +727,8 @@
             "teleopHighCubes",
             "teleopHighCones"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "elementsScored",
@@ -600,7 +740,8 @@
             "teleopElementsScored",
             "autoElementsScored"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "links",
@@ -618,7 +759,8 @@
           "component_stats": [
             "links"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "autoPoints",
@@ -635,7 +777,8 @@
             "mobility",
             "autoChargeStation"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "teleopPoints",
@@ -650,7 +793,8 @@
             "teleopMidCones",
             "teleopLow"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "endgamePoints",
@@ -661,7 +805,8 @@
           "component_stats": [
             "endGameChargeStation"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "OPR",
@@ -675,7 +820,8 @@
             "endgamePoints",
             "linkPoints"
           ]
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "simulatedRanking",
@@ -684,7 +830,8 @@
         "display_name": "simulatedRanking",
         "stat": {
           "component_stats": []
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "expectedRanking",
@@ -693,14 +840,16 @@
         "display_name": "Expected Ranking",
         "stat": {
           "component_stats": []
-        }
+        },
+        "stat_type": "num"
       },
       {
         "stat_key": "schedule",
         "solve_strategy": "post",
         "report_stat": true,
         "display_name": "Schedule",
-        "stat": {}
+        "stat": {},
+        "stat_type": "num"
       }
     ]
   }

@@ -56,7 +56,7 @@ export const getStatDescription = async (year, event, callback) => {
 export const getTeamStatDescription = async (year, event, team, callback) => {
   try {
     const storage_name = year + event + team + "_stats";
-    const data = getWithExpiry(storage_name);
+    const data = null //getWithExpiry(storage_name);
     if (data === null) {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/stats`;
       console.log("Requesting Data from: " + endpoint);
@@ -244,6 +244,26 @@ export const postMatchScouting = async (data, callback) => {
   }
 }
 
+export const postPitScouting = async (data, callback) => {
+  try {
+      const endpoint = `${API_ENDPOINT}/PitScouting/`;
+      console.log(endpoint)
+      let retval;
+      let json = JSON.stringify(data)
+      const response = await fetch(endpoint, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      });
+      callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e){
+    callback(0)
+    return 0
+  }
+}
+
 export const getTeamPictures = async (year, event, team, callback) => {
   try {
     const storage_name = `${year}${event}_${team}_Pictures`;
@@ -270,20 +290,57 @@ export const getTeamPictures = async (year, event, team, callback) => {
 
 export const postTeamPictures = async (year, event, team, data, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/pictures/`;
-    console.log(endpoint)
-    let retval;
-    let json = JSON.stringify(data)
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/frc${team}/pictures/`;
+    console.log(endpoint);
+
+    // Convert base64 string to Blob
+    const blob = dataURItoBlob(data);
+
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('data', blob, 'image.jpg'); // 'data' is the key, 'image.jpg' is the filename
+
     const response = await fetch(endpoint, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      body: data, // body data type must match "Content-Type" header
+      method: 'POST',
+      body: formData,
     });
-    callback(response.status); // parses JSON response into native JavaScript objects
-  } catch (e){
-    callback(0)
-    return 0
+
+    callback(response.status);
+  } catch (e) {
+    console.error('Error:', e);
+    callback(0);
+  }
+};
+
+
+// Function to convert data URI to Blob
+function dataURItoBlob(dataURI) {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ab], { type: mimeString });
+}
+
+export const getPitStatus = async (year, event, callback) => {
+  try {
+    const storage_name = `${year}${event}_PitStatus`;
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/pitStatus`
+    console.log("Requesting Data from: " + endpoint);
+    const response = await fetch(endpoint);
+    if (response.ok) {
+      const data = await response.json();
+      setWithExpiry(storage_name, data, default_ttl);
+      callback(data);
+    } else {
+      callback([]);
+    }
+  } catch (error) {
+    console.error(error);
   }
 }

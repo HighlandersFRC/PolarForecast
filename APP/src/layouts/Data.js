@@ -49,6 +49,30 @@ const Data = (props) => {
             )}
           />
         );
+      } else if (prop.layout === "/data" && prop.path === "/pictures"){
+        return (
+          <Route
+            path={prop.layout + prop.path}
+            render={({ match: { url } }) => (
+              <>
+                <Route path={`${url}/:id/:id/:id`} component={prop.component} exact />
+                {/* <Route path={`${url}/:id/:id/:id/:id`} component={Selector} /> */}
+              </>
+            )}
+          />
+        );
+      } else if (prop.layout === "/data" && prop.path === "/pitScouting"){
+        return (
+          <Route
+            path={prop.layout + prop.path}
+            render={({ match: { url } }) => (
+              <>
+                <Route path={`${url}/:id/:id/:id`} component={prop.component} exact />
+                {/* <Route path={`${url}/:id/:id/:id/:id`} component={Selector} /> */}
+              </>
+            )}
+          />
+        );
       } else {
         return null;
       }

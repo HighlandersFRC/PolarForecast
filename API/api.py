@@ -94,18 +94,30 @@ def onStart():
         
 @app.get("/{year}/{event}/{team}/stats")
 def event_Team_Stats(year: int, event: str, team: str):
+    foundTeam = False
     print(team, str(year)+event)
     data = CalculatedDataCollection.find_one({
         "event_code": str(year) + event,
     })
     data.pop('_id', None)
     i = 0
-    for doc in data["data"]["data"]:
+    for doc in data["data"]:
         i += 1
         if not i == 1:
-            if doc["key"] == team:
-                return doc
-    raise HTTPException(400, "No team key \""+team+"\" in "+str(year)+event)
+            if doc ["key"] == team:
+                foundTeam = True
+                break
+    if not foundTeam:
+        raise HTTPException(400, "No team key \""+team+"\" in "+str(year)+event)
+    try :
+        pitData = PitScoutingCollection.find_one({"event_code": str(year) + event, "team_number": int(team[3:])})
+        for key in pitData["data"]:
+            if not key == "_id":
+                doc[key] = pitData["data"][key]
+        return doc
+    except Exception as e:
+        print("No Scouting Data: ", e)
+        return doc
     
 
 @app.get("/{year}/{event}/{team}/matches")
@@ -175,10 +187,10 @@ def post_pit_scouting_data(data: dict):
     return {"message": "added it to the DB"}
 
 def getStatus(data: dict, originalStatus: dict):
-    status = "In Progress"
+    status = "Incomplete"
     found = False
-    if not data["data"]["drive_train"] == "":
-        if not data["data"]["favorite_color"] == "":
+    if data["data"]["drive_train"] != "":
+        if data["data"]["favorite_color"] != "":
             status = "Done"
     print(originalStatus)
     print(data["team_number"])
@@ -262,6 +274,12 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
     PictureCollection.insert_one(file_data)
     return {"message": "File uploaded successfully"}
 
+@app.get("/{year}/{event}/pitStatus")
+def get_pit_status(year: int, event: str):
+    retval = PitStatusCollection.find_one({"event_code": str(year)+event})
+    retval.pop("_id")
+    return retval
+    
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]

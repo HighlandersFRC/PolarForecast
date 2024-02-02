@@ -22,18 +22,30 @@ import Snowfall from "react-snowfall";
 import React, { useEffect, useState } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { DataGrid, gridClasses, GridToolbar } from "@mui/x-data-grid";
-import ImageUpload from "components/ImageUpload";
+import ImageUpload from "components/ImageUpload"; 
 import CameraCapture from "components/CameraCapture";
+import { postTeamPictures } from "api";
+import { AppBar } from "@mui/material";
 
 const PitImages = () => {
+  const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
+  const [containerDivHeight, setContainerDivHeight] = useState(`calc(100vh - 250px)`);
   return (
     <>
-      <div style={{ width: "100%" }}>
+      <Header />
+      <div style={{ height: containerHeight, width: "100%" }}>
         <ThemeProvider theme={darkTheme}>
           <Container>
             <Row>
-              <div style={{ width: "100%" }}>
-                <CameraCapture />
+              <div style={{ height: containerHeight, width: "100%" }}>
+                <Card className="polar-box">
+                  <CardHeader className="bg-transparent">
+                    <h3 className="text-white mb-0">Picture</h3>
+                  </CardHeader>
+                    <div style={{ width: "100%" }}>
+                      <CameraCapture />
+                    </div>
+                </Card>
               </div>
             </Row>
           </Container>

@@ -40,6 +40,8 @@ import MatchScouting from "components/Scouting/MatchScouting";
 import PitScouting from "./PitScouting";
 import PitImages from "./PitImages";
 import Dropzone from 'react-dropzone'
+import { getPitStatus } from "api";
+import { rgbToHex } from "@material-ui/core";
 
 
 const switchTheme = createTheme({
@@ -61,7 +63,7 @@ const switchTheme = createTheme({
 
 const Tables = () => {
   const history = useHistory();
-  const tabDict = ["rankings", "charts", "match-scouting"];
+  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting"];
   const url = new URL(window.location.href);
   const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
   const year = url.pathname.split("/")[3]
@@ -80,6 +82,7 @@ const Tables = () => {
   const [showKeys, setShowKeys] = useState([]);
   const [statColumns, setStatColumns] = useState([]);
   const [pitScoutingStatColumns, setPitScoutingStatColumns] = useState([]);
+  const [pitScoutingStatus, setPitScoutingStatus] = useState([]);
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
       field: "match_number",
@@ -169,17 +172,7 @@ const Tables = () => {
       disableExport: true,
       flex: 0.1,
 
-    });
-    pitScoutingStatColumns.push({
-      field: "id",
-      headerName: "",
-      filterable: false,
-      renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
-      disableExport: true,
-      flex: 0.1,
-
-    });
- 
+    }); 
 
     statColumns.push({
       field: "key",
@@ -198,24 +191,6 @@ const Tables = () => {
         );
       },
     });
-    pitScoutingStatColumns.push({
-      field: "key",
-      headerName: "Team",
-      filterable: false,
-      headerAlign: "center",
-      align: "center",
-      minWidth: 80,
-      flex: 0.5,
-      renderCell: (params) => {
-        const onClick = (e) => statisticsTeamOnClick(params.row);
-        return (
-          <Link component="button" onClick={onClick} underline="always">
-            {params.value}
-          </Link>
-        );
-      },
-    });
-
     statColumns.push({
       field: "OPR",
       headerName: "OPR",
@@ -226,29 +201,6 @@ const Tables = () => {
       minWidth: 80,
       flex: 0.5,
     });
-
-    pitScoutingStatColumns.push({
-      field: "Pit Scouting",
-      headerName: "Pit Scouting",
-      type: "number",
-      sortable: true,
-      headerAlign: "center",
-      align: "center",
-      minWidth: 80,
-      flex: 0.5,
-    });
-
-    pitScoutingStatColumns.push({
-      field: "Pit Scouting Pictures",
-      headerName: "Pit Scouting Pictures",
-      type: "number",
-      sortable: true,
-      headerAlign: "center",
-      align: "center",
-      minWidth: 80,
-      flex: 0.5,
-    });
-
     for (let i = 0; i < data.data.length; i++) {
       const stat = data.data[i];
       if (stat.report_stat && stat.stat_key !== "OPR") {
@@ -265,27 +217,85 @@ const Tables = () => {
         });
       }
     }
-    for (let i = 0; i > data.data.length; i++) {
-      const stat = data.data[i];
-      if (stat.report_stat && stat.stat_key !== "OPR") {
-        keys.push(stat.stat_key);
-        pitScoutingStatColumns.push({
-          field: stat.stat_key,
-          headerName: stat.display_name,
-          type: "number",
-          sortable: true,
-          headerAlign: "center",
-          align: "center",
-          minWidth: 80,
-          flex: 0.5,
-        });
-      }
-    }
     setShowKeys(keys);
     setStatDescription(data.data);
     setStatColumns(statColumns);
-    setPitScoutingStatColumns(pitScoutingStatColumns);
   };
+
+  const pitScoutingStatCallback = async (data) => {
+    pitScoutingStatColumns.push({
+      field: "id",
+      headerName: "",
+      filterable: false,
+      renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
+      disableExport: true,
+      flex: 0.1,
+    });
+    pitScoutingStatColumns.push({
+      field: "key",
+      headerName: "Team",
+      filterable: false,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => statisticsTeamOnClick(params.row);
+        return (
+          <Link component="button" onClick={onClick} underline="always">
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
+      field: "pit_status",
+      headerName: "Pit Scouting",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => pitScoutingOnClick(params.row);
+        let color = "#f44336";
+        if (params.value == "Done")
+          color = "#4caf50"
+        else if (params.value == "Incomplete")
+          color = "#ffeb3b"
+        return (
+          <Link component="button" onClick={onClick} underline="always" color={color}>
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
+      field: "picture_status",
+      headerName: "Pit Scouting Pictures",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => pictureEntryOnClick(params.row);
+        let color = "#4caf50";
+        if (params.value == "Not Started")
+          color = "#f44336"
+        else if (params.value == "Incomplete")
+          color = "#ffeb3b"
+        return (
+          <Link component="button" onClick={onClick} underline="always" color={color}>
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    setPitScoutingStatColumns(pitScoutingStatColumns);
+  }
 
   const statisticsTeamOnClick = (cellValues) => {
     const url = new URL(window.location.href);
@@ -299,8 +309,21 @@ const Tables = () => {
     history.push(eventKey + "/match-" + cellValues.key);
   };
 
+  const pictureEntryOnClick = (cellValues) => {
+    const url = new URL(window.location.href);
+    const year = url.pathname.split("/")[3];
+    const eventKey = url.pathname.split("/")[4];
+    history.push(`../../pictures/${year}/${eventKey}/${cellValues.key}`);
+  }
+
+  const pitScoutingOnClick = (cellValues) => {
+    const url = new URL(window.location.href);
+    const year = url.pathname.split("/")[3];
+    const eventKey = url.pathname.split("/")[4];
+    history.push(`../../pitScouting/${year}/${eventKey}/${cellValues.key}`);
+  }
+
   const rankingsCallback = async (data) => {
-    console.log(data)
     data.data = data.data.filter((obj) => {
       if (obj.key) {
         return true;
@@ -345,7 +368,18 @@ const Tables = () => {
   };
 
   const pitScoutingStatusCallback = async (data) => {
+    data.data = data.data.filter((obj) => {
+      if (obj.key) {
+        return true;
+      }
+    });
 
+    for (const team of data?.data) {
+      if (team.key) {
+        team.key = team.key.replace("frc", "");
+      }
+    }
+    setPitScoutingStatus(data.data);
   };
 
   const predictionsCallback = async (data) => {
@@ -452,6 +486,8 @@ const Tables = () => {
     getStatDescription(year, eventKey, statDescriptionCallback);
     getRankings(year, eventKey, rankingsCallback);
     getMatchPredictions(year, eventKey, predictionsCallback);
+    getPitStatus(year, eventKey, pitScoutingStatusCallback);
+    pitScoutingStatCallback(null);
     getSearchKeys(searchKeysCallback);
   }, []);
 
@@ -650,7 +686,7 @@ const Tables = () => {
               <CardHeader className="bg-transparent">
                 <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
               </CardHeader>
-              <PitImages
+              <MatchScouting
                 defaultEventCode={eventName}
                 year={year}
                 event={eventCode}
@@ -664,7 +700,7 @@ const Tables = () => {
               <h3 className="text-white mb-0">Pit Scounting - {eventTitle}</h3>
             </CardHeader>
             <div style={{ height: containerHeight, width: "100%" }}>
-              {rankings.length > 0 ? (
+              {pitScoutingStatus.length > 0 ? (
                 <StripedDataGrid
                   initialState={{
                     sorting: {
@@ -674,7 +710,7 @@ const Tables = () => {
                   }}
                   disableColumnMenu
                   sortingOrder={["desc", "asc"]}
-                  rows={rankings}
+                  rows={pitScoutingStatus}
                   getRowId={(row) => {
                     return row.key;
                   }}

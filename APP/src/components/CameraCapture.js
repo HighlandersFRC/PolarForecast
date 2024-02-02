@@ -1,12 +1,20 @@
 import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Button, Box, Switch } from '@mui/material';
+import { postTeamPictures } from 'api';
 
 const CameraCapture = () => {
   const webcamRef = useRef(null);
+  const url = new URL(window.location.href);
+  const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
+  const year = url.pathname.split("/")[3]
+  const eventCode = url.pathname.split("/")[4]
+  const team = url.pathname.split("/")[5]
   const [capturedImage, setCapturedImage] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [facingMode, setFacingMode] = useState('user'); // 'user' for front camera, 'environment' for rear camera
+  const [show, setShow] = useState(true)
+  const [status, setStatus] = useState("Upload Failed")
 
   const handleCaptureStart = () => {
     setIsCapturing(true);
@@ -30,12 +38,23 @@ const CameraCapture = () => {
     setIsCapturing(true); // Resume live feed for recapture
   };
 
+  const uploadStatusCallback = (status) => {
+    console.log("Picture Upload Status: "+status)
+    if (status === 200){
+      setShow(false)
+      setStatus("Image Uploaded Successfully")
+    } else {
+      setShow(false)
+      setStatus("Upload Failed")
+    }
+  }
+
   const handleUpload = () => {
     // You can implement the upload logic here
     if (capturedImage) {
       console.log('Uploading captured image:', capturedImage);
-      // Implement your upload logic (e.g., send the capturedImage to a server)
     }
+    postTeamPictures(year, eventCode, team, capturedImage, uploadStatusCallback)
   };
 
   const handleSwitchCamera = () => {
@@ -45,7 +64,8 @@ const CameraCapture = () => {
   };
 
   return (
-    <Box
+    <>
+    {show && <Box
       display="flex"
       flexDirection="column"
       alignItems="center"
@@ -121,7 +141,11 @@ const CameraCapture = () => {
           onChange={handleSwitchCamera}
         />
       </Box>
-    </Box>
+    </Box>}
+    {(!show) &&
+      <h1 className="text-white mb-0">{status}</h1>
+    }
+    </>
   );
 };
 

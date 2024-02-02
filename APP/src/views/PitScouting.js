@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { getMatchDetails } from 'api';
-import QRCode from 'react-qr-code';
-import { Autocomplete, MenuItem, Select, Switch, typographyClasses } from '@mui/material';
-import { postMatchScouting } from 'api';
+import { Autocomplete, MenuItem, Select, Switch, ThemeProvider, createTheme, typographyClasses } from '@mui/material';
 import Header from 'components/Headers/Header';
+import { Card, CardHeader, Container, Row } from 'reactstrap';
+import { postPitScouting } from 'api';
 
-const PitScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
+const PitScouting = () => {
+    const url = new URL(window.location.href);
+    const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
+    const year = url.pathname.split("/")[3]
+    const eventCode = url.pathname.split("/")[4]
+    const team = url.pathname.split("/")[5]
     const [formData, setFormData] = useState({
-        event_code: "",
-        team_number: 0,
+        event_code: eventName,
+        team_number: parseInt(team),
         time: 0,
         data: {
             amp_scoring: false,
@@ -24,9 +28,8 @@ const PitScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
             favorite_color: ""
         }
     });
-    const [showQRCode, setShowQRCode] = useState(false); // State to control when to show the QR code
-    const [matchTeamsData, setMatchTeams] = useState([])
-
+    const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
+    const [showForm, setShowForm] = useState(true)
     const handleChange = async (field, value) => {
         setFormData((prevData) => {
             const updatedData = { ...prevData };
@@ -47,93 +50,130 @@ const PitScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
             time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
         }));
         console.log(formData);
-        // postMatchScouting(formData, MatchScoutingStatusCallback);
+        postPitScouting(formData, pitScoutingStatusCallback);
         // Handle form submission logic here
     };
+
+    const pitScoutingStatusCallback = (status)=>{
+        console.log(status)
+        if (status === 200){
+          setShowForm(false)
+        } else {
+          setShowForm(true)
+        }
+    }
+
+    const darkTheme = createTheme({
+        palette: {
+          mode: "dark",
+        },
+    });
 
     return (
         <>
             <Header />
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <TextField
-                        label="Event Code"
-                        value={formData.eventCode}
-                        onChange={(e) => handleChange('eventCode', e.target.value)}
-                        disabled // Disable the Event Code field
-                    />
-                    <TextField
-                        label="Team Number"
-                        type="number"
-                        value={formData.teamNumber}
-                        onChange={(e) => handleChange('teamNumber', Math.max(0, parseInt(e.target.value, 10)))}
-                        inputProps={{ min: 0 }}
-                        disabled // Disable the Team Number field
-                    />
+            <div style={{ height: containerHeight, width: "100%" }}>
+                <ThemeProvider theme={darkTheme}>
+                <Container>
+                    <Row>
+                    <div style={{ height: containerHeight, width: "100%" }}>
+                        <Card className="polar-box">
+                        <CardHeader className="bg-transparent">
+                            <h3 className="text-white mb-0">PitScouting</h3>
+                        </CardHeader>
+                        {showForm && <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <TextField
+                                    label="Event Code"
+                                    value={formData.event_code}
+                                    onChange={(e) => handleChange('event_code', e.target.value)}
+                                    disabled // Disable the Event Code field
+                                />
+                                <TextField
+                                    label="Team Number"
+                                    type="number"
+                                    value={formData.team_number}
+                                    onChange={(e) => handleChange('team_number', Math.max(0, parseInt(e.target.value, 10)))}
+                                    inputProps={{ min: 0 }}
+                                    disabled // Disable the Team Number field
+                                />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <h4 className="text-white mb-0">Scores in Amp?</h4>
+                                <Switch
+                                    label="Scores in Amp?"
+                                    value={formData.data.amp_scoring}
+                                    onChange={(e) => handleChange('data.amp_scoring', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Scores in Speaker?</h4>
+                                <Switch
+                                    label="Scores in Speaker?"
+                                    value={formData.data.speaker_scoring}
+                                    onChange={(e) => handleChange('data.speaker_scoring', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Scores in Trap?</h4>
+                                <Switch
+                                    label="Scores in Trap?"
+                                    value={formData.data.trap_scoring}
+                                    onChange={(e) => handleChange('data.trap_scoring', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Can Climb?</h4>
+                                <Switch
+                                    label="Can Climb?"
+                                    value={formData.data.climbing}
+                                    onChange={(e) => handleChange('data.climbing', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Can Fit Under Stage?</h4>
+                                <Switch
+                                    label="Can Fit Under Stage?"
+                                    value={formData.data.go_under_stage}
+                                    onChange={(e) => handleChange('data.go_under_stage', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Drive Train</h4>
+                                <Autocomplete
+                                    disablePortal
+                                    id="Drive Train"
+                                    options={[{ label: 'Mecanum' }, { label: 'Swerve' }, { label: 'Tank' }]}
+                                    renderInput={(params) => <TextField {...params} label="Drive Train" value={formData.data.drive_train} />}
+                                    freeSolo
+                                    onChange={(e, value) => handleChange('data.drive_train', value.label)}
+                                />
+                                <h4 className="text-white mb-0">Has Ground Pickup?</h4>
+                                <Switch
+                                    label="Ground Pickup?"
+                                    value={formData.data.ground_pick_up}
+                                    onChange={(e) => handleChange('data.ground_pick_up', e.target.checked)}
+                                />
+                                <h4 className="text-white mb-0">Has Feeder Station Pickup?</h4>
+                                <Switch
+                                    label="Feeder Station Pickup?"
+                                    value={formData.data.feeder_pick_up}
+                                    onChange={(e) => handleChange('data.feeder_pick_up', e.target.checked)}
+                                />
+                                <Autocomplete
+                                    disablePortal
+                                    id="Favorite Color"
+                                    options={[{ label: 'Red' }, { label: 'Blue' }, { label: 'Green' }, { label: 'Yellow' }, { label: 'Orange' }, { label: 'Pink' }, { label: 'Purple' }]}
+                                    renderInput={(params) => <TextField {...params} label="Favorite Color" value={formData.data.favorite_color} />}
+                                    freeSolo
+                                    onChange={(e, value) => handleChange('data.favorite_color', value.label)}
+                                />
+                            </div>
+                            <Button variant="contained" onClick={handleSubmit}>
+                                Submit
+                            </Button>
+                        </form>}
+                        { (!showForm) &&
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+                                <h1 className="text-white mb-0">Submitted Data Successfully!</h1>
+                            </div>
+                        }
+                    </Card>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <h4 className="text-white mb-0">Scores in Amp?</h4>
-                    <Switch
-                        label="Scores in Amp?"
-                        value={formData.data.amp_scoring}
-                        onChange={(e) => handleChange('data.amp_scoring', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Scores in Speaker?</h4>
-                    <Switch
-                        label="Scores in Speaker?"
-                        value={formData.data.speaker_scoring}
-                        onChange={(e) => handleChange('data.speaker_scoring', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Scores in Trap?</h4>
-                    <Switch
-                        label="Scores in Trap?"
-                        value={formData.data.trap_scoring}
-                        onChange={(e) => handleChange('data.trap_scoring', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Can Climb?</h4>
-                    <Switch
-                        label="Can Climb?"
-                        value={formData.data.climbing}
-                        onChange={(e) => handleChange('data.climbing', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Can Fit Under Stage?</h4>
-                    <Switch
-                        label="Can Fit Under Stage?"
-                        value={formData.data.go_under_stage}
-                        onChange={(e) => handleChange('data.go_under_stage', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Drive Train</h4>
-                    <Autocomplete
-                        disablePortal
-                        id="Drive Train"
-                        options={[{ label: 'Mecanum' }, { label: 'Swerve' }, { label: 'Tank' }]}
-                        renderInput={(params) => <TextField {...params} label="Drive Train" value={formData.data.drive_train} onChange={(e) => handleChange('data.drive_train', e.target.value)} />}
-                        freeSolo
-                    />
-                    <h4 className="text-white mb-0">Has Ground Pickup?</h4>
-                    <Switch
-                        label="Ground Pickup?"
-                        value={formData.data.ground_pick_up}
-                        onChange={(e) => handleChange('data.ground_pick_up', e.target.checked)}
-                    />
-                    <h4 className="text-white mb-0">Has Feeder Station Pickup?</h4>
-                    <Switch
-                        label="Feeder Station Pickup?"
-                        value={formData.data.feeder_pick_up}
-                        onChange={(e) => handleChange('data.feeder_pick_up', e.target.checked)}
-                    />
-                    <Autocomplete
-                        disablePortal
-                        id="Favorite Color"
-                        options={[{ label: 'Red' }, { label: 'Blue' }, { label: 'Green' }, { label: 'Yellow' }, { label: 'Orange' }, { label: 'Pink' }, { label: 'Purple' }]}
-                        renderInput={(params) => <TextField {...params} label="Favorite Color" value={formData.data.favorite_color} onChange={(e) => handleChange('data.favorite_color', e.target.value)} />}
-                        freeSolo
-                    />
-                </div>
-                <Button variant="contained" onClick={handleSubmit}>
-                    Submit
-                </Button>
-            </form>
+                </Row>
+            </Container>
+            </ThemeProvider>
+        </div>
         </>
     );
 };

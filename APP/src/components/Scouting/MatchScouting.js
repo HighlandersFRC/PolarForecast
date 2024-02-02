@@ -32,7 +32,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   });  
   const [showQRCode, setShowQRCode] = useState(false); // State to control when to show the QR code
   const [matchTeamsData, setMatchTeams] = useState([])
-
+  const [text, setText] = useState("")
   const matchDataCallback = (data) => {
     setMatchTeams(data)
     const updatedData = { ...formData };
@@ -57,7 +57,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       } else {
         currentField[fieldPath[fieldPath.length - 1]] = Math.max(0, value); // Set minimum value of 0
       }
-      return updatedData
+      return currentField
     });
     if (field === "matchNumber"){
       getMatchDetails(year, event, eventCode+"_qm"+value, matchDataCallback);
@@ -71,6 +71,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
     }));
     console.log(formData);
+    setText("Submitting...")
     postMatchScouting(formData, MatchScoutingStatusCallback);
     // Handle form submission logic here
   };
@@ -79,8 +80,10 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     console.log(status)
     if (status === 200){
       setShowQRCode(false)
+      setText("Submission Successful")
     } else {
       setShowQRCode(true)
+      setText("Submission Failed. Use QR Code")
     }
   }
 
@@ -186,6 +189,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       <Button variant="contained" onClick={handleSubmit}>
         Submit
       </Button>
+      <h1 className="text-white mb-0">{text}</h1>
       {showQRCode && (
         <div style={{ display: 'flex', marginTop: '0px', justifyContent:'center', alignItems:'center'}}>
           {/* Display the QR code only when showQRCode is true */}
