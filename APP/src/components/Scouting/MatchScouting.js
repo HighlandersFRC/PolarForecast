@@ -70,14 +70,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       ...prevData,
       time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
     }));
-    console.log(formData);
     setText("Submitting...")
     postMatchScouting(formData, MatchScoutingStatusCallback);
     // Handle form submission logic here
   };
 
   const MatchScoutingStatusCallback = (status)=>{
-    console.log(status)
     if (status === 200){
       setShowQRCode(false)
       setText("Submission Successful")

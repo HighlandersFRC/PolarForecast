@@ -1,5 +1,5 @@
 // const API_ENDPOINT = "http://172.19.55.26:8085";
-const API_ENDPOINT = "http://127.0.0.1:8000";
+const API_ENDPOINT = process.env.PF_API_ENDPOINT;
 
 const default_ttl = 5; //5 minutes expiry time
 

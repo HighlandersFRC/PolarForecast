@@ -121,7 +121,6 @@ const Match = () => {
   };
 
   const rightOnClick = (cellValues) => {
-    console.log(matchNumber);
     // history.push("team-" + cellValues.team);
   };
 

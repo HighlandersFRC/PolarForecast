@@ -56,22 +56,17 @@ const PitScouting = () => {
             getPitScoutingData(year, eventCode, `frc${team}`, pitScoutingDataCallback);
         }
     }, [formData.time]);
-    useEffect(() => {
-        console.log(formData)
-    })
     const handleSubmit = () => {
         // Set the "Time" field to the current UTC timestamp when submitting the form
         setFormData((prevData) => ({
             ...prevData,
             time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
         }));
-        console.log(formData);
         postPitScouting(formData, pitScoutingStatusCallback);
         // Handle form submission logic here
     };
 
     const pitScoutingStatusCallback = (status)=>{
-        console.log(status)
         if (status === 200){
           setShowForm(false)
           setText("Submission Successfull")

@@ -70,7 +70,6 @@ def analyzeData(m_data: list):
         "match_number": 0,
         "allianceStr": "",
     }
-    print(len(data), "matches")
     for row in data:
         for j in range(2):
             if j == 1:
@@ -352,5 +351,4 @@ def analyzeData(m_data: list):
     XMatrix.insert(0, 'opr', pd.Series(teamOPR))
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
-    print(sum(teamMatchCount))
     return XMatrix

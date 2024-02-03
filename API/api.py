@@ -67,11 +67,9 @@ def onStart():
     for i in range(len(events)):
         etag.append('')
 
-    print("new request")
     for i in range(len(events)):
         event = events[i]
         eventCode = YEAR+event["event_code"]
-        print(eventCode)
         try:
             CalculatedDataCollection.insert_one({"event_code": (YEAR+event["event_code"]), "data": {}})
         except:
@@ -80,7 +78,6 @@ def onStart():
 @app.get("/{year}/{event}/{team}/stats")
 def event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
-    print(team, str(year)+event)
     data = CalculatedDataCollection.find_one({
         "event_code": str(year) + event,
     })
@@ -101,7 +98,6 @@ def event_Team_Stats(year: int, event: str, team: str):
                 doc[key] = pitData["data"][key]
         return doc
     except Exception as e:
-        print("No Scouting Data: ", e)
         return doc
     
 
@@ -180,8 +176,6 @@ def getStatus(data: dict, originalStatus: dict):
     if data["data"]["drive_train"] != "":
         if data["data"]["favorite_color"] != "":
             status = "Done"
-    print(originalStatus)
-    print(data["team_number"])
     for entry in originalStatus["data"]:
         if entry["key"] == str(data["team_number"]):
             found = True
@@ -308,17 +302,14 @@ def convertData(calculatedData, year, event_code):
     return retvallist
 
 def updateData(event_code: str):
-    print(YEAR+event_code)
     TBAData = list(TBACollection.find({'event_key': str(YEAR)+event_code}))
 
     ScoutingData = list(ScoutDataCollection.find(
         {'event_code': YEAR+event_code}))
     if not TBAData is None:
-        print("found sources")
         calculatedData = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
-        print("updating data")
         metadata = {"last_modified": datetime.utcnow().timestamp(),"etag": None,"tba": False}
         try:
             CalculatedDataCollection.insert_one({"event_code": YEAR+event_code, "data": data, "metadata": metadata})
@@ -326,26 +317,21 @@ def updateData(event_code: str):
             try:
                 CalculatedDataCollection.update_one({"event_code": YEAR+event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
-                print(f"Update error: {ex}")
-                print("couldn't update")
-
+                pass
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():
     logging.info("Starting Polar Forecast")
     try:
-        print("new request")
         global etag
         global numRuns
         global events
-        print(len(etag))
         i = 0
         for event in events:
             headers = {"accept": "application/json",
                     "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": etag[i]}
             r = requests.get(TBA_API_URL+"event/"+YEAR +
                             event["event_code"]+"/matches", headers=headers)
-            print(r.status_code)
             if r.status_code == 200:
                 etag[i] = r.headers["ETag"]
                 responseJson = json.loads(r.text)
@@ -357,9 +343,8 @@ def update_database():
                 try:
                     updateData(event["event_code"])
                 except Exception as e:
-                    print(e)
+                    pass
             i += 1
-            print(i)
         numRuns += 1
         eventTeams = []
         for event in events:
@@ -379,4 +364,4 @@ def update_database():
             except Exception as e:
                 pass
     except Exception as e:
-        print(e.with_traceback())
+        pass

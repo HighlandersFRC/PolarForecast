@@ -41,7 +41,6 @@ const CameraCapture = () => {
   };
 
   const uploadStatusCallback = (status) => {
-    console.log("Picture Upload Status: "+status)
     if (status === 200){
       setShow(false)
       setStatus("Image Uploaded Successfully")
@@ -53,9 +52,6 @@ const CameraCapture = () => {
 
   const handleUpload = () => {
     // You can implement the upload logic here
-    if (capturedImage) {
-      console.log('Uploading captured image:', capturedImage);
-    }
     postTeamPictures(year, eventCode, team, capturedImage, uploadStatusCallback)
   };
 

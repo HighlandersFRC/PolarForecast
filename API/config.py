@@ -72,7 +72,6 @@ REDIS_STRICT = os.environ.get("PF_REDIS_STRICT", False)
 
 # Mongo Parameters
 MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb+srv://admin:admin@localhost:27017/PolarForecast")
-print(MONGO_CONNECTION)
 
 APP_HOST = os.environ.get("APP_HOST", "")
 ALLOW_ORIGINS = [

@@ -45,7 +45,6 @@ function BarChartWithSwitches({ data, number, startingFields }) {
       }
       return Number(bTotal) - Number(aTotal);
     });
-    console.log(newData)
     setChartData(newData);
   };
 
