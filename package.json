@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@mui/material": "^5.15.6",
-    "@mui/styles": "^5.15.6",
-    "react-player": "^2.14.1",
-    "react-webcam": "^7.2.0"
-  }
-}
