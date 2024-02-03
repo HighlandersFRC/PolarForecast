@@ -320,7 +320,6 @@ const Team = () => {
     
     tempValues.push(temp);
     for (const key of list) {
-      console.log(key.type)
       if (key.type === "num"){
         for (const fieldName in info) {
           if (fieldName === key.key) {

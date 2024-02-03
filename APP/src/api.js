@@ -267,14 +267,13 @@ export const postPitScouting = async (data, callback) => {
 export const getTeamPictures = async (year, event, team, callback) => {
   try {
     const storage_name = `${year}${event}_${team}_Pictures`;
-    const data = getWithExpiry(storage_name);
+    const data = null
     if (data === null) {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/getPictures`
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback([]);
@@ -339,6 +338,30 @@ export const getPitStatus = async (year, event, callback) => {
       callback(data);
     } else {
       callback([]);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const getPitScoutingData = async (year, event, team, callback) => {
+  try {
+    const storage_name = `${year}${event}_${team}_pitData`;
+    const data = null
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/PitScouting`;
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.status == 200) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback({});
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
     }
   } catch (error) {
     console.error(error);

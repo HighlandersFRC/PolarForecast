@@ -2,8 +2,10 @@ import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Button, Box, Switch } from '@mui/material';
 import { postTeamPictures } from 'api';
+import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 const CameraCapture = () => {
+  const history = useHistory()
   const webcamRef = useRef(null);
   const url = new URL(window.location.href);
   const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
@@ -62,17 +64,20 @@ const CameraCapture = () => {
       prevFacingMode === 'user' ? 'environment' : 'user'
     );
   };
+  
+  const backToScouting = () => {
+    history.push(`../../../event/${year}/${eventCode}#pit-scouting`);
+  }
+
+  const addAnotherPicture = () => {
+    setShow(true)
+    setCapturedImage(null)
+    setIsCapturing(false)
+  }
 
   return (
     <>
-    {show && <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      textAlign="center"
-      mt={4}
-    >
+    {show && <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px'}}>
       <h3 className="text-white mb-0">Camera Capture</h3>
       {isCapturing ? (
         <>
@@ -82,7 +87,7 @@ const CameraCapture = () => {
             screenshotFormat="image/jpeg"
             screenshotQuality={1.0} // Adjust the quality if needed
             videoConstraints={{ facingMode }}
-            style={{ width: '60%' }}
+            style={{ width: '60%', alignSelf: "center"}}
           />
           <Button variant="contained" color="primary" onClick={handleCapture}>
             Capture
@@ -98,6 +103,7 @@ const CameraCapture = () => {
                 style={{
                   width: '60%', // Set width to 100% to match the webcam feed
                   height: 'auto', // Maintain aspect ratio
+                  alignSelf: "center"
                 }}
               />
               <Button
@@ -141,9 +147,17 @@ const CameraCapture = () => {
           onChange={handleSwitchCamera}
         />
       </Box>
-    </Box>}
+    </div>}
     {(!show) &&
-      <h1 className="text-white mb-0">{status}</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+        <h1 className="text-white mb-0">{status}</h1>
+        <Button variant="contained" color="primary" onClick={backToScouting}>
+            Back To Scouting
+        </Button>
+        <Button variant="contained" color="primary" onClick={addAnotherPicture}>
+            Add Another Picture
+        </Button>
+      </div>
     }
     </>
   );

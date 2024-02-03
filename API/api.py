@@ -25,7 +25,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOW_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
@@ -64,16 +64,6 @@ def onStart():
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
     events = json.loads(requests.get(
         TBA_API_URL+"events/"+YEAR, headers=headers).text)
-    eventTeams = []
-    for event in events:
-        key = event["key"]
-        try :
-            teams = json.loads(requests.get(TBA_API_URL+f"event/{key}/teams/keys", headers=headers).text)
-            eventTeams.append([{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"}for x in teams])
-        except :
-            eventTeams.append([])
-            pass
-        
     for i in range(len(events)):
         etag.append('')
 
@@ -81,15 +71,10 @@ def onStart():
     for i in range(len(events)):
         event = events[i]
         eventCode = YEAR+event["event_code"]
-        teams = eventTeams[i]
         print(eventCode)
         try:
             CalculatedDataCollection.insert_one({"event_code": (YEAR+event["event_code"]), "data": {}})
         except:
-            pass
-        try:
-            PitStatusCollection.insert_one({"event_code": eventCode, "data": teams })
-        except Exception as e:
             pass
         
 @app.get("/{year}/{event}/{team}/stats")
@@ -165,9 +150,12 @@ def get_Stat_Descriptions():
 
 @app.get("/{year}/{event}/{team}/PitScouting")
 def get_pit_scouting_data(year: int, event:str, team:str):
-    data = PitScoutingCollection.find_one({"eventCode": str(year)+ event, "team_number": team})
-    data.pop("_id")
-    return data
+    try :
+        data = PitScoutingCollection.find_one({"event_code": str(year)+ event, "team_number": int(team[3:])})
+        data.pop("_id")
+        return data
+    except: 
+        raise HTTPException(404)
     
 @app.get("/{year}/{event}/PitScoutingStatus")
 def get_pit_scouting_status(year: int, event:str):
@@ -349,6 +337,7 @@ def update_database():
         print("new request")
         global etag
         global numRuns
+        global events
         print(len(etag))
         i = 0
         for event in events:
@@ -372,5 +361,22 @@ def update_database():
             i += 1
             print(i)
         numRuns += 1
+        eventTeams = []
+        for event in events:
+            key = event["key"]
+            try :
+                teams = json.loads(requests.get(TBA_API_URL+f"event/{key}/teams/keys", headers=headers).text)
+                eventTeams.append([{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"}for x in teams])
+            except :
+                eventTeams.append([])
+                pass
+        for i in range(len(events)):
+            event = events[i]
+            eventCode = YEAR+event["event_code"]
+            teams = eventTeams[i]
+            try:
+                PitStatusCollection.insert_one({"event_code": eventCode, "data": teams })
+            except Exception as e:
+                pass
     except Exception as e:
         print(e.with_traceback())

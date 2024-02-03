@@ -8,11 +8,11 @@ import { postMatchScouting } from 'api';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   const [formData, setFormData] = useState({
-    eventCode: eventCode,
-    teamNumber: 0,
-    matchNumber: 0,
-    scoutInfo: {
-      name: '',
+    event_code: eventCode,
+    team_number: 0,
+    match_number: 0,
+    scout_info: {
+      name: "",
     },
     data: {
       auto: {
@@ -38,8 +38,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     const updatedData = { ...formData };
     let random = Math.floor(Math.random()*6)
     try {
-      updatedData.teamNumber = matchTeams(data)[random].substr(3)
-      updatedData.matchNumber = data.match_number
+      updatedData.team_number = matchTeams(data)[random].substr(3)
+      updatedData.match_number = data.match_number
       setFormData(updatedData)
     } catch {}
   }
@@ -52,14 +52,14 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       for (let i = 0; i < fieldPath.length - 1; i++) {
         currentField = currentField[fieldPath[i]];
       }
-      if (field === "scoutInfo.name") {
-        currentField[fieldPath[fieldPath.length - 1]] = value; // Set minimum value of 0
+      if (field === "scout_info.name") {
+        currentField[fieldPath[fieldPath.length - 1]] = value;
       } else {
         currentField[fieldPath[fieldPath.length - 1]] = Math.max(0, value); // Set minimum value of 0
       }
-      return currentField
+      return updatedData
     });
-    if (field === "matchNumber"){
+    if (field === "match_number"){
       getMatchDetails(year, event, eventCode+"_qm"+value, matchDataCallback);
     }
   };
@@ -110,29 +110,29 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <TextField
           label="Event Code"
-          value={formData.eventCode}
-          onChange={(e) => handleChange('eventCode', e.target.value)}
+          value={formData.event_code}
+          onChange={(e) => handleChange('event_code', e.target.value)}
           disabled // Disable the Event Code field
         />
         <TextField
           label="Team Number"
           type="number"
-          value={formData.teamNumber}
-          onChange={(e) => handleChange('teamNumber', Math.max(0, parseInt(e.target.value, 10)))}
+          value={formData.team_number}
+          onChange={(e) => handleChange('team_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 10000))}
           inputProps={{ min: 0 }}
           // disabled // Disable the Team Number field
         />
         <TextField
           label="Match Number"
           type="number"
-          value={formData.matchNumber}
-          onChange={(e) => handleChange('matchNumber', Math.max(0, parseInt(e.target.value, 10)))}
+          value={formData.match_number}
+          onChange={(e) => handleChange('match_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 1000))}
           inputProps={{ min: 0 }}
         />
         <TextField
           label="Scout Name"
-          value={formData.scoutInfo.name}
-          onChange={(e) => handleChange('scoutInfo.name', e.target.value)}
+          value={formData.scout_info.name}
+          onChange={(e) => handleChange('scout_info.name', e.target.value)}
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -141,14 +141,14 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
           label="Auto Amp"
           type="number"
           value={formData.data.auto.amp}
-          onChange={(e) => handleChange('data.auto.amp', Math.max(0, parseInt(e.target.value, 10)))}
+          onChange={(e) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
           inputProps={{ min: 0 }}
         />
         <TextField
           label="Auto Speaker"
           type="number"
           value={formData.data.auto.speaker}
-          onChange={(e) => handleChange('data.auto.speaker', Math.max(0, parseInt(e.target.value, 10)))}
+          onChange={(e) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
           inputProps={{ min: 0 }}
         />
       </div>
