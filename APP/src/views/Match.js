@@ -34,7 +34,6 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 const Match = () => {
   const history = useHistory();
-
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [matchTitle, setMatchTitle] = useState(false);
@@ -122,7 +121,6 @@ const Match = () => {
   };
 
   const rightOnClick = (cellValues) => {
-    console.log(matchNumber);
     // history.push("team-" + cellValues.team);
   };
 

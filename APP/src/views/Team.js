@@ -32,10 +32,19 @@ import { useHistory } from "react-router-dom";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MoodBadIcon from "@mui/icons-material/MoodBad";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import { getTeamPictures } from "api";
+import { ImageList, ImageListItem } from "@mui/material";
 
 const Team = () => {
   const history = useHistory();
-
+  const tabDict = ["schedule", "team-stats", "pictures"];
+  const url = new URL(window.location.href);
+  const params = url.pathname.split("/");
+  const team = params[5].replace("team-", "frc");
+  const eventCode = params[4]
+  const year = params[3]
+  const [tabIndex, setTabIndex] = useState(0);
+  const [pictures,  setPictures] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [teamInfo, setTeamInfo] = React.useState("");
   const [statDescription, setStatDescription] = useState([]);
@@ -278,10 +287,21 @@ const Team = () => {
         tempKeys.push({
           key: stat.stat_key,
           name: stat.display_name,
+          type: stat.stat_type
         });
       }
-      setKeys(tempKeys);
     }
+    for (let i = 0; i < data.pitData.length; i++) {
+      const stat = data.pitData[i];
+      if (Array.from(stat.stat_key)[0] !== "_") {
+        tempKeys.push({
+          key: stat.stat_key,
+          name: stat.display_name,
+          type: stat.stat_type
+        });
+      }
+    }
+    setKeys(tempKeys);
     return data;
   };
 
@@ -297,16 +317,44 @@ const Team = () => {
       fieldName: "team number",
       fieldValue: teamInfo["key"]?.replace("frc", ""),
     };
+    
     tempValues.push(temp);
     for (const key of list) {
-      for (const fieldName in info) {
-        if (fieldName === key.key) {
-          const value = Math.round(info[fieldName] * 100) / 100;
-          const temp = {
-            fieldName: key.name,
-            fieldValue: value,
-          };
-          tempValues.push(temp);
+      if (key.type === "num"){
+        for (const fieldName in info) {
+          if (fieldName === key.key) {
+            const value = Math.round(info[fieldName] * 100) / 100;
+            const temp = {
+              fieldName: key.name,
+              fieldValue: value,
+            };
+            tempValues.push(temp);
+          }
+        }
+      } else if (key.type === "bool"){
+        for (const fieldName in info) {
+          if (fieldName === key.key) {
+            let value = "YES"
+            if (info[fieldName]== 0){
+              value = "NO"
+            }
+            const temp = {
+              fieldName: key.name,
+              fieldValue: value,
+            };
+            tempValues.push(temp);
+          }
+        }
+      } else if (key.type == "str"){
+        for (const fieldName in info) {
+          if (fieldName === key.key) {
+            let value = info[fieldName]
+            const temp = {
+              fieldName: key.name,
+              fieldValue: value,
+            };
+            tempValues.push(temp);
+          }
         }
       }
     }
@@ -319,10 +367,13 @@ const Team = () => {
     const year = params[3];
     const eventKey = params[4];
     const team = params[5].replace("team-", "");
+
+    if (window.location.hash.length > 0) {
+      setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
+    }
+
     setTeamNumber(team);
-
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
-
     getStatDescription(year, eventKey, statDescriptionCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
   }, []);
@@ -359,7 +410,20 @@ const Team = () => {
   }
 
   const handleChange = (event, newValue) => {
+    history.push({ hash: tabDict[newValue] });
     setValue(newValue);
+    setTabIndex(newValue)
+    getTeamPictures(year, eventCode, team, picturesCallback)
+  };
+
+  const picturesCallback = (data) => {
+    const rows = data.map((item, index) => (
+      <ImageListItem key={index}>
+        <img src={`data:image/jpeg;base64,${item.file}`} alt={`Image ${index}`} />
+      </ImageListItem>
+    ));
+
+    setPictures(rows);
   };
 
   return (
@@ -375,6 +439,7 @@ const Team = () => {
         >
           <Tab label="Schedule" {...a11yProps(0)} />
           <Tab label="Team Stats" {...a11yProps(1)} />
+          <Tab label="Pictures" {...a11yProps(2)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -490,6 +555,13 @@ const Team = () => {
             )}
           </Container>
         </div>
+      </TabPanel>
+      <TabPanel value={value} index={2} dir={darkTheme.direction}>
+        <Card className="polar-box">
+        <ImageList cols={3} variant="masonry">
+          {pictures}
+        </ImageList>
+        </Card>
       </TabPanel>
     </>
   );

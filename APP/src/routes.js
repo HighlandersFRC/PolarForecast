@@ -24,6 +24,8 @@ import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import Event from "views/Event.js";
 import Team from "views/Team.js";
+import PitImages from "views/PitImages";
+import PitScouting from "views/PitScouting";
 
 var routes = [
   // {
@@ -87,6 +89,20 @@ var routes = [
     name: "Event",
     icon: "ni ni-circle-08 text-pink",
     component: Event,
+    layout: "/data"
+  },
+  {
+    path: "/pictures",
+    name: "Pictures", 
+    icon: "ni ni-circle-08 text-pink",
+    component: PitImages,
+    layout: "/data"
+  },
+  {
+    path: "/pitScouting",
+    name: "Pit-Scouting", 
+    icon: "ni ni-circle-08 text-pink",
+    component: PitScouting,
     layout: "/data"
   }
 ];

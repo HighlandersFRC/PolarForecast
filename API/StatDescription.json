@@ -1,0 +1,855 @@
+{   
+    "pitData": [
+      {
+        "stat_key": "amp_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Amp Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "speaker_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Speaker Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "trap_scoring",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Trap Scoring",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "climbing",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Climbing",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "go_under_stage",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Go Under Stage",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "drive_train",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Drive Train",
+        "stat_type": "str",
+        "stat": {}
+      },
+      {
+        "stat_key": "ground_pick_up",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Ground Pick Up",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "feeder_pick_up",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Feeder Pick Up",
+        "stat_type": "bool",
+        "stat": {}
+      },
+      {
+        "stat_key": "favorite_color",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "Favorite Color",
+        "stat_type": "str",
+        "stat": {}
+      }
+    ],
+    "data": [
+      {
+        "stat_key": "rank",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "rank",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_T_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_T_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_M_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_M_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_autoCommunity_B_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_autoCommunity_B_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_T_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_T_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_M_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_M_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_0",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_0",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_1",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_1",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_2",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_2",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_3",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_3",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_4",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_4",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_5",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_5",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_6",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_6",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_7",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_7",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "_teleopCommunity_B_8",
+        "solve_strategy": "smart_solve",
+        "report_stat": false,
+        "display_name": "_teleopCommunity_B_8",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "mobility",
+        "solve_strategy": "linked",
+        "report_stat": true,
+        "display_name": "mobility",
+        "stat": {}
+      },
+      {
+        "stat_key": "autoChargeStation",
+        "solve_strategy": "linked",
+        "report_stat": true,
+        "display_name": "autoChargeStation",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "endGameChargeStation",
+        "solve_strategy": "linked",
+        "report_stat": true,
+        "display_name": "endGameChargeStation",
+        "stat": {},
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoHighCubes",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoHighCubes",
+        "stat": {
+          "component_stats": [
+            "_autoCommunity_T_1",
+            "_autoCommunity_T_4",
+            "_autoCommunity_T_7"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoHighCones",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoHighCones",
+        "stat": {
+          "component_stats": [
+            "_autoCommunity_T_0",
+            "_autoCommunity_T_2",
+            "_autoCommunity_T_3",
+            "_autoCommunity_T_5",
+            "_autoCommunity_T_6",
+            "_autoCommunity_T_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoMidCubes",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoMidCubes",
+        "stat": {
+          "component_stats": [
+            "_autoCommunity_M_1",
+            "_autoCommunity_M_4",
+            "_autoCommunity_M_7"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoMidCones",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoMidCones",
+        "stat": {
+          "component_stats": [
+            "_autoCommunity_M_0",
+            "_autoCommunity_M_2",
+            "_autoCommunity_M_3",
+            "_autoCommunity_M_5",
+            "_autoCommunity_M_6",
+            "_autoCommunity_M_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoLow",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoLow",
+        "stat": {
+          "component_stats": [
+            "_autoCommunity_B_0",
+            "_autoCommunity_B_1",
+            "_autoCommunity_B_2",
+            "_autoCommunity_B_3",
+            "_autoCommunity_B_4",
+            "_autoCommunity_B_5",
+            "_autoCommunity_B_6",
+            "_autoCommunity_B_7",
+            "_autoCommunity_B_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "teleopHighCubes",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopHighCubes",
+        "stat": {
+          "component_stats": [
+            "_teleopCommunity_T_1",
+            "_teleopCommunity_T_4",
+            "_teleopCommunity_T_7"
+          ]
+        }
+      },
+      {
+        "stat_key": "teleopHighCones",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopHighCones",
+        "stat": {
+          "component_stats": [
+            "_teleopCommunity_T_0",
+            "_teleopCommunity_T_2",
+            "_teleopCommunity_T_3",
+            "_teleopCommunity_T_5",
+            "_teleopCommunity_T_6",
+            "_teleopCommunity_T_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "teleopMidCubes",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopMidCubes",
+        "stat": {
+          "component_stats": [
+            "_teleopCommunity_M_1",
+            "_teleopCommunity_M_4",
+            "_teleopCommunity_M_7"
+          ]
+        }
+      },
+      {
+        "stat_key": "teleopMidCones",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopMidCones",
+        "stat": {
+          "component_stats": [
+            "_teleopCommunity_M_0",
+            "_teleopCommunity_M_2",
+            "_teleopCommunity_M_3",
+            "_teleopCommunity_M_5",
+            "_teleopCommunity_M_6",
+            "_teleopCommunity_M_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "teleopLow",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopLow",
+        "stat": {
+          "component_stats": [
+            "_teleopCommunity_B_0",
+            "_teleopCommunity_B_1",
+            "_teleopCommunity_B_2",
+            "_teleopCommunity_B_3",
+            "_teleopCommunity_B_4",
+            "_teleopCommunity_B_5",
+            "_teleopCommunity_B_6",
+            "_teleopCommunity_B_7",
+            "_teleopCommunity_B_8"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoElementsScored",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "autoElementsScored",
+        "stat": {
+          "component_stats": [
+            "autoLow",
+            "autoMidCubes",
+            "autoMidCones",
+            "autoHighCubes",
+            "autoMidCones"
+          ]
+        }
+      },
+      {
+        "stat_key": "teleopElementsScored",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "teleopElementsScored",
+        "stat": {
+          "component_stats": [
+            "teleopLow",
+            "teleopMidCubes",
+            "teleopMidCones",
+            "teleopHighCubes",
+            "teleopHighCones"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "elementsScored",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "Elements",
+        "stat": {
+          "component_stats": [
+            "teleopElementsScored",
+            "autoElementsScored"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "links",
+        "solve_strategy": "custom",
+        "report_stat": true,
+        "display_name": "links",
+        "stat": {}
+      },
+      {
+        "stat_key": "linkPoints",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "Links",
+        "stat": {
+          "component_stats": [
+            "links"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "autoPoints",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "Auto",
+        "stat": {
+          "component_stats": [
+            "autoHighCubes",
+            "autoHighCones",
+            "autoMidCubes",
+            "autoMidCones",
+            "autoLow",
+            "mobility",
+            "autoChargeStation"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "teleopPoints",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "Teleop",
+        "stat": {
+          "component_stats": [
+            "teleopHighCubes",
+            "teleopHighCones",
+            "teleopMidCubes",
+            "teleopMidCones",
+            "teleopLow"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "endgamePoints",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "End Game",
+        "stat": {
+          "component_stats": [
+            "endGameChargeStation"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "OPR",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "OPR",
+        "stat": {
+          "component_stats": [
+            "teleopPoints",
+            "autoPoints",
+            "endgamePoints",
+            "linkPoints"
+          ]
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "simulatedRanking",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "simulatedRanking",
+        "stat": {
+          "component_stats": []
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "expectedRanking",
+        "solve_strategy": "sum",
+        "report_stat": true,
+        "display_name": "Expected Ranking",
+        "stat": {
+          "component_stats": []
+        },
+        "stat_type": "num"
+      },
+      {
+        "stat_key": "schedule",
+        "solve_strategy": "post",
+        "report_stat": true,
+        "display_name": "Schedule",
+        "stat": {},
+        "stat_type": "num"
+      }
+    ]
+  }
