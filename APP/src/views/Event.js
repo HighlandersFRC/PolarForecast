@@ -39,7 +39,6 @@ import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
 import PitScouting from "./PitScouting";
 import PitImages from "./PitImages";
-import Dropzone from 'react-dropzone'
 import { getPitStatus } from "api";
 import { rgbToHex } from "@material-ui/core";
 
