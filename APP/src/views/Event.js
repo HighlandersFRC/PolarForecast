@@ -40,7 +40,6 @@ import MatchScouting from "components/Scouting/MatchScouting";
 import PitScouting from "./PitScouting";
 import PitImages from "./PitImages";
 import { getPitStatus } from "api";
-import { rgbToHex } from "@material-ui/core";
 
 
 const switchTheme = createTheme({
