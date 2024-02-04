@@ -50,7 +50,7 @@ ENABLE_TBA = os.environ.get("PF_TBA_ENABLE", True) # Enable Blue ALliance
 TBA_POLLING = os.environ.get("PF_TBA_POLLING", True) # Specifies if the Polar Forecast API should Poll Blue Alliance for Data.
 TBA_POLLING_INTERVAL = os.environ.get("PF_TBA_POLLING_INTERVAL", 20 * 60) # Polling invterval in seconds.
 TBA_API_KEY = os.environ.get("PF_TBA_API_KEY", "")
-
+print(TBA_API_KEY)
 if len(TBA_API_KEY) == 0:
     logging.warning("No Blue Alliance API Key Set")
 
