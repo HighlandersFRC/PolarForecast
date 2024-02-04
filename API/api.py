@@ -134,7 +134,7 @@ def get_Search_Keys():
             "start": event["start_date"],
             "end": event["end_date"],
         })
-    return retval
+    return {"data": retval}
 
 @app.get("/{year}/{event}/predictions")
 def get_Event_Predictions():

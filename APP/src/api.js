@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://172.19.55.26:8085";
-const API_ENDPOINT = "http://highlanderscouting.azurewebsites.net/";
+// const API_ENDPOINT = "http://127.0.0.1:8000";
+const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -129,17 +129,16 @@ export const getMatchPredictions = async (year, event, callback) => {
 export const getSearchKeys = async (callback) => {
   try {
     const startTime = performance.now();
-    const data = getWithExpiry("search_keys");
-    if (data === null) {
+    const data = null
+    if (data === null || data === undefined) {
       const endpoint = `${API_ENDPOINT}/search_keys`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.ok) {
-        const { data } = await response.json();
+        const data = await response.json();
         const endTime = performance.now();
         const timeTaken = endTime - startTime;
         console.log(`GetSearchKeys API call took ${timeTaken} milliseconds`);
-        setWithExpiry("search_keys", data, 30);
         callback(data);
       } else {
         callback({ data: [] });

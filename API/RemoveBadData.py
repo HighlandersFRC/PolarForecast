@@ -1,7 +1,59 @@
 import copy
+import numpy as np
 import pandas as pd
 
+def dataOPR(scoutData: dict) -> int:
+    auto = scoutData["data"]["auto"]
+    teleop = scoutData["data"]["teleop"]
+    opr = 0
+    opr += auto["hco"] * 6
+    opr += auto["hcu"] * 6
+    opr += auto["mco"] * 4
+    opr += auto["mcu"] * 4
+    opr += auto["lp"] * 3
+    opr += teleop["hco"] * 5
+    opr += teleop["hcu"] * 5
+    opr += teleop["mco"] * 3
+    opr += teleop["mcu"] * 3
+    opr += teleop["lp"] * 2
+    return opr
 
+def removeOutliers(data: list) -> list:
+    teams = []
+    teamEntryList = []
+    for entry in data:
+        if not teams.__contains__(entry["team_number"]):
+            teams.append(entry["team_number"])
+            teamEntryList.append([])
+    for entry in data:
+        teamEntryList[teams.index(entry["team_number"])].append((dataOPR(entry), entry))
+    noOutliers = []
+    for teamEntries in teamEntryList:
+        noOutliers.append(remove_outliers_iqr(teamEntries))
+    retval = []
+    for teamEntries in noOutliers:
+        for entry in teamEntries:
+            retval.append(entry)
+    return retval
+
+def remove_outliers_iqr(data: list) -> list:
+    opr_values = np.array([opr for opr, entry in data])
+    q1 = np.percentile(opr_values, 25)
+    q3 = np.percentile(opr_values, 75)
+    iqr = q3 - q1
+    threshold = 1.5
+    outlier_indices = np.where((opr_values < q1 - threshold * iqr) | (opr_values > q3 + threshold * iqr))[0]
+    filtered_entries = [entry for index, (opr, entry) in enumerate(data) if index not in outlier_indices]
+    return filtered_entries
+
+def remove_outliers(data: list) -> list:
+    opr_values = np.array([opr for opr, entry in data])
+    z_scores = (opr_values - np.mean(opr_values)) / np.std(opr_values)
+    threshold = 3
+    outlier_indices = np.where(np.abs(z_scores) > threshold)[0]
+    filtered_entries = [entry for index, (opr, entry) in enumerate(data) if index not in outlier_indices]
+    return filtered_entries
+    
 def flatten_dict(dd, separator="_", prefix=""):
     return (
         {
@@ -13,14 +65,12 @@ def flatten_dict(dd, separator="_", prefix=""):
         else {prefix: dd}
     )
 
-
 def average(lst):
     numeric_values = [x for x in lst if isinstance(x, (int, float))]
     if len(numeric_values) == 0:
         return 0
     else:
         return sum(numeric_values) / len(numeric_values)
-
 
 def getError(combination: dict, TBAMatch: pd.Series) -> float:
     error = 0
@@ -37,104 +87,6 @@ def getError(combination: dict, TBAMatch: pd.Series) -> float:
     if total > 0:
         errorPercent = error / total
     return errorPercent
-
-
-def getRatingBasedError(
-    combination: dict, TBAMatch: pd.Series, scoutRatings: dict
-) -> float:
-    error = 0
-    total = 0
-    errorPercent = 1.0
-    totalTrust = 0
-    data = []
-    for team in combination:
-        totalTrust += scoutRatings["trustRatings"][
-            scoutRatings["scouts"].index(combination[team]["scout_info"])
-        ]
-        data.append(
-            {
-                field: flatten_dict(combination[team]["data"])[field]
-                * scoutRatings["trustRatings"][
-                    scoutRatings["scouts"].index(
-                        combination[team]["scout_info"]
-                    )
-                ]
-                for field in flatten_dict(combination[team]["data"])
-            }
-        )
-    addedData = data[0]
-    for field in addedData:
-        addedData[field] = data[0][field] + data[1][field] + data[2][field]
-        total += abs(TBAMatch[field])
-        error += abs(TBAMatch[field] - addedData[field])
-    if total > 0:
-        errorPercent = error / total
-        errorPercent *= 1-(totalTrust/3)
-    return errorPercent
-
-
-def getBestData(TBAData: pd.DataFrame, scoutingData: list) -> list:
-    retval = []
-    TBADict = TBAData.to_dict("records")
-    j = 0
-    for game in TBADict:
-        j += 1
-        entries = []
-        teamEntries = {}
-        teams = []
-        for entry in scoutingData:
-            if type(entry) == dict:
-                if entry["match_number"] == game["match_number"]:
-                    for i in range(3):
-                        if (
-                            game["station" + str(i + 1)]
-                            == entry["team_number"]
-                        ):
-                            entries.append(entry)
-                            if not teams.__contains__(entry["team_number"]):
-                                teams.append(entry["team_number"])
-                            break
-        for entry in entries:
-            teamEntries[entry["team_number"]] = []
-        for entry in entries:
-            teamEntries[entry["team_number"]].append(entry)
-        combinations = []
-        if len(teams) == 3:
-            for team0 in teamEntries[teams[0]]:
-                for team1 in teamEntries[teams[1]]:
-                    for team2 in teamEntries[teams[2]]:
-                        combinations.append(
-                            {teams[0]: team0, teams[1]: team1, teams[2]: team2}
-                        )
-            combinationError = []
-            for i in range(len(combinations)):
-                combinationError.append(getError(combinations[i], game))
-            returnCombination = combinations[
-                combinationError.index(min(combinationError))
-            ]
-            # combinationTrust = [1-combinationError[i] for i in range(len(combinationError))]
-            # for i in range(len(combinations)):
-            #     for entry in combinations[i]:
-            #         for field in combinations[i][entry]:
-            #             returnCombination[entry][field] = 0
-            # for i in range(len(combinations)):
-            #     for entry in combinations[i]:
-            #         for field in combinations[i][entry]:
-            #             if not type(combinations[i][entry][field]) == dict:
-            #                 returnCombination[entry][field] += combinationTrust[i]*combinations[i][entry][field]
-            # for entry in returnCombination:
-            #     for field in returnCombination[entry]:
-            #         if not(sum(combinationTrust) == 0):
-            #             returnCombination[entry][field] /= sum(combinationTrust)
-            for entry in returnCombination:
-                if not retval.__contains__(returnCombination[entry]):
-                    retval.append(returnCombination[entry])
-        else:
-            for entry in entries:
-                if not retval.__contains__(entry):
-                    retval.append(entry)
-    return retval
-
 
 def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list) -> dict:
     scouts = []
@@ -222,161 +174,6 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list) -> dict:
         scoutTrustRatings[i] = average(scoutTrusts[i])
     retval = {"scouts": scouts, "trustRatings": scoutTrustRatings}
     return retval
-
-
-def getTrustAdjustedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
-    retval = []
-    scoutRatings = getScoutRatings(TBAData, scoutingData)
-    TBADict = TBAData.to_dict("records")
-    for game in TBADict:
-        entries = []
-        teamEntries = {}
-        teams = []
-        for entry in scoutingData:
-            if type(entry) == dict:
-                if entry["match_number"] == game["match_number"]:
-                    for i in range(3):
-                        if (
-                            game["station" + str(i + 1)]
-                            == entry["team_number"]
-                        ):
-                            entries.append(entry)
-                            if not teams.__contains__(entry["team_number"]):
-                                teams.append(entry["team_number"])
-                            break
-        for entry in entries:
-            teamEntries[entry["team_number"]] = []
-        for entry in entries:
-            teamEntries[entry["team_number"]].append(entry)
-        returnEntries = {}
-        for team in teamEntries:
-            returnEntries[team] = {}
-            returnEntries[team]["data"] = {}
-            for entry in teamEntries[team]:
-                for i in range(2):
-                    if i == 1:
-                        community = "teleop"
-                    elif i == 0:
-                        community = "auto"
-                    returnEntries[team]["data"][community] = {}
-                    for field in entry["data"][community]:
-                        returnEntries[team]["data"][community][field] = 0
-        for team in teamEntries:
-            totalTrust = 0
-            for entry in teamEntries[team]:
-                if "metadata" in entry.keys():
-                    totalTrust += scoutRatings["trustRatings"][
-                        scoutRatings["scouts"].index(entry["scout_info"])
-                    ]
-                    returnEntries[team] = entry
-                    for i in range(2):
-                        if i == 1:
-                            community = "teleop"
-                        elif i == 0:
-                            community = "auto"
-                        for field in entry["data"][community]:
-                            returnEntries[team]["data"][community][field] += (
-                                entry["data"][community][field]
-                                * scoutRatings["trustRatings"][
-                                    scoutRatings["scouts"].index(
-                                        entry["scout_info"]
-                                    )
-                                ]
-                            )
-            for i in range(2):
-                if i == 1:
-                    community = "teleop"
-                elif i == 0:
-                    community = "auto"
-                for field in returnEntries[team]["data"][community]:
-                    if not totalTrust == 0:
-                        returnEntries[team]["data"][community][field] /= totalTrust
-        for entry in returnEntries:
-            if not retval.__contains__(returnEntries[entry]):
-                retval.append(returnEntries[entry])
-    return retval
-
-
-def BestTrustAdjustedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
-    retval = []
-    scoutRatings = getMarkovianRatings(TBAData, scoutingData)
-    TBADict = TBAData.to_dict("records")
-    j = 0
-    for game in TBADict:
-        j += 1
-        entries = []
-        teamEntries = {}
-        teams = []
-        for entry in scoutingData:
-            if type(entry) == dict:
-                if entry["match_number"] == game["match_number"]:
-                    for i in range(3):
-                        if (
-                            game["station" + str(i + 1)]
-                            == entry["team_number"]
-                        ):
-                            entries.append(entry)
-                            if not teams.__contains__(entry["team_number"]):
-                                teams.append(entry["team_number"])
-                            break
-        for entry in entries:
-            teamEntries[entry["team_number"]] = []
-        for entry in entries:
-            teamEntries[entry["team_number"]].append(entry)
-        combinations = []
-        if len(teams) == 3:
-            for team0 in teamEntries[teams[0]]:
-                for team1 in teamEntries[teams[1]]:
-                    for team2 in teamEntries[teams[2]]:
-                        combinations.append(
-                            {teams[0]: team0, teams[1]: team1, teams[2]: team2}
-                        )
-            combinationError = []
-            for i in range(len(combinations)):
-                combinationError.append(getRatingBasedError(combinations[i], game, scoutRatings))
-            indices = [
-                i for i, x in enumerate(combinationError) if x == min(combinationError)
-            ]
-            combinationScoutError = []
-            for index in indices:
-                combinationScoutError.append(0)
-            for index in indices:
-                for team in combinations[index]:
-                    combinationScoutError[indices.index(index)] += scoutRatings[
-                        "trustRatings"
-                    ][
-                        scoutRatings["scouts"].index(
-                            combinations[indices.index(index)][team][
-                                "scout_info"
-                            ]
-                        )
-                    ]
-            returnCombination = combinations[
-                indices[combinationScoutError.index(min(combinationScoutError))]
-            ]
-            # combinationTrust = [1-combinationError[i] for i in range(len(combinationError))]
-            # for i in range(len(combinations)):
-            #     for entry in combinations[i]:
-            #         for field in flatten_dict(combinations[i][entry]["data"]):
-            #             returnCombination[entry][field] = 0
-            # for i in range(len(combinations)):
-            #     for entry in combinations[i]:
-            #         for field in flatten_dict(combinations[i][entry]["data"]):
-            #             returnCombination[entry][field] += combinationTrust[i]*flatten_dict(combinations[i][entry]["data"])[field]
-            # for entry in returnCombination:
-            #     for field in returnCombination[entry]:
-            #         if not type(returnCombination[entry][field]) == dict:
-            #             if not(sum(combinationTrust) == 0):
-            #                 returnCombination[entry][field] /= sum(combinationTrust)
-            for entry in returnCombination:
-                if not retval.__contains__(returnCombination[entry]):
-                    retval.append(returnCombination[entry])
-        else:
-            for entry in entries:
-                if not retval.__contains__(entry):
-                    retval.append(entry)
-    return retval
-
 
 def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list):
     scoutRatings = getScoutRatings(TBAData, scoutingData)
@@ -483,6 +280,7 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list):
 def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
     teams = []
     retval =[]
+    scoutingData = removeOutliers(scoutingData)
     scoutRatings = getMarkovianRatings(TBAData, scoutingData)
     for entry in scoutingData:
         if not teams.__contains__(entry["team_number"]):
@@ -522,4 +320,5 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
                 if not totalTrust == 0:
                     returnEntry["data"][communityStr][field] /= totalTrust
         retval.append(returnEntry)
+    retval = removeOutliers(retval)
     return retval
