@@ -13,18 +13,10 @@ const CameraCapture = () => {
   const eventCode = url.pathname.split("/")[4]
   const team = url.pathname.split("/")[5]
   const [capturedImage, setCapturedImage] = useState(null);
-  const [isCapturing, setIsCapturing] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(true);
   const [facingMode, setFacingMode] = useState('user'); // 'user' for front camera, 'environment' for rear camera
   const [show, setShow] = useState(true)
   const [status, setStatus] = useState("Upload Failed")
-
-  const handleCaptureStart = () => {
-    setIsCapturing(true);
-  };
-
-  const handleCaptureStop = () => {
-    setIsCapturing(false);
-  };
 
   const handleCapture = () => {
     const imageSrc = webcamRef.current.getScreenshot({
@@ -51,7 +43,6 @@ const CameraCapture = () => {
   }
 
   const handleUpload = () => {
-    // You can implement the upload logic here
     postTeamPictures(year, eventCode, team, capturedImage, uploadStatusCallback)
   };
 
@@ -91,7 +82,7 @@ const CameraCapture = () => {
         </>
       ) : (
         <>
-          {capturedImage ? (
+          {capturedImage &&
             <>
               <img
                 src={capturedImage}
@@ -110,20 +101,9 @@ const CameraCapture = () => {
                 Recapture
               </Button>
             </>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCaptureStart}
-            >
-              Start Live Feed
-            </Button>
-          )}
+          }
         </>
       )}
-      <Button variant="contained" color="primary" onClick={handleCaptureStop}>
-        Stop Live Feed
-      </Button>
       {capturedImage && (
         <>
           <Button

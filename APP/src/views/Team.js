@@ -33,11 +33,16 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MoodBadIcon from "@mui/icons-material/MoodBad";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import { getTeamPictures } from "api";
-import { ImageList, ImageListItem } from "@mui/material";
+import { Button, ImageList, ImageListItem, Popover } from "@mui/material";
+import ImageWithPopup from "components/ImageWithPopup";
+import { deleteTeamPictures } from "api";
+import { getMatchScoutingData } from "api";
+import { deactivateMatchData } from "api";
+import { activateMatchData } from "api";
 
 const Team = () => {
   const history = useHistory();
-  const tabDict = ["schedule", "team-stats", "pictures"];
+  const tabDict = ["schedule", "team-stats", "pictures", "match-scouting"];
   const url = new URL(window.location.href);
   const params = url.pathname.split("/");
   const team = params[5].replace("team-", "frc");
@@ -48,10 +53,14 @@ const Team = () => {
   const [loading, setLoading] = React.useState(true);
   const [teamInfo, setTeamInfo] = React.useState("");
   const [statDescription, setStatDescription] = useState([]);
+  const [scoutingKeys, setScoutingKeys] = useState([]);
   const [keys, setKeys] = useState([]);
   const [reportedStats, setReportedStats] = useState([]);
   const [value, setValue] = React.useState(0);
   const [teamNumber, setTeamNumber] = useState();
+  const [scoutingData, setScoutingData] = useState([])
+  const [scoutingColumns, setScoutingColumns] = useState([]);
+  const [scoutingRows, setScoutingRows] = useState([]);
   const [columns, setColumns] = useState([
     {
       field: "match_number",
@@ -277,7 +286,7 @@ const Team = () => {
     setTeamInfo(data);
     return data;
   };
-
+  
   const statDescriptionCallback = async (data) => {
     setStatDescription(data);
     const tempKeys = [];
@@ -302,14 +311,46 @@ const Team = () => {
       }
     }
     setKeys(tempKeys);
+    let statColumns = [];
+    for (let i = 0; i < data.scoutingData.length; i++) {
+      const stat = data.scoutingData[i];
+      if (stat.report_stat && stat.stat_key !== "active") {
+        keys.push(stat.stat_key);
+        statColumns.push({
+          field: stat.stat_key,
+          headerName: stat.display_name,
+          type: "number",
+          sortable: true,
+          headerAlign: "center",
+          align: "center",
+          minWidth: 80,
+          flex: 0.5,
+        });
+      }
+    }
+    statColumns.push({
+      field: "active",
+      headerName: "Toggle Active",
+      filterable: false,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        return (
+          <ActivateButton data={scoutingData[params.row.id]}/>
+        );
+      },
+    });
+    setScoutingColumns(statColumns)
     return data;
   };
 
   const updateData = (info, list) => {
     let tempValues = [];
     list.sort(function (a, b) {
-      a = a.name.toLowerCase();
-      b = b.name.toLowerCase();
+      a = a.name?.toLowerCase();
+      b = b.name?.toLowerCase();
 
       return a < b ? -1 : a > b ? 1 : 0;
     });
@@ -361,6 +402,27 @@ const Team = () => {
     setReportedStats(tempValues);
   };
 
+  const scoutingDataCallback = async (data) => {
+    setScoutingData(data)
+    const returnRows = []
+    for (let i=0; i<data.length; i++) {
+      let row = data[i]
+      let returnrow = {}
+      returnrow.id = i
+      returnrow.active = row.active
+      returnrow.match_number = row.match_number
+      returnrow.scout_name = row.scout_info.name
+      returnrow.auto_speaker = row.data.auto.speaker
+      returnrow.auto_amp = row.data.auto.amp
+      returnrow.teleop_speaker = row.data.teleop.speaker
+      returnrow.teleop_amp = row.data.teleop.amp
+      returnrow.trap = row.data.teleop.trap
+      returnrow.died = row.data.miscellaneous.died
+      returnRows.push(returnrow)
+    }
+    setScoutingRows(returnRows)
+  };
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const params = url.pathname.split("/");
@@ -376,6 +438,7 @@ const Team = () => {
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
     getStatDescription(year, eventKey, statDescriptionCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
+    getMatchScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
   }, []);
 
   useEffect(async () => {
@@ -417,13 +480,26 @@ const Team = () => {
   };
 
   const picturesCallback = (data) => {
-    const rows = data.map((item, index) => (
-      <ImageListItem key={index}>
-        <img src={`data:image/jpeg;base64,${item.file}`} alt={`Image ${index}`} />
-      </ImageListItem>
+    const rows = data.map((item) => (
+      <ImageWithPopup
+        key={`data:image/jpeg;base64,${item.file}`} // Make sure to provide a unique key for each image
+        imageUrl={`data:image/jpeg;base64,${item.file}`}
+        onDelete={() => handleDeleteImage(item.file)} // Pass the index to the onDelete function
+      />
     ));
-
     setPictures(rows);
+  };
+
+  const uploadStatusCallback = (status, imageSrc) => {
+    if (status === 200){
+      getTeamPictures(year, eventCode, team, picturesCallback)
+    } else {
+      alert("deletion failed, status: " + status)
+    }
+  }
+
+  const handleDeleteImage = (imageSrc) => {
+    deleteTeamPictures(year, eventCode, team, `data:image/jpeg;base64,${imageSrc}`, (status) => {uploadStatusCallback(status, imageSrc)})
   };
 
   return (
@@ -440,6 +516,7 @@ const Team = () => {
           <Tab label="Schedule" {...a11yProps(0)} />
           <Tab label="Team Stats" {...a11yProps(1)} />
           <Tab label="Pictures" {...a11yProps(2)} />
+          <Tab label="Match Scouting" {...a11yProps(3)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -563,6 +640,46 @@ const Team = () => {
         </ImageList>
         </Card>
       </TabPanel>
+      <TabPanel value={value} index={3} dir={darkTheme.direction}>
+        <ThemeProvider theme={darkTheme}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Team {teamNumber} Schedule</h3>
+            </CardHeader>
+            <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
+              <StripedDataGrid
+                disableColumnMenu
+                rows={scoutingRows}
+                getRowId={(row) => {
+                  return row.id;
+                }}
+                columns={scoutingColumns}
+                pageSize={100}
+                rowsPerPageOptions={[100]}
+                rowHeight={35}
+                sx={{
+                  boxShadow: 2,
+                  border: 0,
+                  borderColor: "white",
+                  "& .MuiDataGrid-cell:hover": {
+                    color: "white",
+                  },
+                }}
+                components={{
+                  NoRowsOverlay: () => (
+                    <Stack height="100%" alignItems="center" justifyContent="center">
+                      No Scouting Data
+                    </Stack>
+                  ),
+                }}
+                getRowClassName={(params) =>
+                  params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                }
+              />
+            </div>
+          </Card>
+        </ThemeProvider>
+      </TabPanel>
     </>
   );
 };
@@ -605,5 +722,84 @@ const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
     },
   },
 }));
+
+const ActivateButton = ({ data }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  console.log(data)
+  const [activated, setActivated] = useState(data?.active);
+  const initText = (bool) => {
+    if (bool) {
+      return "deactivate"
+    } else {
+      return "activate"
+    }
+  }
+  const [text, setText] = useState(initText(activated));
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+  };
+  const handleActivate = () => {
+    console.log(data)
+    if (activated){
+      setText("deactivating...")
+      deactivateMatchData(data, deactivateCallback)
+    } else {
+      setText("activating...")
+      activateMatchData(data, activateCallback)
+    }
+    handleClosePopover();
+  };
+
+  const deactivateCallback = (status) => {
+    if (status == 200) {
+      setText("activate")
+      setActivated(false)
+      data.active = false
+    } else {
+      setText("deactivate")
+      alert("Deactivation Failed")
+    }
+  }
+
+  const activateCallback = (status) => {
+    if (status == 200) {
+      setText("deactivate")
+      setActivated(true)
+      data.active = true
+    } else {
+      setText("activate")
+      alert("Activation Failed")
+    }
+  }
+
+  const open = Boolean(anchorEl);
+  return (
+    <div>
+      <Button onClick={handleClick}>
+        {text}
+      </Button>
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClosePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <Typography sx={{ p: 2 }}>
+          <Button onClick={handleActivate}>{text}</Button>
+        </Typography>
+      </Popover>
+    </div>
+  );
+};
 
 export default Team;

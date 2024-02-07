@@ -40,6 +40,7 @@ TBACollection = testDB["TBA"]
 TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 ScoutDataCollection = testDB["ScoutingData"]
 ScoutingData2024Collection = testDB["Scouting2024Data"]
+ScoutingData2024Collection.create_index([("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING)], unique=True)
 CalculatedDataCollection = testDB["CalculatedData"]
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
@@ -50,12 +51,6 @@ PitStatusCollection.create_index( [("event_code", pymongo.ASCENDING)], unique=Tr
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
 
-
-class ScoutingPicture(BaseModel):
-    file: Annotated[bytes, File()]
-    year: int
-    event: str
-    team: str
 
 @app.on_event("startup")
 def onStart():
@@ -242,6 +237,7 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
         raise HTTPException(400, detail="No such team")
     PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
     file_content = data.file.read()
+    open("post.txt", "w").write(str(file_content))
     additional_fields = {
         "key": str(year) + event + "_" + team,
         "team": team,
@@ -256,12 +252,39 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
     PictureCollection.insert_one(file_data)
     return {"message": "File uploaded successfully"}
 
+@app.post("/{year}/{event}/{team}/DeletePictures/")
+def delete_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int):
+    file_content = data.file.read()
+    delete_result = PictureCollection.delete_many({"file": file_content})
+    pictures = PictureCollection.find({
+        "key": str(year) + event + "_" + team,
+        "team": team,
+        "eventCode": str(year) + event,
+    })
+    if len(list(pictures)) == 0:
+        status = get_pit_status(year, event)
+        rows = status["data"]
+        for row in rows:
+            if row["key"] == team[3:]:
+                row["picture_status"] = "Not Started"
+    PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
+    return {"message": delete_result.raw_result}
+
+
 @app.get("/{year}/{event}/pitStatus")
 def get_pit_status(year: int, event: str):
     retval = PitStatusCollection.find_one({"event_code": str(year)+event})
     retval.pop("_id")
     return retval
-    
+
+
+@app.get("/{year}/{event}/{team}/ScoutEntries")
+def get_scout_entries(team: str, event: str, year: int):
+    retval = list(ScoutingData2024Collection.find({"event_code": str(year)+event, "team_number": int(team[3:])}))
+    for entry in retval:
+        entry.pop("_id")
+    return retval
+
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
@@ -318,6 +341,19 @@ def updateData(event_code: str):
                 CalculatedDataCollection.update_one({"event_code": YEAR+event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
                 pass
+
+@app.post("/Deactivate")
+def deactivate_match_data(data: dict):
+    data["active"] = False
+    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+    return data
+
+@app.post("/Activate")
+def activate_match_data(data: dict):
+    data["active"] = True
+    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+    return data
+
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():

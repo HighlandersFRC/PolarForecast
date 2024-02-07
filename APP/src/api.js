@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://127.0.0.1:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://127.0.0.1:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -24,7 +24,7 @@ function getWithExpiry(key) {
   // compare the expiry time of the item with the current time
   if (now.getTime() > item.expiry) {
     localStorage.removeItem(key);
-    getSearchKeys(() => {});
+    getSearchKeys(() => { });
     return null;
   }
   return JSON.parse(item.value);
@@ -226,19 +226,19 @@ export const getLeaderboard = async (year, callback) => {
 
 export const postMatchScouting = async (data, callback) => {
   try {
-      const endpoint = `${API_ENDPOINT}/MatchScouting/`;
-      console.log(endpoint)
-      let retval;
-      let json = JSON.stringify(data)
-      const response = await fetch(endpoint, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-      });
-      callback(response.status); // parses JSON response into native JavaScript objects
-  } catch (e){
+    const endpoint = `${API_ENDPOINT}/MatchScouting/`;
+    console.log(endpoint)
+    let retval;
+    let json = JSON.stringify(data)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e) {
     callback(0)
     return 0
   }
@@ -246,19 +246,19 @@ export const postMatchScouting = async (data, callback) => {
 
 export const postPitScouting = async (data, callback) => {
   try {
-      const endpoint = `${API_ENDPOINT}/PitScouting/`;
-      console.log(endpoint)
-      let retval;
-      let json = JSON.stringify(data)
-      const response = await fetch(endpoint, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-      });
-      callback(response.status); // parses JSON response into native JavaScript objects
-  } catch (e){
+    const endpoint = `${API_ENDPOINT}/PitScouting/`;
+    console.log(endpoint)
+    let retval;
+    let json = JSON.stringify(data)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e) {
     callback(0)
     return 0
   }
@@ -291,19 +291,13 @@ export const postTeamPictures = async (year, event, team, data, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/${year}/${event}/frc${team}/pictures/`;
     console.log(endpoint);
-
-    // Convert base64 string to Blob
     const blob = dataURItoBlob(data);
-
-    // Create FormData object
     const formData = new FormData();
-    formData.append('data', blob, 'image.jpg'); // 'data' is the key, 'image.jpg' is the filename
-
+    formData.append('data', blob, 'image.jpg');
     const response = await fetch(endpoint, {
       method: 'POST',
       body: formData,
     });
-
     callback(response.status);
   } catch (e) {
     console.error('Error:', e);
@@ -311,9 +305,27 @@ export const postTeamPictures = async (year, event, team, data, callback) => {
   }
 };
 
+export const deleteTeamPictures = async (year, event, team, data, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/DeletePictures/`;
+    console.log(endpoint);
+    const blob = dataURItoBlob(data);
+    const formData = new FormData();
+    formData.append('data', blob, 'image.jpg');
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+    callback(response.status);
+  } catch (e) {
+    console.error('Error:', e);
+    callback(0);
+  }
+};
 
 // Function to convert data URI to Blob
 function dataURItoBlob(dataURI) {
+  console.log(dataURI)
   const byteString = atob(dataURI.split(',')[1]);
   const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
   const ab = new ArrayBuffer(byteString.length);
@@ -365,5 +377,65 @@ export const getPitScoutingData = async (year, event, team, callback) => {
     }
   } catch (error) {
     console.error(error);
+  }
+}
+
+export const getMatchScoutingData = async (year, event, team, callback) => {
+  try {
+    const storage_name = `${year}${event}_${team}_pitData`;
+    const data = null
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/ScoutEntries`;
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.status == 200) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback([]);
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const deactivateMatchData = async (data, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/Deactivate/`;
+    console.log(endpoint)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e) {
+    callback(0)
+    return 0
+  }
+}
+
+export const activateMatchData = async (data, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/Activate/`;
+    console.log(endpoint)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    callback(response.status); // parses JSON response into native JavaScript objects
+  } catch (e) {
+    callback(0)
+    return 0
   }
 }

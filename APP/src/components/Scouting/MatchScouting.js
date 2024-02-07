@@ -11,6 +11,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     event_code: eventCode,
     team_number: 0,
     match_number: 0,
+    active: true,
     scout_info: {
       name: "",
     },
