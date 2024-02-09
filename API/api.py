@@ -280,7 +280,7 @@ def get_pit_status(year: int, event: str):
 
 @app.get("/{year}/{event}/{team}/ScoutEntries")
 def get_scout_entries(team: str, event: str, year: int):
-    retval = list(ScoutingData2024Collection.find({"event_code": str(year)+event, "team_number": int(team[3:])}))
+    retval = list(ScoutingData2024Collection.find({"event_code": str(year)+event, "team_number": team[3:]}))
     for entry in retval:
         entry.pop("_id")
     return retval
