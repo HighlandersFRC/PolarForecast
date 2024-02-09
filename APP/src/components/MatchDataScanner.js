@@ -2,7 +2,6 @@ import { Button } from "@mui/material";
 import { postMatchScouting } from "api";
 import React, { useState } from "react";
 import QrReader from "react-web-qr-reader";
-import { Exception } from "sass";
 
 const MatchDataScanner = () => {
     const delay = 500;

@@ -261,8 +261,8 @@ def delete_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:in
         "team": team,
         "eventCode": str(year) + event,
     })
+    status = get_pit_status(year, event)
     if len(list(pictures)) == 0:
-        status = get_pit_status(year, event)
         rows = status["data"]
         for row in rows:
             if row["key"] == team[3:]:

@@ -71,6 +71,7 @@ const Tables = () => {
   const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
   const [containerDivHeight, setContainerDivHeight] = useState(`calc(100vh - 250px)`);
   const [chartNumber, setChartNumber] = useState(32);
+  const [snowflakeCount, setSnowflakeCount] = useState(50);
   const [statDescription, setStatDescription] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [eventTitle, setEventTitle] = useState("");
@@ -536,6 +537,11 @@ const Tables = () => {
   const handleChange = (event, newValue) => {
     history.push({ hash: tabDict[newValue] });
     setTabIndex(newValue);
+    if (tabDict[newValue] == "match-scouting"){
+      setSnowflakeCount(0)
+    } else {
+      setSnowflakeCount(50)
+    }
   };
 
   return (
@@ -757,7 +763,7 @@ const Tables = () => {
 
       </div>
       <Snowfall
-        snowflakeCount={50}
+        snowflakeCount={snowflakeCount}
         style={{
           position: "fixed",
           width: "100vw",

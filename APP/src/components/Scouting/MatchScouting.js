@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { getMatchDetails } from 'api';
-import QRCode from 'react-qr-code';
 import { Switch, typographyClasses } from '@mui/material';
 import { postMatchScouting } from 'api';
+import { QRCode } from 'react-qrcode-logo';
 
-const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
-  const [formData, setFormData] = useState({
+const MatchScouting = ({ eventCode = '' , year, event}) => {
+  const url = new URL(window.location.href);
+  const serverPath = url.pathname.split("/")[0];
+  const myRef = createRef()
+  const defaultData = {
     event_code: eventCode,
     team_number: 0,
     match_number: 0,
@@ -30,10 +33,13 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       }
     },
     time: 0, // Initial value set to 0
-  });  
-  const [showQRCode, setShowQRCode] = useState(false); // State to control when to show the QR code
-  const [matchTeamsData, setMatchTeams] = useState([])
+  }
+  const [formData, setFormData] = useState(defaultData);  
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [showReset, setShowReset] = useState(false)
+  const [matchTeamsData, setMatchTeams] = useState([]);
   const [text, setText] = useState("")
+
   const matchDataCallback = (data) => {
     setMatchTeams(data)
     const updatedData = { ...formData };
@@ -43,6 +49,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       updatedData.match_number = data.match_number
       setFormData(updatedData)
     } catch {}
+  }
+
+  const handleScroll = () => {
+      setTimeout(() => {
+        myRef.current?.scrollIntoView({behavior: 'smooth'});
+      }, 500)
   }
 
   const handleChange = async (field, value) => {
@@ -72,8 +84,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
     }));
     setText("Submitting...")
+    setShowReset(true)
     postMatchScouting(formData, MatchScoutingStatusCallback);
-    // Handle form submission logic here
   };
 
   const MatchScoutingStatusCallback = (status)=>{
@@ -102,6 +114,24 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     } catch {
       return ["","","","","",""]
     }
+  }
+
+  const handleReset = () => {
+    setShowQRCode(false)
+    setShowReset(false)
+    setText('')
+    setFormData((prevData) => {
+      prevData.match_number += 1
+      getMatchDetails(year, event, eventCode+"_qm"+prevData.match_number, matchDataCallback);
+      prevData.data.auto.amp = 0
+      prevData.data.auto.speaker = 0
+      prevData.data.teleop.amp = 0
+      prevData.data.teleop.trap = 0
+      prevData.data.teleop.speaker = 0
+      prevData.data.miscellaneous.died = 0
+      return prevData
+    })
+    handleScroll()
   }
 
   return (
@@ -190,11 +220,18 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       </Button>
       <h1 className="text-white mb-0">{text}</h1>
       {showQRCode && (
+        <>
         <div style={{ display: 'flex', marginTop: '0px', justifyContent:'center', alignItems:'center'}}>
           {/* Display the QR code only when showQRCode is true */}
-          <QRCode value={JSON.stringify(formData)} />
+          <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath+"/PolarbearHead.png"} logoHeight={"108"} logoWidth={"184"} bgColor='#1a174d' fgColor='#90caf9'/>
         </div>
+        </>
       )}
+      {showReset &&
+        <Button variant="contained" onClick={handleReset}>
+          Reset
+        </Button>
+      }
     </form>
   );
 };
