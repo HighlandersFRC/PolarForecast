@@ -6,7 +6,7 @@ import { Switch, typographyClasses } from '@mui/material';
 import { postMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 
-const MatchScouting = ({ eventCode = '' , year, event}) => {
+const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   const url = new URL(window.location.href);
   const serverPath = url.pathname.split("/")[0];
   const myRef = createRef()
