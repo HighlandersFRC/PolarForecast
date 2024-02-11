@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import ImageListItem from '@mui/material/ImageListItem';
 import Popover from '@mui/material/Popover';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 const ImageWithPopup = ({ imageUrl, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [password, setPassword] = useState('');
 
   const handleRightClick = (e) => {
     e.preventDefault();
@@ -17,9 +19,13 @@ const ImageWithPopup = ({ imageUrl, onDelete }) => {
 
   const handleDeleteClick = () => {
     if (onDelete) {
-      onDelete();
+      onDelete(password);
     }
     handlePopoverClose();
+  };
+
+  const handleChangePassword = (e) => {
+    setPassword(e.target.value);
   };
 
   const open = Boolean(anchorEl);
@@ -48,6 +54,14 @@ const ImageWithPopup = ({ imageUrl, onDelete }) => {
         }}
       >
         <div style={{ padding: '10px' }}>
+          <TextField
+            label="Password"
+            type="password"
+            variant="outlined"
+            value={password}
+            onChange={handleChangePassword}
+          />
+          <br/>
           <Button variant="contained" color="primary" onClick={handleDeleteClick}>
             Delete Image
           </Button>

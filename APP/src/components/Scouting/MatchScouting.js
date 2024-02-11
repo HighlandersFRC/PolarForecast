@@ -40,6 +40,9 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   const [matchTeamsData, setMatchTeams] = useState([]);
   const [text, setText] = useState("")
 
+  useEffect(() => {
+    if (text == "Unable to Submit.") setText(text + " Use QR Code")
+  }, [text])
   const matchDataCallback = (data) => {
     setMatchTeams(data)
     const updatedData = { ...formData };
@@ -88,13 +91,13 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     postMatchScouting(formData, MatchScoutingStatusCallback);
   };
 
-  const MatchScoutingStatusCallback = (status)=>{
+  const MatchScoutingStatusCallback = ([status, response])=>{
     if (status === 200){
       setShowQRCode(false)
       setText("Submission Successful")
     } else {
       setShowQRCode(true)
-      setText("Submission Failed. Use QR Code")
+      setText(response.detail)
     }
   }
 

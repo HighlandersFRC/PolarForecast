@@ -59,7 +59,7 @@ const CameraCapture = () => {
   const addAnotherPicture = () => {
     setShow(true)
     setCapturedImage(null)
-    setIsCapturing(false)
+    setIsCapturing(true)
   }
 
   return (

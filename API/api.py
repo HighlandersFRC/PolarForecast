@@ -12,7 +12,7 @@ from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
 from GeneticPolar import analyzeData
-from config import TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS
+from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS
 import requests
 from fastapi_utils.tasks import repeat_every
 
@@ -27,7 +27,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["POST", "GET"],
+    allow_methods=["POST", "GET", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -192,13 +192,44 @@ def get_Match_Details(match_key: str):
     
 @app.post("/MatchScouting/")
 def post_match_scouting(data: dict):
-    ScoutingData2024Collection.insert_one(data)
-    data.pop("_id")
-    return data
+    try:
+        eventCode = data["event_code"]
+        matchNumber = data["match_number"]
+        teamNumber = data["team_number"]
+        scoutName = data["scout_info"]["name"]
+        if scoutName == "":
+            raise HTTPException(400, "Check Your Scout Name")
+        match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
+        if match is None:
+            raise HTTPException(400, "Check Your Match Number")
+        exists = False
+        for i in range(2):
+            if i == 0:
+                allianceStr = "blue"
+            else:
+                allianceStr = "red"
+            if (match["alliances"][allianceStr]["team_keys"].__contains__("frc"+str(data["team_number"]))):
+                exists = True
+        if not exists:
+            eventStatus = PitStatusCollection.find_one({"event_code": eventCode})
+            teamNumberExists = False
+            for x in eventStatus["data"]:
+                if x["key"] == str(teamNumber):
+                    teamNumberExists = True
+                    break
+            if teamNumberExists:
+                raise HTTPException(400, "Check Your Match And Team Number")
+            else:
+                raise HTTPException(400, "Check Your Team Number")
+        data["team_number"] = str(data["team_number"])
+        ScoutingData2024Collection.insert_one(data)
+        data.pop("_id")
+        return data
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
 def get_pictures(team: str, event: str, year: int):
     key = str(year) + event + "_" + team
-
     # Query the collection using the key
     pictures = PictureCollection.find({"key": key})
 
@@ -237,7 +268,6 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
         raise HTTPException(400, detail="No such team")
     PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
     file_content = data.file.read()
-    open("post.txt", "w").write(str(file_content))
     additional_fields = {
         "key": str(year) + event + "_" + team,
         "team": team,
@@ -252,31 +282,31 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
     PictureCollection.insert_one(file_data)
     return {"message": "File uploaded successfully"}
 
-@app.post("/{year}/{event}/{team}/DeletePictures/")
-def delete_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int):
-    file_content = data.file.read()
-    delete_result = PictureCollection.delete_many({"file": file_content})
-    pictures = PictureCollection.find({
-        "key": str(year) + event + "_" + team,
-        "team": team,
-        "eventCode": str(year) + event,
-    })
-    status = get_pit_status(year, event)
-    if len(list(pictures)) == 0:
-        rows = status["data"]
-        for row in rows:
-            if row["key"] == team[3:]:
-                row["picture_status"] = "Not Started"
-    PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
-    return {"message": delete_result.raw_result}
-
+@app.delete("/{year}/{event}/{team}/{password}/DeletePictures/")
+def delete_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int, password: str):
+    if password == EDIT_PASSWORD:
+        file_content = data.file.read()
+        delete_result = PictureCollection.delete_many({"file": file_content})
+        pictures = PictureCollection.find({
+            "key": str(year) + event + "_" + team,
+        })
+        print(len(list(pictures)))
+        status = get_pit_status(year, event)
+        if len(list(pictures)) == 0:
+            rows = status["data"]
+            for row in rows:
+                if row["key"] == team[3:]:
+                    row["picture_status"] = "Not Started"
+        PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
+        return {"message": delete_result.raw_result}
+    else:
+        raise HTTPException(400, "Incorrect Password")
 
 @app.get("/{year}/{event}/pitStatus")
 def get_pit_status(year: int, event: str):
     retval = PitStatusCollection.find_one({"event_code": str(year)+event})
     retval.pop("_id")
     return retval
-
 
 @app.get("/{year}/{event}/{team}/ScoutEntries")
 def get_scout_entries(team: str, event: str, year: int):
@@ -342,18 +372,27 @@ def updateData(event_code: str):
             except Exception as ex:
                 pass
 
-@app.post("/Deactivate")
-def deactivate_match_data(data: dict):
-    data["active"] = False
-    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
-    return data
+@app.put("/{password}/Deactivate")
+def deactivate_match_data(data: dict, password: str):
+    if password == EDIT_PASSWORD:
+        data["active"] = False
+        ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        return data
+    else:
+        raise HTTPException(400, "Incorrect Password")
 
-@app.post("/Activate")
-def activate_match_data(data: dict):
-    data["active"] = True
-    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
-    return data
+@app.put("/{password}/Activate")
+def activate_match_data(data: dict, password: str):
+    if password == EDIT_PASSWORD:
+        data["active"] = True
+        ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        return data
+    else:
+        raise HTTPException(400, "Incorrect Password")
 
+@app.get("/")
+def read_root():
+    return {"polar": "forecast"}
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():

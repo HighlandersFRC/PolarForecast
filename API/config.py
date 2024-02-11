@@ -80,3 +80,5 @@ ALLOW_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
 ]
+#Password
+EDIT_PASSWORD = os.environ.get("PF_EDIT_PASSWORD", "")

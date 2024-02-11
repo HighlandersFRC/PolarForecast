@@ -33,7 +33,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MoodBadIcon from "@mui/icons-material/MoodBad";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import { getTeamPictures } from "api";
-import { Button, ImageList, ImageListItem, Popover } from "@mui/material";
+import { Button, ImageList, ImageListItem, Popover, TextField } from "@mui/material";
 import ImageWithPopup from "components/ImageWithPopup";
 import { deleteTeamPictures } from "api";
 import { getMatchScoutingData } from "api";
@@ -45,9 +45,9 @@ const Team = () => {
   const tabDict = ["schedule", "team-stats", "pictures", "match-scouting"];
   const url = new URL(window.location.href);
   const params = url.pathname.split("/");
-  const team = params[5].replace("team-", "frc");
-  const eventCode = params[4]
-  const year = params[3]
+  const year = params[3];
+  const eventKey = params[4];
+  const team = params[5].replace("team-", "");
   const [tabIndex, setTabIndex] = useState(0);
   const [pictures,  setPictures] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -183,7 +183,7 @@ const Team = () => {
     history.push("match-" + cellValues.key);
   };
 
-  const teamPredictionsCallback = async (data) => {
+  const teamPredictionsCallback = (data) => {
     const qual_rows = [];
     const sf_rows = [];
     const f_rows = [];
@@ -282,12 +282,12 @@ const Team = () => {
     setLoading(false);
   };
 
-  const teamStatsCallback = async (data) => {
+  const teamStatsCallback = (data) => {
     setTeamInfo(data);
     return data;
   };
   
-  const statDescriptionCallback = async (data) => {
+  const statDescriptionCallback = async (data, scoutingData) => {
     setStatDescription(data);
     const tempKeys = [];
     for (let i = 0; i < data.data.length; i++) {
@@ -337,13 +337,13 @@ const Team = () => {
       minWidth: 80,
       flex: 0.5,
       renderCell: (params) => {
+        const id = params.row.id
         return (
-          <ActivateButton data={scoutingData[params.row.id]}/>
+          <ActivateButton data={scoutingData[id]}/>
         );
       },
     });
     setScoutingColumns(statColumns)
-    return data;
   };
 
   const updateData = (info, list) => {
@@ -403,8 +403,8 @@ const Team = () => {
   };
 
   const scoutingDataCallback = async (data) => {
-    setScoutingData(data)
     const returnRows = []
+    setScoutingData(data)
     for (let i=0; i<data.length; i++) {
       let row = data[i]
       let returnrow = {}
@@ -418,29 +418,22 @@ const Team = () => {
       returnrow.teleop_amp = row.data.teleop.amp
       returnrow.trap = row.data.teleop.trap
       returnrow.died = row.data.miscellaneous.died
-      returnRows.push(returnrow)
+      returnRows.push(returnrow) 
     }
     setScoutingRows(returnRows)
-  };
+    getStatDescription(year, eventKey, (descriptions) => statDescriptionCallback(descriptions, data));
+  }; 
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const params = url.pathname.split("/");
-    const year = params[3];
-    const eventKey = params[4];
-    const team = params[5].replace("team-", "");
-
     if (window.location.hash.length > 0) {
       setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
     }
 
     setTeamNumber(team);
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
-    getStatDescription(year, eventKey, statDescriptionCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
-    getMatchScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
   }, []);
-
+ 
   useEffect(async () => {
     await new Promise((r) => setTimeout(r, 100));
     updateData(teamInfo, keys);
@@ -473,10 +466,16 @@ const Team = () => {
   }
 
   const handleChange = (event, newValue) => {
+    const url = new URL(window.location.href);
+    const params = url.pathname.split("/");
+    const year = params[3];
+    const eventKey = params[4];
+    const team = params[5].replace("team-", "");
     history.push({ hash: tabDict[newValue] });
     setValue(newValue);
     setTabIndex(newValue)
-    getTeamPictures(year, eventCode, team, picturesCallback)
+    getTeamPictures(year, eventKey, team, picturesCallback)
+    getMatchScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
   };
 
   const picturesCallback = (data) => {
@@ -484,7 +483,7 @@ const Team = () => {
       <ImageWithPopup
         key={`data:image/jpeg;base64,${item.file}`} // Make sure to provide a unique key for each image
         imageUrl={`data:image/jpeg;base64,${item.file}`}
-        onDelete={() => handleDeleteImage(item.file)} // Pass the index to the onDelete function
+        onDelete={(password) => handleDeleteImage(item.file, password)} // Pass the index to the onDelete function
       />
     ));
     setPictures(rows);
@@ -492,14 +491,15 @@ const Team = () => {
 
   const uploadStatusCallback = (status, imageSrc) => {
     if (status === 200){
-      getTeamPictures(year, eventCode, team, picturesCallback)
+      getTeamPictures(year, eventKey, team, picturesCallback)
     } else {
       alert("deletion failed, status: " + status)
     }
   }
 
-  const handleDeleteImage = (imageSrc) => {
-    deleteTeamPictures(year, eventCode, team, `data:image/jpeg;base64,${imageSrc}`, (status) => {uploadStatusCallback(status, imageSrc)})
+  const handleDeleteImage = (imageSrc, password) => {
+    console.log(password)
+    deleteTeamPictures(year, eventKey, team, `data:image/jpeg;base64,${imageSrc}`, password, (status) => {uploadStatusCallback(status, imageSrc)})
   };
 
   return (
@@ -723,59 +723,66 @@ const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
-const ActivateButton = ({ data }) => {
+const ActivateButton = React.memo(({ data }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  console.log(data)
   const [activated, setActivated] = useState(data?.active);
   const initText = (bool) => {
     if (bool) {
-      return "deactivate"
+      return "deactivate";
     } else {
-      return "activate"
+      return "activate";
     }
-  }
+  };
   const [text, setText] = useState(initText(activated));
+  const [password, setPassword] = useState('');
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClosePopover = () => {
     setAnchorEl(null);
   };
+
   const handleActivate = () => {
-    console.log(data)
-    if (activated){
-      setText("deactivating...")
-      deactivateMatchData(data, deactivateCallback)
+    if (activated) {
+      setText("deactivating...");
+      deactivateMatchData(data, password, deactivateCallback);
     } else {
-      setText("activating...")
-      activateMatchData(data, activateCallback)
+      setText("activating...");
+      activateMatchData(data, password, activateCallback);
     }
     handleClosePopover();
   };
 
   const deactivateCallback = (status) => {
-    if (status == 200) {
-      setText("activate")
-      setActivated(false)
-      data.active = false
+    if (status === 200) {
+      setText("activate");
+      setActivated(false);
+      data.active = false;
     } else {
-      setText("deactivate")
-      alert("Deactivation Failed")
+      setText("deactivate");
+      alert("Deactivation Failed");
     }
-  }
+  };
 
   const activateCallback = (status) => {
-    if (status == 200) {
-      setText("deactivate")
-      setActivated(true)
-      data.active = true
+    if (status === 200) {
+      setText("deactivate");
+      setActivated(true);
+      data.active = true;
     } else {
-      setText("activate")
-      alert("Activation Failed")
+      setText("activate");
+      alert("Activation Failed");
     }
-  }
+  };
+
+  const handleChangePassword = (e) => {
+    setPassword(e.target.value);
+  };
 
   const open = Boolean(anchorEl);
+
   return (
     <div>
       <Button onClick={handleClick}>
@@ -794,12 +801,22 @@ const ActivateButton = ({ data }) => {
           horizontal: 'center',
         }}
       >
-        <Typography sx={{ p: 2 }}>
-          <Button onClick={handleActivate}>{text}</Button>
-        </Typography>
+        <div style={{ padding: '10px' }}>
+          <TextField
+            label="Password"
+            type="password"
+            variant="outlined"
+            value={password}
+            onChange={handleChangePassword}
+          />
+          <br />
+          <Button variant="contained" color="primary" onClick={handleActivate}>
+            {text}
+          </Button>
+        </div>
       </Popover>
     </div>
   );
-};
+});
 
 export default Team;

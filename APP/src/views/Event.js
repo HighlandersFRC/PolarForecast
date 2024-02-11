@@ -272,7 +272,7 @@ const Tables = () => {
     });
     pitScoutingStatColumns.push({
       field: "picture_status",
-      headerName: "Pit Scouting Pictures",
+      headerName: "Pictures",
       type: "number",
       sortable: true,
       headerAlign: "center",
