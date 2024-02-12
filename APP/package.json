@@ -58,6 +58,7 @@
     "package.json": "^2.0.1",
     "react": ">=16.0.0",
     "react-chartjs-2": "2.11.1",
+    "react-color": "^2.19.3",
     "react-copy-to-clipboard": "5.1.0",
     "react-datetime": "3.1.1",
     "react-dom": ">=16.0.0",

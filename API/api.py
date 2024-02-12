@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import logging
+from types import TracebackType
 from typing import Annotated
 import zipfile
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
@@ -50,7 +51,9 @@ PitStatusCollection = testDB["PitScoutingStatus"]
 PitStatusCollection.create_index( [("event_code", pymongo.ASCENDING)], unique=True)
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
-
+PredictionCollection = testDB["Predictions"]
+PredictionCollection.create_index(
+    [("event_code", pymongo.ASCENDING)], unique=True)
 
 @app.on_event("startup")
 def onStart():
@@ -71,7 +74,7 @@ def onStart():
             pass
         
 @app.get("/{year}/{event}/{team}/stats")
-def event_Team_Stats(year: int, event: str, team: str):
+def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
     data = CalculatedDataCollection.find_one({
         "event_code": str(year) + event,
@@ -132,9 +135,52 @@ def get_Search_Keys():
     return {"data": retval}
 
 @app.get("/{year}/{event}/predictions")
-def get_Event_Predictions():
-    return {"data": []}
+def get_Event_Predictions(year: int, event: str):
+    try:
+        data = PredictionCollection.find_one({"event_code": str(year)+event})
+        data.pop("_id")
+        return {"data": data["data"]}
+    except:
+        return {"data": []}
 
+@app.get("/{year}/{event}/{match_key}/match_details")
+def get_match_details(year: int, event: str, match_key: str):
+    try:
+        event_code = str(year)+event
+        tbaMatch = TBACollection.find_one({"key": match_key})
+        tbaMatch.pop("_id")
+        eventPredictions = PredictionCollection.find_one({"event_code": event_code})
+        matchPrediction = {}
+        for prediction in eventPredictions["data"]:
+            if prediction["key"] == match_key:
+                matchPrediction = prediction
+                break
+        blueTeamStats = []
+        for team in matchPrediction["blue_teams"]:
+            blueTeamStats.append(get_event_Team_Stats(year, event, team))
+        redTeamStats = []
+        for team in matchPrediction["red_teams"]:
+            redTeamStats.append(get_event_Team_Stats(year, event, team))
+        retval = {
+            "match": tbaMatch,
+            "prediction": matchPrediction,
+            "red_teams": redTeamStats,
+            "blue_teams": blueTeamStats
+        }
+        return retval
+    except:
+        raise HTTPException(400)
+
+@app.get("/{year}/{event}/{team}/predictions")
+def get_team_match_predictions(year: int, event: str, team: str):
+    event_code = str(year) + event
+    data = PredictionCollection.find_one({"event_code": event_code})
+    matches = []
+    for alliance in ["red", "blue"]:
+        for match in data["data"]:
+            if match[alliance+"_teams"].__contains__(team):
+                matches.append(match)
+    return {"data": matches}
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
     return json.load(open("StatDescription.json"))
@@ -183,12 +229,6 @@ def getStatus(data: dict, originalStatus: dict):
 events = []
 etag = []
 numRuns = 0
-@app.get("/{year}/{event}/{match_key}/match_details")
-def get_Match_Details(match_key: str):
-    matchData = TBACollection.find_one({"key": match_key})
-    if matchData is not None:
-        matchData.pop("_id")
-    return matchData
     
 @app.post("/MatchScouting/")
 def post_match_scouting(data: dict):
@@ -356,10 +396,9 @@ def convertData(calculatedData, year, event_code):
 
 def updateData(event_code: str):
     TBAData = list(TBACollection.find({'event_key': str(YEAR)+event_code}))
-
     ScoutingData = list(ScoutDataCollection.find(
         {'event_code': YEAR+event_code}))
-    if not TBAData is None:
+    if TBAData is not None:
         calculatedData = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
@@ -371,7 +410,75 @@ def updateData(event_code: str):
                 CalculatedDataCollection.update_one({"event_code": YEAR+event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
                 pass
+        updatePredictions(TBAData, data, event_code)
 
+def updatePredictions(TBAData, calculatedData, event_code):
+    matchPredictions = []
+    for match in TBAData:
+        matchPrediction = {
+            "comp_level": match["comp_level"],
+            "key": match["key"],
+            "match_number": match["match_number"],
+            "set_number": match["set_number"],
+            "blue_teams": match["alliances"]["blue"]["team_keys"],
+            "blue_score": 0,
+            "blue_highCubes": 0,
+            "blue_highCones": 0,
+            "blue_midCubes": 0,
+            "blue_midCones": 0,
+            "blue_low": 0,
+            "blue_links": 0,
+            "blue_autoChargeStation": 0,
+            "blue_endGame": 0,
+            "blue_autoElements": 0,
+            "blue_chargeStation": 0,
+            "blue_actual_score": match["alliances"]["blue"]["score"],
+            "red_teams": match["alliances"]["red"]["team_keys"],
+            "red_score": 0,
+            "red_highCubes": 0,
+            "red_highCones": 0,
+            "red_midCubes": 0,
+            "red_midCones": 0,
+            "red_low": 0,
+            "red_links": 0,
+            "red_autoChargeStation": 0,
+            "red_endGame": 0,
+            "red_autoElements": 0,
+            "red_chargeStation": 0,
+            "red_actual_score": match["alliances"]["red"]["score"],
+            "blue_win_rp": 2 if match["alliances"]["red"]["score"] < match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
+            "red_win_rp": 2 if match["alliances"]["red"]["score"] > match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
+            "blue_charge_rp": 0,
+            "red_charge_rp": 0,
+            "blue_link_rp": 0,
+            "red_link_rp": 0
+        }
+        for alliance in match["alliances"]:
+            for team in match["alliances"][alliance]["team_keys"]:
+                teamData = {}
+                for i in range(1, len(calculatedData)):
+                    if calculatedData[i]["key"] == team:
+                        teamData = calculatedData[i]
+                matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                matchPrediction[f"{alliance}_highCubes"] += (teamData["teleopHighCubes"] + teamData["autoHighCubes"])
+                matchPrediction[f"{alliance}_highCones"] += (teamData["teleopHighCones"] + teamData["autoHighCones"])
+                matchPrediction[f"{alliance}_midCubes"] += (teamData["teleopMidCubes"] + teamData["autoMidCubes"])
+                matchPrediction[f"{alliance}_midCones"] += (teamData["teleopMidCones"] + teamData["autoMidCones"])
+                matchPrediction[f"{alliance}_low"] += (teamData["teleopLow"] + teamData["autoLow"])
+                matchPrediction[f"{alliance}_links"] += teamData["linkPoints"]
+                matchPrediction[f"{alliance}_autoChargeStation"] += teamData["autoChargeStation"]
+                matchPrediction[f"{alliance}_chargeStation"] += teamData["endGameChargeStation"]
+                matchPrediction[f"{alliance}_endGame"] += teamData["endgamePoints"]
+                matchPrediction[f"{alliance}_autoElements"] += teamData["autoElementsScored"]
+        matchPredictions.append(matchPrediction)
+    try:
+        PredictionCollection.insert_one({"event_code": YEAR+event_code, "data": matchPredictions})
+    except Exception as e:
+        try:
+            PredictionCollection.find_one_and_replace({"event_code": YEAR+event_code}, {"event_code": YEAR+event_code, "data": matchPredictions})
+        except Exception as ex:
+            pass
+                
 @app.put("/{password}/Deactivate")
 def deactivate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
@@ -418,7 +525,7 @@ def update_database():
                 try:
                     updateData(event["event_code"])
                 except Exception as e:
-                    pass
+                    print(e)
             i += 1
         numRuns += 1
         eventTeams = []
@@ -439,4 +546,4 @@ def update_database():
             except Exception as e:
                 pass
     except Exception as e:
-        pass
+        print(e)

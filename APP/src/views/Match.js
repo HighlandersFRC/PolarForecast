@@ -28,12 +28,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Box from "@mui/material/Box";
 import "../assets/css/polar-css.css";
-import { IconButton } from "@mui/material";
-import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import DrawingCanvas from "components/WhiteBoard";
 
 const Match = () => {
   const history = useHistory();
+  const url = new URL(window.location.href);
+  const serverPath = url.pathname.split("/")[0];
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [matchTitle, setMatchTitle] = useState(false);
@@ -118,10 +118,6 @@ const Match = () => {
 
   const statisticsTeamOnClick = (cellValues) => {
     history.push("team-" + cellValues.team);
-  };
-
-  const rightOnClick = (cellValues) => {
-    // history.push("team-" + cellValues.team);
   };
 
   const matchInfoCallback = async (restData) => {
@@ -216,10 +212,10 @@ const Match = () => {
       ${Math.round(restData?.prediction?.red_win_rp)} RPs`);
     setRedTitle(
       ": " +
-        String(Math.round(restData?.prediction?.red_score)) +
-        " Points, " +
-        String(Math.round(restData?.prediction?.red_win_rp)) +
-        " RPs"
+      String(Math.round(restData?.prediction?.red_score)) +
+      " Points, " +
+      String(Math.round(restData?.prediction?.red_win_rp)) +
+      " RPs"
     );
 
     setLoading(false);
@@ -245,16 +241,16 @@ const Match = () => {
               <div style={{ width: "100%" }}>
                 <Card className="polar-box">
                   <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                      {/* {matchNumber.split("_").length } */}
-                      {/* <IconButton>
-                        <ArrowLeftIcon />
-                      </IconButton> */}
-                      <h1 className="text-white mb-0">Match {matchTitle}</h1>
-                      {/* <IconButton>
-                        <ArrowRightIcon 
-                          onClick={rightOnClick}
-                        />
-                      </IconButton> */}
+                    {/* {matchNumber.split("_").length } */}
+                    {/* <IconButton>
+                    <ArrowLeftIcon />
+                  </IconButton> */}
+                    <h1 className="text-white mb-0">Match {matchTitle}</h1>
+                    {/* <IconButton>
+                    <ArrowRightIcon 
+                      onClick={rightOnClick}
+                    />
+                  </IconButton> */}
                   </CardHeader>
                 </Card>
               </div>
@@ -360,6 +356,7 @@ const Match = () => {
               </div>
             </Row>
           </Container>
+          <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
         </div>
       </ThemeProvider>
     </>
