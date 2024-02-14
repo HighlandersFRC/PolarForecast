@@ -483,13 +483,13 @@ const Team = () => {
       <ImageWithPopup
         key={`data:image/jpeg;base64,${item.file}`} // Make sure to provide a unique key for each image
         imageUrl={`data:image/jpeg;base64,${item.file}`}
-        onDelete={(password) => handleDeleteImage(item.file, password)} // Pass the index to the onDelete function
+        onDelete={(password) => handleDeleteImage(item._id, password)} // Pass the index to the onDelete function
       />
     ));
     setPictures(rows);
   };
 
-  const uploadStatusCallback = (status, imageSrc) => {
+  const uploadStatusCallback = (status) => {
     if (status === 200){
       getTeamPictures(year, eventKey, team, picturesCallback)
     } else {
@@ -497,9 +497,8 @@ const Team = () => {
     }
   }
 
-  const handleDeleteImage = (imageSrc, password) => {
-    console.log(password)
-    deleteTeamPictures(year, eventKey, team, `data:image/jpeg;base64,${imageSrc}`, password, (status) => {uploadStatusCallback(status, imageSrc)})
+  const handleDeleteImage = (id, password) => {
+    deleteTeamPictures(year, eventKey, team, id, password, (status) => {uploadStatusCallback(status)})
   };
 
   return (

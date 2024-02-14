@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { getMatchDetails } from 'api';
 import { Switch, typographyClasses } from '@mui/material';
-import { postMatchScouting } from 'api';
+import { postMatchScouting, putMatchScouting} from 'api';
 import { QRCode } from 'react-qrcode-logo';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
@@ -39,10 +39,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   const [showReset, setShowReset] = useState(false)
   const [matchTeamsData, setMatchTeams] = useState([]);
   const [text, setText] = useState("")
+  const [update, setUpdate] = useState(false)
 
   useEffect(() => {
     if (text == "Unable to Submit.") setText(text + " Use QR Code")
   }, [text])
+
   const matchDataCallback = (data) => {
     setMatchTeams(data)
     const updatedData = { ...formData };
@@ -76,7 +78,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       return updatedData
     });
     if (field === "match_number"){
-      getMatchDetails(year, event, eventCode+"_qm"+value, matchDataCallback);
+      getMatchDetails(year, event, eventCode+"_qm"+value, (data) => matchDataCallback(data.match));
     }
   };
 
@@ -88,16 +90,32 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     }));
     setText("Submitting...")
     setShowReset(true)
-    postMatchScouting(formData, MatchScoutingStatusCallback);
+    postMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, false));
   };
 
-  const MatchScoutingStatusCallback = ([status, response])=>{
-    if (status === 200){
-      setShowQRCode(false)
-      setText("Submission Successful")
+  const MatchScoutingStatusCallback = ([status, response], update)=>{
+    console.log(status)
+    if (!update){
+      if (status === 200){
+        setShowQRCode(false)
+        setText("Submission Successful")
+      } else if (status === 307){
+        setUpdate(true)
+        setShowQRCode(false)
+        setText("There is already an entry for this match. Do you want to update it?")
+      } else {
+        setShowQRCode(true)
+        setText(response.detail)
+      }
     } else {
-      setShowQRCode(true)
-      setText(response.detail)
+      if (status === 200){
+        setShowQRCode(false)
+        setUpdate(false)
+        setText("Submission Successful")
+      } else {
+        setShowQRCode(true)
+        setText(response.detail)
+      }
     }
   }
 
@@ -122,6 +140,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   const handleReset = () => {
     setShowQRCode(false)
     setShowReset(false)
+    setUpdate(false)
     setText('')
     setFormData((prevData) => {
       prevData.match_number += 1
@@ -136,6 +155,17 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
     })
     handleScroll()
   }
+
+  const handleUpdate = () => {
+    // Set the "Time" field to the current UTC timestamp when submitting the form
+    setFormData((prevData) => ({
+      ...prevData,
+      time: Math.floor(new Date().getTime() / 1000), // Current UTC timestamp in seconds
+    }));
+    setText("Submitting...")
+    setShowReset(true)
+    putMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, true));
+  };
 
   return (
     <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
@@ -218,9 +248,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
           color="warning"
         />
       </div>
-      <Button variant="contained" onClick={handleSubmit}>
+      {!update && <Button variant="contained" onClick={handleSubmit}>
         Submit
-      </Button>
+      </Button>}
+      { update && <Button variant="contained" onClick={handleUpdate}>
+        Update
+      </Button>}
       <h1 className="text-white mb-0">{text}</h1>
       {showQRCode && (
         <>

@@ -5,6 +5,7 @@ import logging
 from types import TracebackType
 from typing import Annotated
 import zipfile
+from bson import ObjectId
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -97,7 +98,6 @@ def get_event_Team_Stats(year: int, event: str, team: str):
         return doc
     except Exception as e:
         return doc
-    
 
 @app.get("/{year}/{event}/{team}/matches")
 def get_Team_Event_Matches(year: int, event:str, team:str):
@@ -183,7 +183,10 @@ def get_team_match_predictions(year: int, event: str, team: str):
     return {"data": matches}
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
-    return json.load(open("StatDescription.json"))
+    file = open("StatDescription.json")
+    description = json.load(file)
+    file.close()
+    return description
 
 @app.get("/{year}/{event}/{team}/PitScouting")
 def get_pit_scouting_data(year: int, event:str, team:str):
@@ -232,47 +235,81 @@ numRuns = 0
     
 @app.post("/MatchScouting/")
 def post_match_scouting(data: dict):
+    eventCode = data["event_code"]
+    matchNumber = data["match_number"]
+    teamNumber = data["team_number"]
+    scoutName = data["scout_info"]["name"]
+    if scoutName == "":
+        raise HTTPException(400, "Check Your Scout Name")
+    match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
+    if match is None:
+        raise HTTPException(400, "Check Your Match Number")
+    exists = False
+    for i in range(2):
+        if i == 0:
+            allianceStr = "blue"
+        else:
+            allianceStr = "red"
+        if (match["alliances"][allianceStr]["team_keys"].__contains__("frc"+str(data["team_number"]))):
+            exists = True
+    if not exists:
+        eventStatus = PitStatusCollection.find_one({"event_code": eventCode})
+        teamNumberExists = False
+        for x in eventStatus["data"]:
+            if x["key"] == str(teamNumber):
+                teamNumberExists = True
+                break
+        if teamNumberExists:
+            raise HTTPException(400, "Check Your Match And Team Number")
+        else:
+            raise HTTPException(400, "Check Your Team Number")
+    data["team_number"] = str(data["team_number"])
     try:
-        eventCode = data["event_code"]
-        matchNumber = data["match_number"]
-        teamNumber = data["team_number"]
-        scoutName = data["scout_info"]["name"]
-        if scoutName == "":
-            raise HTTPException(400, "Check Your Scout Name")
-        match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
-        if match is None:
-            raise HTTPException(400, "Check Your Match Number")
-        exists = False
-        for i in range(2):
-            if i == 0:
-                allianceStr = "blue"
-            else:
-                allianceStr = "red"
-            if (match["alliances"][allianceStr]["team_keys"].__contains__("frc"+str(data["team_number"]))):
-                exists = True
-        if not exists:
-            eventStatus = PitStatusCollection.find_one({"event_code": eventCode})
-            teamNumberExists = False
-            for x in eventStatus["data"]:
-                if x["key"] == str(teamNumber):
-                    teamNumberExists = True
-                    break
-            if teamNumberExists:
-                raise HTTPException(400, "Check Your Match And Team Number")
-            else:
-                raise HTTPException(400, "Check Your Team Number")
-        data["team_number"] = str(data["team_number"])
         ScoutingData2024Collection.insert_one(data)
-        data.pop("_id")
-        return data
-    except Exception as e:
-        raise HTTPException(400, str(e))
+    except pymongo.errors.DuplicateKeyError as e:
+        raise HTTPException(status_code=307, detail="Duplicate Entry")
+    data.pop("_id")
+    return data
+
+@app.put("/MatchScouting/")
+def update_match_scouting(data: dict):
+    eventCode = data["event_code"]
+    matchNumber = data["match_number"]
+    teamNumber = data["team_number"]
+    scoutName = data["scout_info"]["name"]
+    if scoutName == "":
+        raise HTTPException(400, "Check Your Scout Name")
+    match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
+    if match is None:
+        raise HTTPException(400, "Check Your Match Number")
+    exists = False
+    for i in range(2):
+        if i == 0:
+            allianceStr = "blue"
+        else:
+            allianceStr = "red"
+        if (match["alliances"][allianceStr]["team_keys"].__contains__("frc"+str(data["team_number"]))):
+            exists = True
+    if not exists:
+        eventStatus = PitStatusCollection.find_one({"event_code": eventCode})
+        teamNumberExists = False
+        for x in eventStatus["data"]:
+            if x["key"] == str(teamNumber):
+                teamNumberExists = True
+                break
+        if teamNumberExists:
+            raise HTTPException(400, "Check Your Match And Team Number")
+        else:
+            raise HTTPException(400, "Check Your Team Number")
+    data["team_number"] = str(data["team_number"])
+    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+    return data
 
 def get_pictures(team: str, event: str, year: int):
     key = str(year) + event + "_" + team
     # Query the collection using the key
     pictures = PictureCollection.find({"key": key})
-
+    
     if pictures:
         return pictures
     else:
@@ -288,9 +325,10 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: 
     for picture in pictures:
         content_type = picture["content_type"]
         file_content = picture["file"]
+        id = str(picture["_id"])
         # Encode the binary data as base64
         file_content_base64 = base64.b64encode(file_content).decode("utf-8")
-        image_data.append({"content_type": content_type, "file": file_content_base64})
+        image_data.append({"content_type": content_type, "file": file_content_base64, "_id": id})
 
     # Return the list of image data as a JSON response
     return image_data
@@ -322,15 +360,16 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
     PictureCollection.insert_one(file_data)
     return {"message": "File uploaded successfully"}
 
+class ID(BaseModel):
+    id: str
+
 @app.delete("/{year}/{event}/{team}/{password}/DeletePictures/")
-def delete_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int, password: str):
+def delete_pit_scouting_pictures(objectid: ID, team: str, event:str, year:int, password: str):
     if password == EDIT_PASSWORD:
-        file_content = data.file.read()
-        delete_result = PictureCollection.delete_many({"file": file_content})
+        delete_result = PictureCollection.delete_many({"_id": ObjectId(objectid.id)})
         pictures = PictureCollection.find({
             "key": str(year) + event + "_" + team,
         })
-        print(len(list(pictures)))
         status = get_pit_status(year, event)
         if len(list(pictures)) == 0:
             rows = status["data"]
@@ -500,6 +539,7 @@ def activate_match_data(data: dict, password: str):
 @app.get("/")
 def read_root():
     return {"polar": "forecast"}
+
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():

@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://127.0.0.1:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -237,9 +237,30 @@ export const postMatchScouting = async (data, callback) => {
       },
       body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
-    callback(response.status); // parses JSON response into native JavaScript objects
+    const detail = await response.json()
+    const status = response.status
+    callback([status, detail]); // parses JSON response into native JavaScript objects
   } catch (e) {
-    callback(0)
+    callback([0, {detail: "Failed"}])
+  }
+}
+
+export const putMatchScouting = async (data, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/MatchScouting/`;
+    console.log(endpoint)
+    let retval;
+    let json = JSON.stringify(data)
+    const response = await fetch(endpoint, {
+      method: "PUT", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    callback([response.status, await response.json()]); // parses JSON response into native JavaScript objects
+  } catch (e) {
+    callback([0, {detail: "Failed"}])
     return 0
   }
 }
@@ -269,7 +290,7 @@ export const getTeamPictures = async (year, event, team, callback) => {
     const storage_name = `${year}${event}_${team}_Pictures`;
     const data = null
     if (data === null) {
-      const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/getPictures`
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/frc${team}/getPictures`
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.ok) {
@@ -305,16 +326,20 @@ export const postTeamPictures = async (year, event, team, data, callback) => {
   }
 };
 
-export const deleteTeamPictures = async (year, event, team, data, callback) => {
+export const deleteTeamPictures = async (year, event, team, data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/DeletePictures/`;
+    console.log(password)
+    console.log(data)
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/${password}/DeletePictures/`;
     console.log(endpoint);
-    const blob = dataURItoBlob(data);
-    const formData = new FormData();
-    formData.append('data', blob, 'image.jpg');
+    const body = {"id": data}
+    console.log(body)
     const response = await fetch(endpoint, {
-      method: 'POST',
-      body: formData,
+      method: 'DELETE',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     });
     callback(response.status);
   } catch (e) {
@@ -404,12 +429,12 @@ export const getMatchScoutingData = async (year, event, team, callback) => {
   }
 }
 
-export const deactivateMatchData = async (data, callback) => {
+export const deactivateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/Deactivate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Deactivate/`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      method: "PUT", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
       },
@@ -422,12 +447,12 @@ export const deactivateMatchData = async (data, callback) => {
   }
 }
 
-export const activateMatchData = async (data, callback) => {
+export const activateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/Activate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Activate/`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      method: "PUT", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
       },

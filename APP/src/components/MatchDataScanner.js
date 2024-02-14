@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { postMatchScouting } from "api";
+import { postMatchScouting , putMatchScouting} from "api";
 import React, { useState } from "react";
 import QrReader from "react-web-qr-reader";
 
@@ -14,6 +14,8 @@ const MatchDataScanner = () => {
     const [result, setResult] = useState("No result");
     const [show, setShow] = useState(true)
     const [statusText, setStatusText] = useState("")
+    const [update, setUpdate] = useState(false)
+
     const handleScan = (result) => {
         if (result?.data) {
             setResult(result?.data);
@@ -25,25 +27,53 @@ const MatchDataScanner = () => {
     };
 
     const handleSubmit = () => {
+        // Set the "Time" field to the current UTC timestamp when submitting the form
         try {
-            setShow(false)
             setStatusText("Submitting...")
-            postMatchScouting(JSON.parse(result), dataCallback)
+            setShow(false)
+            postMatchScouting(JSON.parse(result), (data) => MatchScoutingStatusCallback(data, false));
         } catch {
-            setStatusText("Invalid Submission")
+            setShow(false)
+            setStatusText("Invalid entry")
+        }
+    };
+
+    const MatchScoutingStatusCallback = ([status, response], update) => {
+        console.log(status)
+        if (!update) {
+            if (status === 200) {
+                setStatusText("Submission Successful")
+            } else if (status === 307) {
+                setUpdate(true)
+                setStatusText("There is already an entry for this match. Do you want to update it?")
+            } else {
+                setStatusText(response.detail)
+            }
+        } else {
+            if (status === 200) {
+                setUpdate(false)
+                setStatusText("Submission Successful")
+            } else {
+                setStatusText(response.detail)
+            }
         }
     }
 
-    const dataCallback = (status) => {
-        if (status = 200) {
-            setStatusText("Successful Submission")
-        } else {
-            setStatusText("Submission Failed")
+    const handleUpdate = () => {
+        // Set the "Time" field to the current UTC timestamp when submitting the form
+        try {
+            setStatusText("Submitting...")
+            setShow(false)
+            putMatchScouting(JSON.parse(result), (data) => MatchScoutingStatusCallback(data, true));
+        } catch {
+            setShow(false)
+            setStatusText("Invalid entry")
         }
-    }
+    };
 
     const tryAgain = () => {
         setShow(true)
+        setResult("No Result")
     }
 
     return (
@@ -55,19 +85,22 @@ const MatchDataScanner = () => {
                     onError={handleError}
                     onScan={handleScan}
                 />
-                <br />
-                <br />
-                <br />
-                <br />
+                <br/>
+                <br/>
+                <br/>
+                <br/>
                 <p className="text-white mb-0">{result}</p>
                 <Button variant="contained" onClick={handleSubmit}>
                     Submit
                 </Button>
             </>}
-            {!show &&<>
+            {!show && <>
                 <h1 className="text-white mb-0">{statusText}</h1>
+                {update && <Button variant="contained" onClick={handleUpdate}>
+                    Update
+                </Button>}
                 <Button variant="contained" onClick={tryAgain}>
-                    Try Again
+                    Scan Again
                 </Button>
             </>
             }
