@@ -565,7 +565,7 @@ def update_database():
                 try:
                     updateData(event["event_code"])
                 except Exception as e:
-                    print(e)
+                    pass
             i += 1
         numRuns += 1
         eventTeams = []
@@ -586,4 +586,4 @@ def update_database():
             except Exception as e:
                 pass
     except Exception as e:
-        print(e)
+        pass

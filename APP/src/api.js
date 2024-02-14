@@ -328,12 +328,9 @@ export const postTeamPictures = async (year, event, team, data, callback) => {
 
 export const deleteTeamPictures = async (year, event, team, data, password, callback) => {
   try {
-    console.log(password)
-    console.log(data)
     const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/${password}/DeletePictures/`;
     console.log(endpoint);
     const body = {"id": data}
-    console.log(body)
     const response = await fetch(endpoint, {
       method: 'DELETE',
       headers: {
@@ -350,7 +347,6 @@ export const deleteTeamPictures = async (year, event, team, data, password, call
 
 // Function to convert data URI to Blob
 function dataURItoBlob(dataURI) {
-  console.log(dataURI)
   const byteString = atob(dataURI.split(',')[1]);
   const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
   const ab = new ArrayBuffer(byteString.length);

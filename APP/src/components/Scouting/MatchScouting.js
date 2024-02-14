@@ -94,7 +94,6 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
   };
 
   const MatchScoutingStatusCallback = ([status, response], update)=>{
-    console.log(status)
     if (!update){
       if (status === 200){
         setShowQRCode(false)

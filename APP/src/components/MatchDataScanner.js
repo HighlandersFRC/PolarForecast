@@ -39,7 +39,6 @@ const MatchDataScanner = () => {
     };
 
     const MatchScoutingStatusCallback = ([status, response], update) => {
-        console.log(status)
         if (!update) {
             if (status === 200) {
                 setStatusText("Submission Successful")
