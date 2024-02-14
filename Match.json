@@ -1,0 +1,546 @@
+{
+  "match": {
+    "actual_time": 1680879042,
+    "alliances": {
+      "blue": {
+        "dq_team_keys": [],
+        "score": 54,
+        "surrogate_team_keys": [],
+        "team_keys": [
+          "frc5002",
+          "frc7111",
+          "frc8788"
+        ]
+      },
+      "red": {
+        "dq_team_keys": [],
+        "score": 152,
+        "surrogate_team_keys": [],
+        "team_keys": [
+          "frc3937",
+          "frc4499",
+          "frc6302"
+        ]
+      }
+    },
+    "comp_level": "qm",
+    "event_key": "2023alhu",
+    "key": "2023alhu_qm7",
+    "match_number": 7,
+    "post_result_time": 1680879247,
+    "predicted_time": 1680879198,
+    "score_breakdown": {
+      "blue": {
+        "activationBonusAchieved": false,
+        "adjustPoints": 0,
+        "autoBridgeState": "NotLevel",
+        "autoChargeStationPoints": 8,
+        "autoChargeStationRobot1": "Docked",
+        "autoChargeStationRobot2": "None",
+        "autoChargeStationRobot3": "None",
+        "autoCommunity": {
+          "B": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Cone"
+          ],
+          "M": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+          ],
+          "T": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "Cube",
+            "None",
+            "None",
+            "None",
+            "None"
+          ]
+        },
+        "autoDocked": true,
+        "autoGamePieceCount": 2,
+        "autoGamePiecePoints": 9,
+        "autoMobilityPoints": 3,
+        "autoPoints": 20,
+        "coopGamePieceCount": 2,
+        "coopertitionCriteriaMet": false,
+        "endGameBridgeState": "Level",
+        "endGameChargeStationPoints": 10,
+        "endGameChargeStationRobot1": "None",
+        "endGameChargeStationRobot2": "Docked",
+        "endGameChargeStationRobot3": "Park",
+        "endGameParkPoints": 2,
+        "foulCount": 0,
+        "foulPoints": 5,
+        "linkPoints": 5,
+        "links": [
+          {
+            "nodes": [
+              5,
+              6,
+              7
+            ],
+            "row": "Bottom"
+          }
+        ],
+        "mobilityRobot1": "No",
+        "mobilityRobot2": "No",
+        "mobilityRobot3": "Yes",
+        "rp": 0,
+        "sustainabilityBonusAchieved": false,
+        "techFoulCount": 0,
+        "teleopCommunity": {
+          "B": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Cone",
+            "Cone",
+            "Cone",
+            "Cone"
+          ],
+          "M": [
+            "Cone",
+            "Cube",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+          ],
+          "T": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "Cube",
+            "None",
+            "None",
+            "None",
+            "None"
+          ]
+        },
+        "teleopGamePieceCount": 7,
+        "teleopGamePiecePoints": 12,
+        "teleopPoints": 24,
+        "totalChargeStationPoints": 18,
+        "totalPoints": 54
+      },
+      "red": {
+        "activationBonusAchieved": true,
+        "adjustPoints": 0,
+        "autoBridgeState": "Level",
+        "autoChargeStationPoints": 12,
+        "autoChargeStationRobot1": "Docked",
+        "autoChargeStationRobot2": "None",
+        "autoChargeStationRobot3": "None",
+        "autoCommunity": {
+          "B": [
+            "Cube",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+          ],
+          "M": [
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+          ],
+          "T": [
+            "Cone",
+            "None",
+            "None",
+            "Cone",
+            "None",
+            "None",
+            "None",
+            "None",
+            "None"
+          ]
+        },
+        "autoDocked": true,
+        "autoGamePieceCount": 3,
+        "autoGamePiecePoints": 15,
+        "autoMobilityPoints": 6,
+        "autoPoints": 33,
+        "coopGamePieceCount": 5,
+        "coopertitionCriteriaMet": true,
+        "endGameBridgeState": "Level",
+        "endGameChargeStationPoints": 20,
+        "endGameChargeStationRobot1": "Docked",
+        "endGameChargeStationRobot2": "Docked",
+        "endGameChargeStationRobot3": "Park",
+        "endGameParkPoints": 2,
+        "foulCount": 1,
+        "foulPoints": 0,
+        "linkPoints": 30,
+        "links": [
+          {
+            "nodes": [
+              0,
+              1,
+              2
+            ],
+            "row": "Bottom"
+          },
+          {
+            "nodes": [
+              0,
+              1,
+              2
+            ],
+            "row": "Mid"
+          },
+          {
+            "nodes": [
+              4,
+              5,
+              6
+            ],
+            "row": "Mid"
+          },
+          {
+            "nodes": [
+              0,
+              1,
+              2
+            ],
+            "row": "Top"
+          },
+          {
+            "nodes": [
+              3,
+              4,
+              5
+            ],
+            "row": "Top"
+          },
+          {
+            "nodes": [
+              6,
+              7,
+              8
+            ],
+            "row": "Top"
+          }
+        ],
+        "mobilityRobot1": "Yes",
+        "mobilityRobot2": "Yes",
+        "mobilityRobot3": "No",
+        "rp": 4,
+        "sustainabilityBonusAchieved": true,
+        "techFoulCount": 0,
+        "teleopCommunity": {
+          "B": [
+            "Cube",
+            "Cube",
+            "Cube",
+            "None",
+            "None",
+            "None",
+            "None",
+            "Cube",
+            "Cube"
+          ],
+          "M": [
+            "Cone",
+            "Cube",
+            "Cone",
+            "None",
+            "Cube",
+            "Cone",
+            "Cone",
+            "Cube",
+            "Cone"
+          ],
+          "T": [
+            "Cone",
+            "Cube",
+            "Cone",
+            "Cone",
+            "Cube",
+            "Cone",
+            "Cone",
+            "Cube",
+            "Cone"
+          ]
+        },
+        "teleopGamePieceCount": 22,
+        "teleopGamePiecePoints": 67,
+        "teleopPoints": 89,
+        "totalChargeStationPoints": 32,
+        "totalPoints": 152
+      }
+    },
+    "set_number": 1,
+    "time": 1680878880,
+    "videos": [
+      {
+        "key": "UpDWmarVB6o",
+        "type": "youtube"
+      }
+    ],
+    "winning_alliance": "red"
+  },
+  "prediction": {
+    "comp_level": "qm",
+    "key": "2023alhu_qm7",
+    "match_number": 7,
+    "set_number": 1,
+    "blue_teams": [
+      "frc5002",
+      "frc7111",
+      "frc8788"
+    ],
+    "blue_score": 72.02466360872072,
+    "blue_highCubes": 2.006812208065648,
+    "blue_highCones": 0.36810793968038724,
+    "blue_midCubes": 2.39459116000965,
+    "blue_midCones": 0.5972991124743894,
+    "blue_low": 5.361205402496362,
+    "blue_links": 6.923463489803737,
+    "blue_autoChargeStation": 9.666666666666666,
+    "blue_endGame": 16.53333333333333,
+    "blue_autoElements": 1.678517757741956,
+    "blue_chargeStation": 14.166666666666668,
+    "blue_actual_score": 54,
+    "red_teams": [
+      "frc3937",
+      "frc4499",
+      "frc6302"
+    ],
+    "red_score": 143.8972853372195,
+    "red_highCubes": 3.7632829145415747,
+    "red_highCones": 7.168102214923419,
+    "red_midCubes": 1.8539442777457225,
+    "red_midCones": 4.427542111528437,
+    "red_low": 4.1611097674559545,
+    "red_links": 33.416320079237394,
+    "red_autoChargeStation": 9.45,
+    "red_endGame": 10.233333333333334,
+    "red_autoElements": 2.674027574589426,
+    "red_chargeStation": 7.683333333333333,
+    "red_actual_score": 152,
+    "blue_win_rp": 0,
+    "red_win_rp": 2,
+    "blue_charge_rp": 0,
+    "red_charge_rp": 0,
+    "blue_link_rp": 0,
+    "red_link_rp": 0
+  },
+  "red_teams": [
+    {
+      "historical": false,
+      "key": "frc3937",
+      "mobility": 3.0,
+      "autoChargeStation": 4.0,
+      "endGameChargeStation": 1.3333333333333333,
+      "rank": 0,
+      "autoHighCubes": 0.0,
+      "autoHighCones": 0.7553244716452124,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.0,
+      "autoLow": 0.0,
+      "teleopHighCubes": 1.1323275253617298,
+      "teleopHighCones": 2.4068984680551995,
+      "teleopMidCones": 2.984218134289795,
+      "teleopMidCubes": 0.8574054765732226,
+      "teleopLow": 2.711552274906236,
+      "autoElementsScored": 0.7553244716452124,
+      "teleopElementsScored": 10.092401879186184,
+      "elementsScored": 10.847726350831396,
+      "links": 2.996786935585222,
+      "linkPoints": 14.98393467792611,
+      "autoPoints": 11.531946829871274,
+      "teleopPoints": 34.64410534948617,
+      "endgamePoints": 2.9333333333333336,
+      "OPR": 64.09332019061688,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    },
+    {
+      "historical": false,
+      "key": "frc4499",
+      "mobility": 3.0,
+      "autoChargeStation": 4.25,
+      "endGameChargeStation": 5.75,
+      "rank": 0,
+      "autoHighCubes": 0.8717514139300038,
+      "autoHighCones": 0.7614682734363734,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.2854834155778363,
+      "autoLow": 0.0,
+      "teleopHighCubes": 1.4407356922933188,
+      "teleopHighCones": 3.2444110017866334,
+      "teleopMidCones": 1.443323977238642,
+      "teleopMidCubes": 0.7110553855946635,
+      "teleopLow": 1.449557492549718,
+      "autoElementsScored": 1.9187031029442134,
+      "teleopElementsScored": 8.289083549462976,
+      "elementsScored": 10.20778665240719,
+      "links": 2.8294927434423207,
+      "linkPoints": 14.147463717211604,
+      "autoPoints": 18.191251786509607,
+      "teleopPoints": 32.78798654399911,
+      "endgamePoints": 6.5,
+      "OPR": 71.62670204772033,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    },
+    {
+      "historical": false,
+      "key": "frc6302",
+      "mobility": 0.3,
+      "autoChargeStation": 1.2,
+      "endGameChargeStation": 0.6,
+      "rank": 0,
+      "autoHighCubes": 0.0,
+      "autoHighCones": 0.0,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.0,
+      "autoLow": 0.0,
+      "teleopHighCubes": 0.31846828295652235,
+      "teleopHighCones": 0.0,
+      "teleopMidCones": 0.0,
+      "teleopMidCubes": 0.0,
+      "teleopLow": 0.0,
+      "autoElementsScored": 0.0,
+      "teleopElementsScored": 0.31846828295652235,
+      "elementsScored": 0.31846828295652235,
+      "links": 0.8569843368199352,
+      "linkPoints": 4.284921684099676,
+      "autoPoints": 1.5,
+      "teleopPoints": 1.5923414147826118,
+      "endgamePoints": 0.8,
+      "OPR": 8.177263098882289,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    }
+  ],
+  "blue_teams": [
+    {
+      "historical": false,
+      "key": "frc5002",
+      "mobility": 1.75,
+      "autoChargeStation": 9.666666666666666,
+      "endGameChargeStation": 7.166666666666667,
+      "rank": 0,
+      "autoHighCubes": 0.7048671189773649,
+      "autoHighCones": 0.0,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.0,
+      "autoLow": 0.0,
+      "teleopHighCubes": 0.6653963294486691,
+      "teleopHighCones": 0.36810793968038724,
+      "teleopMidCones": 0.0,
+      "teleopMidCubes": 0.03432065251182072,
+      "teleopLow": 2.4958364471070227,
+      "autoElementsScored": 0.7048671189773649,
+      "teleopElementsScored": 3.5636613687478995,
+      "elementsScored": 4.2685284877252645,
+      "links": 0.37919277993632555,
+      "linkPoints": 1.8959638996816277,
+      "autoPoints": 15.645869380530854,
+      "teleopPoints": 10.26215619739479,
+      "endgamePoints": 7.333333333333334,
+      "OPR": 35.1373228109406,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    },
+    {
+      "historical": false,
+      "key": "frc7111",
+      "mobility": 1.8,
+      "autoChargeStation": 0.0,
+      "endGameChargeStation": 5.0,
+      "rank": 0,
+      "autoHighCubes": 0.0,
+      "autoHighCones": 0.0,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.9736506387645912,
+      "autoLow": 0.0,
+      "teleopHighCubes": 0.49577080983979394,
+      "teleopHighCones": 0.0,
+      "teleopMidCones": 0.5972991124743894,
+      "teleopMidCubes": 1.3866198687332383,
+      "teleopLow": 1.1899733731594913,
+      "autoElementsScored": 0.9736506387645912,
+      "teleopElementsScored": 3.669663164206913,
+      "elementsScored": 4.643313802971504,
+      "links": 0.20629953487714264,
+      "linkPoints": 1.0314976743857132,
+      "autoPoints": 5.694602555058365,
+      "teleopPoints": 10.810557739140835,
+      "endgamePoints": 5.8,
+      "OPR": 23.336657968584912,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    },
+    {
+      "historical": false,
+      "key": "frc8788",
+      "mobility": 2.1,
+      "autoChargeStation": 0.0,
+      "endGameChargeStation": 2.0,
+      "rank": 0,
+      "autoHighCubes": 0.0,
+      "autoHighCones": 0.0,
+      "autoMidCones": 0.0,
+      "autoMidCubes": 0.0,
+      "autoLow": 0.0,
+      "teleopHighCubes": 0.14077794979981978,
+      "teleopHighCones": 0.0,
+      "teleopMidCones": 0.0,
+      "teleopMidCubes": 0.0,
+      "teleopLow": 1.6753955822298474,
+      "autoElementsScored": 0.0,
+      "teleopElementsScored": 1.8161735320296672,
+      "elementsScored": 1.8161735320296672,
+      "links": 0.7992003831472794,
+      "linkPoints": 3.9960019157363966,
+      "autoPoints": 2.1,
+      "teleopPoints": 4.054680913458794,
+      "endgamePoints": 3.4,
+      "OPR": 13.55068282919519,
+      "simulatedRanking": 0,
+      "expectedRanking": 0,
+      "schedule": 0
+    }
+  ]
+}

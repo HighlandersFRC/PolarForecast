@@ -17,7 +17,7 @@
 
 .polar-box {
   border-radius:0;
-  background: linear-gradient(87deg, #172b4d 0, #1a174d 100%) !important;
+  background: #1a174d;
 }
 
 @media only screen and (max-width: 600px) {

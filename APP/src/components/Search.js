@@ -26,7 +26,6 @@ const Search = (props) => {
   const width = props.width || "300px";
 
   const searchKeyCallback = async (data) => {
-    console.log(data)
     const terms = [];
     let array = [];
     if (data?.data?.length > 0) {
