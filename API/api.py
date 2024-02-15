@@ -8,6 +8,7 @@ import zipfile
 from bson import ObjectId
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
+import numpy
 from pydantic import BaseModel
 from pymongo import MongoClient
 from datetime import datetime
@@ -57,7 +58,7 @@ PredictionCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
 
 @app.on_event("startup")
-def onStart():
+def onStart():  
     global etag
     global events
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
@@ -70,7 +71,7 @@ def onStart():
         event = events[i]
         eventCode = YEAR+event["event_code"]
         try:
-            CalculatedDataCollection.insert_one({"event_code": (YEAR+event["event_code"]), "data": {}})
+            CalculatedDataCollection.insert_one({"event_code": (eventCode), "data": {}})
         except:
             pass
         
@@ -181,6 +182,7 @@ def get_team_match_predictions(year: int, event: str, team: str):
             if match[alliance+"_teams"].__contains__(team):
                 matches.append(match)
     return {"data": matches}
+    
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
     file = open("StatDescription.json")
@@ -192,10 +194,13 @@ def get_Stat_Descriptions():
 def get_pit_scouting_data(year: int, event:str, team:str):
     try :
         data = PitScoutingCollection.find_one({"event_code": str(year)+ event, "team_number": int(team[3:])})
-        data.pop("_id")
+        try:
+            data.pop("_id")
+        except:
+            pass
         return data
-    except: 
-        raise HTTPException(404)
+    except Exception as e:
+        raise HTTPException(404, str(e))
     
 @app.get("/{year}/{event}/PitScoutingStatus")
 def get_pit_scouting_status(year: int, event:str):
@@ -209,7 +214,7 @@ def post_pit_scouting_data(data: dict):
     PitStatusCollection.find_one_and_replace({"event_code": data["event_code"]}, status)
     try :
         PitScoutingCollection.insert_one(data)
-    except:
+    except Exception as e:
         data.pop("_id")
         PitScoutingCollection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"]}, data)
     return {"message": "added it to the DB"}
@@ -557,33 +562,24 @@ def update_database():
             if r.status_code == 200:
                 etag[i] = r.headers["ETag"]
                 responseJson = json.loads(r.text)
+                teams = []
                 for x in responseJson:
+                    for alliance in x["alliances"]:
+                        teams.extend(x["alliances"][alliance]["team_keys"])
                     try:
                         TBACollection.insert_one(x)
                     except:
                         pass
+                teams = [{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"} for x in list(set(teams))]
+                try:
+                    PitStatusCollection.insert_one({"event_code": YEAR+event["event_code"], "data": teams })
+                except Exception as e:
+                    pass
                 try:
                     updateData(event["event_code"])
                 except Exception as e:
                     pass
             i += 1
         numRuns += 1
-        eventTeams = []
-        for event in events:
-            key = event["key"]
-            try :
-                teams = json.loads(requests.get(TBA_API_URL+f"event/{key}/teams/keys", headers=headers).text)
-                eventTeams.append([{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"}for x in teams])
-            except :
-                eventTeams.append([])
-                pass
-        for i in range(len(events)):
-            event = events[i]
-            eventCode = YEAR+event["event_code"]
-            teams = eventTeams[i]
-            try:
-                PitStatusCollection.insert_one({"event_code": eventCode, "data": teams })
-            except Exception as e:
-                pass
     except Exception as e:
-        pass
+        print(e)
