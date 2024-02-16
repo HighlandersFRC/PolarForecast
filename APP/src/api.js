@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://localhost:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -129,7 +129,8 @@ export const getMatchPredictions = async (year, event, callback) => {
 export const getSearchKeys = async (callback) => {
   try {
     const startTime = performance.now();
-    const data = null
+    const storage_name = "search_keys"
+    const data = getWithExpiry(storage_name)
     if (data === null || data === undefined) {
       const endpoint = `${API_ENDPOINT}/search_keys`;
       console.log("Requesting Data from: " + endpoint);
@@ -140,6 +141,7 @@ export const getSearchKeys = async (callback) => {
         const timeTaken = endTime - startTime;
         console.log(`GetSearchKeys API call took ${timeTaken} milliseconds`);
         callback(data);
+        setWithExpiry(storage_name, data, default_ttl)
       } else {
         callback({ data: [] });
       }
@@ -235,7 +237,7 @@ export const postMatchScouting = async (data, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     const detail = await response.json()
     const status = response.status
@@ -256,7 +258,7 @@ export const putMatchScouting = async (data, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback([response.status, await response.json()]); // parses JSON response into native JavaScript objects
   } catch (e) {
@@ -336,7 +338,7 @@ export const deleteTeamPictures = async (year, event, team, data, password, call
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+            body: JSON.stringify(body),
     });
     callback(response.status);
   } catch (e) {
@@ -434,7 +436,7 @@ export const deactivateMatchData = async (data, password, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback(response.status); // parses JSON response into native JavaScript objects
   } catch (e) {
@@ -452,7 +454,7 @@ export const activateMatchData = async (data, password, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback(response.status); // parses JSON response into native JavaScript objects
   } catch (e) {

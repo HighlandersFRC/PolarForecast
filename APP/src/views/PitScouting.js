@@ -56,6 +56,7 @@ const PitScouting = () => {
             getPitScoutingData(year, eventCode, `frc${team}`, pitScoutingDataCallback);
         }
     }, [formData.time]);
+
     const handleSubmit = () => {
         // Set the "Time" field to the current UTC timestamp when submitting the form
         setFormData((prevData) => ({
@@ -77,9 +78,12 @@ const PitScouting = () => {
     }
 
     const pitScoutingDataCallback = (value) => {
-        if (!typeof(value) == null)
-        setFormData(value)
+        console.log(value)
+        if (value !== null && value !== undefined) {
+            setFormData(value);
+        }
     }
+    
 
     const darkTheme = createTheme({
         palette: {
