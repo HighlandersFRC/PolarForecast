@@ -56,17 +56,14 @@ CalculatedDataCollection.create_index(
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+ETagCollection = testDB["ETag"]
+ETagCollection.create_index([("key", pymongo.ASCENDING)], unique = True)
 
 @app.on_event("startup")
 def onStart():  
-    global etag
-    global events
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
     events = json.loads(requests.get(
         TBA_API_URL+"events/"+YEAR, headers=headers).text)
-    for i in range(len(events)):
-        etag.append('')
-
     for i in range(len(events)):
         event = events[i]
         eventCode = YEAR+event["event_code"]
@@ -74,7 +71,11 @@ def onStart():
             CalculatedDataCollection.insert_one({"event_code": (eventCode), "data": {}})
         except:
             pass
-        
+        try:
+            ETagCollection.insert_one({"key": eventCode, "etag": ""})
+        except:
+            pass
+    
 @app.get("/{year}/{event}/{team}/stats")
 def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
@@ -234,8 +235,6 @@ def getStatus(data: dict, originalStatus: dict):
     else :
         return originalStatus
     
-events = []
-etag = []
 numRuns = 0
     
 @app.post("/MatchScouting/")
@@ -439,19 +438,19 @@ def convertData(calculatedData, year, event_code):
     return retvallist
 
 def updateData(event_code: str):
-    TBAData = list(TBACollection.find({'event_key': str(YEAR)+event_code}))
+    TBAData = list(TBACollection.find({'event_key': event_code}))
     ScoutingData = list(ScoutDataCollection.find(
-        {'event_code': YEAR+event_code}))
+        {'event_code': event_code}))
     if TBAData is not None:
         calculatedData = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
         metadata = {"last_modified": datetime.utcnow().timestamp(),"etag": None,"tba": False}
         try:
-            CalculatedDataCollection.insert_one({"event_code": YEAR+event_code, "data": data, "metadata": metadata})
+            CalculatedDataCollection.insert_one({"event_code": event_code, "data": data, "metadata": metadata})
         except Exception as e:
             try:
-                CalculatedDataCollection.update_one({"event_code": YEAR+event_code}, {'$set': {"data": data, "metadata": metadata}})
+                CalculatedDataCollection.update_one({"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
                 pass
         updatePredictions(TBAData, data, event_code)
@@ -516,10 +515,10 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 matchPrediction[f"{alliance}_autoElements"] += teamData["autoElementsScored"]
         matchPredictions.append(matchPrediction)
     try:
-        PredictionCollection.insert_one({"event_code": YEAR+event_code, "data": matchPredictions})
+        PredictionCollection.insert_one({"event_code": event_code, "data": matchPredictions})
     except Exception as e:
         try:
-            PredictionCollection.find_one_and_replace({"event_code": YEAR+event_code}, {"event_code": YEAR+event_code, "data": matchPredictions})
+            PredictionCollection.find_one_and_replace({"event_code": event_code}, {"event_code": YEAR+event_code, "data": matchPredictions})
         except Exception as ex:
             pass
                 
@@ -550,17 +549,16 @@ def read_root():
 def update_database():
     logging.info("Starting Polar Forecast")
     try:
-        global etag
         global numRuns
-        global events
-        i = 0
-        for event in events:
+        etags = list(ETagCollection.find({}))
+        for event in etags:
             headers = {"accept": "application/json",
-                    "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": etag[i]}
-            r = requests.get(TBA_API_URL+"event/"+YEAR +
-                            event["event_code"]+"/matches", headers=headers)
+                    "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
+            r = requests.get(TBA_API_URL+"event/"+
+                            event["key"]+"/matches", headers=headers)
             if r.status_code == 200:
-                etag[i] = r.headers["ETag"]
+                event["etag"] = r.headers["ETag"]
+                ETagCollection.find_one_and_replace({"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
                 teams = []
                 for x in responseJson:
@@ -572,14 +570,14 @@ def update_database():
                         pass
                 teams = [{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"} for x in list(set(teams))]
                 try:
-                    PitStatusCollection.insert_one({"event_code": YEAR+event["event_code"], "data": teams })
+                    PitStatusCollection.insert_one({"event_code": event["key"], "data": teams })
                 except Exception as e:
                     pass
                 try:
-                    updateData(event["event_code"])
+                    updateData(event["key"])
                 except Exception as e:
                     pass
-            i += 1
+            print(event["key"])
         numRuns += 1
     except Exception as e:
         print(e)
