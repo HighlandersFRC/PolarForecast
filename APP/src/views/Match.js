@@ -356,6 +356,9 @@ const Match = () => {
               </div>
             </Row>
           </Container>
+          <h1 className="text-black mb-0" style={{textAlign: "center"}}>Auto</h1>
+          <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
+          <h1 className="text-black mb-0" style={{textAlign: "center"}}>Teleop</h1>
           <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
         </div>
       </ThemeProvider>

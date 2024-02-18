@@ -51,8 +51,7 @@ PitScoutingCollection = testDB["PitScouting"]
 PitScoutingCollection.create_index( [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
 PitStatusCollection = testDB["PitScoutingStatus"]
 PitStatusCollection.create_index( [("event_code", pymongo.ASCENDING)], unique=True)
-CalculatedDataCollection.create_index(
-    [("event_code", pymongo.ASCENDING)], unique=True)
+CalculatedDataCollection.create_index([("event_code", pymongo.ASCENDING)], unique=True)
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
@@ -72,7 +71,7 @@ def onStart():
         except:
             pass
         try:
-            ETagCollection.insert_one({"key": eventCode, "etag": ""})
+            ETagCollection.insert_one({"key": eventCode, "etag": "", "event": event})
         except:
             pass
     
@@ -119,12 +118,14 @@ def get_Event_Stats(year:int, event:str):
 
 @app.get("/events/{year}")
 def get_Year_Events(year:int):
-    global events
+    events = ETagCollection.find({})
+    events = [event["event"] for event in events]
     return events
 
 @app.get("/search_keys")
 def get_Search_Keys():
-    global events
+    events = ETagCollection.find({})
+    events = [event["event"] for event in events]
     retval = []
     for event in events:
         retval.append({
@@ -170,8 +171,8 @@ def get_match_details(year: int, event: str, match_key: str):
             "blue_teams": blueTeamStats
         }
         return retval
-    except:
-        raise HTTPException(400)
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
 @app.get("/{year}/{event}/{team}/predictions")
 def get_team_match_predictions(year: int, event: str, team: str):
@@ -518,7 +519,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
         PredictionCollection.insert_one({"event_code": event_code, "data": matchPredictions})
     except Exception as e:
         try:
-            PredictionCollection.find_one_and_replace({"event_code": event_code}, {"event_code": YEAR+event_code, "data": matchPredictions})
+            PredictionCollection.find_one_and_replace({"event_code": event_code}, {"event_code": event_code, "data": matchPredictions})
         except Exception as ex:
             pass
                 
@@ -577,7 +578,6 @@ def update_database():
                     updateData(event["key"])
                 except Exception as e:
                     pass
-            print(event["key"])
         numRuns += 1
     except Exception as e:
         print(e)
