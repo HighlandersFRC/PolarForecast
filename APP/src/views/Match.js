@@ -68,7 +68,7 @@ const Match = () => {
       },
     },
     {
-      field: "auto_score",
+      field: "auto_points",
       headerName: "Auto",
       filterable: false,
       disableExport: true,
@@ -77,17 +77,7 @@ const Match = () => {
       flex: 0.5,
     },
     {
-      field: "auto_charge_station",
-      headerName: "Auto CS",
-      filterable: false,
-      disableExport: true,
-      headerAlign: "center",
-      align: "center",
-      flex: 0.5,
-      minWidth: 75,
-    },
-    {
-      field: "teleop_score",
+      field: "teleop_points",
       headerName: "Teleop",
       filterable: false,
       disableExport: true,
@@ -96,7 +86,7 @@ const Match = () => {
       flex: 0.5,
     },
     {
-      field: "end_game",
+      field: "endgame_points",
       headerName: "End Game",
       filterable: false,
       disableExport: true,
@@ -104,6 +94,26 @@ const Match = () => {
       align: "center",
       flex: 0.5,
       minWidth: 100,
+    },
+    {
+      field: "climbing",
+      headerName: "Climbing",
+      filterable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      minWidth: 75,
+    },
+    {
+      field: "mic",
+      headerName: "Mic",
+      filterable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      minWidth: 75,
     },
     {
       field: "OPR",
@@ -125,32 +135,39 @@ const Match = () => {
     let newRow = {};
     const blueAutoRows = [];
     let i = 0;
-    let blueAutoScore = 0;
-    let blueChargeStation = 0;
-    let blueTeleop = 0;
+    let blueMicPoints = 0;
+    let blueAutoPoints = 0;
+    let blueTeleopPoints = 0;
+    let blueEndgamePoints = 0;
+    let blueClimbing = 0;
     for (const team of restData?.blue_teams) {
       newRow = {
         key: i,
         team: team.key.replace("frc", ""),
         OPR: team.OPR.toFixed(1),
-        auto_score: team.autoPoints.toFixed(1),
-        auto_charge_station: team.autoChargeStation.toFixed(1),
-        teleop_score: team.teleopPoints.toFixed(1),
-        end_game: team.endgamePoints.toFixed(1),
+        auto_points: team.auto_points.toFixed(1),
+        teleop_points: team.teleop_points.toFixed(1),
+        endgame_points: team.endgame_points.toFixed(1),
+        climbing: team.climbing.toFixed(1),
+        mic: team.mic.toFixed(1),
       };
       blueAutoRows.push(newRow);
       i = i + 1;
-      blueAutoScore = blueAutoScore + team.autoPoints;
-      blueChargeStation = blueChargeStation + team.autoChargeStation;
-      blueTeleop = blueTeleop + team.teleopPoints;
+      blueMicPoints += team.mic
+      blueAutoPoints += team.auto_points
+      blueTeleopPoints += team.teleop_points
+      blueEndgamePoints += team.endgame_points
+      blueClimbing += team.climbing
     }
     newRow = {
       key: 4,
       team: "",
-      auto_score: blueAutoScore?.toFixed(1),
-      auto_charge_station: blueChargeStation?.toFixed(1),
-      teleop_score: blueTeleop?.toFixed(1),
-      end_game: restData?.prediction.blue_endGame?.toFixed(1),
+      OPR: restData?.prediction.blue_score.toFixed(1),
+      auto_points: blueAutoPoints.toFixed(1),
+      teleop_points: blueTeleopPoints.toFixed(1),
+      endgame_points: blueEndgamePoints.toFixed(1),
+      climbing: blueClimbing.toFixed(1),
+      mic: blueMicPoints.toFixed(1),
     };
     blueAutoRows.push(newRow);
 
@@ -158,34 +175,42 @@ const Match = () => {
 
     const redAutoRows = [];
     i = 0;
-    let redAutoScore = 0;
-    let redChargeStation = 0;
-    let redTeleop = 0;
+    let redMicPoints = 0;
+    let redAutoPoints = 0;
+    let redTeleopPoints = 0;
+    let redEndgamePoints = 0;
+    let redClimbing = 0;
     for (const team of restData?.red_teams) {
       newRow = {
         key: i,
         team: team.key.replace("frc", ""),
         OPR: team.OPR.toFixed(1),
-        auto_score: team.autoPoints.toFixed(1),
-        auto_charge_station: team.autoChargeStation.toFixed(1),
-        teleop_score: team.teleopPoints.toFixed(1),
-        end_game: team.endgamePoints.toFixed(1),
+        auto_points: team.auto_points.toFixed(1),
+        teleop_points: team.teleop_points.toFixed(1),
+        endgame_points: team.endgame_points.toFixed(1),
+        climbing: team.climbing.toFixed(1),
+        mic: team.mic.toFixed(1),
       };
       redAutoRows.push(newRow);
       i = i + 1;
-      redAutoScore = redAutoScore + team.autoPoints;
-      redChargeStation = redChargeStation + team.autoChargeStation;
-      redTeleop = redTeleop + team.teleopPoints;
+      redMicPoints += team.mic
+      redAutoPoints += team.auto_points
+      redTeleopPoints += team.teleop_points
+      redEndgamePoints += team.endgame_points
+      redClimbing += team.climbing
     }
     newRow = {
       key: 4,
       team: "",
-      auto_score: redAutoScore?.toFixed(1),
-      auto_charge_station: redChargeStation?.toFixed(1),
-      teleop_score: redTeleop?.toFixed(1),
-      end_game: restData?.prediction.red_endGame?.toFixed(1),
+      OPR: restData?.prediction.red_score.toFixed(1),
+      auto_points: redAutoPoints.toFixed(1),
+      teleop_points: redTeleopPoints.toFixed(1),
+      endgame_points: redEndgamePoints.toFixed(1),
+      climbing: redClimbing.toFixed(1),
+      mic: redMicPoints.toFixed(1),
     };
     redAutoRows.push(newRow);
+
     setRedRows(redAutoRows);
 
     if (restData?.match.winning_alliance === "red") {

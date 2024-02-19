@@ -49,7 +49,7 @@
       "stat": {}
     },
     {
-      "stat_key": "trap",
+      "stat_key": "teleop_amped_speaker",
       "solve_strategy": "custom",
       "report_stat": true,
       "display_name": "Trap",
@@ -143,727 +143,173 @@
     {
       "stat_key": "rank",
       "solve_strategy": "custom",
-      "report_stat": true,
+      "report_stat": false,
       "display_name": "rank",
       "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "_autoCommunity_T_0",
-      "solve_strategy": "smart_solve",
+      "stat_key": "climbing_points",
+      "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "_autoCommunity_T_0",
+      "display_name": "Climb Points",
       "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "_autoCommunity_T_1",
-      "solve_strategy": "smart_solve",
+      "stat_key": "climbing",
+      "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "_autoCommunity_T_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_T_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_T_8",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_0",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_0",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_1",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_M_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_M_8",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_0",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_0",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_1",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_autoCommunity_B_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_autoCommunity_B_8",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_0",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_0",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_1",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_T_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_T_8",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_0",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_0",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_1",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_M_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_M_8",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_0",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_0",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_1",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_1",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_2",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_2",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_3",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_3",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_4",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_4",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_5",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_5",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_6",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_6",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_7",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_7",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "_teleopCommunity_B_8",
-      "solve_strategy": "smart_solve",
-      "report_stat": false,
-      "display_name": "_teleopCommunity_B_8",
+      "display_name": "Climb Chance",
       "stat": {},
       "stat_type": "num"
     },
     {
       "stat_key": "mobility",
-      "solve_strategy": "linked",
-      "report_stat": true,
+      "solve_strategy": "custom",
+      "report_stat": false,
       "display_name": "mobility",
-      "stat": {}
-    },
-    {
-      "stat_key": "autoChargeStation",
-      "solve_strategy": "linked",
-      "report_stat": true,
-      "display_name": "autoChargeStation",
       "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "endGameChargeStation",
-      "solve_strategy": "linked",
-      "report_stat": true,
-      "display_name": "endGameChargeStation",
+      "stat_key": "parking",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "parking",
       "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoHighCubes",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoHighCubes",
-      "stat": {
-        "component_stats": [
-          "_autoCommunity_T_1",
-          "_autoCommunity_T_4",
-          "_autoCommunity_T_7"
-        ]
-      },
+      "stat_key": "auto_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "AS",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoHighCones",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoHighCones",
-      "stat": {
-        "component_stats": [
-          "_autoCommunity_T_0",
-          "_autoCommunity_T_2",
-          "_autoCommunity_T_3",
-          "_autoCommunity_T_5",
-          "_autoCommunity_T_6",
-          "_autoCommunity_T_8"
-        ]
-      },
+      "stat_key": "auto_amp",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "AA",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoMidCubes",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoMidCubes",
-      "stat": {
-        "component_stats": [
-          "_autoCommunity_M_1",
-          "_autoCommunity_M_4",
-          "_autoCommunity_M_7"
-        ]
-      },
+      "stat_key": "teleop_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TS",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoMidCones",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoMidCones",
-      "stat": {
-        "component_stats": [
-          "_autoCommunity_M_0",
-          "_autoCommunity_M_2",
-          "_autoCommunity_M_3",
-          "_autoCommunity_M_5",
-          "_autoCommunity_M_6",
-          "_autoCommunity_M_8"
-        ]
-      },
+      "stat_key": "teleop_amped_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TAS",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoLow",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoLow",
-      "stat": {
-        "component_stats": [
-          "_autoCommunity_B_0",
-          "_autoCommunity_B_1",
-          "_autoCommunity_B_2",
-          "_autoCommunity_B_3",
-          "_autoCommunity_B_4",
-          "_autoCommunity_B_5",
-          "_autoCommunity_B_6",
-          "_autoCommunity_B_7",
-          "_autoCommunity_B_8"
-        ]
-      },
+      "stat_key": "teleop_amp",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TA",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "teleopHighCubes",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopHighCubes",
-      "stat": {
-        "component_stats": [
-          "_teleopCommunity_T_1",
-          "_teleopCommunity_T_4",
-          "_teleopCommunity_T_7"
-        ]
-      }
-    },
-    {
-      "stat_key": "teleopHighCones",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopHighCones",
-      "stat": {
-        "component_stats": [
-          "_teleopCommunity_T_0",
-          "_teleopCommunity_T_2",
-          "_teleopCommunity_T_3",
-          "_teleopCommunity_T_5",
-          "_teleopCommunity_T_6",
-          "_teleopCommunity_T_8"
-        ]
-      },
+      "stat_key": "mic",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Mic",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "teleopMidCubes",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopMidCubes",
-      "stat": {
-        "component_stats": [
-          "_teleopCommunity_M_1",
-          "_teleopCommunity_M_4",
-          "_teleopCommunity_M_7"
-        ]
-      }
-    },
-    {
-      "stat_key": "teleopMidCones",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopMidCones",
-      "stat": {
-        "component_stats": [
-          "_teleopCommunity_M_0",
-          "_teleopCommunity_M_2",
-          "_teleopCommunity_M_3",
-          "_teleopCommunity_M_5",
-          "_teleopCommunity_M_6",
-          "_teleopCommunity_M_8"
-        ]
-      },
+      "stat_key": "harmony_points",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Harmony",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "teleopLow",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopLow",
-      "stat": {
-        "component_stats": [
-          "_teleopCommunity_B_0",
-          "_teleopCommunity_B_1",
-          "_teleopCommunity_B_2",
-          "_teleopCommunity_B_3",
-          "_teleopCommunity_B_4",
-          "_teleopCommunity_B_5",
-          "_teleopCommunity_B_6",
-          "_teleopCommunity_B_7",
-          "_teleopCommunity_B_8"
-        ]
-      },
+      "stat_key": "match_count",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Match Count",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoElementsScored",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "autoElementsScored",
-      "stat": {
-        "component_stats": [
-          "autoLow",
-          "autoMidCubes",
-          "autoMidCones",
-          "autoHighCubes",
-          "autoMidCones"
-        ]
-      }
-    },
-    {
-      "stat_key": "teleopElementsScored",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "teleopElementsScored",
-      "stat": {
-        "component_stats": [
-          "teleopLow",
-          "teleopMidCubes",
-          "teleopMidCones",
-          "teleopHighCubes",
-          "teleopHighCones"
-        ]
-      },
+      "stat_key": "harmony",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Harmony",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "elementsScored",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "Elements",
-      "stat": {
-        "component_stats": [
-          "teleopElementsScored",
-          "autoElementsScored"
-        ]
-      },
+      "stat_key": "trap_points",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Trap",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "links",
+      "stat_key": "trap",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "trap count",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_notes",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Auto Notes",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_notes",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Teleop Notes",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "notes",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "links",
-      "stat": {}
-    },
-    {
-      "stat_key": "linkPoints",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "Links",
-      "stat": {
-        "component_stats": [
-          "links"
-        ]
-      },
+      "display_name": "Notes",
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "autoPoints",
+      "stat_key": "auto_points",
       "solve_strategy": "sum",
       "report_stat": true,
       "display_name": "Auto",
-      "stat": {
-        "component_stats": [
-          "autoHighCubes",
-          "autoHighCones",
-          "autoMidCubes",
-          "autoMidCones",
-          "autoLow",
-          "mobility",
-          "autoChargeStation"
-        ]
-      },
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "teleopPoints",
+      "stat_key": "teleop_points",
       "solve_strategy": "sum",
       "report_stat": true,
       "display_name": "Teleop",
-      "stat": {
-        "component_stats": [
-          "teleopHighCubes",
-          "teleopHighCones",
-          "teleopMidCubes",
-          "teleopMidCones",
-          "teleopLow"
-        ]
-      },
+      "stat": {},
       "stat_type": "num"
     },
     {
-      "stat_key": "endgamePoints",
+      "stat_key": "endgame_points",
       "solve_strategy": "sum",
       "report_stat": true,
       "display_name": "End Game",
@@ -883,8 +329,7 @@
         "component_stats": [
           "teleopPoints",
           "autoPoints",
-          "endgamePoints",
-          "linkPoints"
+          "endgamePoints"
         ]
       },
       "stat_type": "num"
@@ -892,7 +337,7 @@
     {
       "stat_key": "simulatedRanking",
       "solve_strategy": "sum",
-      "report_stat": true,
+      "report_stat": false,
       "display_name": "simulatedRanking",
       "stat": {
         "component_stats": []
@@ -902,7 +347,7 @@
     {
       "stat_key": "expectedRanking",
       "solve_strategy": "sum",
-      "report_stat": true,
+      "report_stat": false,
       "display_name": "Expected Ranking",
       "stat": {
         "component_stats": []
@@ -912,7 +357,7 @@
     {
       "stat_key": "schedule",
       "solve_strategy": "post",
-      "report_stat": true,
+      "report_stat": false,
       "display_name": "Schedule",
       "stat": {},
       "stat_type": "num"

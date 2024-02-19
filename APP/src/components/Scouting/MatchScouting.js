@@ -26,13 +26,13 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
       teleop: {
         amp: 0,
         speaker: 0,
-        trap: 0,
+        amped_speaker: 0,
       },
       miscellaneous: {
         died: 0
       }
     },
-    time: 0, // Initial value set to 0
+    time: 0
   }
   const [formData, setFormData] = useState(defaultData);  
   const [showQRCode, setShowQRCode] = useState(false);
@@ -228,6 +228,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '' , year, event}) => {
           value={formData.data.teleop.speaker}
           onChange={(e) => handleChange('data.teleop.speaker', Math.max(0, parseInt(e.target.value, 10)))}
           inputProps={{ min: 0 }}
+        />
+        <TextField
+          label="Teleop Amplified Speaker"
+          type="number"
+          value={formData.data.teleop.amped_speaker}
+          onChange={(e) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(e.target.value, 10)))}
         />
         <TextField
           label="Teleop Trap"

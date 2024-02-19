@@ -33,13 +33,14 @@ import Snowfall from "react-snowfall";
 import CircularProgress from "@mui/material/CircularProgress";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import BarChartWithSwitches from "../components/BarChartWithSwitches";
-import BarChartWithWeights from "components/BarChartWithWeights";
+import ljBarChartWithWeights from "components/BarChartWithWeights";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
 import PitScouting from "./PitScouting";
 import PitImages from "./PitImages";
 import { getPitStatus } from "api";
+import BarChartWithWeights from "components/BarChartWithWeights";
 
 
 const switchTheme = createTheme({
@@ -323,47 +324,49 @@ const Tables = () => {
   }
 
   const rankingsCallback = async (data) => {
-    data.data = data.data.filter((obj) => {
-      if (obj.key) {
-        return true;
-      }
-    });
-    let oprList = [];
-
-    for (const team of data?.data) {
-      if (team.key) {
-        team.key = team.key.replace("frc", "");
-      }
-      oprList.push(team.OPR);
-      for (const [key, value] of Object.entries(team)) {
-        if (
-          typeof value === "number" &&
-          key.toLowerCase() !== "rank" &&
-          key !== "expectedRanking" &&
-          key.toLowerCase() !== "schedule"
-        ) {
-          team[key] = team[key]?.toFixed(1);
-        } else {
-          team[key] = Number(team[key]);
+    try {
+      data.data = data.data.filter((obj) => {
+        if (obj.key) {
+          return true;
         }
-      }
-      team["elementsLow"] = (Number(team.autoLow) + Number(team.teleopLow)).toFixed(1);
-      team["elementsMid"] = (
-        Number(team.autoMidCones) +
-        Number(team.autoMidCubes) +
-        Number(team.teleopMidCones) +
-        Number(team.teleopMidCubes)
-      ).toFixed(1);
-      team["elementsHigh"] = (
-        Number(team.autoHighCones) +
-        Number(team.autoHighCubes) +
-        Number(team.teleopHighCones) +
-        Number(team.teleopHighCubes)
-      ).toFixed(1);
-    }
-    const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
+      });
+      let oprList = [];
 
-    setRankings(sortedData);
+      for (const team of data?.data) {
+        if (team.key) {
+          team.key = team.key.replace("frc", "");
+        }
+        oprList.push(team.OPR);
+        for (const [key, value] of Object.entries(team)) {
+          if (
+            typeof value === "number" &&
+            key.toLowerCase() !== "rank" &&
+            key !== "expectedRanking" &&
+            key.toLowerCase() !== "schedule"
+          ) {
+            team[key] = team[key]?.toFixed(1);
+          } else {
+            team[key] = Number(team[key]);
+          }
+        }
+        team["elementsLow"] = (Number(team.autoLow) + Number(team.teleopLow)).toFixed(1);
+        team["elementsMid"] = (
+          Number(team.autoMidCones) +
+          Number(team.autoMidCubes) +
+          Number(team.teleopMidCones) +
+          Number(team.teleopMidCubes)
+        ).toFixed(1);
+        team["elementsHigh"] = (
+          Number(team.autoHighCones) +
+          Number(team.autoHighCubes) +
+          Number(team.teleopHighCones) +
+          Number(team.teleopHighCubes)
+        ).toFixed(1);
+      }
+      const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
+
+      setRankings(sortedData);
+    } catch {}
   };
 
   const pitScoutingStatusCallback = async (data) => {
@@ -632,14 +635,35 @@ const Tables = () => {
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
             <ThemeProvider theme={switchTheme}>
+              <h1 className="text-white mb-0">OPR Breakdown</h1>
               <BarChartWithWeights
                 data={rankings}
                 number={chartNumber}
                 startingFields={[
-                  { index: 0, name: "Auto", key: "autoPoints", enabled: true },
-                  { index: 1, name: "Teleop", key: "teleopPoints", enabled: true },
-                  { index: 2, name: "Links", key: "linkPoints", enabled: true },
-                  { index: 3, name: "End Game", key: "endgamePoints", enabled: true },
+                  { index: 0, name: "Auto", key: "auto_points", enabled: true },
+                  { index: 1, name: "Teleop", key: "teleop_points", enabled: true },
+                  { index: 2, name: "End Game", key: "endgame_points", enabled: true },
+                ]}
+              />
+              <br />
+              <h1 className="text-white mb-0">Notes By Game Period</h1>
+              <BarChartWithWeights
+                data={rankings}
+                number={chartNumber}
+                startingFields={[
+                  { index: 0, name: "Teleop Notes", key: "teleop_notes", enabled: true },
+                  { index: 1, name: "Auto Notes", key: "auto_notes", enabled: true },
+                ]}
+              />
+              <br />
+              <h1 className="text-white mb-0">Notes By Placement</h1>
+              <BarChartWithWeights
+                data={rankings}
+                number={chartNumber}
+                startingFields={[
+                  { index: 0, name: "Speaker", key: "speaker_total", enabled: true },
+                  { index: 1, name: "Amp", key: "amp_total", enabled: true },
+                  { index: 2, name: "Trap", key: "trap", enabled: true },
                 ]}
               />
               <br />
@@ -647,39 +671,15 @@ const Tables = () => {
                 data={rankings}
                 number={chartNumber}
                 startingFields={[
-                  { index: 0, name: "Teleop Elements", key: "teleopElementsScored", enabled: true },
-                  { index: 1, name: "Auto Elements", key: "autoElementsScored", enabled: true },
-                ]}
-              />
-              <br />
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Low", key: "elementsLow", enabled: true },
-                  { index: 1, name: "Middle", key: "elementsMid", enabled: true },
-                  { index: 2, name: "High", key: "elementsHigh", enabled: true },
-                ]}
-              />
-              <br />
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "AHCU", key: "autoHighCubes", enabled: true},
-                  { index: 1, name: "AHCO", key: "autoHighCones", enabled: true},
-                  { index: 2, name: "AMCU", key: "autoMidCubes", enabled: true},
-                  { index: 3, name: "AMCO", key: "autoMidCones", enabled: true},
-                  { index: 4, name: "ALP", key: "autoLow", enabled: true},
-                  { index: 5, name: "THCU", key: "teleopHighCubes", enabled: true},
-                  { index: 6, name: "THCO", key: "teleopHighCones", enabled: true},
-                  { index: 7, name: "TMCU", key: "teleopMidCubes", enabled: true},
-                  { index: 8, name: "TMCO", key: "teleopMidCones", enabled: true},
-                  { index: 9, name: "TLP", key: "teleopLow", enabled: true},
-                  { index: 10, name: "ACS", key: "autoChargeStation", enabled: true},
-                  { index: 11, name: "EGCS", key: "endGameChargeStation", enabled: true},
-                  { index: 12, name: "Links", key: "links", enabled: true},
-                  { index: 13, name: "Taxi", key: "mobility", enabled: true},
+                  { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5},
+                  { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2},
+                  { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2},
+                  { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5},
+                  { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1},
+                  { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5},
+                  { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2},
+                  { index: 7, name: "Park", key: "parking", enabled: true, weight: 1},
+                  { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3},
                 ]}
               />
             </ThemeProvider>
