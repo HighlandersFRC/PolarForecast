@@ -643,7 +643,7 @@ const Team = () => {
         <ThemeProvider theme={darkTheme}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
-              <h3 className="text-white mb-0">Team {teamNumber} Schedule</h3>
+              <h3 className="text-white mb-0">Team {teamNumber} Match Scouting Data</h3>
             </CardHeader>
             <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
               <StripedDataGrid

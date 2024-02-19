@@ -6,16 +6,11 @@ def dataOPR(scoutData: dict) -> int:
     auto = scoutData["data"]["auto"]
     teleop = scoutData["data"]["teleop"]
     opr = 0
-    opr += auto["hco"] * 6
-    opr += auto["hcu"] * 6
-    opr += auto["mco"] * 4
-    opr += auto["mcu"] * 4
-    opr += auto["lp"] * 3
-    opr += teleop["hco"] * 5
-    opr += teleop["hcu"] * 5
-    opr += teleop["mco"] * 3
-    opr += teleop["mcu"] * 3
-    opr += teleop["lp"] * 2
+    opr += auto["amp"] * 2
+    opr += auto["speaker"] * 5
+    opr += teleop["amp"] * 5
+    opr += teleop["speaker"] * 5
+    opr += teleop["amped_speaker"] * 3
     return opr
 
 def removeOutliers(data: list) -> list:

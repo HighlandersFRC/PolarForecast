@@ -22,7 +22,7 @@ from fastapi_utils.tasks import repeat_every
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
-YEAR = '2023'
+YEAR = '2024'
 
 app = FastAPI()
 
@@ -409,38 +409,14 @@ def convertData(calculatedData, year, event_code):
     for team in calculatedData["team_number"]:
         data = {"historical": False, "key": "frc"+str(team)}
         idx = calculatedData["team_number"].index(team)
-        data["mobility"] = calculatedData["mobility"][idx]
-        data["autoChargeStation"] = calculatedData["auto_docking"][idx]
-        data["endGameChargeStation"] = calculatedData["teleop_docking"][idx]
-        data["rank"] = 0
-        data["autoHighCubes"] = calculatedData["auto_hcu"][idx]
-        data["autoHighCones"] = calculatedData["auto_hco"][idx]
-        data["autoMidCones"] = calculatedData["auto_mco"][idx]
-        data["autoMidCubes"] = calculatedData["auto_mcu"][idx]
-        data["autoLow"] = calculatedData["auto_lp"][idx]
-        data["teleopHighCubes"] = calculatedData["teleop_hcu"][idx]
-        data["teleopHighCones"] = calculatedData["teleop_hco"][idx]
-        data["teleopMidCones"] = calculatedData["teleop_mco"][idx]
-        data["teleopMidCubes"] = calculatedData["teleop_mcu"][idx]
-        data["teleopLow"] = calculatedData["teleop_lp"][idx]
-        data["autoElementsScored"] = calculatedData["auto_pieces"][idx]
-        data["teleopElementsScored"] = calculatedData["teleop_pieces"][idx]
-        data["elementsScored"] = calculatedData["pieces_scored"][idx]
-        data["links"] = calculatedData["links"][idx]
-        data["linkPoints"] = calculatedData["link_points"][idx]
-        data["autoPoints"] = calculatedData["auto_points"][idx]
-        data["teleopPoints"] = calculatedData["teleop_points"][idx]
-        data["endgamePoints"] = calculatedData["endgame_points"][idx]
-        data["OPR"] = calculatedData["opr"][idx]
-        data["simulatedRanking"] = 0
-        data["expectedRanking"] = 0
-        data["schedule"] = 0
+        for key in calculatedData:
+            data[key] = calculatedData[key][idx]
         retvallist.append(data)
     return retvallist
 
 def updateData(event_code: str):
     TBAData = list(TBACollection.find({'event_key': event_code}))
-    ScoutingData = list(ScoutDataCollection.find(
+    ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code}))
     if TBAData is not None:
         calculatedData = analyzeData([TBAData, ScoutingData])
@@ -451,70 +427,41 @@ def updateData(event_code: str):
             CalculatedDataCollection.insert_one({"event_code": event_code, "data": data, "metadata": metadata})
         except Exception as e:
             try:
-                CalculatedDataCollection.update_one({"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
+                result = CalculatedDataCollection.update_one({"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
-                pass
+                print(ex)
         updatePredictions(TBAData, data, event_code)
 
 def updatePredictions(TBAData, calculatedData, event_code):
     matchPredictions = []
     for match in TBAData:
-        matchPrediction = {
-            "comp_level": match["comp_level"],
-            "key": match["key"],
-            "match_number": match["match_number"],
-            "set_number": match["set_number"],
-            "blue_teams": match["alliances"]["blue"]["team_keys"],
-            "blue_score": 0,
-            "blue_highCubes": 0,
-            "blue_highCones": 0,
-            "blue_midCubes": 0,
-            "blue_midCones": 0,
-            "blue_low": 0,
-            "blue_links": 0,
-            "blue_autoChargeStation": 0,
-            "blue_endGame": 0,
-            "blue_autoElements": 0,
-            "blue_chargeStation": 0,
-            "blue_actual_score": match["alliances"]["blue"]["score"],
-            "red_teams": match["alliances"]["red"]["team_keys"],
-            "red_score": 0,
-            "red_highCubes": 0,
-            "red_highCones": 0,
-            "red_midCubes": 0,
-            "red_midCones": 0,
-            "red_low": 0,
-            "red_links": 0,
-            "red_autoChargeStation": 0,
-            "red_endGame": 0,
-            "red_autoElements": 0,
-            "red_chargeStation": 0,
-            "red_actual_score": match["alliances"]["red"]["score"],
-            "blue_win_rp": 2 if match["alliances"]["red"]["score"] < match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
-            "red_win_rp": 2 if match["alliances"]["red"]["score"] > match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
-            "blue_charge_rp": 0,
-            "red_charge_rp": 0,
-            "blue_link_rp": 0,
-            "red_link_rp": 0
-        }
-        for alliance in match["alliances"]:
-            for team in match["alliances"][alliance]["team_keys"]:
-                teamData = {}
-                for i in range(1, len(calculatedData)):
-                    if calculatedData[i]["key"] == team:
-                        teamData = calculatedData[i]
-                matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                matchPrediction[f"{alliance}_highCubes"] += (teamData["teleopHighCubes"] + teamData["autoHighCubes"])
-                matchPrediction[f"{alliance}_highCones"] += (teamData["teleopHighCones"] + teamData["autoHighCones"])
-                matchPrediction[f"{alliance}_midCubes"] += (teamData["teleopMidCubes"] + teamData["autoMidCubes"])
-                matchPrediction[f"{alliance}_midCones"] += (teamData["teleopMidCones"] + teamData["autoMidCones"])
-                matchPrediction[f"{alliance}_low"] += (teamData["teleopLow"] + teamData["autoLow"])
-                matchPrediction[f"{alliance}_links"] += teamData["linkPoints"]
-                matchPrediction[f"{alliance}_autoChargeStation"] += teamData["autoChargeStation"]
-                matchPrediction[f"{alliance}_chargeStation"] += teamData["endGameChargeStation"]
-                matchPrediction[f"{alliance}_endGame"] += teamData["endgamePoints"]
-                matchPrediction[f"{alliance}_autoElements"] += teamData["autoElementsScored"]
-        matchPredictions.append(matchPrediction)
+        if match["score_breakdown"] is not None:
+            matchPrediction = {
+                "comp_level": match["comp_level"],
+                "key": match["key"],
+                "match_number": match["match_number"],
+                "set_number": match["set_number"],
+                "blue_teams": match["alliances"]["blue"]["team_keys"],
+                "blue_score": 0,
+                "blue_actual_score": match["alliances"]["blue"]["score"],
+                "red_teams": match["alliances"]["red"]["team_keys"],
+                "red_score": 0,
+                "red_actual_score": match["alliances"]["red"]["score"],
+                "blue_win_rp": 2 if match["alliances"]["red"]["score"] < match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
+                "red_win_rp": 2 if match["alliances"]["red"]["score"] > match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
+            }
+            for alliance in match["alliances"]:
+                for team in match["alliances"][alliance]["team_keys"]:
+                    teamData = {}
+                    for i in range(1, len(calculatedData)):
+                        if calculatedData[i]["key"] == team:
+                            teamData = calculatedData[i]
+                    matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                    matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
+                    matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                    matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                    matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
+            matchPredictions.append(matchPrediction)
     try:
         PredictionCollection.insert_one({"event_code": event_code, "data": matchPredictions})
     except Exception as e:
@@ -581,3 +528,4 @@ def update_database():
         numRuns += 1
     except Exception as e:
         print(e)
+    logging.info("Done with data upload")   

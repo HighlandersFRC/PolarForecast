@@ -147,14 +147,12 @@ const DrawingCanvas = ({ backgroundImageSrc }) => {
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" >
-      <Box mb={2} justifyContent={"space-between"}>
-        <CompactPicker color={currentLine.color} onChangeComplete={handleColorChange} />
-        <Box mb={2} >
-          <Button onClick={clearCanvas} variant="contained" color="secondary">Clear Canvas</Button>
-          <Button onClick={undoDrawing} variant="contained" color="primary">Undo</Button>
-        </Box>
+    <Box display="flex" flexDirection="column" alignItems="center">
+      <Box mb={2}>
+        <CompactPicker color={currentLine.color} onChangeComplete={handleColorChange} /> {/* Pass current line color */}
       </Box>
+      <Button onClick={clearCanvas} variant="contained" color="secondary">Clear Canvas</Button>
+      <Button onClick={undoDrawing} variant="contained" color="primary">Undo</Button>
       <Box mb={2} ref={canvasContainerRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '80vh' }}>
         <canvas
           ref={canvasRef}

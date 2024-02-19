@@ -107,7 +107,7 @@ function BarChartWithWeights({ data, number, startingFields }) {
       </ResponsiveContainer>
 
       <br />
-      <div style={{ display: "flex", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", alignContent: "center", justifyContent: "center"}}>
         {fields.map((item, index) => {
           return (
             item.enabled && (
