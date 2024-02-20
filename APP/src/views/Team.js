@@ -36,20 +36,21 @@ import { getTeamPictures } from "api";
 import { Button, ImageList, ImageListItem, Popover, TextField } from "@mui/material";
 import ImageWithPopup from "components/ImageWithPopup";
 import { deleteTeamPictures } from "api";
-import { getMatchScoutingData } from "api";
+import { getTeamScoutingData } from "api";
 import { deactivateMatchData } from "api";
 import { activateMatchData } from "api";
+import AutoDisplay from "components/AutosDisplay";
 
 const Team = () => {
   const history = useHistory();
-  const tabDict = ["schedule", "team-stats", "pictures", "match-scouting"];
+  const tabDict = ["schedule", "team-stats", "pictures", "match-scouting", "autos"];
   const url = new URL(window.location.href);
   const params = url.pathname.split("/");
   const year = params[3];
   const eventKey = params[4];
   const team = params[5].replace("team-", "");
   const [tabIndex, setTabIndex] = useState(0);
-  const [pictures,  setPictures] = React.useState([]);
+  const [pictures, setPictures] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [teamInfo, setTeamInfo] = React.useState("");
   const [statDescription, setStatDescription] = useState([]);
@@ -286,7 +287,7 @@ const Team = () => {
     setTeamInfo(data);
     return data;
   };
-  
+
   const statDescriptionCallback = async (data, scoutingData) => {
     setStatDescription(data);
     const tempKeys = [];
@@ -339,7 +340,7 @@ const Team = () => {
       renderCell: (params) => {
         const id = params.row.id
         return (
-          <ActivateButton data={scoutingData[id]}/>
+          <ActivateButton data={scoutingData[id]} />
         );
       },
     });
@@ -358,10 +359,10 @@ const Team = () => {
       fieldName: "team number",
       fieldValue: teamInfo["key"]?.replace("frc", ""),
     };
-    
+
     tempValues.push(temp);
     for (const key of list) {
-      if (key.type === "num"){
+      if (key.type === "num") {
         for (const fieldName in info) {
           if (fieldName === key.key) {
             const value = Math.round(info[fieldName] * 100) / 100;
@@ -372,11 +373,11 @@ const Team = () => {
             tempValues.push(temp);
           }
         }
-      } else if (key.type === "bool"){
+      } else if (key.type === "bool") {
         for (const fieldName in info) {
           if (fieldName === key.key) {
             let value = "YES"
-            if (info[fieldName]== 0){
+            if (info[fieldName] == 0) {
               value = "NO"
             }
             const temp = {
@@ -386,7 +387,7 @@ const Team = () => {
             tempValues.push(temp);
           }
         }
-      } else if (key.type == "str"){
+      } else if (key.type == "str") {
         for (const fieldName in info) {
           if (fieldName === key.key) {
             let value = info[fieldName]
@@ -405,7 +406,7 @@ const Team = () => {
   const scoutingDataCallback = async (data) => {
     const returnRows = []
     setScoutingData(data)
-    for (let i=0; i<data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       let row = data[i]
       let returnrow = {}
       returnrow.id = i
@@ -416,13 +417,13 @@ const Team = () => {
       returnrow.auto_amp = row.data.auto.amp
       returnrow.teleop_speaker = row.data.teleop.speaker
       returnrow.teleop_amp = row.data.teleop.amp
-      returnrow.trap = row.data.teleop.trap
-      returnrow.died = row.data.miscellaneous.died
-      returnRows.push(returnrow) 
+      returnrow.teleop_amped_speaker = row.data.teleop.amped_speaker
+      returnrow.died = String(row.data.miscellaneous.died)
+      returnRows.push(returnrow)
     }
     setScoutingRows(returnRows)
     getStatDescription(year, eventKey, (descriptions) => statDescriptionCallback(descriptions, data));
-  }; 
+  };
 
   useEffect(() => {
     if (window.location.hash.length > 0) {
@@ -433,7 +434,7 @@ const Team = () => {
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
   }, []);
- 
+
   useEffect(async () => {
     await new Promise((r) => setTimeout(r, 100));
     updateData(teamInfo, keys);
@@ -475,7 +476,7 @@ const Team = () => {
     setValue(newValue);
     setTabIndex(newValue)
     getTeamPictures(year, eventKey, team, picturesCallback)
-    getMatchScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
+    getTeamScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
   };
 
   const picturesCallback = (data) => {
@@ -490,7 +491,7 @@ const Team = () => {
   };
 
   const uploadStatusCallback = (status) => {
-    if (status === 200){
+    if (status === 200) {
       getTeamPictures(year, eventKey, team, picturesCallback)
     } else {
       alert("deletion failed, status: " + status)
@@ -498,7 +499,7 @@ const Team = () => {
   }
 
   const handleDeleteImage = (id, password) => {
-    deleteTeamPictures(year, eventKey, team, id, password, (status) => {uploadStatusCallback(status)})
+    deleteTeamPictures(year, eventKey, team, id, password, (status) => { uploadStatusCallback(status) })
   };
 
   return (
@@ -508,7 +509,7 @@ const Team = () => {
           value={value}
           onChange={handleChange}
           indicatorColor="secondary"
-          textColor="inherit"
+          textColor="inherit" 
           variant="fullWidth"
           aria-label="full width tabs"
         >
@@ -516,6 +517,7 @@ const Team = () => {
           <Tab label="Team Stats" {...a11yProps(1)} />
           <Tab label="Pictures" {...a11yProps(2)} />
           <Tab label="Match Scouting" {...a11yProps(3)} />
+          <Tab label="Autos" {...a11yProps(4)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -634,9 +636,9 @@ const Team = () => {
       </TabPanel>
       <TabPanel value={value} index={2} dir={darkTheme.direction}>
         <Card className="polar-box">
-        <ImageList cols={3} variant="masonry">
-          {pictures}
-        </ImageList>
+          <ImageList cols={3} variant="masonry">
+            {pictures}
+          </ImageList>
         </Card>
       </TabPanel>
       <TabPanel value={value} index={3} dir={darkTheme.direction}>
@@ -675,6 +677,22 @@ const Team = () => {
                   params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
                 }
               />
+            </div>
+          </Card>
+        </ThemeProvider>
+      </TabPanel>
+      <TabPanel value={value} index={4} dir={darkTheme.direction}>
+        <ThemeProvider theme={darkTheme}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Team {teamNumber} Autos</h3>
+            </CardHeader>
+            <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
+              <ImageList cols={3} variant="masonry">
+                {scoutingData.map((val, idx, a) => {
+                  return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
+                })}
+              </ImageList>
             </div>
           </Card>
         </ThemeProvider>

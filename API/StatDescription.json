@@ -52,7 +52,7 @@
       "stat_key": "teleop_amped_speaker",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Trap",
+      "display_name": "Amplified Speaker",
       "stat_type": "int",
       "stat": {}
     },
@@ -91,7 +91,7 @@
       "stat": {}
     },
     {
-      "stat_key": "climbing",
+      "stat_key": "can_climb",
       "solve_strategy": "custom",
       "report_stat": true,
       "display_name": "Climbing",
@@ -332,6 +332,14 @@
           "endgamePoints"
         ]
       },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "death_rate",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Death Rate",
+      "stat": {},
       "stat_type": "num"
     },
     {

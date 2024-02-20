@@ -29,11 +29,22 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Box from "@mui/material/Box";
 import "../assets/css/polar-css.css";
 import DrawingCanvas from "components/WhiteBoard";
+import { AppBar, Grid, ImageList, ImageListItem, Tab, Tabs } from "@mui/material";
+import { getTeamPictures } from "api";
+import { getTeamScoutingData } from "api";
+import AutoDisplay from "components/AutosDisplay";
 
 const Match = () => {
   const history = useHistory();
   const url = new URL(window.location.href);
+  const params = url.toString().split("/")
+  const tabDict = ["stats", "autos-red", "autos-blue"];
+  const year = params[5];
+  const eventKey = params[6];
+  const team = params[7].replace("team-", "");
   const serverPath = url.pathname.split("/")[0];
+  const [value, setValue] = React.useState(0);
+  const [tabIndex, setTabIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [matchTitle, setMatchTitle] = useState(false);
@@ -46,7 +57,10 @@ const Match = () => {
   const [blueRows, setBlueRows] = useState([]);
   const [redRows, setRedRows] = useState([]);
   const [blueWinner, setBlueWinner] = useState(false);
+  const [blueScouting, setBlueScouting] = useState([[], [], []])
+  const [pictures, setPictures] = React.useState([]);
   const [redWinner, setRedWinner] = useState(false);
+  const [redScouting, setRedScouting] = useState([[], [], []])
   const [columns, setColumns] = useState([
     {
       field: "team",
@@ -130,8 +144,46 @@ const Match = () => {
     history.push("team-" + cellValues.team);
   };
 
+  function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`full-width-tabpanel-${index}`}
+        aria-labelledby={`full-width-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 210px)" }}>
+            <Typography>{children}</Typography>
+          </Box>
+        )}
+      </div>
+    );
+  }
+
+  const scoutingDataCallback = (data, idx, alliance) => {
+    if (alliance === 'red') {
+      setRedScouting(prevData => {
+        // Create a new array with updated data
+        const updatedData = [...prevData];
+        updatedData[idx] = data;
+        return updatedData;
+      });
+    } else {
+      setBlueScouting(prevData => {
+        // Create a new array with updated data
+        const updatedData = [...prevData];
+        updatedData[idx] = data;
+        return updatedData;
+      });
+    }
+  };
+
+
   const matchInfoCallback = async (restData) => {
-    setData(restData);
+    setData(restData)
     let newRow = {};
     const blueAutoRows = [];
     let i = 0;
@@ -140,6 +192,9 @@ const Match = () => {
     let blueTeleopPoints = 0;
     let blueEndgamePoints = 0;
     let blueClimbing = 0;
+    getTeamScoutingData(year, eventKey, restData.blue_teams[0].key, (data) => scoutingDataCallback(data, 0, "blue"))
+    getTeamScoutingData(year, eventKey, restData.blue_teams[1].key, (data) => scoutingDataCallback(data, 1, "blue"))
+    getTeamScoutingData(year, eventKey, restData.blue_teams[2].key, (data) => scoutingDataCallback(data, 2, "blue"))
     for (const team of restData?.blue_teams) {
       newRow = {
         key: i,
@@ -172,7 +227,6 @@ const Match = () => {
     blueAutoRows.push(newRow);
 
     setBlueRows(blueAutoRows);
-
     const redAutoRows = [];
     i = 0;
     let redMicPoints = 0;
@@ -180,6 +234,7 @@ const Match = () => {
     let redTeleopPoints = 0;
     let redEndgamePoints = 0;
     let redClimbing = 0;
+
     for (const team of restData?.red_teams) {
       newRow = {
         key: i,
@@ -246,6 +301,13 @@ const Match = () => {
     setLoading(false);
   };
 
+  function a11yProps(index) {
+    return {
+      id: `full-width-tab-${index}`,
+      "aria-controls": `full-width-tabpanel-${index}`,
+    };
+  }
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const params = url.pathname.split("/");
@@ -253,140 +315,223 @@ const Match = () => {
     const eventKey = params[4];
     const match = params[5].split("-")[1];
     setMatchNumber(match);
-
     getMatchDetails(year, eventKey, match, matchInfoCallback);
   }, []);
 
+  const handleChange = (event, newValue) => {
+    const url = new URL(window.location.href);
+    const params = url.pathname.split("/");
+    const year = params[3];
+    const eventKey = params[4];
+    const team = params[5].replace("team-", "");
+    history.push({ hash: tabDict[newValue] });
+    setValue(newValue);
+    setTabIndex(newValue)
+    getTeamPictures(year, eventKey, team, picturesCallback)
+  };
+
+  const picturesCallback = (data) => {
+    const rows = data.map((item) => (
+      <ImageListItem
+        style={{ cursor: 'context-menu' }}
+      >
+        <img src={item.file} alt="Image" />
+      </ImageListItem>
+    ));
+    setPictures(rows);
+  };
+
   return (
     <>
-      <ThemeProvider theme={darkTheme}>
-        <div style={{ height: "calc(100vh - 132px)", width: "100%", overflow: "auto" }}>
-          <Container>
-            <Row>
-              <div style={{ width: "100%" }}>
-                <Card className="polar-box">
-                  <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    {/* {matchNumber.split("_").length } */}
-                    {/* <IconButton>
-                    <ArrowLeftIcon />
-                  </IconButton> */}
-                    <h1 className="text-white mb-0">Match {matchTitle}</h1>
-                    {/* <IconButton>
-                    <ArrowRightIcon 
-                      onClick={rightOnClick}
-                    />
-                  </IconButton> */}
-                  </CardHeader>
-                </Card>
-              </div>
-            </Row>
-
-            <Row>
-              <div style={{ width: "100%" }}>
-                <Card className="polar-box">
-                  <CardHeader className="bg-transparent">
-                    <h3 style={{ color: "#90caf9" }}>
-                      {blueWinner && <EmojiEventsIcon />}Blue Alliance
-                    </h3>
-                    <h4 className="text-white mb-0">Prediction: {bluePrediction}</h4>
-                    {blueResult && <h4 className="text-white mb-0">Result: {blueResult}</h4>}
-                  </CardHeader>
-                  <div style={{ height: "200px", width: "100%" }}>
-                    {blueRows.length > 0 ? (
-                      <StripedDataGrid
-                        disableColumnMenu
-                        rows={blueRows}
-                        getRowId={(row) => {
-                          return row.key;
-                        }}
-                        columns={columns}
-                        hideFooter
-                        pageSize={100}
-                        rowsPerPageOptions={[100]}
-                        rowHeight={30}
-                        options={{ pagination: false }}
-                        sx={{
-                          mx: 0.5,
-                          border: 0,
-                          borderColor: "white",
-                          "& .MuiDataGrid-cell:hover": {
-                            color: "white",
-                          },
-                        }}
-                        getRowClassName={(params) =>
-                          params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                        }
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          minHeight: "320px",
-                        }}
-                      >
-                        <CircularProgress />
-                      </Box>
-                    )}
+      <div style={{ height: "calc(100vh - 132px)", width: "100%", overflow: "auto" }}>
+        <AppBar position="static">
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            indicatorColor="secondary"
+            textColor="inherit"
+            variant="fullWidth"
+            aria-label="full width tabs"
+          >
+            <Tab label="Stats" {...a11yProps(0)} />
+            <Tab label="Autos Red" {...a11yProps(1)} />
+            <Tab label="Autos Blue" {...a11yProps(2)} />
+          </Tabs>
+        </AppBar>
+        <TabPanel value={value} index={0} dir={darkTheme.direction}>
+          <ThemeProvider theme={darkTheme}>
+            <Container>
+              <Row>
+                <div style={{ width: "100%" }}>
+                  <Card className="polar-box">
+                    <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <h1 className="text-white mb-0">Match {matchTitle}</h1>
+                    </CardHeader>
+                  </Card>
+                </div>
+              </Row>
+              <Row>
+                <div style={{ width: "100%" }}>
+                  <Card className="polar-box">
+                    <CardHeader className="bg-transparent">
+                      <h3 style={{ color: "#90caf9" }}>
+                        {blueWinner && <EmojiEventsIcon />}Blue Alliance
+                      </h3>
+                      <h4 className="text-white mb-0">Prediction: {bluePrediction}</h4>
+                      {blueResult && <h4 className="text-white mb-0">Result: {blueResult}</h4>}
+                    </CardHeader>
+                    <div style={{ height: "200px", width: "100%" }}>
+                      {blueRows.length > 0 ? (
+                        <StripedDataGrid
+                          disableColumnMenu
+                          rows={blueRows}
+                          getRowId={(row) => {
+                            return row.key;
+                          }}
+                          columns={columns}
+                          hideFooter
+                          pageSize={100}
+                          rowsPerPageOptions={[100]}
+                          rowHeight={30}
+                          options={{ pagination: false }}
+                          sx={{
+                            mx: 0.5,
+                            border: 0,
+                            borderColor: "white",
+                            "& .MuiDataGrid-cell:hover": {
+                              color: "white",
+                            },
+                          }}
+                          getRowClassName={(params) =>
+                            params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                          }
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: "320px",
+                          }}
+                        >
+                          <CircularProgress />
+                        </Box>
+                      )}
+                    </div>
+                  </Card>
+                  <Card className="polar-box">
+                    <CardHeader className="bg-transparent">
+                      <h3 style={{ color: "#FF0000" }}>
+                        {redWinner && <EmojiEventsIcon />}Red Alliance
+                      </h3>
+                      <h4 className="text-white mb-0">Prediction: {redPrediction}</h4>
+                      {redResult && <h4 className="text-white mb-0">Result: {redResult}</h4>}
+                    </CardHeader>
+                    <div style={{ height: "200px", width: "100%" }}>
+                      {redRows.length > 0 ? (
+                        <StripedDataGrid
+                          disableColumnMenu
+                          rows={redRows}
+                          getRowId={(row) => {
+                            return row.key;
+                          }}
+                          columns={columns}
+                          pageSize={100}
+                          rowsPerPageOptions={[100]}
+                          rowHeight={30}
+                          hideFooter
+                          sx={{
+                            mx: 0.5,
+                            border: 0,
+                            borderColor: "white",
+                            "& .MuiDataGrid-cell:hover": {
+                              color: "white",
+                            },
+                          }}
+                          getRowClassName={(params) =>
+                            params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                          }
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: "320px",
+                          }}
+                        >
+                          <CircularProgress />
+                        </Box>
+                      )}
+                    </div>
+                  </Card>
+                  <Card className="polar-box">
+                    <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
+                  </Card>
+                </div>
+              </Row>
+            </Container>
+          </ThemeProvider>
+        </TabPanel>
+        <TabPanel value={value} index={1} dir={darkTheme.direction}>
+          <div style={{ width: "100%" }}>
+            <Card className="polar-box">
+              <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <ImageList cols={3} variant="masonry">
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[0].key.replace("frc", "")}</h1>
+                    {redScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
                   </div>
-                </Card>
-                <Card className="polar-box">
-                  <CardHeader className="bg-transparent">
-                    <h3 style={{ color: "#FF0000" }}>
-                      {redWinner && <EmojiEventsIcon />}Red Alliance
-                    </h3>
-                    <h4 className="text-white mb-0">Prediction: {redPrediction}</h4>
-                    {redResult && <h4 className="text-white mb-0">Result: {redResult}</h4>}
-                  </CardHeader>
-                  <div style={{ height: "200px", width: "100%" }}>
-                    {redRows.length > 0 ? (
-                      <StripedDataGrid
-                        disableColumnMenu
-                        rows={redRows}
-                        getRowId={(row) => {
-                          return row.key;
-                        }}
-                        columns={columns}
-                        pageSize={100}
-                        rowsPerPageOptions={[100]}
-                        rowHeight={30}
-                        hideFooter
-                        sx={{
-                          mx: 0.5,
-                          border: 0,
-                          borderColor: "white",
-                          "& .MuiDataGrid-cell:hover": {
-                            color: "white",
-                          },
-                        }}
-                        getRowClassName={(params) =>
-                          params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                        }
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          minHeight: "320px",
-                        }}
-                      >
-                        <CircularProgress />
-                      </Box>
-                    )}
+                </ImageListItem>}
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[1].key.replace("frc", "")}</h1>
+                    {redScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
                   </div>
-                </Card>
-              </div>
-            </Row>
-          </Container>
-          <h1 className="text-black mb-0" style={{textAlign: "center"}}>Auto</h1>
-          <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
-          <h1 className="text-black mb-0" style={{textAlign: "center"}}>Teleop</h1>
-          <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
-        </div>
-      </ThemeProvider>
+                </ImageListItem>}
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[2].key.replace("frc", "")}</h1>
+                    {redScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                  </div>
+                </ImageListItem>}
+              </ImageList>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
+            </Card>
+          </div>
+        </TabPanel>
+        <TabPanel value={value} index={2} dir={darkTheme.direction}>
+          <div style={{ width: "100%" }}>
+            <Card className="polar-box">
+              <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <ImageList cols={3} variant="masonry">
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[0].key.replace("frc", "")}</h1>
+                    {blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                  </div>
+                </ImageListItem>}
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[1].key.replace("frc", "")}</h1>
+                    {blueScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                  </div>
+                </ImageListItem>}
+                {<ImageListItem>
+                  <div>
+                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[2].key.replace("frc", "")}</h1>
+                    {blueScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                  </div>
+                </ImageListItem>}
+              </ImageList>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
+            </Card>
+          </div>
+        </TabPanel>
+      </div>
     </>
   );
 };

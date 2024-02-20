@@ -403,7 +403,7 @@ export const getPitScoutingData = async (year, event, team, callback) => {
   }
 }
 
-export const getMatchScoutingData = async (year, event, team, callback) => {
+export const getTeamScoutingData = async (year, event, team, callback) => {
   try {
     const storage_name = `${year}${event}_${team}_pitData`;
     const data = null

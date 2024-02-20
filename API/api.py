@@ -71,7 +71,7 @@ def onStart():
         except:
             pass
         try:
-            ETagCollection.insert_one({"key": eventCode, "etag": "", "event": event})
+            ETagCollection.insert_one({"key": eventCode, "etag": "", "event": event, "up_to_date": False})
         except:
             pass
     
@@ -241,6 +241,9 @@ numRuns = 0
 @app.post("/MatchScouting/")
 def post_match_scouting(data: dict):
     eventCode = data["event_code"]
+    event = ETagCollection.find_one({"key": eventCode})
+    event["up_to_date"] = False
+    ETagCollection.find_one_and_replace({"key": eventCode}, event)
     matchNumber = data["match_number"]
     teamNumber = data["team_number"]
     scoutName = data["scout_info"]["name"]
@@ -282,6 +285,9 @@ def update_match_scouting(data: dict):
     matchNumber = data["match_number"]
     teamNumber = data["team_number"]
     scoutName = data["scout_info"]["name"]
+    event = ETagCollection.find_one({"key": eventCode})
+    event["up_to_date"] = False
+    ETagCollection.find_one_and_replace({"key": eventCode}, event)
     if scoutName == "":
         raise HTTPException(400, "Check Your Scout Name")
     match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
@@ -417,7 +423,7 @@ def convertData(calculatedData, year, event_code):
 def updateData(event_code: str):
     TBAData = list(TBACollection.find({'event_key': event_code}))
     ScoutingData = list(ScoutingData2024Collection.find(
-        {'event_code': event_code}))
+        {'event_code': event_code, 'active': True}))
     if TBAData is not None:
         calculatedData = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
@@ -475,6 +481,10 @@ def deactivate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = False
         ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        eventCode = data["event_code"]
+        event = ETagCollection.find_one({"key": eventCode})
+        event["up_to_date"] = False
+        ETagCollection.find_one_and_replace({"key": eventCode}, event)
         return data
     else:
         raise HTTPException(400, "Incorrect Password")
@@ -484,6 +494,10 @@ def activate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = True
         ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        eventCode = data["event_code"]
+        event = ETagCollection.find_one({"key": eventCode})
+        event["up_to_date"] = False
+        ETagCollection.find_one_and_replace({"key": eventCode}, event)
         return data
     else:
         raise HTTPException(400, "Incorrect Password")
@@ -504,8 +518,9 @@ def update_database():
                     "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
             r = requests.get(TBA_API_URL+"event/"+
                             event["key"]+"/matches", headers=headers)
-            if r.status_code == 200:
+            if r.status_code == 200 or not event["up_to_date"]:
                 event["etag"] = r.headers["ETag"]
+                event["up_to_date"] = True
                 ETagCollection.find_one_and_replace({"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
                 teams = []
@@ -528,4 +543,4 @@ def update_database():
         numRuns += 1
     except Exception as e:
         print(e)
-    logging.info("Done with data upload")   
+    logging.info("Done with data update #" + str(numRuns))   
