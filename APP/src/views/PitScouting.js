@@ -78,7 +78,6 @@ const PitScouting = () => {
     }
 
     const pitScoutingDataCallback = (value) => {
-        console.log(value)
         if (value !== null && value !== undefined) {
             setFormData(value);
         }

@@ -439,9 +439,6 @@ const Team = () => {
     await new Promise((r) => setTimeout(r, 100));
     updateData(teamInfo, keys);
   }, [teamInfo, keys]);
-  useEffect(() => {
-    console.log(scoutingData)
-  }, [scoutingData])
 
   function TabPanel(props) {
     const { children, value, index, ...other } = props;

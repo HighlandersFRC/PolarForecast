@@ -140,10 +140,6 @@ const Match = () => {
     },
   ]);
 
-  useEffect(() => {
-    console.log(blueScouting)
-  }, [blueScouting])
-
   const statisticsTeamOnClick = (cellValues) => {
     history.push("team-" + cellValues.team);
   };
@@ -168,7 +164,6 @@ const Match = () => {
   }
 
   const scoutingDataCallback = (data, idx, alliance) => {
-    console.log(idx);
     if (alliance === 'red') {
       setRedScouting(prevData => {
         // Create a new array with updated data
