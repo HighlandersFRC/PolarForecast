@@ -24,7 +24,7 @@ const PitScouting = () => {
             amp_scoring: false,
             speaker_scoring: false,
             trap_scoring: false,
-            climbing: false,
+            can_climb: false,
             go_under_stage: false,
             drive_train: "",
             ground_pick_up: false,
@@ -160,8 +160,8 @@ const PitScouting = () => {
                                 <h4 className="text-white mb-0">Can Climb?</h4>
                                 <Switch
                                     label="Can Climb?"
-                                    checked={formData.data.climbing}
-                                    onChange={(e) => handleChange('data.climbing', e.target.checked)}
+                                    checked={formData.data.can_climb}
+                                    onChange={(e) => handleChange('data.can_climb', e.target.checked)}
                                 />
                                 <h4 className="text-white mb-0">Can Fit Under Stage?</h4>
                                 <Switch

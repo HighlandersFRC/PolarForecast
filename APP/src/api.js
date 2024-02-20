@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://localhost:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -403,7 +403,7 @@ export const getPitScoutingData = async (year, event, team, callback) => {
   }
 }
 
-export const getMatchScoutingData = async (year, event, team, callback) => {
+export const getTeamScoutingData = async (year, event, team, callback) => {
   try {
     const storage_name = `${year}${event}_${team}_pitData`;
     const data = null

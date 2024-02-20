@@ -116,16 +116,18 @@ const DrawingCanvas = ({ backgroundImageSrc }) => {
   };
 
   const redrawBackgroundImage = (image) => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    const aspectRatio = image.width / image.height;
-    const parentWidth = canvasContainerRef.current.clientWidth; // Use container width
-    const parentHeight = canvasContainerRef.current.clientHeight; // Use container height
-    const canvasWidth = Math.min(parentWidth, parentHeight * aspectRatio);
-    const canvasHeight = canvasWidth / aspectRatio;
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+    try {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      const aspectRatio = image.width / image.height;
+      const parentWidth = canvasContainerRef.current.clientWidth; // Use container width
+      const parentHeight = canvasContainerRef.current.clientHeight; // Use container height
+      const canvasWidth = Math.min(parentWidth, parentHeight * aspectRatio);
+      const canvasHeight = canvasWidth / aspectRatio;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+    } catch {};
   };
 
   const handleColorChange = (color) => {

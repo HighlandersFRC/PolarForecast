@@ -39,6 +39,7 @@ def getPieceScored(
 
 def analyzeData(m_data: list):
     data = m_data[0]
+    scoutingBaseData = m_data[1]
     oprMatchList = []
     # Isolating Data Related to OPR
     blankOprEntry = {
@@ -90,6 +91,7 @@ def analyzeData(m_data: list):
                 teams.append(matchTeam)
     teams.sort()
     # print("made list of teams")
+    # Initializing sets of Data
     teamMatchCount = np.zeros(len(teams))
     teamParking = np.zeros(len(teams))
     teamClimbing = np.zeros(len(teams))
@@ -101,9 +103,14 @@ def analyzeData(m_data: list):
     autoPoints = np.zeros(len(teams))
     teleopPoints = np.zeros(len(teams))
     harmonyPoints = np.zeros(len(teams))
+    teamDeaths = np.zeros(len(teams))
+    
+    # Counting the number of matches that each team has
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
             teamMatchCount[teams.index(matchTeam)] += 1
+            
+    # Analyzing data that is directly extracted from 
     for index, row in oprMatchDataFrame.iterrows():
         for k in range(3):
             matchTeam = row["station" + str(k + 1)]
@@ -116,6 +123,12 @@ def analyzeData(m_data: list):
                     teamTrap[idx] += 1
             if row["station" + str(k + 1)+"_mobility"] == "Yes":
                 teamMobility[idx] += 1
+                
+    # Analyzing data coming directly from scouting data
+    for entry in scoutingBaseData:
+        teamDeaths += entry["data"]["miscellaneous"]["died"]
+    
+    # All of the keys, maxs, and mins
     ScoutingDataKeys = [
         "auto_speaker",
         "auto_amp",
@@ -123,7 +136,6 @@ def analyzeData(m_data: list):
         "teleop_amped_speaker",
         "teleop_amp",
     ]
-    
     ScoutingDataMins = [
         0,
         0,
@@ -131,30 +143,25 @@ def analyzeData(m_data: list):
         0,
         0,
     ]
-    
     ScoutingDataMaxs = [
         9,
         9,
         56,
         54,
         56,
-    ]
-    
+    ] 
     TBAOnlyKeys = [
         "harmony",
         "mic",
     ]
-    
     TBAOnlyMins = [
         0,
         0,
     ]
-    
     TBAOnlyMaxs = [
         2,
         3,
-    ]
-    
+    ] 
     OPRWeights = [
         5,
         2,
@@ -164,9 +171,9 @@ def analyzeData(m_data: list):
         1,
     ]
 
-    scoutingBaseData = m_data[1]
     numEntries = len(scoutingBaseData)
-    j = numEntries
+    j = numEntries # set j to the max number of scout entries to analyze
+    
     # TBA Data
     YMatrix = pd.DataFrame(None, columns=ScoutingDataKeys)
     TBAOnlyYMatrix = pd.DataFrame(None, columns=TBAOnlyKeys)
@@ -183,13 +190,15 @@ def analyzeData(m_data: list):
             AEntry[team] = 1
         Alist.append(AEntry)
     TBAOnlyAList = copy.deepcopy(Alist)
-    # Fitting Scouting Data to Matrices A and Y
+    
+    # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
-    # Throw out bad scouting data
     scoutingDataFunction = TeamBasedData
     scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
     # print("threw away scouting data")
+    
+    # Make A and Y lists with scouting data
     for team in teams:
         teamMatches = []
         for entry in scoutingData:
@@ -208,7 +217,7 @@ def analyzeData(m_data: list):
     teamIdx = -1
     for team in teams:
         teamIdx += 1
-        teamYEntry = [0 for k in range(len(ScoutingDataKeys))]
+        teamYEntry = np.zeros(len(ScoutingDataKeys))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
             for entry in scoutingData:
@@ -235,6 +244,7 @@ def analyzeData(m_data: list):
         teamAEntry = copy.deepcopy(blankAEntry)
         teamAEntry[team] = 1
         Alist.append(teamAEntry)
+        
     # Compiling data into matrices
     AMatrix = pd.DataFrame(Alist, columns=teams)
     APseudoInverse = np.linalg.pinv(AMatrix[teams])
@@ -308,6 +318,8 @@ def analyzeData(m_data: list):
     teamParking /= teamMatchCount
     teamMobility /= teamMatchCount
     teamClimbing /= teamMatchCount
+    teamTrap /= teamMatchCount
+    teamDeaths /= teamMatchCount
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
     totalSpeaker = XMatrix["auto_speaker"] + XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]
@@ -316,6 +328,7 @@ def analyzeData(m_data: list):
     piecesScored = autoPieces + teleopPieces
 
     XMatrix.insert(0, 'parking', pd.Series(teamParking))
+    XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))
     XMatrix.insert(0, 'mobility', pd.Series(teamMobility))
     XMatrix.insert(0, 'climbing', pd.Series(teamClimbing))
     XMatrix.insert(0, 'climbing_points', pd.Series(teamClimbing * 3))
