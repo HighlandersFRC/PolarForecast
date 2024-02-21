@@ -547,7 +547,7 @@ const Tables = () => {
     }
   };
 
-  return (
+  return (  
     <>
       <Header />
       <AppBar position="static">
@@ -556,8 +556,8 @@ const Tables = () => {
           onChange={handleChange}
           indicatorColor="secondary"
           textColor="inherit"
-          variant="fullWidth"
-          aria-label="full width tabs"
+          variant="scrollable"
+          aria-label="full width force tabs"
         >
           <Tab label="Rankings" {...a11yProps(0)} />
           <Tab label="Charts" {...a11yProps(1)} />
@@ -634,55 +634,62 @@ const Tables = () => {
         </TabPanel>
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
-            <ThemeProvider theme={switchTheme}>
-              <h1 className="text-white mb-0">OPR Breakdown</h1>
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Auto", key: "auto_points", enabled: true },
-                  { index: 1, name: "Teleop", key: "teleop_points", enabled: true },
-                  { index: 2, name: "End Game", key: "endgame_points", enabled: true },
-                ]}
-              />
-              <br />
-              <h1 className="text-white mb-0">Notes By Game Period</h1>
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Teleop Notes", key: "teleop_notes", enabled: true },
-                  { index: 1, name: "Auto Notes", key: "auto_notes", enabled: true },
-                ]}
-              />
-              <br />
-              <h1 className="text-white mb-0">Notes By Placement</h1>
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Speaker", key: "speaker_total", enabled: true },
-                  { index: 1, name: "Amp", key: "amp_total", enabled: true },
-                  { index: 2, name: "Trap", key: "trap", enabled: true },
-                ]}
-              />
-              <br />
-              <BarChartWithWeights
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5},
-                  { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2},
-                  { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2},
-                  { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5},
-                  { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1},
-                  { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5},
-                  { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2},
-                  { index: 7, name: "Park", key: "parking", enabled: true, weight: 1},
-                  { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3},
-                ]}
-              />
-            </ThemeProvider>
+            <Card className="polar-box" style={{textAlign: "center"}}>
+              <ThemeProvider theme={switchTheme}>
+                <br/>
+                <h1 className="text-white mb-0">OPR By Game Period</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Auto", key: "auto_points", enabled: true, weight: 1 },
+                    { index: 1, name: "Teleop", key: "teleop_points", enabled: true, weight: 1 },
+                    { index: 2, name: "End Game", key: "endgame_points", enabled: true, weight: 1 },
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Notes By Game Period</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Teleop Notes", key: "teleop_notes", enabled: true, weight: 1 },
+                    { index: 1, name: "Auto Notes", key: "auto_notes", enabled: true, weight: 1 },
+                    { index: 2, name: "Endgame Notes", key: "trap", enabled: true, weight: 1}
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Notes By Placement</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Speaker", key: "speaker_total", enabled: true, weight: 1 },
+                    { index: 1, name: "Amp", key: "amp_total", enabled: true, weight: 1 },
+                    { index: 2, name: "Trap", key: "trap", enabled: true, weight: 1 },
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Full OPR Breakdown</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5},
+                    { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2},
+                    { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2},
+                    { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5},
+                    { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1},
+                    { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5},
+                    { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2},
+                    { index: 7, name: "Park", key: "parking", enabled: true, weight: 1},
+                    { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3},
+                    { index: 9, name: "Deathrate", key: "death_rate", enabled: true, weight: -10},
+                  ]}
+                />
+                <br/>
+              </ThemeProvider>
+            </Card>
           </div>
         </TabPanel>
         <TabPanel value={tabIndex} index={2} dir={darkTheme.direction}>

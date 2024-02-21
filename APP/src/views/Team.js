@@ -510,8 +510,8 @@ const Team = () => {
           onChange={handleChange}
           indicatorColor="secondary"
           textColor="inherit" 
-          variant="fullWidth"
-          aria-label="full width tabs"
+          variant="scrollable"
+          aria-label="full width force tabs"
         >
           <Tab label="Schedule" {...a11yProps(0)} />
           <Tab label="Team Stats" {...a11yProps(1)} />

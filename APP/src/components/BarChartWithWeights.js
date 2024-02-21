@@ -79,15 +79,15 @@ function BarChartWithWeights({ data, number, startingFields }) {
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={500}>
+      <ResponsiveContainer width="100%" height={450}>
         <BarChart
           key={chartDataKey}
           data={chartData.slice(0, number)}
           margin={{ top: 10, left: -20, right: 15, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="key" angle={-90} textAnchor="end" interval={0} />
-          <YAxis />
+          <CartesianGrid strokeDasharray="3 3"/>
+          <XAxis dataKey="key" angle={-90} textAnchor="end" interval={0} stroke="#FFFFFF"/>
+          <YAxis stroke="#FFFFFF"/>
           <Tooltip formatter={(value) => (typeof value === 'number' ? value.toFixed(1) : value)} />
           {fields.map((item, index) => {
             return (
@@ -107,20 +107,27 @@ function BarChartWithWeights({ data, number, startingFields }) {
       </ResponsiveContainer>
 
       <br />
-      <div style={{ display: "flex", alignItems: "center", alignContent: "center", justifyContent: "center"}}>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
         {fields.map((item, index) => {
           return (
             item.enabled && (
               <Box key={item.key} style={{ ...styles.weightInput, color: chartPalette[index] }}>
                 <TextField
                   type="number"
+                  variant="filled"
                   label={item.name}
-                  value={item.weight || 1}
+                  value={item.weight || ''}
                   onChange={(event) => handleWeightChange(event, item.key)}
                   InputProps={{
                     style: {
                       color: chartPalette[index],
                     },
+                  }}
+                  InputLabelProps={{
+                    variant: "filled",
+                    style: {
+                      color: "#FFFFFF"
+                    }
                   }}
                 />
               </Box>

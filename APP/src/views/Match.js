@@ -479,6 +479,7 @@ const Match = () => {
           <div style={{ width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3} variant="masonry">
                 {<ImageListItem>
                   <div>
@@ -499,7 +500,6 @@ const Match = () => {
                   </div>
                 </ImageListItem>}
               </ImageList>
-              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
             </Card>
           </div>
         </TabPanel>
@@ -507,6 +507,7 @@ const Match = () => {
           <div style={{ width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3} variant="masonry">
                 {<ImageListItem>
                   <div>
@@ -527,7 +528,6 @@ const Match = () => {
                   </div>
                 </ImageListItem>}
               </ImageList>
-              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
             </Card>
           </div>
         </TabPanel>
