@@ -109,7 +109,8 @@ def analyzeData(m_data: list):
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
             teamMatchCount[teams.index(matchTeam)] += 1
-            
+    # print("Counted Matches per team")
+    
     # Analyzing data that is directly extracted from 
     for index, row in oprMatchDataFrame.iterrows():
         for k in range(3):
@@ -123,10 +124,12 @@ def analyzeData(m_data: list):
                     teamTrap[idx] += 1
             if row["station" + str(k + 1)+"_mobility"] == "Yes":
                 teamMobility[idx] += 1
-                
+    # print("found TBA only stats")
+    
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
-        teamDeaths += entry["data"]["miscellaneous"]["died"]
+        teamDeaths[teams.index(entry["team_number"])] += entry["data"]["miscellaneous"]["died"]
+    # print("found Scouting only stats")
     
     # All of the keys, maxs, and mins
     ScoutingDataKeys = [
@@ -195,6 +198,7 @@ def analyzeData(m_data: list):
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
     scoutingDataFunction = TeamBasedData
+    # print("throwing scouting data")
     scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
     # print("threw away scouting data")
     
@@ -292,6 +296,7 @@ def analyzeData(m_data: list):
     for i in range(len(ScoutingDataKeys)):
         results.append(perform_genetic_algorithm(i))
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
+    # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
             createfitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
@@ -306,6 +311,7 @@ def analyzeData(m_data: list):
     dataKeys.extend(TBAOnlyKeys)
     
     for result, i in results:
+        # print(i)
         array = np.array(result).ravel()
         XMatrix[dataKeys[i]] = result
         if i < 2:

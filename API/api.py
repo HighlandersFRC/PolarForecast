@@ -449,9 +449,17 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "set_number": match["set_number"],
                 "blue_teams": match["alliances"]["blue"]["team_keys"],
                 "blue_score": 0,
+                "blue_climbing": 0,
+                "blue_auto_points": 0,
+                "blue_teleop_points": 0,
+                "blue_endgame_points": 0,
                 "blue_actual_score": match["alliances"]["blue"]["score"],
                 "red_teams": match["alliances"]["red"]["team_keys"],
                 "red_score": 0,
+                "red_climbing": 0,
+                "red_auto_points": 0,
+                "red_teleop_points": 0,
+                "red_endgame_points": 0,
                 "red_actual_score": match["alliances"]["red"]["score"],
                 "blue_win_rp": 2 if match["alliances"]["red"]["score"] < match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
                 "red_win_rp": 2 if match["alliances"]["red"]["score"] > match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
@@ -539,6 +547,7 @@ def update_database():
                 try:
                     updateData(event["key"])
                 except Exception as e:
+                    # print(e.with_traceback(None), event["key"])
                     pass
         numRuns += 1
     except Exception as e:
