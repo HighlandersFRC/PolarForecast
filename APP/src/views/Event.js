@@ -32,15 +32,12 @@ import Stack from "@mui/material/Stack";
 import Snowfall from "react-snowfall";
 import CircularProgress from "@mui/material/CircularProgress";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import BarChartWithSwitches from "../components/BarChartWithSwitches";
-import ljBarChartWithWeights from "components/BarChartWithWeights";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
-import PitScouting from "./PitScouting";
-import PitImages from "./PitImages";
 import { getPitStatus } from "api";
 import BarChartWithWeights from "components/BarChartWithWeights";
+import { GroupAdd, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
 
 
 const switchTheme = createTheme({
@@ -559,12 +556,12 @@ const Tables = () => {
           variant="scrollable"
           aria-label="full width force tabs"
         >
-          <Tab label="Rankings" {...a11yProps(0)} />
-          <Tab label="Charts" {...a11yProps(1)} />
-          <Tab label="Match Scouting" {...a11yProps(2)} />
-          <Tab label="Pit Scouting" {...a11yProps(3)} />
-          {qualPredictions.length > 0 && <Tab label="Quals" {...a11yProps(4)} />}
-          {elimPredictions.length > 0 && <Tab label="Elims" {...a11yProps(5)} />}
+          <Tab icon={<TrendingUp/>} label="Rankings" {...a11yProps(0)} />
+          <Tab icon={<StackedBarChart/>} label="Charts" {...a11yProps(1)} />
+          <Tab icon={<Visibility/>} label="Match Scouting" {...a11yProps(2)} />
+          <Tab icon={<GroupAdd/>}label="Pit Scouting" {...a11yProps(3)} />
+          {qualPredictions.length > 0 && <Tab icon={<SportsScore/>} label="Quals" {...a11yProps(4)} />}
+          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium/>} label="Elims" {...a11yProps(5)} />}
           {/* <Tab label="Polar Power" {...a11yProps(2)} /> */}
         </Tabs>
       </AppBar>

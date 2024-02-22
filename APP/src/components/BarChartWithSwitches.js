@@ -3,13 +3,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { Switch, FormControlLabel, Box } from "@mui/material";
+import { Switch, FormControlLabel } from "@mui/material";
 
 const styles = {
   switchContainer: {
