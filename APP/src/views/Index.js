@@ -23,11 +23,8 @@ import { chartOptions, parseOptions } from "variables/charts.js";
 import Header from "components/Headers/Header.js";
 import Snowfall from "react-snowfall";
 import React, { useEffect, useState } from "react";
-import { getLeaderboard } from "api.js";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { DataGrid, gridClasses, GridToolbar } from "@mui/x-data-grid";
-import Stack from "@mui/material/Stack";
-import { Box, CircularProgress } from "@mui/material";
+import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import MatchDataScanner from "components/MatchDataScanner";
 
 const Index = () => {

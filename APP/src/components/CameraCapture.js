@@ -8,7 +8,6 @@ const CameraCapture = () => {
   const history = useHistory()
   const webcamRef = useRef(null);
   const url = new URL(window.location.href);
-  const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
   const year = url.pathname.split("/")[3]
   const eventCode = url.pathname.split("/")[4]
   const team = url.pathname.split("/")[5]

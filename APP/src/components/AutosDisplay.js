@@ -1,11 +1,9 @@
-import { Grid } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 
 const AutoDisplay = ({ scoutingData }) => {
     const url = new URL(window.location.href);
     const serverPath = url.pathname.split("/")[0];
     const [fieldImageWidth, setFieldImageWidth] = useState(0);
-    const [fieldImageHeight, setFieldImageHeight] = useState(0);
     const [imageScaleFactor, setImageScaleFactor] = useState(1);
     const fieldImageRef = useRef(null);
 

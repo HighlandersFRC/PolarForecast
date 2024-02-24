@@ -43,23 +43,28 @@ TBACollection = testDB["TBA"]
 TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 ScoutDataCollection = testDB["ScoutingData"]
 ScoutingData2024Collection = testDB["Scouting2024Data"]
-ScoutingData2024Collection.create_index([("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING)], unique=True)
+ScoutingData2024Collection.create_index([("event_code", pymongo.ASCENDING), (
+    "team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING)], unique=True)
 CalculatedDataCollection = testDB["CalculatedData"]
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
 PitScoutingCollection = testDB["PitScouting"]
-PitScoutingCollection.create_index( [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
+PitScoutingCollection.create_index(
+    [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
 PitStatusCollection = testDB["PitScoutingStatus"]
-PitStatusCollection.create_index( [("event_code", pymongo.ASCENDING)], unique=True)
-CalculatedDataCollection.create_index([("event_code", pymongo.ASCENDING)], unique=True)
+PitStatusCollection.create_index(
+    [("event_code", pymongo.ASCENDING)], unique=True)
+CalculatedDataCollection.create_index(
+    [("event_code", pymongo.ASCENDING)], unique=True)
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
 ETagCollection = testDB["ETag"]
-ETagCollection.create_index([("key", pymongo.ASCENDING)], unique = True)
+ETagCollection.create_index([("key", pymongo.ASCENDING)], unique=True)
+
 
 @app.on_event("startup")
-def onStart():  
+def onStart():
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
     events = json.loads(requests.get(
         TBA_API_URL+"events/"+YEAR, headers=headers).text)
@@ -67,14 +72,17 @@ def onStart():
         event = events[i]
         eventCode = YEAR+event["event_code"]
         try:
-            CalculatedDataCollection.insert_one({"event_code": (eventCode), "data": {}})
+            CalculatedDataCollection.insert_one(
+                {"event_code": (eventCode), "data": {}})
         except:
             pass
         try:
-            ETagCollection.insert_one({"key": eventCode, "etag": "", "event": event, "up_to_date": False})
+            ETagCollection.insert_one(
+                {"key": eventCode, "etag": "", "event": event, "up_to_date": False})
         except:
             pass
-    
+
+
 @app.get("/{year}/{event}/{team}/stats")
 def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
@@ -86,13 +94,15 @@ def get_event_Team_Stats(year: int, event: str, team: str):
     for doc in data["data"]:
         i += 1
         if not i == 1:
-            if doc ["key"] == team:
+            if doc["key"] == team:
                 foundTeam = True
                 break
     if not foundTeam:
-        raise HTTPException(400, "No team key \""+team+"\" in "+str(year)+event)
-    try :
-        pitData = PitScoutingCollection.find_one({"event_code": str(year) + event, "team_number": int(team[3:])})
+        raise HTTPException(400, "No team key \""+team +
+                            "\" in "+str(year)+event)
+    try:
+        pitData = PitScoutingCollection.find_one(
+            {"event_code": str(year) + event, "team_number": int(team[3:])})
         for key in pitData["data"]:
             if not key == "_id":
                 doc[key] = pitData["data"][key]
@@ -100,27 +110,33 @@ def get_event_Team_Stats(year: int, event: str, team: str):
     except Exception as e:
         return doc
 
+
 @app.get("/{year}/{event}/{team}/matches")
-def get_Team_Event_Matches(year: int, event:str, team:str):
-    cursor = TBACollection.find({"event_key": str(year)+ event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
+def get_Team_Event_Matches(year: int, event: str, team: str):
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
     data = list(cursor)
-    cursor = TBACollection.find({"event_key": str(year)+ event, "alliances.red.team_keys": {'$elemMatch': {'$eq': team}}})
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.red.team_keys": {'$elemMatch': {'$eq': team}}})
     data.extend(list(cursor))
     for doc in data:
         doc["_id"] = str(doc["_id"])
     return data
 
+
 @app.get("/{year}/{event}/stats")
-def get_Event_Stats(year:int, event:str):
-    data = CalculatedDataCollection.find_one({"event_code": str(year)+ event})
+def get_Event_Stats(year: int, event: str):
+    data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
     data.pop("_id")
     return data
 
+
 @app.get("/events/{year}")
-def get_Year_Events(year:int):
+def get_Year_Events(year: int):
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
     return events
+
 
 @app.get("/search_keys")
 def get_Search_Keys():
@@ -137,6 +153,7 @@ def get_Search_Keys():
         })
     return {"data": retval}
 
+
 @app.get("/{year}/{event}/predictions")
 def get_Event_Predictions(year: int, event: str):
     try:
@@ -146,13 +163,15 @@ def get_Event_Predictions(year: int, event: str):
     except:
         return {"data": []}
 
+
 @app.get("/{year}/{event}/{match_key}/match_details")
 def get_match_details(year: int, event: str, match_key: str):
     try:
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
         tbaMatch.pop("_id")
-        eventPredictions = PredictionCollection.find_one({"event_code": event_code})
+        eventPredictions = PredictionCollection.find_one(
+            {"event_code": event_code})
         matchPrediction = {}
         for prediction in eventPredictions["data"]:
             if prediction["key"] == match_key:
@@ -174,6 +193,7 @@ def get_match_details(year: int, event: str, match_key: str):
     except Exception as e:
         raise HTTPException(400, str(e))
 
+
 @app.get("/{year}/{event}/{team}/predictions")
 def get_team_match_predictions(year: int, event: str, team: str):
     event_code = str(year) + event
@@ -184,7 +204,8 @@ def get_team_match_predictions(year: int, event: str, team: str):
             if match[alliance+"_teams"].__contains__(team):
                 matches.append(match)
     return {"data": matches}
-    
+
+
 @app.get("/{year}/{event}/stat_description")
 def get_Stat_Descriptions():
     file = open("StatDescription.json")
@@ -192,10 +213,12 @@ def get_Stat_Descriptions():
     file.close()
     return description
 
+
 @app.get("/{year}/{event}/{team}/PitScouting")
-def get_pit_scouting_data(year: int, event:str, team:str):
-    try :
-        data = PitScoutingCollection.find_one({"event_code": str(year)+ event, "team_number": int(team[3:])})
+def get_pit_scouting_data(year: int, event: str, team: str):
+    try:
+        data = PitScoutingCollection.find_one(
+            {"event_code": str(year) + event, "team_number": int(team[3:])})
         try:
             data.pop("_id")
         except:
@@ -203,23 +226,29 @@ def get_pit_scouting_data(year: int, event:str, team:str):
         return data
     except Exception as e:
         raise HTTPException(404, str(e))
-    
+
+
 @app.get("/{year}/{event}/PitScoutingStatus")
-def get_pit_scouting_status(year: int, event:str):
-    data = PitStatusCollection.find_one({"event_code": str(year)+ event})
+def get_pit_scouting_status(year: int, event: str):
+    data = PitStatusCollection.find_one({"event_code": str(year) + event})
     return data
-    
+
+
 @app.post("/PitScouting/")
 def post_pit_scouting_data(data: dict):
-    status = getStatus(data, PitStatusCollection.find_one({"event_code": data["event_code"]}))
+    status = getStatus(data, PitStatusCollection.find_one(
+        {"event_code": data["event_code"]}))
     status.pop("_id")
-    PitStatusCollection.find_one_and_replace({"event_code": data["event_code"]}, status)
-    try :
+    PitStatusCollection.find_one_and_replace(
+        {"event_code": data["event_code"]}, status)
+    try:
         PitScoutingCollection.insert_one(data)
     except Exception as e:
         data.pop("_id")
-        PitScoutingCollection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"]}, data)
+        PitScoutingCollection.find_one_and_replace(
+            {"event_code": data["event_code"], "team_number": data["team_number"]}, data)
     return {"message": "added it to the DB"}
+
 
 def getStatus(data: dict, originalStatus: dict):
     status = "Incomplete"
@@ -233,11 +262,13 @@ def getStatus(data: dict, originalStatus: dict):
             entry["pit_status"] = status
     if (not found):
         raise HTTPException(400, "No Such Team")
-    else :
+    else:
         return originalStatus
-    
+
+
 numRuns = 0
-    
+
+
 @app.post("/MatchScouting/")
 def post_match_scouting(data: dict):
     eventCode = data["event_code"]
@@ -249,7 +280,8 @@ def post_match_scouting(data: dict):
     scoutName = data["scout_info"]["name"]
     if scoutName == "":
         raise HTTPException(400, "Check Your Scout Name")
-    match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
+    match = TBACollection.find_one(
+        {"key": f"{eventCode}_qm{str(matchNumber)}"})
     if match is None:
         raise HTTPException(400, "Check Your Match Number")
     exists = False
@@ -279,6 +311,7 @@ def post_match_scouting(data: dict):
     data.pop("_id")
     return data
 
+
 @app.put("/MatchScouting/")
 def update_match_scouting(data: dict):
     eventCode = data["event_code"]
@@ -290,7 +323,8 @@ def update_match_scouting(data: dict):
     ETagCollection.find_one_and_replace({"key": eventCode}, event)
     if scoutName == "":
         raise HTTPException(400, "Check Your Scout Name")
-    match = TBACollection.find_one({"key": f"{eventCode}_qm{str(matchNumber)}"})
+    match = TBACollection.find_one(
+        {"key": f"{eventCode}_qm{str(matchNumber)}"})
     if match is None:
         raise HTTPException(400, "Check Your Match Number")
     exists = False
@@ -313,18 +347,21 @@ def update_match_scouting(data: dict):
         else:
             raise HTTPException(400, "Check Your Team Number")
     data["team_number"] = str(data["team_number"])
-    ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+    ScoutingData2024Collection.find_one_and_replace(
+        {"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
     return data
+
 
 def get_pictures(team: str, event: str, year: int):
     key = str(year) + event + "_" + team
     # Query the collection using the key
     pictures = PictureCollection.find({"key": key})
-    
+
     if pictures:
         return pictures
     else:
         raise HTTPException(status_code=404, detail="Pictures not found")
+
 
 @app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse)
 async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: list = Depends(get_pictures)):
@@ -339,13 +376,15 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: 
         id = str(picture["_id"])
         # Encode the binary data as base64
         file_content_base64 = base64.b64encode(file_content).decode("utf-8")
-        image_data.append({"content_type": content_type, "file": file_content_base64, "_id": id})
+        image_data.append({"content_type": content_type,
+                          "file": file_content_base64, "_id": id})
 
     # Return the list of image data as a JSON response
     return image_data
 
+
 @app.post("/{year}/{event}/{team}/pictures/")
-def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int):
+def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int):
     status = PitStatusCollection.find_one({"event_code": str(year)+event})
     picStatus = "Done"
     found = False
@@ -355,7 +394,8 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
             entry["picture_status"] = picStatus
     if not found:
         raise HTTPException(400, detail="No such team")
-    PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
+    PitStatusCollection.find_one_and_replace(
+        {"event_code": str(year)+event}, status)
     file_content = data.file.read()
     additional_fields = {
         "key": str(year) + event + "_" + team,
@@ -371,13 +411,16 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event:str, year:int)
     PictureCollection.insert_one(file_data)
     return {"message": "File uploaded successfully"}
 
+
 class ID(BaseModel):
     id: str
 
+
 @app.delete("/{year}/{event}/{team}/{password}/DeletePictures/")
-def delete_pit_scouting_pictures(objectid: ID, team: str, event:str, year:int, password: str):
+def delete_pit_scouting_pictures(objectid: ID, team: str, event: str, year: int, password: str):
     if password == EDIT_PASSWORD:
-        delete_result = PictureCollection.delete_many({"_id": ObjectId(objectid.id)})
+        delete_result = PictureCollection.delete_many(
+            {"_id": ObjectId(objectid.id)})
         pictures = PictureCollection.find({
             "key": str(year) + event + "_" + team,
         })
@@ -387,10 +430,12 @@ def delete_pit_scouting_pictures(objectid: ID, team: str, event:str, year:int, p
             for row in rows:
                 if row["key"] == team[3:]:
                     row["picture_status"] = "Not Started"
-        PitStatusCollection.find_one_and_replace({"event_code": str(year)+event}, status)
+        PitStatusCollection.find_one_and_replace(
+            {"event_code": str(year)+event}, status)
         return {"message": delete_result.raw_result}
     else:
         raise HTTPException(400, "Incorrect Password")
+
 
 @app.get("/{year}/{event}/pitStatus")
 def get_pit_status(year: int, event: str):
@@ -398,27 +443,37 @@ def get_pit_status(year: int, event: str):
     retval.pop("_id")
     return retval
 
+
 @app.get("/{year}/{event}/{team}/ScoutEntries")
 def get_scout_entries(team: str, event: str, year: int):
-    retval = list(ScoutingData2024Collection.find({"event_code": str(year)+event, "team_number": team[3:]}))
+    retval = list(ScoutingData2024Collection.find(
+        {"event_code": str(year)+event, "team_number": team[3:]}))
     for entry in retval:
         entry.pop("_id")
     return retval
 
+
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
+    rankings = ETagCollection.find_one({"key": event_code})["rankings"]
     for team in calculatedData["team_number"]:
         keyList.append(keyStr+team)
-    retval0 = {"data":{"keys":keyList}}
+    retval0 = {"data": {"keys": keyList}}
     retvallist = [retval0]
-    for team in calculatedData["team_number"]:
-        data = {"historical": False, "key": "frc"+str(team)}
+    for team in calculatedData["team_number"]:        
+        data = {"historical": False, "key": "frc"+str(team), "rank": 0}
+        for item in rankings:
+            if item["team_key"] == data["key"]:
+                data["rank"] = item["rank"]
+                break
+        
         idx = calculatedData["team_number"].index(team)
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
         retvallist.append(data)
     return retvallist
+
 
 def updateData(event_code: str):
     TBAData = list(TBACollection.find({'event_key': event_code}))
@@ -428,15 +483,22 @@ def updateData(event_code: str):
         calculatedData = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
-        metadata = {"last_modified": datetime.utcnow().timestamp(),"etag": None,"tba": False}
         try:
-            CalculatedDataCollection.insert_one({"event_code": event_code, "data": data, "metadata": metadata})
+            data = updatePredictions(TBAData, data, event_code)
+        except Exception as e:
+            print(e)
+        metadata = {"last_modified": datetime.utcnow().timestamp(),
+                    "etag": None, "tba": False}
+        try:
+            CalculatedDataCollection.insert_one(
+                {"event_code": event_code, "data": data, "metadata": metadata})
         except Exception as e:
             try:
-                result = CalculatedDataCollection.update_one({"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
+                result = CalculatedDataCollection.update_one(
+                    {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
                 print(ex)
-        updatePredictions(TBAData, data, event_code)
+
 
 def updatePredictions(TBAData, calculatedData, event_code):
     matchPredictions = []
@@ -449,38 +511,125 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "set_number": match["set_number"],
                 "blue_teams": match["alliances"]["blue"]["team_keys"],
                 "blue_score": 0,
+                "blue_climbing": 0,
+                "blue_auto_points": 0,
+                "blue_teleop_points": 0,
+                "blue_endgame_points": 0,
+                "blue_coopertition": 0,
                 "blue_actual_score": match["alliances"]["blue"]["score"],
+                "blue_notes": 0,
                 "red_teams": match["alliances"]["red"]["team_keys"],
                 "red_score": 0,
+                "red_climbing": 0,
+                "red_auto_points": 0,
+                "red_teleop_points": 0,
+                "red_endgame_points": 0,
+                "red_coopertition": 0,
+                "red_notes": 0,
                 "red_actual_score": match["alliances"]["red"]["score"],
-                "blue_win_rp": 2 if match["alliances"]["red"]["score"] < match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
-                "red_win_rp": 2 if match["alliances"]["red"]["score"] > match["alliances"]["blue"]["score"] else 1 if match["alliances"]["red"]["score"] == match["alliances"]["blue"]["score"] else 0,
+                "predicted": False,
             }
-            for alliance in match["alliances"]:
-                for team in match["alliances"][alliance]["team_keys"]:
-                    teamData = {}
-                    for i in range(1, len(calculatedData)):
-                        if calculatedData[i]["key"] == team:
-                            teamData = calculatedData[i]
-                    matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                    matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
-                    matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
-                    matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
-                    matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-            matchPredictions.append(matchPrediction)
+        else:
+            matchPrediction = {
+                "comp_level": match["comp_level"],
+                "key": match["key"],
+                "match_number": match["match_number"],
+                "set_number": match["set_number"],
+                "blue_teams": match["alliances"]["blue"]["team_keys"],
+                "blue_score": 0,
+                "blue_climbing": 0,
+                "blue_auto_points": 0,
+                "blue_teleop_points": 0,
+                "blue_endgame_points": 0,
+                "blue_coopertition": 0,
+                "blue_notes": 0,
+                "red_teams": match["alliances"]["red"]["team_keys"],
+                "red_score": 0,
+                "red_climbing": 0,
+                "red_auto_points": 0,
+                "red_teleop_points": 0,
+                "red_endgame_points": 0,
+                "red_coopertition": 0,
+                "red_notes": 0,
+                "predicted": True,
+            }
+        for alliance in match["alliances"]:
+            for team in match["alliances"][alliance]["team_keys"]:
+                teamData = {}
+                for i in range(1, len(calculatedData)):
+                    if calculatedData[i]["key"] == team:
+                        teamData = calculatedData[i]
+                matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
+                matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"] + \
+                    teamData["harmony"]
+                matchPrediction[f"{alliance}_notes"] += teamData["notes"]
+                matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
+
+        for alliance in match["alliances"]:
+            if alliance == "red":
+                opponent = "blue"
+            else:
+                opponent = "red"
+            matchPrediction[f"{alliance}_win_rp"] = 2 if matchPrediction[f"{opponent}_score"] < matchPrediction[
+                f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
+            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_climbing"] >= 6 else 0
+            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[
+                f"{alliance}_ensemble_rp"] == 1 and matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
+            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 18 or (
+                matchPrediction[f"{alliance}_notes"] >= 15 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
+            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
+                matchPrediction[f"{alliance}_ensemble_rp"] + \
+                matchPrediction[f"{alliance}_melody_rp"]
+        matchPredictions.append(matchPrediction)
     try:
-        PredictionCollection.insert_one({"event_code": event_code, "data": matchPredictions})
+        PredictionCollection.insert_one(
+            {"event_code": event_code, "data": matchPredictions})
     except Exception as e:
         try:
-            PredictionCollection.find_one_and_replace({"event_code": event_code}, {"event_code": event_code, "data": matchPredictions})
+            PredictionCollection.find_one_and_replace({"event_code": event_code}, {
+                                                      "event_code": event_code, "data": matchPredictions})
         except Exception as ex:
             pass
-                
+    for i in range(1, len(calculatedData)):
+        calculatedData[i]["simulated_rp"] = 0
+        calculatedData[i]["simulated_rank"] = int(0)
+    for matchPrediction in matchPredictions:
+        for alliance in ["red", "blue"]:
+            for team in matchPrediction[f"{alliance}_teams"]:
+                dataTeam = {}
+                idx = 0
+                try :
+                    for i in range(1, len(calculatedData)):
+                        if calculatedData[i]["key"] == team:
+                            dataTeam = calculatedData[i]
+                            idx = i
+                            break
+                    if matchPrediction["predicted"] :
+                        dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
+                    else:
+                        for match in TBAData:
+                            if match["key"] == matchPrediction["key"]:
+                                dataTeam["simulated_rp"] += match["score_breakdown"][alliance]["rp"]
+                    calculatedData[idx] = dataTeam
+                except Exception as e:
+                    print(e)
+    sorted_list = sorted(
+        calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
+    for i, item in enumerate(sorted_list):
+        sorted_list[i]["simulated_rank"] = int(i + 1)
+    sorted_list.insert(0, calculatedData[0])
+    return sorted_list
+
+
 @app.put("/{password}/Deactivate")
 def deactivate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = False
-        ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        ScoutingData2024Collection.find_one_and_replace(
+            {"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
         eventCode = data["event_code"]
         event = ETagCollection.find_one({"key": eventCode})
         event["up_to_date"] = False
@@ -488,12 +637,14 @@ def deactivate_match_data(data: dict, password: str):
         return data
     else:
         raise HTTPException(400, "Incorrect Password")
+
 
 @app.put("/{password}/Activate")
 def activate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = True
-        ScoutingData2024Collection.find_one_and_replace({"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+        ScoutingData2024Collection.find_one_and_replace(
+            {"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
         eventCode = data["event_code"]
         event = ETagCollection.find_one({"key": eventCode})
         event["up_to_date"] = False
@@ -502,9 +653,11 @@ def activate_match_data(data: dict, password: str):
     else:
         raise HTTPException(400, "Incorrect Password")
 
+
 @app.get("/")
 def read_root():
     return {"polar": "forecast"}
+
 
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
@@ -515,32 +668,47 @@ def update_database():
         etags = list(ETagCollection.find({}))
         for event in etags:
             headers = {"accept": "application/json",
-                    "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
-            r = requests.get(TBA_API_URL+"event/"+
-                            event["key"]+"/matches", headers=headers)
+                       "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
+            r = requests.get(TBA_API_URL+"event/" +
+                             event["key"]+"/matches", headers=headers)
             if r.status_code == 200 or not event["up_to_date"]:
+                try:
+                    headers.pop("If-None-Match")
+                    rankings = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/rankings", headers=headers).text)["rankings"]
+                    event["rankings"] = rankings
+                except Exception as e:
+                    logging.error(str(e))
+                    event["rankings"] = []
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
-                ETagCollection.find_one_and_replace({"key": event["key"]}, event)
+                ETagCollection.find_one_and_replace(
+                    {"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
                 teams = []
                 for x in responseJson:
+                    try:
+                        x.pop("_id")
+                    except Exception as e:
+                        pass
                     for alliance in x["alliances"]:
                         teams.extend(x["alliances"][alliance]["team_keys"])
                     try:
                         TBACollection.insert_one(x)
                     except:
-                        pass
-                teams = [{"key": x[3:], "pit_status": "Not Started", "picture_status": "Not Started"} for x in list(set(teams))]
+                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"]}})
+                teams = [{"key": x[3:], "pit_status": "Not Started",
+                          "picture_status": "Not Started"} for x in list(set(teams))]
                 try:
-                    PitStatusCollection.insert_one({"event_code": event["key"], "data": teams })
+                    PitStatusCollection.insert_one(
+                        {"event_code": event["key"], "data": teams})
                 except Exception as e:
                     pass
                 try:
                     updateData(event["key"])
                 except Exception as e:
+                    # print(e.with_traceback(None), event["key"])
                     pass
         numRuns += 1
     except Exception as e:
         print(e)
-    logging.info("Done with data update #" + str(numRuns))   
+    logging.info("Done with data update #" + str(numRuns))

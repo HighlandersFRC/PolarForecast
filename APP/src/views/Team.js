@@ -40,6 +40,7 @@ import { getTeamScoutingData } from "api";
 import { deactivateMatchData } from "api";
 import { activateMatchData } from "api";
 import AutoDisplay from "components/AutosDisplay";
+import { Assignment, EventNote, Photo, PrecisionManufacturing, Storage } from "@mui/icons-material";
 
 const Team = () => {
   const history = useHistory();
@@ -509,15 +510,16 @@ const Team = () => {
           value={value}
           onChange={handleChange}
           indicatorColor="secondary"
-          textColor="inherit" 
-          variant="fullWidth"
-          aria-label="full width tabs"
+          textColor="inherit"
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="scrollable"
         >
-          <Tab label="Schedule" {...a11yProps(0)} />
-          <Tab label="Team Stats" {...a11yProps(1)} />
-          <Tab label="Pictures" {...a11yProps(2)} />
-          <Tab label="Match Scouting" {...a11yProps(3)} />
-          <Tab label="Autos" {...a11yProps(4)} />
+          <Tab icon={<EventNote />} label="Schedule" {...a11yProps(0)} />
+          <Tab icon={<Storage />} label="Team Stats" {...a11yProps(1)} />
+          <Tab icon={<Photo />} label="Pictures" {...a11yProps(2)} />
+          <Tab icon={<Assignment />} label="Match Scouting" {...a11yProps(3)} />
+          <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(4)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -636,9 +638,13 @@ const Team = () => {
       </TabPanel>
       <TabPanel value={value} index={2} dir={darkTheme.direction}>
         <Card className="polar-box">
-          <ImageList cols={3} variant="masonry">
+          {pictures.length > 0 ? <ImageList cols={3} variant="masonry">
             {pictures}
-          </ImageList>
+          </ImageList> : <>
+            <br />
+            <h1 className="text-white mb-0" style={{ textAlign: "center" }}>No Pictures Yet</h1>
+            <br />
+          </>}
         </Card>
       </TabPanel>
       <TabPanel value={value} index={3} dir={darkTheme.direction}>
@@ -688,11 +694,15 @@ const Team = () => {
               <h3 className="text-white mb-0">Team {teamNumber} Autos</h3>
             </CardHeader>
             <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
-              <ImageList cols={3} variant="masonry">
+              {scoutingData.length > 0 ? <ImageList cols={3} variant="masonry">
                 {scoutingData.map((val, idx, a) => {
                   return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
                 })}
-              </ImageList>
+              </ImageList> : <>
+                <br />
+                <h1 className="text-white mb-0" style={{ textAlign: "center" }}>No Autonomous Data</h1>
+                <br />
+              </>}
             </div>
           </Card>
         </ThemeProvider>

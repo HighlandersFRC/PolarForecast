@@ -143,8 +143,16 @@
     {
       "stat_key": "rank",
       "solve_strategy": "custom",
-      "report_stat": false,
+      "report_stat": true,
       "display_name": "rank",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "simulated_rank",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Simulated Rank",
       "stat": {},
       "stat_type": "num"
     },

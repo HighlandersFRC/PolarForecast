@@ -75,6 +75,8 @@ def analyzeData(m_data: list):
                 oprMatchEntry["teleop_speaker"] = row["score_breakdown"][allianceStr]["teleopSpeakerNoteCount"]
                 oprMatchEntry["teleop_amped_speaker"] = row["score_breakdown"][allianceStr]["teleopSpeakerNoteAmplifiedCount"]
                 oprMatchEntry["teleop_amp"] = row["score_breakdown"][allianceStr]["teleopAmpNoteCount"]
+                oprMatchEntry["coopertition"] = 1 if row["score_breakdown"][allianceStr]["coopertitionCriteriaMet"] else 0
+                oprMatchEntry["harmony"] = row["score_breakdown"][allianceStr]["endGameHarmonyPoints"]
                 for stage in ["CenterStage", "StageLeft", "StageRight"]:
                     oprMatchEntry["trap" +
                                 stage] = row["score_breakdown"][allianceStr]["trap" + stage]
@@ -104,12 +106,14 @@ def analyzeData(m_data: list):
     teleopPoints = np.zeros(len(teams))
     harmonyPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
+    teamCooperatition = np.zeros(len(teams))
     
     # Counting the number of matches that each team has
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
             teamMatchCount[teams.index(matchTeam)] += 1
-            
+    # print("Counted Matches per team")
+    
     # Analyzing data that is directly extracted from 
     for index, row in oprMatchDataFrame.iterrows():
         for k in range(3):
@@ -123,10 +127,12 @@ def analyzeData(m_data: list):
                     teamTrap[idx] += 1
             if row["station" + str(k + 1)+"_mobility"] == "Yes":
                 teamMobility[idx] += 1
-                
+    # print("found TBA only stats")
+    
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
-        teamDeaths += entry["data"]["miscellaneous"]["died"]
+        teamDeaths[teams.index(entry["team_number"])] += entry["data"]["miscellaneous"]["died"]
+    # print("found Scouting only stats")
     
     # All of the keys, maxs, and mins
     ScoutingDataKeys = [
@@ -153,14 +159,17 @@ def analyzeData(m_data: list):
     TBAOnlyKeys = [
         "harmony",
         "mic",
+        "coopertition",
     ]
     TBAOnlyMins = [
+        0,
         0,
         0,
     ]
     TBAOnlyMaxs = [
         2,
         3,
+        1,
     ] 
     OPRWeights = [
         5,
@@ -195,6 +204,7 @@ def analyzeData(m_data: list):
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
     scoutingDataFunction = TeamBasedData
+    # print("throwing scouting data")
     scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
     # print("threw away scouting data")
     
@@ -292,6 +302,7 @@ def analyzeData(m_data: list):
     for i in range(len(ScoutingDataKeys)):
         results.append(perform_genetic_algorithm(i))
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
+    # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
             createfitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
@@ -306,6 +317,7 @@ def analyzeData(m_data: list):
     dataKeys.extend(TBAOnlyKeys)
     
     for result, i in results:
+        # print(i)
         array = np.array(result).ravel()
         XMatrix[dataKeys[i]] = result
         if i < 2:
@@ -320,6 +332,7 @@ def analyzeData(m_data: list):
     teamClimbing /= teamMatchCount
     teamTrap /= teamMatchCount
     teamDeaths /= teamMatchCount
+    harmonyPoints = XMatrix["harmony"]
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
     totalSpeaker = XMatrix["auto_speaker"] + XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]

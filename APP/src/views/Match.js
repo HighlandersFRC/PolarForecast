@@ -29,10 +29,11 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Box from "@mui/material/Box";
 import "../assets/css/polar-css.css";
 import DrawingCanvas from "components/WhiteBoard";
-import { AppBar, Grid, ImageList, ImageListItem, Tab, Tabs } from "@mui/material";
+import { AppBar, ImageList, ImageListItem, Tab, Tabs } from "@mui/material";
 import { getTeamPictures } from "api";
 import { getTeamScoutingData } from "api";
 import AutoDisplay from "components/AutosDisplay";
+import { Assignment, PrecisionManufacturing } from "@mui/icons-material";
 
 const Match = () => {
   const history = useHistory();
@@ -41,7 +42,6 @@ const Match = () => {
   const tabDict = ["stats", "autos-red", "autos-blue"];
   const year = params[5];
   const eventKey = params[6];
-  const team = params[7].replace("team-", "");
   const serverPath = url.pathname.split("/")[0];
   const [value, setValue] = React.useState(0);
   const [tabIndex, setTabIndex] = useState(0);
@@ -71,7 +71,7 @@ const Match = () => {
       align: "center",
       flex: 0.5,
       renderCell: (params) => {
-        const onClick = (e) => statisticsTeamOnClick(params.row);
+        const onClick = () => statisticsTeamOnClick(params.row);
         return (
           <div>
             <Link component="button" onClick={onClick} underline="always">
@@ -287,9 +287,9 @@ const Match = () => {
     const timeOfDay = date.toLocaleTimeString([], { hour: "numeric", minute: "numeric" });
     setMatchTitle(`#${restData?.prediction?.match_number} - ${timeOfDay}`);
     setBluePrediction(`${Math.round(restData?.prediction?.blue_score)} Points,  
-      ${Math.round(restData?.prediction?.blue_win_rp)} RPs`);
+      ${Math.round(restData?.prediction?.blue_total_rp)} RPs`);
     setRedPrediction(`${Math.round(restData?.prediction?.red_score)} Points,  
-      ${Math.round(restData?.prediction?.red_win_rp)} RPs`);
+      ${Math.round(restData?.prediction?.red_total_rp)} RPs`);
     setRedTitle(
       ": " +
       String(Math.round(restData?.prediction?.red_score)) +
@@ -353,9 +353,9 @@ const Match = () => {
             variant="fullWidth"
             aria-label="full width tabs"
           >
-            <Tab label="Stats" {...a11yProps(0)} />
-            <Tab label="Autos Red" {...a11yProps(1)} />
-            <Tab label="Autos Blue" {...a11yProps(2)} />
+            <Tab icon={<Assignment />}label="Stats" {...a11yProps(0)} />
+            <Tab icon={<PrecisionManufacturing style={{color: "red"}}/>} label="Autos Red" {...a11yProps(1)} />
+            <Tab icon={<PrecisionManufacturing style={{color: "darkblue"}}/>} label="Autos Blue" {...a11yProps(2)} />
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -479,27 +479,30 @@ const Match = () => {
           <div style={{ width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3} variant="masonry">
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[0].key.replace("frc", "")}</h1>
-                    {redScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[0].key.replace("frc", "")}</h1>
+                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[1].key.replace("frc", "")}</h1>
-                    {redScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[1].key.replace("frc", "")}</h1>
+                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.red_teams?.[2].key.replace("frc", "")}</h1>
-                    {redScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[2].key.replace("frc", "")}</h1>
+                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
               </ImageList>
-              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
             </Card>
           </div>
         </TabPanel>
@@ -507,27 +510,30 @@ const Match = () => {
           <div style={{ width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
+              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3} variant="masonry">
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[0].key.replace("frc", "")}</h1>
-                    {blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[0].key.replace("frc", "")}</h1>
+                    {blueScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[1].key.replace("frc", "")}</h1>
-                    {blueScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[1].key.replace("frc", "")}</h1>
+                    {blueScouting[1].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
-                    <h1 className="text-white mb-0" style={{textAlign: "center"}}>Team: {data?.blue_teams?.[2].key.replace("frc", "")}</h1>
-                    {blueScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[2].key.replace("frc", "")}</h1>
+                    {blueScouting[2].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
               </ImageList>
-              <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
             </Card>
           </div>
         </TabPanel>
