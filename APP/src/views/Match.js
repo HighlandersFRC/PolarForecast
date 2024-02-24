@@ -287,9 +287,9 @@ const Match = () => {
     const timeOfDay = date.toLocaleTimeString([], { hour: "numeric", minute: "numeric" });
     setMatchTitle(`#${restData?.prediction?.match_number} - ${timeOfDay}`);
     setBluePrediction(`${Math.round(restData?.prediction?.blue_score)} Points,  
-      ${Math.round(restData?.prediction?.blue_win_rp)} RPs`);
+      ${Math.round(restData?.prediction?.blue_total_rp)} RPs`);
     setRedPrediction(`${Math.round(restData?.prediction?.red_score)} Points,  
-      ${Math.round(restData?.prediction?.red_win_rp)} RPs`);
+      ${Math.round(restData?.prediction?.red_total_rp)} RPs`);
     setRedTitle(
       ": " +
       String(Math.round(restData?.prediction?.red_score)) +

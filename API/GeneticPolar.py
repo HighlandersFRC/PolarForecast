@@ -75,6 +75,8 @@ def analyzeData(m_data: list):
                 oprMatchEntry["teleop_speaker"] = row["score_breakdown"][allianceStr]["teleopSpeakerNoteCount"]
                 oprMatchEntry["teleop_amped_speaker"] = row["score_breakdown"][allianceStr]["teleopSpeakerNoteAmplifiedCount"]
                 oprMatchEntry["teleop_amp"] = row["score_breakdown"][allianceStr]["teleopAmpNoteCount"]
+                oprMatchEntry["coopertition"] = 1 if row["score_breakdown"][allianceStr]["coopertitionCriteriaMet"] else 0
+                oprMatchEntry["harmony"] = row["score_breakdown"][allianceStr]["endGameHarmonyPoints"]
                 for stage in ["CenterStage", "StageLeft", "StageRight"]:
                     oprMatchEntry["trap" +
                                 stage] = row["score_breakdown"][allianceStr]["trap" + stage]
@@ -104,6 +106,7 @@ def analyzeData(m_data: list):
     teleopPoints = np.zeros(len(teams))
     harmonyPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
+    teamCooperatition = np.zeros(len(teams))
     
     # Counting the number of matches that each team has
     for k in range(3):
@@ -156,14 +159,17 @@ def analyzeData(m_data: list):
     TBAOnlyKeys = [
         "harmony",
         "mic",
+        "coopertition",
     ]
     TBAOnlyMins = [
+        0,
         0,
         0,
     ]
     TBAOnlyMaxs = [
         2,
         3,
+        1,
     ] 
     OPRWeights = [
         5,
@@ -326,6 +332,7 @@ def analyzeData(m_data: list):
     teamClimbing /= teamMatchCount
     teamTrap /= teamMatchCount
     teamDeaths /= teamMatchCount
+    harmonyPoints = XMatrix["harmony"]
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
     totalSpeaker = XMatrix["auto_speaker"] + XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]

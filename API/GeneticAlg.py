@@ -113,7 +113,7 @@ class geneticAlg:
                 self.generationsSinceImprovement += 1
             if self.generationsSinceImprovement >= 25:
                 foundSolution = True
-            if generationNumber > 300:
+            if generationNumber > 1000:
                 foundSolution = True
             generationNumber += 1
             # print("generation", generationNumber)
