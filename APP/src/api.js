@@ -429,7 +429,7 @@ export const getTeamScoutingData = async (year, event, team, callback) => {
 
 export const deactivateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${password}/Deactivate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Deactivate`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
@@ -447,7 +447,7 @@ export const deactivateMatchData = async (data, password, callback) => {
 
 export const activateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${password}/Activate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Activate`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
