@@ -61,6 +61,7 @@
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "5.1.0",
     "react-datetime": "3.1.1",
+    "react-device-detect": "^2.2.3",
     "react-dom": ">=16.0.0",
     "react-qrcode-logo": "^2.9.0",
     "react-router-dom": "^5.2.0",

@@ -5,6 +5,7 @@ import { getMatchDetails } from 'api';
 import { Switch } from '@mui/material';
 import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
+import { BrowserView, MobileView } from 'react-device-detect';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
@@ -420,7 +421,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         <>
           <div style={{ display: 'flex', marginTop: '0px', justifyContent: 'center', alignItems: 'center' }}>
             {/* Display the QR code only when showQRCode is true */}
-            <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"108"} logoWidth={"184"} bgColor='#1a174d' fgColor='#90caf9' />
+            <BrowserView>
+              <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"81"} logoWidth={"138"} bgColor='#1a174d' fgColor='#90caf9' />
+            </BrowserView>
+            <MobileView>
+              <QRCode size={300} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"54"} logoWidth={"92"} bgColor='#1a174d' fgColor='#90caf9' />
+            </MobileView>
           </div>
         </>
       )}
