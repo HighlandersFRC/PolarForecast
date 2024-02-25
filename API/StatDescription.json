@@ -1,0 +1,382 @@
+{
+  "scoutingData": [
+    {
+      "stat_key": "match_number",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Match Number",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "scout_name",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Scout Name",
+      "stat_type": "str",
+      "stat": {}
+    },
+    {
+      "stat_key": "auto_amp",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Auto Amp",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "auto_speaker",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Auto Speaker",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "teleop_amp",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Teleop Amp",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "teleop_speaker",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Teleop Speaker",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "teleop_amped_speaker",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Amplified Speaker",
+      "stat_type": "int",
+      "stat": {}
+    },
+    {
+      "stat_key": "died",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Died?",
+      "stat_type": "int",
+      "stat": {}
+    }
+  ],
+  "pitData": [
+    {
+      "stat_key": "amp_scoring",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Amp",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "speaker_scoring",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Speaker",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "trap_scoring",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Trap",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "can_climb",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Climbing",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "go_under_stage",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Go Under Stage",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "drive_train",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Drive Train",
+      "stat_type": "str",
+      "stat": {}
+    },
+    {
+      "stat_key": "ground_pick_up",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Ground Pick Up",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "feeder_pick_up",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Feeder Pick Up",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "favorite_color",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Favorite Color",
+      "stat_type": "str",
+      "stat": {}
+    }
+  ],
+  "data": [
+    {
+      "stat_key": "rank",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "rank",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "simulated_rank",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Simulated Rank",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "climbing_points",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Climb Points",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "climbing",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Climb Rate",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "mobility",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "mobility",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "parking",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "parking",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "AS",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_amp",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "AA",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TS",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_amped_speaker",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TAS",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_amp",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "TA",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "mic",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Mic",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "harmony_points",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Harmony",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "match_count",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Match Count",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "harmony",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Harmony",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "trap_points",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Trap",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "trap",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "trap count",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_notes",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Auto Notes",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_notes",
+      "solve_strategy": "custom",
+      "report_stat": false,
+      "display_name": "Teleop Notes",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "notes",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Notes",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Auto",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Teleop",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "endgame_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "End Game",
+      "stat": {
+        "component_stats": [
+          "endGameChargeStation"
+        ]
+      },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "OPR",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "OPR",
+      "stat": {
+        "component_stats": [
+          "teleopPoints",
+          "autoPoints",
+          "endgamePoints"
+        ]
+      },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "death_rate",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Death Rate",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "simulatedRanking",
+      "solve_strategy": "sum",
+      "report_stat": false,
+      "display_name": "simulatedRanking",
+      "stat": {
+        "component_stats": []
+      },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "expectedRanking",
+      "solve_strategy": "sum",
+      "report_stat": false,
+      "display_name": "Expected Ranking",
+      "stat": {
+        "component_stats": []
+      },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "schedule",
+      "solve_strategy": "post",
+      "report_stat": false,
+      "display_name": "Schedule",
+      "stat": {},
+      "stat_type": "num"
+    }
+  ]
+}

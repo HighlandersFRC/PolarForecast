@@ -23,11 +23,9 @@ import { chartOptions, parseOptions } from "variables/charts.js";
 import Header from "components/Headers/Header.js";
 import Snowfall from "react-snowfall";
 import React, { useEffect, useState } from "react";
-import { getLeaderboard } from "api.js";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { DataGrid, gridClasses, GridToolbar } from "@mui/x-data-grid";
-import Stack from "@mui/material/Stack";
-import { Box, CircularProgress } from "@mui/material";
+import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import MatchDataScanner from "components/MatchDataScanner";
 
 const Index = () => {
   const theme = useTheme();
@@ -98,44 +96,13 @@ const Index = () => {
     },
   ]);
 
-
   if (window.Chart) {
     parseOptions(Chart, chartOptions());
   }
 
-  const leaderboardCallback = async (data) => {
-    data.data = data.data.filter((obj) => {
-      if (obj.key) {
-        return true;
-      }
-    });
-    let oprList = [];
-
-    for (const team of data?.data) {
-      if (team.key) {
-        team.key = team.key.replace("frc", "");
-      }
-      oprList.push(team.OPR);
-      for (const [key, value] of Object.entries(team)) {
-        if (
-          typeof value === "number" &&
-          key.toLowerCase() !== "rank" &&
-          key !== "global_ranking" &&
-          key.toLowerCase() !== "schedule"
-        ) {
-          team[key] = team[key]?.toFixed(1);
-        } else {
-          team[key] = Number(team[key]);
-        }
-      }
-    }
-    setLeaderboardRows(data.data);
-  };
-
   useEffect(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    getLeaderboard(currentYear, leaderboardCallback);
     if (!isDesktop) {
       setContainerHeight(`calc(100vh - 180px)`);
     } else {
@@ -153,60 +120,10 @@ const Index = () => {
               <div style={{ height: containerHeight, width: "100%" }}>
                 <Card className="polar-box">
                   <CardHeader className="bg-transparent">
-                    <h3 className="text-white mb-0">Global Leaderboard</h3>
+                    <h3 className="text-white mb-0">QR Reader</h3>
                   </CardHeader>
-                  <div style={{ height: containerHeight, width: "100%" }}>
-                    {leaderboardRows.length > 0 ? (
-                      <StripedDataGrid
-                        disableColumnMenu
-                        initialState={{
-                          pagination: { paginationModel: { pageSize: 50 } },
-                        }}
-                        rows={leaderboardRows}
-                        getRowId={(row) => {
-                          return row.key;
-                        }}
-                        sortingOrder={["desc", "asc"]}
-                        columns={leaderboardColumns}
-                        pageSize={100}
-                        rowsPerPageOptions={[100]}
-                        rowHeight={35}
-                        disableExtendRowFullWidth={true}
-                        sx={{
-                          boxShadow: 2,
-                          border: 0,
-                          borderColor: "white",
-                          "& .MuiDataGrid-cell:hover": {
-                            color: "white",
-                          },
-                        }}
-                        slots={{ toolbar: GridToolbar }}
-                        slotProps={{
-                          toolbar: {
-                            showQuickFilter: true,
-                            quickFilterProps: { debounceMs: 500 },
-                          },
-                        }}
-                        disableColumnFilter = {!isDesktop}
-                        disableColumnSelector = {!isDesktop}
-                        disableDensitySelector = {!isDesktop}
-                        disableExportSelector = {!isDesktop}
-                        getRowClassName={(params) =>
-                          params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                        }
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          minHeight: "calc(100vh - 300px)",
-                        }}
-                      >
-                        <CircularProgress />
-                      </Box>
-                    )}
+                  <div style={{ display: 'flex', flexDirection: 'column', marginTop: '0px', justifyContent:'center', alignItems:'center', minHeight:'70vh'}}>
+                    <MatchDataScanner/>
                   </div>
                 </Card>
               </div>

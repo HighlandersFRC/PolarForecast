@@ -32,9 +32,13 @@ import Stack from "@mui/material/Stack";
 import Snowfall from "react-snowfall";
 import CircularProgress from "@mui/material/CircularProgress";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import BarChartWithSwitches from "../components/BarChartWithSwitches";
 import Link from "@mui/material/Link";
 import "../assets/css/polar-css.css";
+import MatchScouting from "components/Scouting/MatchScouting";
+import { getPitStatus } from "api";
+import BarChartWithWeights from "components/BarChartWithWeights";
+import { GroupAdd, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
+
 
 const switchTheme = createTheme({
   palette: {
@@ -55,12 +59,17 @@ const switchTheme = createTheme({
 
 const Tables = () => {
   const history = useHistory();
-  const tabDict = ["rankings", "charts", "quals", "elims"];
+  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting", "quals", "elims"];
+  const url = new URL(window.location.href);
+  const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
+  const year = url.pathname.split("/")[3]
+  const eventCode = url.pathname.split("/")[4]
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
   const [containerDivHeight, setContainerDivHeight] = useState(`calc(100vh - 250px)`);
   const [chartNumber, setChartNumber] = useState(32);
+  const [snowflakeCount, setSnowflakeCount] = useState(50);
   const [statDescription, setStatDescription] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [eventTitle, setEventTitle] = useState("");
@@ -69,6 +78,8 @@ const Tables = () => {
   const [elimPredictions, setElimPredictions] = useState([]);
   const [showKeys, setShowKeys] = useState([]);
   const [statColumns, setStatColumns] = useState([]);
+  const [pitScoutingStatColumns, setPitScoutingStatColumns] = useState([]);
+  const [pitScoutingStatus, setPitScoutingStatus] = useState([]);
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
       field: "match_number",
@@ -149,6 +160,7 @@ const Tables = () => {
   const statDescriptionCallback = async (data) => {
     const keys = [];
     const statColumns = [];
+    const pitScoutingStatColumns = [];
     statColumns.push({
       field: "id",
       headerName: "",
@@ -156,7 +168,8 @@ const Tables = () => {
       renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
       disableExport: true,
       flex: 0.1,
-    });
+
+    }); 
 
     statColumns.push({
       field: "key",
@@ -175,7 +188,6 @@ const Tables = () => {
         );
       },
     });
-
     statColumns.push({
       field: "OPR",
       headerName: "OPR",
@@ -186,7 +198,6 @@ const Tables = () => {
       minWidth: 80,
       flex: 0.5,
     });
-
     for (let i = 0; i < data.data.length; i++) {
       const stat = data.data[i];
       if (stat.report_stat && stat.stat_key !== "OPR") {
@@ -208,6 +219,81 @@ const Tables = () => {
     setStatColumns(statColumns);
   };
 
+  const pitScoutingStatCallback = async (data) => {
+    pitScoutingStatColumns.push({
+      field: "id",
+      headerName: "",
+      filterable: false,
+      renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
+      disableExport: true,
+      flex: 0.1,
+    });
+    pitScoutingStatColumns.push({
+      field: "key",
+      headerName: "Team",
+      filterable: false,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => statisticsTeamOnClick(params.row);
+        return (
+          <Link component="button" onClick={onClick} underline="always">
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
+      field: "pit_status",
+      headerName: "Pit Scouting",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => pitScoutingOnClick(params.row);
+        let color = "#f44336";
+        if (params.value == "Done")
+          color = "#4caf50"
+        else if (params.value == "Incomplete")
+          color = "#ffeb3b"
+        return (
+          <Link component="button" onClick={onClick} underline="always" color={color}>
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
+      field: "picture_status",
+      headerName: "Pictures",
+      type: "number",
+      sortable: true,
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => pictureEntryOnClick(params.row);
+        let color = "#4caf50";
+        if (params.value == "Not Started")
+          color = "#f44336"
+        else if (params.value == "Incomplete")
+          color = "#ffeb3b"
+        return (
+          <Link component="button" onClick={onClick} underline="always" color={color}>
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    setPitScoutingStatColumns(pitScoutingStatColumns);
+  }
+
   const statisticsTeamOnClick = (cellValues) => {
     const url = new URL(window.location.href);
     const eventKey = url.pathname.split("/")[4];
@@ -220,52 +306,83 @@ const Tables = () => {
     history.push(eventKey + "/match-" + cellValues.key);
   };
 
+  const pictureEntryOnClick = (cellValues) => {
+    const url = new URL(window.location.href);
+    const year = url.pathname.split("/")[3];
+    const eventKey = url.pathname.split("/")[4];
+    history.push(`../../pictures/${year}/${eventKey}/${cellValues.key}`);
+  }
+
+  const pitScoutingOnClick = (cellValues) => {
+    const url = new URL(window.location.href);
+    const year = url.pathname.split("/")[3];
+    const eventKey = url.pathname.split("/")[4];
+    history.push(`../../pitScouting/${year}/${eventKey}/${cellValues.key}`);
+  }
+
   const rankingsCallback = async (data) => {
+    try {
+      data.data = data.data.filter((obj) => {
+        if (obj.key) {
+          return true;
+        }
+      });
+      let oprList = [];
+
+      for (const team of data?.data) {
+        if (team.key) {
+          team.key = team.key.replace("frc", "");
+        }
+        oprList.push(team.OPR);
+        for (const [key, value] of Object.entries(team)) {
+          if (
+            typeof value === "number" &&
+            key.toLowerCase() !== "rank" &&
+            key !== "expectedRanking" &&
+            key.toLowerCase() !== "schedule"
+          ) {
+            team[key] = team[key]?.toFixed(1);
+          } else {
+            team[key] = Number(team[key]);
+          }
+        }
+        team["elementsLow"] = (Number(team.autoLow) + Number(team.teleopLow)).toFixed(1);
+        team["elementsMid"] = (
+          Number(team.autoMidCones) +
+          Number(team.autoMidCubes) +
+          Number(team.teleopMidCones) +
+          Number(team.teleopMidCubes)
+        ).toFixed(1);
+        team["elementsHigh"] = (
+          Number(team.autoHighCones) +
+          Number(team.autoHighCubes) +
+          Number(team.teleopHighCones) +
+          Number(team.teleopHighCubes)
+        ).toFixed(1);
+      }
+      const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
+
+      setRankings(sortedData);
+    } catch {}
+  };
+
+  const pitScoutingStatusCallback = async (data) => {
     data.data = data.data.filter((obj) => {
       if (obj.key) {
         return true;
       }
     });
-    let oprList = [];
 
     for (const team of data?.data) {
       if (team.key) {
         team.key = team.key.replace("frc", "");
       }
-      oprList.push(team.OPR);
-      for (const [key, value] of Object.entries(team)) {
-        if (
-          typeof value === "number" &&
-          key.toLowerCase() !== "rank" &&
-          key !== "expectedRanking" &&
-          key.toLowerCase() !== "schedule"
-        ) {
-          team[key] = team[key]?.toFixed(1);
-        } else {
-          team[key] = Number(team[key]);
-        }
-      }
-      team["elementsLow"] = (Number(team.autoLow) + Number(team.teleopLow)).toFixed(1);
-      team["elementsMid"] = (
-        Number(team.autoMidCones) +
-        Number(team.autoMidCubes) +
-        Number(team.teleopMidCones) +
-        Number(team.teleopMidCubes)
-      ).toFixed(1);
-      team["elementsHigh"] = (
-        Number(team.autoHighCones) +
-        Number(team.autoHighCubes) +
-        Number(team.teleopHighCones) +
-        Number(team.teleopHighCubes)
-      ).toFixed(1);
     }
-    const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
-
-    setRankings(sortedData);
+    setPitScoutingStatus(data.data);
   };
 
   const predictionsCallback = async (data) => {
-    const qual_rows = [];
+        const qual_rows = [];
     const sf_rows = [];
     const f_rows = [];
     for (const match of data.data) {
@@ -352,6 +469,7 @@ const Tables = () => {
         setEventTitle(array[i]?.display.split("[")[0]);
       }
     }
+
   };
 
   useEffect(() => {
@@ -367,6 +485,8 @@ const Tables = () => {
     getStatDescription(year, eventKey, statDescriptionCallback);
     getRankings(year, eventKey, rankingsCallback);
     getMatchPredictions(year, eventKey, predictionsCallback);
+    getPitStatus(year, eventKey, pitScoutingStatusCallback);
+    pitScoutingStatCallback(null);
     getSearchKeys(searchKeysCallback);
   }, []);
 
@@ -417,9 +537,14 @@ const Tables = () => {
   const handleChange = (event, newValue) => {
     history.push({ hash: tabDict[newValue] });
     setTabIndex(newValue);
+    if (tabDict[newValue] == "match-scouting"){
+      setSnowflakeCount(0)
+    } else {
+      setSnowflakeCount(50)
+    }
   };
 
-  return (
+  return (  
     <>
       <Header />
       <AppBar position="static">
@@ -428,13 +553,15 @@ const Tables = () => {
           onChange={handleChange}
           indicatorColor="secondary"
           textColor="inherit"
-          variant="fullWidth"
-          aria-label="full width tabs"
+          variant="scrollable"
+          aria-label="full width force tabs"
         >
-          <Tab label="Rankings" {...a11yProps(0)} />
-          <Tab label="Charts" {...a11yProps(1)} />
-          {qualPredictions.length > 0 && <Tab label="Quals" {...a11yProps(2)} />}
-          {elimPredictions.length > 0 && <Tab label="Elims" {...a11yProps(3)} />}
+          <Tab icon={<TrendingUp/>} label="Rankings" {...a11yProps(0)} />
+          <Tab icon={<StackedBarChart/>} label="Charts" {...a11yProps(1)} />
+          <Tab icon={<Visibility/>} label="Match Scouting" {...a11yProps(2)} />
+          <Tab icon={<GroupAdd/>}label="Pit Scouting" {...a11yProps(3)} />
+          {qualPredictions.length > 0 && <Tab icon={<SportsScore/>} label="Quals" {...a11yProps(4)} />}
+          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium/>} label="Elims" {...a11yProps(5)} />}
           {/* <Tab label="Polar Power" {...a11yProps(2)} /> */}
         </Tabs>
       </AppBar>
@@ -485,6 +612,7 @@ const Tables = () => {
                   getRowClassName={(params) =>
                     params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
                   }
+
                 />
               ) : (
                 <Box
@@ -503,81 +631,180 @@ const Tables = () => {
         </TabPanel>
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
-            <ThemeProvider theme={switchTheme}>
-              <BarChartWithSwitches
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Auto", key: "autoPoints", enabled: true },
-                  { index: 1, name: "Teleop", key: "teleopPoints", enabled: true },
-                  { index: 2, name: "Links", key: "linkPoints", enabled: true },
-                  { index: 3, name: "End Game", key: "endgamePoints", enabled: true },
-                ]}
-              />
-              <br />
-              <BarChartWithSwitches
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Teleop Elements", key: "teleopElementsScored", enabled: true },
-                  { index: 1, name: "Auto Elements", key: "autoElementsScored", enabled: true },
-                ]}
-              />
-              <br />
-              <BarChartWithSwitches
-                data={rankings}
-                number={chartNumber}
-                startingFields={[
-                  { index: 0, name: "Low", key: "elementsLow", enabled: true },
-                  { index: 1, name: "Middle", key: "elementsMid", enabled: true },
-                  { index: 2, name: "High", key: "elementsHigh", enabled: true },
-                ]}
-              />
-            </ThemeProvider>
+            <Card className="polar-box" style={{textAlign: "center"}}>
+              <ThemeProvider theme={switchTheme}>
+                <br/>
+                <h1 className="text-white mb-0">OPR By Game Period</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Auto", key: "auto_points", enabled: true, weight: 1 },
+                    { index: 1, name: "Teleop", key: "teleop_points", enabled: true, weight: 1 },
+                    { index: 2, name: "End Game", key: "endgame_points", enabled: true, weight: 1 },
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Notes By Game Period</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Teleop Notes", key: "teleop_notes", enabled: true, weight: 1 },
+                    { index: 1, name: "Auto Notes", key: "auto_notes", enabled: true, weight: 1 },
+                    { index: 2, name: "Endgame Notes", key: "trap", enabled: true, weight: 1}
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Notes By Placement</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "Speaker", key: "speaker_total", enabled: true, weight: 1 },
+                    { index: 1, name: "Amp", key: "amp_total", enabled: true, weight: 1 },
+                    { index: 2, name: "Trap", key: "trap", enabled: true, weight: 1 },
+                  ]}
+                />
+                <br />
+                <h1 className="text-white mb-0">Full OPR Breakdown</h1>
+                <BarChartWithWeights
+                  data={rankings}
+                  number={chartNumber}
+                  startingFields={[
+                    { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5},
+                    { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2},
+                    { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2},
+                    { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5},
+                    { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1},
+                    { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5},
+                    { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2},
+                    { index: 7, name: "Park", key: "parking", enabled: true, weight: 1},
+                    { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3},
+                    { index: 9, name: "Deathrate", key: "death_rate", enabled: true, weight: -10},
+                  ]}
+                />
+                <br/>
+              </ThemeProvider>
+            </Card>
           </div>
         </TabPanel>
         <TabPanel value={tabIndex} index={2} dir={darkTheme.direction}>
           <div style={{ height: containerHeight, width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent">
-                <h3 className="text-white mb-0">Qualifications - {eventTitle}</h3>
+                <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
               </CardHeader>
-              <div style={{ height: containerHeight, width: "100%" }}>
+              <MatchScouting
+                defaultEventCode={eventName}
+                year={year}
+                event={eventCode}
+              />
+            </Card>
+          </div>
+        </TabPanel>
+        <TabPanel value={tabIndex} index={3} dir={darkTheme.direction}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Pit Scounting - {eventTitle}</h3>
+            </CardHeader>
+            <div style={{ height: containerHeight, width: "100%" }}>
+              {pitScoutingStatus.length > 0 ? (
                 <StripedDataGrid
+                  initialState={{
+                    sorting: {
+                      sortModel: [{ field: "key", sort: "asc" }],
+                      pagination: { paginationModel: { pageSize: 50 } },
+                    },
+                  }}
                   disableColumnMenu
-                  rows={qualPredictions}
+                  sortingOrder={["desc", "asc"]}
+                  rows={pitScoutingStatus}
                   getRowId={(row) => {
                     return row.key;
                   }}
-                  columns={matchPredictionColumns}
+                  columns={pitScoutingStatColumns}
                   pageSize={100}
                   rowsPerPageOptions={[100]}
                   rowHeight={35}
-                  disableExtendRowFullWidth={true}
+                  slots={{ toolbar: GridToolbar }}
+                  slotProps={{
+                    toolbar: {
+                      showQuickFilter: true,
+                      quickFilterProps: { debounceMs: 500 },
+                    },
+                  }}
+                  disableColumnFilter={!isDesktop}
+                  disableColumnSelector={!isDesktop}
+                  disableDensitySelector={!isDesktop}
+                  disableExportSelector={!isDesktop}
                   sx={{
-                    boxShadow: 2,
+                    mx: 0.5,
                     border: 0,
                     borderColor: "white",
                     "& .MuiDataGrid-cell:hover": {
                       color: "white",
                     },
                   }}
-                  components={{
-                    NoRowsOverlay: () => (
-                      <Stack height="100%" alignItems="center" justifyContent="center">
-                        No Match Data
-                      </Stack>
-                    ),
-                  }}
                   getRowClassName={(params) =>
                     params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
                   }
                 />
-              </div>
-            </Card>
-          </div>
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "calc(100vh - 300px)",
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              )}
+            </div>
+          </Card>
         </TabPanel>
-        <TabPanel value={tabIndex} index={3} dir={darkTheme.direction}>
+        <TabPanel value={tabIndex} index={4} dir={darkTheme.direction}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Quals - {eventTitle}</h3>
+            </CardHeader>
+            <div style={{ height: containerHeight, width: "100%" }}>
+              <StripedDataGrid
+                disableColumnMenu
+                rows={qualPredictions}
+                getRowId={(row) => {
+                  return row.key;
+                }}
+                columns={matchPredictionColumns}
+                pageSize={100}
+                rowsPerPageOptions={[100]}
+                rowHeight={35}
+                disableExtendRowFullWidth={true}
+                sx={{
+                  boxShadow: 2,
+                  border: 0,
+                  borderColor: "white",
+                  "& .MuiDataGrid-cell:hover": {
+                    color: "white",
+                  },
+                }}
+                components={{
+                  NoRowsOverlay: () => (
+                    <Stack height="100%" alignItems="center" justifyContent="center">
+                      No Match Data
+                    </Stack>
+                  ),
+                }}
+                getRowClassName={(params) =>
+                  params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                }
+              />
+            </div>
+          </Card>
+        </TabPanel>
+        <TabPanel value={tabIndex} index={5} dir={darkTheme.direction}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Eliminations - {eventTitle}</h3>
@@ -618,7 +845,7 @@ const Tables = () => {
         </TabPanel>
       </div>
       <Snowfall
-        snowflakeCount={50}
+        snowflakeCount={snowflakeCount}
         style={{
           position: "fixed",
           width: "100vw",

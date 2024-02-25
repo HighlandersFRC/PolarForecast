@@ -1,0 +1,17 @@
+{
+    "event_code": "",
+    "team_number": 0,
+    "time": 0,
+    "active": true,
+    "data": {
+        "amp_scoring": false,
+        "speaker_scoring": false,
+        "trap_scoring": false,
+        "climbing": false,
+        "go_under_stage": false,
+        "drive_train": "",
+        "ground_pick_up": false,
+        "feeder_pick_up": false,
+        "favorite_color": ""
+    }
+}
