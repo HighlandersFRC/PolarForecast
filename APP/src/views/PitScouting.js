@@ -134,8 +134,8 @@ const PitScouting = () => {
                                                 disablePortal
                                                 id="Drive Train"
                                                 options={[{ label: 'Mecanum' }, { label: 'Swerve' }, { label: 'Tank' }]}
-                                                renderInput={(params) => <TextField {...params} label="Drive Train" />}
-                                                freeSolo
+                                                renderInput={(params) => <TextField {...params} label="Drive Train" onChange={(e, value) => { handleChange('data.drive_train', e.target.value) }} />}
+                                                freeSolo={true}
                                                 value={formData.data.drive_train}
                                                 onChange={(e, value) => { handleChange('data.drive_train', value?.label) }}
                                             />
@@ -185,8 +185,8 @@ const PitScouting = () => {
                                                 disablePortal
                                                 id="Favorite Color"
                                                 options={[{ label: 'Red' }, { label: 'Blue' }, { label: 'Green' }, { label: 'Yellow' }, { label: 'Orange' }, { label: 'Pink' }, { label: 'Purple' }]}
-                                                renderInput={(params) => <TextField {...params} label="Favorite Color" />}
-                                                freeSolo
+                                                renderInput={(params) => <TextField {...params} label="Favorite Color" onChange={(e, value) => { handleChange('data.favorite_color', e.target.value) }} />}
+                                                freeSolo={true}
                                                 value={formData.data.favorite_color}
                                                 onChange={(e, value) => handleChange('data.favorite_color', value?.label)}
                                             />
