@@ -235,6 +235,9 @@ const Match = () => {
     let redEndgamePoints = 0;
     let redClimbing = 0;
 
+    getTeamScoutingData(year, eventKey, restData.red_teams[0].key, (data) => scoutingDataCallback(data, 0, "red"))
+    getTeamScoutingData(year, eventKey, restData.red_teams[1].key, (data) => scoutingDataCallback(data, 1, "red"))
+    getTeamScoutingData(year, eventKey, restData.red_teams[2].key, (data) => scoutingDataCallback(data, 2, "red"))
     for (const team of restData?.red_teams) {
       newRow = {
         key: i,
@@ -353,9 +356,9 @@ const Match = () => {
             variant="fullWidth"
             aria-label="full width tabs"
           >
-            <Tab icon={<Assignment />}label="Stats" {...a11yProps(0)} />
-            <Tab icon={<PrecisionManufacturing style={{color: "red"}}/>} label="Autos Red" {...a11yProps(1)} />
-            <Tab icon={<PrecisionManufacturing style={{color: "darkblue"}}/>} label="Autos Blue" {...a11yProps(2)} />
+            <Tab icon={<Assignment />} label="Stats" {...a11yProps(0)} />
+            <Tab icon={<PrecisionManufacturing style={{ color: "red" }} />} label="Autos Red" {...a11yProps(1)} />
+            <Tab icon={<PrecisionManufacturing style={{ color: "darkblue" }} />} label="Autos Blue" {...a11yProps(2)} />
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -480,25 +483,25 @@ const Match = () => {
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
               <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
-              <ImageList cols={3} variant="masonry">
+              <ImageList cols={3}>
                 {<ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[0].key.replace("frc", "")}</h1>
-                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                    {redScouting[0].length > 0 ? redScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[1].key.replace("frc", "")}</h1>
-                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                    {redScouting[1].length > 0 ? redScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
                 {<ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[2].key.replace("frc", "")}</h1>
-                    {redScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                    {redScouting[2].length > 0 ? redScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
                 </ImageListItem>}
@@ -511,28 +514,28 @@ const Match = () => {
             <Card className="polar-box">
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
               <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
-              <ImageList cols={3} variant="masonry">
-                {<ImageListItem>
+              <ImageList cols={3}>
+                <ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[0].key.replace("frc", "")}</h1>
                     {blueScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
-                </ImageListItem>}
-                {<ImageListItem>
+                </ImageListItem>
+                <ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[1].key.replace("frc", "")}</h1>
-                    {blueScouting[1].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                    {blueScouting[1].length > 0 ? blueScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
-                </ImageListItem>}
-                {<ImageListItem>
+                </ImageListItem>
+                <ImageListItem>
                   <div>
                     <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[2].key.replace("frc", "")}</h1>
-                    {blueScouting[2].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
+                    {blueScouting[2].length > 0 ? blueScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
                       : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
                   </div>
-                </ImageListItem>}
+                </ImageListItem>
               </ImageList>
             </Card>
           </div>

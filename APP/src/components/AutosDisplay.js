@@ -5,6 +5,7 @@ const AutoDisplay = ({ scoutingData }) => {
     const serverPath = url.pathname.split("/")[0];
     const [fieldImageWidth, setFieldImageWidth] = useState(0);
     const [imageScaleFactor, setImageScaleFactor] = useState(1);
+    const [imageLoaded, setImageLoaded] = useState(false)
     const fieldImageRef = useRef(null);
 
     useEffect(() => {
@@ -13,12 +14,16 @@ const AutoDisplay = ({ scoutingData }) => {
             setFieldImageWidth(offsetWidth);
             setImageScaleFactor(offsetWidth / naturalWidth);
         }
-    }, [fieldImageRef.current]);
+    }, [imageLoaded]);
 
     const calculatePosition = (x, y) => {
         const scaledX = x * imageScaleFactor;
         const scaledY = y * imageScaleFactor;
         return { left: `${scaledX}px`, top: `${scaledY}px` };
+    };
+
+    const handleImageLoad = () => {
+        setImageLoaded(true);
     };
 
     return (
@@ -31,92 +36,86 @@ const AutoDisplay = ({ scoutingData }) => {
                     src={serverPath + "/AutosGameField.png"}
                     alt="Field"
                     style={{ maxWidth: '100%', height: 'auto' }}
+                    onLoad={handleImageLoad}
                 />
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(186, 978),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('spike_left') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(433, 978),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('spike_middle') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-                
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(679, 978),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('spike_right') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-                
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(108, 61),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(394, 61),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(679, 61),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(965, 61),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
                     }}
                 />
-
                 <img
-                    src={serverPath + "/Note.png"}
+                    src="/Note.png"
                     style={{
                         position: 'absolute',
                         ...calculatePosition(1251, 61),
                         width: `${60 * imageScaleFactor}px`,
                         height: `${60 * imageScaleFactor}px`,
-                        display: !scoutingData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'block'
+                        filter: scoutingData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
                     }}
                 />
             </div>
