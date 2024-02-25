@@ -43,6 +43,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const [fieldImageWidth, setFieldImageWidth] = useState(0);
   const [fieldImageHeight, setFieldImageHeight] = useState(0);
   const [imageScaleFactor, setImageScaleFactor] = useState(1);
+  const [imageLoaded, setImageLoaded] = useState(false)
   const fieldImageRef = useRef(null);
 
   useEffect(() => {
@@ -51,11 +52,15 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       setFieldImageWidth(offsetWidth);
       setImageScaleFactor(offsetWidth / naturalWidth);
     }
-  }, [fieldImageRef.current]);
+  }, [imageLoaded]);
 
   useEffect(() => {
     if (text === "Unable to Submit.") setText(text + " Use QR Code")
   }, [text]);
+
+  // useEffect(() => {
+  //   console.log(formData.data.selectedPieces)
+  // },[formData])
 
   const calculatePosition = (x, y) => {
     const scaledX = x * imageScaleFactor;
@@ -81,19 +86,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     }));
   };
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
   // Function to generate JSX for selectable pieces
   const renderSelectablePieces = (formData) => {
-    const handleUndo = () => {
-      if (formData.data.selectedPieces.length > 0) {
-        setFormData(prevData => ({
-          ...prevData,
-          data: {
-            ...prevData.data,
-            selectedPieces: prevData.data.selectedPieces.slice(0, -1), // Remove the last element
-          }
-        }));
-      }
-    };
     return (
       <>
         <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
@@ -103,6 +101,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
             src={serverPath + "/AutosGameField.png"}
             alt="Field"
             style={{ maxWidth: '100%', height: 'auto' }}
+            onLoad={handleImageLoad}
           />
           <img
             src="/Note.png"
@@ -112,7 +111,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('spike_left') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('spike_left')}
           />
@@ -124,7 +123,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('spike_middle') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('spike_middle')}
           />
@@ -136,7 +135,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('spike_right') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('spike_right')}
           />
@@ -148,7 +147,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('halfway_far_left')}
           />
@@ -160,7 +159,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('halfway_middle_left')}
           />
@@ -172,7 +171,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('halfway_middle')}
           />
@@ -184,7 +183,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('halfway_middle_right')}
           />
@@ -196,13 +195,10 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               width: `${60 * imageScaleFactor}px`,
               height: `${60 * imageScaleFactor}px`,
               cursor: 'pointer',
-              display: formData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'block'
+              filter: formData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
             }}
             onClick={() => handlePieceClick('halfway_far_right')}
           />
-          <Button variant="contained" onClick={handleUndo} style={{ position: 'inherit'}}>
-            Undo
-          </Button>
         </div>
       </>
     );
@@ -361,6 +357,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           inputProps={{ maxLength: 15 }}
         />
       </div>
+      <h3 className="text-white mb-0">Select The Pieces That The Robot Controls During Auto</h3>
       {renderSelectablePieces(formData)}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Auto Fields</h3>
