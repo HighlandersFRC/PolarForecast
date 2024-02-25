@@ -144,7 +144,7 @@
       "stat_key": "rank",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "rank",
+      "display_name": "Rank",
       "stat": {},
       "stat_type": "num"
     },
@@ -176,7 +176,7 @@
       "stat_key": "mobility",
       "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "mobility",
+      "display_name": "Mobility",
       "stat": {},
       "stat_type": "num"
     },
@@ -184,7 +184,7 @@
       "stat_key": "parking",
       "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "parking",
+      "display_name": "Parking",
       "stat": {},
       "stat_type": "num"
     },
@@ -264,7 +264,7 @@
       "stat_key": "trap_points",
       "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "Trap",
+      "display_name": "Trap Points",
       "stat": {},
       "stat_type": "num"
     },
@@ -272,7 +272,7 @@
       "stat_key": "trap",
       "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "trap count",
+      "display_name": "Trap Rate",
       "stat": {},
       "stat_type": "num"
     },
@@ -348,16 +348,6 @@
       "report_stat": true,
       "display_name": "Death Rate",
       "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "simulatedRanking",
-      "solve_strategy": "sum",
-      "report_stat": false,
-      "display_name": "simulatedRanking",
-      "stat": {
-        "component_stats": []
-      },
       "stat_type": "num"
     },
     {
