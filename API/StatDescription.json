@@ -168,7 +168,7 @@
       "stat_key": "climbing",
       "solve_strategy": "custom",
       "report_stat": false,
-      "display_name": "Climb Chance",
+      "display_name": "Climb Rate",
       "stat": {},
       "stat_type": "num"
     },
