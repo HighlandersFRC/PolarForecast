@@ -695,7 +695,7 @@ def update_database():
                     try:
                         TBACollection.insert_one(x)
                     except:
-                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"]}})
+                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
                 teams = [{"key": x[3:], "pit_status": "Not Started",
                           "picture_status": "Not Started"} for x in list(set(teams))]
                 try:
