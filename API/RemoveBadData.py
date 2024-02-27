@@ -94,6 +94,7 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list) -> dict:
     for i in range(len(scouts)):
         scoutTrusts.append([])
         scoutTrustRatings.append(0)
+    # print("made list of all scouts")
     for game in TBADict:
         entries = []
         teamEntries = {}
@@ -172,6 +173,7 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list) -> dict:
 
 def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list):
     scoutRatings = getScoutRatings(TBAData, scoutingData)
+    # print("got one time ratings")
     for j in range(10):
         scouts = scoutRatings["scouts"]
         oldTrustRatings = scoutRatings["trustRatings"]
@@ -275,13 +277,18 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list):
 def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
     for entry in scoutingData:
         entry["data"].pop("selectedPieces")
+        entry["data"].pop("miscellaneous")
+    # print("Removed selected Pieces")
     teams = []
     retval =[]
     scoutingData = removeOutliers(scoutingData)
+    # print("removed outliers")
     scoutRatings = getMarkovianRatings(TBAData, scoutingData)
+    # print("got markovian ratings")
     for entry in scoutingData:
         if not teams.__contains__(entry["team_number"]):
             teams.append(entry["team_number"])
+    # print("made list of teams")
     for team in teams:
         teamEntries = []
         returnEntry = {}
@@ -317,5 +324,7 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
                 if not totalTrust == 0:
                     returnEntry["data"][communityStr][field] /= totalTrust
         retval.append(returnEntry)
+    # print("adjusted data")
     retval = removeOutliers(retval)
+    # print("removed more outliers")
     return retval

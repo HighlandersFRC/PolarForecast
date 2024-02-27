@@ -516,7 +516,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
                 "blue_coopertition": 0,
-                "blue_actual_score": match["alliances"]["blue"]["score"],
+                "blue_actual_score": match["score_breakdown"]["blue"]["totalPoints"],
                 "blue_notes": 0,
                 "red_teams": match["alliances"]["red"]["team_keys"],
                 "red_score": 0,
@@ -526,7 +526,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "red_endgame_points": 0,
                 "red_coopertition": 0,
                 "red_notes": 0,
-                "red_actual_score": match["alliances"]["red"]["score"],
+                "red_actual_score": match["score_breakdown"]["red"]["totalPoints"],
                 "predicted": False,
             }
         else:
@@ -607,7 +607,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                             dataTeam = calculatedData[i]
                             idx = i
                             break
-                    if matchPrediction["predicted"] :
+                    if matchPrediction["predicted"] and matchPrediction["comp_level"] == "qm":
                         dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
                     else:
                         for match in TBAData:
@@ -677,7 +677,7 @@ def update_database():
                     rankings = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/rankings", headers=headers).text)["rankings"]
                     event["rankings"] = rankings
                 except Exception as e:
-                    logging.error(str(e))
+                    logging.error(str(e)+" "+event["key"])
                     event["rankings"] = []
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
@@ -695,7 +695,7 @@ def update_database():
                     try:
                         TBACollection.insert_one(x)
                     except:
-                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"]}})
+                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
                 teams = [{"key": x[3:], "pit_status": "Not Started",
                           "picture_status": "Not Started"} for x in list(set(teams))]
                 try:

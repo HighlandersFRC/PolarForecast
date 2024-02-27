@@ -205,7 +205,10 @@ def analyzeData(m_data: list):
     teamMatchesList = copy.deepcopy(blankAEntry)
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
-    scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
+    try:
+        scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
+    except Exception as e:
+        print(e)
     # print("threw away scouting data")
     
     # Make A and Y lists with scouting data

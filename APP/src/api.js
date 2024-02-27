@@ -237,13 +237,13 @@ export const postMatchScouting = async (data, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     const detail = await response.json()
     const status = response.status
     callback([status, detail]); // parses JSON response into native JavaScript objects
   } catch (e) {
-    callback([0, {detail: "Failed"}])
+    callback([0, { detail: "Failed" }])
   }
 }
 
@@ -258,11 +258,11 @@ export const putMatchScouting = async (data, callback) => {
       headers: {
         "Content-Type": "application/json",
       },
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback([response.status, await response.json()]); // parses JSON response into native JavaScript objects
   } catch (e) {
-    callback([0, {detail: "Failed"}])
+    callback([0, { detail: "Failed" }])
     return 0
   }
 }
@@ -332,13 +332,13 @@ export const deleteTeamPictures = async (year, event, team, data, password, call
   try {
     const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/${password}/DeletePictures/`;
     console.log(endpoint);
-    const body = {"id": data}
+    const body = { "id": data }
     const response = await fetch(endpoint, {
       method: 'DELETE',
       headers: {
         "Content-Type": "application/json",
       },
-            body: JSON.stringify(body),
+      body: JSON.stringify(body),
     });
     callback(response.status);
   } catch (e) {
@@ -429,14 +429,14 @@ export const getTeamScoutingData = async (year, event, team, callback) => {
 
 export const deactivateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${password}/Deactivate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Deactivate`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
       },
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback(response.status); // parses JSON response into native JavaScript objects
   } catch (e) {
@@ -447,14 +447,14 @@ export const deactivateMatchData = async (data, password, callback) => {
 
 export const activateMatchData = async (data, password, callback) => {
   try {
-    const endpoint = `${API_ENDPOINT}/${password}/Activate/`;
+    const endpoint = `${API_ENDPOINT}/${password}/Activate`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
       },
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     callback(response.status); // parses JSON response into native JavaScript objects
   } catch (e) {
