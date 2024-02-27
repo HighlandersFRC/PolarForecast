@@ -509,7 +509,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "key": match["key"],
                 "match_number": match["match_number"],
                 "set_number": match["set_number"],
-                "blue_teams": match["alliances"]["blue"]["team_keys"],
+                "blue_teams": match["score_breakdown"]["blue"]["totalPoints"],
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
@@ -526,7 +526,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "red_endgame_points": 0,
                 "red_coopertition": 0,
                 "red_notes": 0,
-                "red_actual_score": match["alliances"]["red"]["score"],
+                "red_actual_score": match["score_breakdown"]["blue"]["totalPoints"],
                 "predicted": False,
             }
         else:
@@ -607,7 +607,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                             dataTeam = calculatedData[i]
                             idx = i
                             break
-                    if matchPrediction["predicted"] :
+                    if matchPrediction["predicted"] and matchPrediction["comp_level"] == "qm":
                         dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
                     else:
                         for match in TBAData:

@@ -502,6 +502,14 @@ const Tables = () => {
     }
   }, [isDesktop]);
 
+  useEffect (() => {
+    if (tabDict[tabIndex] == "match-scouting"){
+      setSnowflakeCount(0)
+    } else {
+      setSnowflakeCount(50)
+    }
+  }, [tabIndex])
+
   function TabPanel(props) {
     const { children, value, index, ...other } = props;
     return (
@@ -537,11 +545,6 @@ const Tables = () => {
   const handleChange = (event, newValue) => {
     history.push({ hash: tabDict[newValue] });
     setTabIndex(newValue);
-    if (tabDict[newValue] == "match-scouting"){
-      setSnowflakeCount(0)
-    } else {
-      setSnowflakeCount(50)
-    }
   };
 
   return (  
