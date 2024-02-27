@@ -509,14 +509,14 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "key": match["key"],
                 "match_number": match["match_number"],
                 "set_number": match["set_number"],
-                "blue_teams": match["score_breakdown"]["blue"]["totalPoints"],
+                "blue_teams": match["alliances"]["blue"]["team_keys"],
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
                 "blue_coopertition": 0,
-                "blue_actual_score": match["alliances"]["blue"]["score"],
+                "blue_actual_score": match["score_breakdown"]["blue"]["totalPoints"],
                 "blue_notes": 0,
                 "red_teams": match["alliances"]["red"]["team_keys"],
                 "red_score": 0,
@@ -526,7 +526,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 "red_endgame_points": 0,
                 "red_coopertition": 0,
                 "red_notes": 0,
-                "red_actual_score": match["score_breakdown"]["blue"]["totalPoints"],
+                "red_actual_score": match["score_breakdown"]["red"]["totalPoints"],
                 "predicted": False,
             }
         else:
@@ -677,7 +677,7 @@ def update_database():
                     rankings = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/rankings", headers=headers).text)["rankings"]
                     event["rankings"] = rankings
                 except Exception as e:
-                    logging.error(str(e))
+                    logging.error(str(e)+" "+event["key"])
                     event["rankings"] = []
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
