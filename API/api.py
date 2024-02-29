@@ -684,14 +684,12 @@ def update_database():
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
-                teams = []
+                teams = [ranking["team_key"] for ranking in rankings]
                 for x in responseJson:
                     try:
                         x.pop("_id")
                     except Exception as e:
                         pass
-                    for alliance in x["alliances"]:
-                        teams.extend(x["alliances"][alliance]["team_keys"])
                     try:
                         TBACollection.insert_one(x)
                     except:
@@ -699,11 +697,23 @@ def update_database():
                 teams = [{"key": x[3:], "pit_status": "Not Started",
                           "picture_status": "Not Started"} for x in list(set(teams))]
                 try:
-                    PitStatusCollection.insert_one(
-                        {"event_code": event["key"], "data": teams})
-                except Exception as e:
-                    pass
+                    existingTeams = PitStatusCollection.find_one({"event_code": event["key"]})["data"]
+                except:
+                    existingTeams = []
+                returnTeams = []
+                for team in teams:
+                    for existingTeam in existingTeams:
+                        if existingTeam["key"] == team["key"]:
+                            team = existingTeam
+                            break
+                    returnTeams.append(team)
                 try:
+                    # print(returnTeams)
+                    PitStatusCollection.insert_one(
+                        {"event_code": event["key"], "data": returnTeams})
+                except Exception as e:
+                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {"event_code": event["key"], "data": returnTeams})
+                try:    
                     updateData(event["key"])
                 except Exception as e:
                     # print(e.with_traceback(None), event["key"])

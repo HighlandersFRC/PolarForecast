@@ -10,7 +10,7 @@ import { BrowserView, MobileView } from 'react-device-detect';
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
   const serverPath = url.pathname.split("/")[0];
-  const myRef = createRef();
+  const [matchNumber, setMatchNumber] = useState(0)
   const defaultData = {
     event_code: eventCode,
     team_number: 0,
@@ -42,7 +42,6 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const [text, setText] = useState("");
   const [update, setUpdate] = useState(false);
   const [fieldImageWidth, setFieldImageWidth] = useState(0);
-  const [fieldImageHeight, setFieldImageHeight] = useState(0);
   const [imageScaleFactor, setImageScaleFactor] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false)
   const fieldImageRef = useRef(null);
@@ -59,9 +58,14 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     if (text === "Unable to Submit.") setText(text + " Use QR Code")
   }, [text]);
 
-  // useEffect(() => {
-  //   console.log(formData.data.selectedPieces)
-  // },[formData])
+  useEffect(()=>{
+    getMatchDetails(year, event, eventCode + "_qm" + String(matchNumber), (data) => matchDataCallback(data.match));
+  }, [matchNumber])
+
+  useEffect(() => {
+    // console.log(formData.data.selectedPieces)
+    setMatchNumber(formData.match_number)
+  },[formData])
 
   const calculatePosition = (x, y) => {
     const scaledX = x * imageScaleFactor;
@@ -216,12 +220,6 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     } catch { }
   }
 
-  const handleScroll = () => {
-    setTimeout(() => {
-      myRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 500)
-  }
-
   const handleChange = async (field, value) => {
     setFormData((prevData) => {
       const updatedData = { ...prevData };
@@ -238,7 +236,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       return updatedData
     });
     if (field === "match_number") {
-      getMatchDetails(year, event, eventCode + "_qm" + value, (data) => matchDataCallback(data.match));
+        setMatchNumber(value)
     }
   };
 
@@ -297,23 +295,24 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   }
 
   const handleReset = () => {
-    setShowQRCode(false)
-    setShowReset(false)
-    setUpdate(false)
+    setShowQRCode(false);
+    setShowReset(false);
+    setUpdate(false);
     setText('')
     setFormData((prevData) => {
-      prevData.match_number += 1
+      prevData.match_number += 1;
+      prevData.team_number = 0
       getMatchDetails(year, event, eventCode + "_qm" + prevData.match_number, matchDataCallback);
-      prevData.data.auto.amp = 0
-      prevData.data.auto.speaker = 0
-      prevData.data.teleop.amp = 0
-      prevData.data.teleop.trap = 0
-      prevData.data.teleop.speaker = 0
-      prevData.data.miscellaneous.died = 0
-      prevData.data.selectedPieces = []
-      return prevData
+      prevData.data.auto.amp = 0;
+      prevData.data.auto.speaker = 0;
+      prevData.data.teleop.amp = 0;
+      prevData.data.teleop.trap = 0;
+      prevData.data.teleop.speaker = 0;
+      prevData.data.miscellaneous.died = 0;
+      prevData.data.selectedPieces = [];
+      return prevData;
     })
-    handleScroll()
+    setMatchNumber(matchNumber + 1)
   }
 
   const handleUpdate = () => {
