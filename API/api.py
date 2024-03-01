@@ -723,5 +723,5 @@ def update_database():
                     pass
         numRuns += 1
     except Exception as e:
-        print(e)
+        pass
     logging.info("Done with data update #" + str(numRuns))
