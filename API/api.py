@@ -684,7 +684,7 @@ def update_database():
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
-                teams = [ranking["team_key"] for ranking in rankings]
+                teams = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/teams/keys", headers=headers).text)
                 for x in responseJson:
                     try:
                         x.pop("_id")
