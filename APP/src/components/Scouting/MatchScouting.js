@@ -308,6 +308,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       prevData.data.teleop.amp = 0;
       prevData.data.teleop.trap = 0;
       prevData.data.teleop.speaker = 0;
+      prevData.data.teleop.amped_speaker = 0;
       prevData.data.miscellaneous.died = 0;
       prevData.data.selectedPieces = [];
       return prevData;
