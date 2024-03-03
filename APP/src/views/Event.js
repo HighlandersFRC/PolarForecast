@@ -16,7 +16,7 @@
 
 */
 import { Card, CardHeader, Container, Row } from "reactstrap";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Checkbox, FormControlLabel, ImageList, ImageListItem, TextField, useMediaQuery, useTheme } from "@mui/material";
 import { alpha, styled, ThemeProvider, createTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
@@ -24,7 +24,7 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Header from "components/Headers/Header.js";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getStatDescription, getRankings, getMatchPredictions, getSearchKeys } from "api.js";
 import { DataGrid, gridClasses, GridToolbar } from "@mui/x-data-grid";
 import { useHistory } from "react-router-dom";
@@ -37,7 +37,9 @@ import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
 import { getPitStatus } from "api";
 import BarChartWithWeights from "components/BarChartWithWeights";
-import { GroupAdd, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
+import { AutofpsSelect, GroupAdd, PrecisionManufacturing, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
+import { getAutos } from "api";
+import AutoDisplay from "components/AutosDisplay";
 
 
 const switchTheme = createTheme({
@@ -59,8 +61,9 @@ const switchTheme = createTheme({
 
 const Tables = () => {
   const history = useHistory();
-  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting", "quals", "elims"];
+  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting", "quals", "elims", "autos"];
   const url = new URL(window.location.href);
+  const serverPath = url.pathname.split("/")[0];
   const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
   const year = url.pathname.split("/")[3]
   const eventCode = url.pathname.split("/")[4]
@@ -80,6 +83,12 @@ const Tables = () => {
   const [statColumns, setStatColumns] = useState([]);
   const [pitScoutingStatColumns, setPitScoutingStatColumns] = useState([]);
   const [pitScoutingStatus, setPitScoutingStatus] = useState([]);
+  const [autos, setAutos] = useState([])
+  const fieldImageRef = useRef(null);
+  const [imageScaleFactor, setImageScaleFactor] = useState(1);
+  const [displayAutos, setDisplayAutos] = useState([])
+  const [fieldImageWidth, setFieldImageWidth] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false)
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
       field: "match_number",
@@ -156,6 +165,14 @@ const Tables = () => {
       },
     },
   ]);
+  const [autoFormData, setAutoFormData] = useState({
+    team_number: 0,
+    selectedPieces: [],
+    close: false,
+    far: false,
+    scores: 0,
+    pickups: 0,
+  })
 
   const statDescriptionCallback = async (data) => {
     const keys = [];
@@ -169,7 +186,7 @@ const Tables = () => {
       disableExport: true,
       flex: 0.1,
 
-    }); 
+    });
 
     statColumns.push({
       field: "key",
@@ -363,7 +380,7 @@ const Tables = () => {
       const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
 
       setRankings(sortedData);
-    } catch {}
+    } catch { }
   };
 
   const pitScoutingStatusCallback = async (data) => {
@@ -382,7 +399,7 @@ const Tables = () => {
   };
 
   const predictionsCallback = async (data) => {
-        const qual_rows = [];
+    const qual_rows = [];
     const sf_rows = [];
     const f_rows = [];
     for (const match of data.data) {
@@ -472,6 +489,148 @@ const Tables = () => {
 
   };
 
+  const autosCallback = async (data) => {
+    setAutos(data)
+  };
+
+  const calculatePosition = (x, y) => {
+    const scaledX = x * imageScaleFactor;
+    const scaledY = y * imageScaleFactor;
+    return { left: `${scaledX}px`, top: `${scaledY}px` };
+  };
+
+  // Function to handle piece selection
+  const handlePieceClick = (pieceType) => {
+    const selectedPieces = [...autoFormData.selectedPieces];
+    const index = selectedPieces.indexOf(pieceType);
+    if (index === -1) {
+      selectedPieces.push(pieceType); // If not selected, add it
+    } else {
+      selectedPieces.splice(index, 1); // If already selected, remove it
+    }
+    setAutoFormData(prevData => ({
+      ...prevData,
+      selectedPieces: selectedPieces
+    }));
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const renderSelectablePieces = (formData) => {
+    return (
+      <>
+        <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
+          {/* Display your field image here */}
+          <img
+            ref={fieldImageRef}
+            src={serverPath + "/AutosGameField.png"}
+            alt="Field"
+            style={{ maxWidth: '100%', height: 'auto' }}
+            onLoad={handleImageLoad}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(186, 978),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('spike_left')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(433, 978),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('spike_middle')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(679, 978),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('spike_right')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(108, 61),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('halfway_far_left')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(394, 61),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('halfway_middle_left')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(679, 61),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('halfway_middle')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(965, 61),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('halfway_middle_right')}
+          />
+          <img
+            src="/Note.png"
+            style={{
+              position: 'absolute',
+              ...calculatePosition(1251, 61),
+              width: `${60 * imageScaleFactor}px`,
+              height: `${60 * imageScaleFactor}px`,
+              cursor: 'pointer',
+              filter: autoFormData.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
+            }}
+            onClick={() => handlePieceClick('halfway_far_right')}
+          />
+        </div>
+      </>
+    );
+  };
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const params = url.pathname.split("/");
@@ -486,9 +645,18 @@ const Tables = () => {
     getRankings(year, eventKey, rankingsCallback);
     getMatchPredictions(year, eventKey, predictionsCallback);
     getPitStatus(year, eventKey, pitScoutingStatusCallback);
+    getAutos(year, eventKey, autosCallback)
     pitScoutingStatCallback(null);
     getSearchKeys(searchKeysCallback);
   }, []);
+
+  useEffect(() => {
+    if (fieldImageRef.current) {
+      const { naturalWidth, offsetWidth } = fieldImageRef.current;
+      setFieldImageWidth(offsetWidth);
+      setImageScaleFactor(offsetWidth / naturalWidth);
+    }
+  }, [imageLoaded]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -502,13 +670,49 @@ const Tables = () => {
     }
   }, [isDesktop]);
 
-  useEffect (() => {
-    if (tabDict[tabIndex] == "match-scouting"){
+  useEffect(() => {
+    if (tabDict[tabIndex] == "match-scouting") {
       setSnowflakeCount(0)
     } else {
       setSnowflakeCount(50)
     }
   }, [tabIndex])
+
+  useEffect(() => {
+    setDisplayAutos(autos.filter((auto) => {
+      if (autoFormData.close) {
+        let hasClosePiece = false
+        let closePieces = ['spike_left', 'spike_middle', 'spike_right', 'halfway_far_left', 'halfway_middle_left', 'halfway_middle']
+        closePieces.forEach(spot => {
+          if (auto.data.selectedPieces.includes(spot)) hasClosePiece = true
+        });
+        if (!hasClosePiece) return false
+      }
+      if (autoFormData.far) {
+        let hasClosePiece = false
+        let farPieces = ['halfway_far_right', 'halfway_middle_right']
+        farPieces.forEach(spot => {
+          if (auto.data.selectedPieces.includes(spot)) hasClosePiece = true
+        });
+        if (!hasClosePiece) return false
+      }
+      if (auto.data?.selectedPieces?.length < autoFormData.pickups) return false
+      if ((auto.data.auto.amp + auto.data.auto.speaker) < autoFormData.scores) return false
+      let hasSpots = true
+      autoFormData.selectedPieces.forEach(spot => {
+        console.log(spot)
+        console.log(auto.data.selectedPieces.includes(spot))
+        if (auto.data.selectedPieces.includes(spot)){
+        }
+        else {
+          hasSpots = false
+        }
+      }
+      )
+      if (!hasSpots) return false
+      return true
+    }))
+  }, [autoFormData, autos])
 
   function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -547,7 +751,16 @@ const Tables = () => {
     setTabIndex(newValue);
   };
 
-  return (  
+  const handleFilterChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    setAutoFormData((prevData) => ({
+      ...prevData,
+      [name]: newValue,
+    }));
+  }
+
+  return (
     <>
       <Header />
       <AppBar position="static">
@@ -559,13 +772,13 @@ const Tables = () => {
           variant="scrollable"
           aria-label="full width force tabs"
         >
-          <Tab icon={<TrendingUp/>} label="Rankings" {...a11yProps(0)} />
-          <Tab icon={<StackedBarChart/>} label="Charts" {...a11yProps(1)} />
-          <Tab icon={<Visibility/>} label="Match Scouting" {...a11yProps(2)} />
-          <Tab icon={<GroupAdd/>}label="Pit Scouting" {...a11yProps(3)} />
-          {qualPredictions.length > 0 && <Tab icon={<SportsScore/>} label="Quals" {...a11yProps(4)} />}
-          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium/>} label="Elims" {...a11yProps(5)} />}
-          {/* <Tab label="Polar Power" {...a11yProps(2)} /> */}
+          <Tab icon={<TrendingUp />} label="Rankings" {...a11yProps(0)} />
+          <Tab icon={<StackedBarChart />} label="Charts" {...a11yProps(1)} />
+          <Tab icon={<Visibility />} label="Match Scouting" {...a11yProps(2)} />
+          <Tab icon={<GroupAdd />} label="Pit Scouting" {...a11yProps(3)} />
+          {qualPredictions.length > 0 && <Tab icon={<SportsScore />} label="Quals" {...a11yProps(4)} />}
+          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
+          {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
         </Tabs>
       </AppBar>
       <div style={{ height: containerDivHeight, width: "100%", overflow: "auto" }}>
@@ -634,9 +847,9 @@ const Tables = () => {
         </TabPanel>
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
-            <Card className="polar-box" style={{textAlign: "center"}}>
+            <Card className="polar-box" style={{ textAlign: "center" }}>
               <ThemeProvider theme={switchTheme}>
-                <br/>
+                <br />
                 <h1 className="text-white mb-0">OPR By Game Period</h1>
                 <BarChartWithWeights
                   data={rankings}
@@ -655,7 +868,7 @@ const Tables = () => {
                   startingFields={[
                     { index: 0, name: "Teleop Notes", key: "teleop_notes", enabled: true, weight: 1 },
                     { index: 1, name: "Auto Notes", key: "auto_notes", enabled: true, weight: 1 },
-                    { index: 2, name: "Endgame Notes", key: "trap", enabled: true, weight: 1}
+                    { index: 2, name: "Endgame Notes", key: "trap", enabled: true, weight: 1 }
                   ]}
                 />
                 <br />
@@ -675,19 +888,19 @@ const Tables = () => {
                   data={rankings}
                   number={chartNumber}
                   startingFields={[
-                    { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5},
-                    { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2},
-                    { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2},
-                    { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5},
-                    { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1},
-                    { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5},
-                    { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2},
-                    { index: 7, name: "Park", key: "parking", enabled: true, weight: 1},
-                    { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3},
-                    { index: 9, name: "Deathrate", key: "death_rate", enabled: true, weight: -10},
+                    { index: 0, name: "AS", key: "auto_speaker", enabled: true, weight: 5 },
+                    { index: 1, name: "AA", key: "auto_amp", enabled: true, weight: 2 },
+                    { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2 },
+                    { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5 },
+                    { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1 },
+                    { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5 },
+                    { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2 },
+                    { index: 7, name: "Park", key: "parking", enabled: true, weight: 1 },
+                    { index: 8, name: "Climb", key: "climbing", enabled: true, weight: 3 },
+                    { index: 9, name: "Deathrate", key: "death_rate", enabled: true, weight: -10 },
                   ]}
                 />
-                <br/>
+                <br />
               </ThemeProvider>
             </Card>
           </div>
@@ -844,6 +1057,57 @@ const Tables = () => {
                 }
               />
             </div>
+          </Card>
+        </TabPanel>
+        <TabPanel value={tabIndex} index={6} dir={darkTheme.direction}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Autos Search - {eventTitle}</h3>
+            </CardHeader>
+            {renderSelectablePieces(autoFormData)}
+            <FormControlLabel
+              control={<Checkbox />}
+              label="Close"
+              name="close"
+              sx={{color: "white"}}
+              checked={autoFormData.close}
+              onChange={handleFilterChange}
+            />
+            <FormControlLabel
+              control={<Checkbox />}
+              label="Far"
+              name="far"
+              sx={{color: "white"}}
+              checked={autoFormData.far}
+              onChange={handleFilterChange}
+            />
+            <TextField
+              label="Scores"
+              type="number"
+              name="scores"
+              value={autoFormData.scores}
+              onChange={handleFilterChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Pickups"
+              type="number"
+              name="pickups"
+              value={autoFormData.pickups}
+              onChange={handleFilterChange}
+              fullWidth
+              margin="normal"
+            />
+            {displayAutos.length > 0 ? <ImageList cols={3}>
+              {displayAutos.map((val, idx, a) => {
+                return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
+              })}
+            </ImageList> : <>
+              <br />
+              <h1 className="text-white mb-0" style={{ textAlign: "center" }}>No Autonomous Data</h1>
+              <br />
+            </>}
           </Card>
         </TabPanel>
       </div>

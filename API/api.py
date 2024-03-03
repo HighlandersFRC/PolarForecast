@@ -452,6 +452,12 @@ def get_scout_entries(team: str, event: str, year: int):
         entry.pop("_id")
     return retval
 
+@app.get("/{year}/{event}/ScoutingData")
+def get_event_autos(year: int, event: str):
+    autos = list(ScoutingData2024Collection.find({"event_code": str(year)+event}))
+    for auto in autos:
+        auto.pop("_id")
+    return autos
 
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"

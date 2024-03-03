@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://localhost:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
 
 const default_ttl = 5; //5 minutes expiry time
@@ -460,5 +460,29 @@ export const activateMatchData = async (data, password, callback) => {
   } catch (e) {
     callback(0)
     return 0
+  }
+}
+
+export const getAutos = async (year, event, callback) => {
+  try {
+    const storage_name = `${year}${event}_autos`;
+    const data = null
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/ScoutingData`;
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.status == 200) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback([]);
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
+    }
+  } catch (error) {
+    console.error(error);
   }
 }
