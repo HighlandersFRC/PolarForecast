@@ -7,7 +7,7 @@ const Counter = ({ label, onChange, value, max}) => {
   const [count, setCount] = useState(value);
 
   const handleChange = (event) => {
-    const newValue = Math.max(Number(event.target.value), 0);
+    const newValue = Math.max(min(Number(event.target.value), max), 0);
     onChange(newValue);
     setCount(newValue);
   };
