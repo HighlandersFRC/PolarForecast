@@ -28,7 +28,7 @@ const AutoDisplay = ({ scoutingData }) => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
-            <p className="text-white mb-0">Match: {scoutingData.match_number}  |  Scout: {scoutingData.scout_info.name}  |  Amp: {scoutingData.data.auto.amp} | Speaker: {scoutingData.data.auto.speaker}</p>
+            <p className="text-white mb-0">Team: {scoutingData.team_number}  |  Match: {scoutingData.match_number}  |  Scout: {scoutingData.scout_info.name}  |  Amp: {scoutingData.data.auto.amp} | Speaker: {scoutingData.data.auto.speaker}</p>
             <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
                 {/* Display your field image here */}
                 <img
