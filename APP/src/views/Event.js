@@ -40,6 +40,7 @@ import BarChartWithWeights from "components/BarChartWithWeights";
 import { AutofpsSelect, GroupAdd, PrecisionManufacturing, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
 import { getAutos } from "api";
 import AutoDisplay from "components/AutosDisplay";
+import Counter from "components/Counter";
 
 
 const switchTheme = createTheme({
@@ -754,9 +755,17 @@ const Tables = () => {
   const handleFilterChange = (event) => {
     const { name, value, type, checked } = event.target;
     const newValue = type === 'checkbox' ? checked : value;
+
     setAutoFormData((prevData) => ({
       ...prevData,
       [name]: newValue,
+    }));
+  }
+
+  const handleCounterChange = (name, value) => {
+    setAutoFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   }
 
@@ -1081,23 +1090,19 @@ const Tables = () => {
               checked={autoFormData.far}
               onChange={handleFilterChange}
             />
-            <TextField
+            <Counter
               label="Scores"
-              type="number"
               name="scores"
               value={autoFormData.scores}
-              onChange={handleFilterChange}
-              fullWidth
-              margin="normal"
+              max={9}
+              onChange={(value) => {handleCounterChange("scores", value)}}
             />
-            <TextField
+            <Counter
               label="Pickups"
-              type="number"
               name="pickups"
               value={autoFormData.pickups}
-              onChange={handleFilterChange}
-              fullWidth
-              margin="normal"
+              max={8}
+              onChange={(value) => {handleCounterChange("pickups", value)}}
             />
             {displayAutos.length > 0 ? <ImageList cols={3}>
               {displayAutos.map((val, idx, a) => {

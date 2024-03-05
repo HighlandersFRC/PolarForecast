@@ -6,6 +6,7 @@ import { Switch } from '@mui/material';
 import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
+import Counter from 'components/Counter';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
@@ -362,42 +363,43 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       {renderSelectablePieces(formData)}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Auto Fields</h3>
-        <TextField
+        <Counter
           label="Auto Amp"
           type="number"
           value={formData.data.auto.amp}
-          onChange={(e) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+          max={9}
         />
-        <TextField
+        <Counter
           label="Auto Speaker"
           type="number"
           value={formData.data.auto.speaker}
-          onChange={(e) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+          max={9}
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Teleop Fields</h3>
-        <TextField
+        <Counter
           label="Teleop Amp"
           type="number"
           value={formData.data.teleop.amp}
-          onChange={(e) => handleChange('data.teleop.amp', Math.max(0, parseInt(e.target.value, 10)))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 10)))}
+          max={30}
         />
-        <TextField
+        <Counter
           label="Teleop Speaker"
           type="number"
           value={formData.data.teleop.speaker}
-          onChange={(e) => handleChange('data.teleop.speaker', Math.max(0, parseInt(e.target.value, 10)))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 10)))}
+          max={30}
         />
-        <TextField
+        <Counter
           label="Teleop Amplified Speaker"
           type="number"
           value={formData.data.teleop.amped_speaker}
-          onChange={(e) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(e.target.value, 10)))}
+          onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 10)))}
+          max={30}
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
