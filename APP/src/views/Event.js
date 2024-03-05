@@ -1090,6 +1090,7 @@ const Tables = () => {
               checked={autoFormData.far}
               onChange={handleFilterChange}
             />
+            <br/>
             <Counter
               label="Scores"
               name="scores"
@@ -1097,6 +1098,7 @@ const Tables = () => {
               max={9}
               onChange={(value) => {handleCounterChange("scores", value)}}
             />
+            <br/>
             <Counter
               label="Pickups"
               name="pickups"
