@@ -170,19 +170,22 @@ def get_match_details(year: int, event: str, match_key: str):
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
         tbaMatch.pop("_id")
-        eventPredictions = PredictionCollection.find_one(
-            {"event_code": event_code})
         matchPrediction = {}
-        for prediction in eventPredictions["data"]:
-            if prediction["key"] == match_key:
-                matchPrediction = prediction
-                break
         blueTeamStats = []
-        for team in matchPrediction["blue_teams"]:
-            blueTeamStats.append(get_event_Team_Stats(year, event, team))
         redTeamStats = []
-        for team in matchPrediction["red_teams"]:
-            redTeamStats.append(get_event_Team_Stats(year, event, team))
+        try:
+            eventPredictions = PredictionCollection.find_one(
+                {"event_code": event_code})
+            for prediction in eventPredictions["data"]:
+                if prediction["key"] == match_key:
+                    matchPrediction = prediction
+                    break
+            for team in matchPrediction["blue_teams"]:
+                blueTeamStats.append(get_event_Team_Stats(year, event, team))
+            for team in matchPrediction["red_teams"]:
+                redTeamStats.append(get_event_Team_Stats(year, event, team))
+        except:
+            pass
         retval = {
             "match": tbaMatch,
             "prediction": matchPrediction,
@@ -452,12 +455,15 @@ def get_scout_entries(team: str, event: str, year: int):
         entry.pop("_id")
     return retval
 
+
 @app.get("/{year}/{event}/ScoutingData")
 def get_event_autos(year: int, event: str):
-    autos = list(ScoutingData2024Collection.find({"event_code": str(year)+event}))
+    autos = list(ScoutingData2024Collection.find(
+        {"event_code": str(year)+event}))
     for auto in autos:
         auto.pop("_id")
     return autos
+
 
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
@@ -467,13 +473,13 @@ def convertData(calculatedData, year, event_code):
         keyList.append(keyStr+team)
     retval0 = {"data": {"keys": keyList}}
     retvallist = [retval0]
-    for team in calculatedData["team_number"]:        
+    for team in calculatedData["team_number"]:
         data = {"historical": False, "key": "frc"+str(team), "rank": 0}
         for item in rankings:
             if item["team_key"] == data["key"]:
                 data["rank"] = item["rank"]
                 break
-        
+
         idx = calculatedData["team_number"].index(team)
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
@@ -486,9 +492,20 @@ def updateData(event_code: str):
     ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code, 'active': True}))
     if TBAData is not None:
-        calculatedData = analyzeData([TBAData, ScoutingData])
-        data = calculatedData.to_dict("list")
-        data = convertData(data, YEAR, event_code)
+        try:
+            calculatedData = analyzeData([TBAData, ScoutingData])
+            data = calculatedData.to_dict("list")
+            data = convertData(data, YEAR, event_code)
+        except:
+            keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
+            keyList = [keyStr+"index"]
+            teams = ETagCollection.find_one({"key": event_code})["teams"]
+            for team in teams:
+                keyList.append(keyStr+team[3:])
+            retval0 = {"data": {"keys": keyList}}
+            data = [retval0]
+            data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
+                          "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
         try:
             data = updatePredictions(TBAData, data, event_code)
         except Exception as e:
@@ -607,7 +624,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
             for team in matchPrediction[f"{alliance}_teams"]:
                 dataTeam = {}
                 idx = 0
-                try :
+                try:
                     for i in range(1, len(calculatedData)):
                         if calculatedData[i]["key"] == team:
                             dataTeam = calculatedData[i]
@@ -680,20 +697,24 @@ def update_database():
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
                     headers.pop("If-None-Match")
-                    rankings = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/rankings", headers=headers).text)["rankings"]
+                    rankings = json.loads(requests.get(
+                        TBA_API_URL+"event/" + event["key"] + "/rankings", headers=headers).text)["rankings"]
                     event["rankings"] = rankings
                 except Exception as e:
                     logging.error(str(e)+" "+event["key"])
                     event["rankings"] = []
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
+                try:
+                    teams = json.loads(requests.get(
+                        TBA_API_URL+"event/" + event["key"] + "/teams/keys", headers=headers).text)
+                except:
+                    teams = []
+                event["teams"] = teams
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
-                try:
-                    teams = json.loads(requests.get(TBA_API_URL+"event/"+ event["key"]+ "/teams/keys", headers=headers).text)
-                except:
-                    teams = []
+
                 for x in responseJson:
                     try:
                         x.pop("_id")
@@ -702,11 +723,13 @@ def update_database():
                     try:
                         TBACollection.insert_one(x)
                     except:
-                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"], "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
+                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"],
+                                                          "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
                 teams = [{"key": x[3:], "pit_status": "Not Started",
                           "picture_status": "Not Started"} for x in list(set(teams))]
                 try:
-                    existingTeams = PitStatusCollection.find_one({"event_code": event["key"]})["data"]
+                    existingTeams = PitStatusCollection.find_one(
+                        {"event_code": event["key"]})["data"]
                 except:
                     existingTeams = []
                 returnTeams = []
@@ -721,8 +744,9 @@ def update_database():
                     PitStatusCollection.insert_one(
                         {"event_code": event["key"], "data": returnTeams})
                 except Exception as e:
-                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {"event_code": event["key"], "data": returnTeams})
-                try:    
+                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
+                                                             "event_code": event["key"], "data": returnTeams})
+                try:
                     updateData(event["key"])
                 except Exception as e:
                     # print(e.with_traceback(None), event["key"])
