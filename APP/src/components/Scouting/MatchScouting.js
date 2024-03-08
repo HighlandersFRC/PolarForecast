@@ -6,6 +6,7 @@ import { Switch } from '@mui/material';
 import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
+import Counter from 'components/Counter';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
@@ -298,23 +299,30 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setShowQRCode(false);
     setShowReset(false);
     setUpdate(false);
-    setText('')
+    setText('');
     setFormData((prevData) => {
-      prevData.match_number += 1;
-      prevData.team_number = 0
-      getMatchDetails(year, event, eventCode + "_qm" + prevData.match_number, matchDataCallback);
-      prevData.data.auto.amp = 0;
-      prevData.data.auto.speaker = 0;
-      prevData.data.teleop.amp = 0;
-      prevData.data.teleop.trap = 0;
-      prevData.data.teleop.speaker = 0;
-      prevData.data.teleop.amped_speaker = 0;
-      prevData.data.miscellaneous.died = 0;
-      prevData.data.selectedPieces = [];
-      return prevData;
-    })
-    setMatchNumber(matchNumber + 1)
-  }
+        prevData.match_number += 1;
+        prevData.team_number = 0;
+        prevData.data = {
+            auto: {
+                amp: 0,
+                speaker: 0,
+            },
+            teleop: {
+                amp: 0,
+                speaker: 0,
+                amped_speaker: 0,
+            },
+            miscellaneous: {
+                died: false,
+            },
+            selectedPieces: [],
+        };
+        return prevData;
+    });
+    setMatchNumber(matchNumber + 1);
+};
+
 
   const handleUpdate = () => {
     // Set the "Time" field to the current UTC timestamp when submitting the form
@@ -362,43 +370,44 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       {renderSelectablePieces(formData)}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Auto Fields</h3>
-        <TextField
+        <Counter
           label="Auto Amp"
           type="number"
           value={formData.data.auto.amp}
-          onChange={(e) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+          max={9}
         />
-        <TextField
+        <Counter
           label="Auto Speaker"
           type="number"
           value={formData.data.auto.speaker}
-          onChange={(e) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(e.target.value, 10)), 17))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+          max={9}
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Teleop Fields</h3>
-        <TextField
+        {formData && (<><Counter
           label="Teleop Amp"
           type="number"
           value={formData.data.teleop.amp}
-          onChange={(e) => handleChange('data.teleop.amp', Math.max(0, parseInt(e.target.value, 10)))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 30)))}
+          max={30}
         />
-        <TextField
+        <Counter
           label="Teleop Speaker"
           type="number"
           value={formData.data.teleop.speaker}
-          onChange={(e) => handleChange('data.teleop.speaker', Math.max(0, parseInt(e.target.value, 10)))}
-          inputProps={{ min: 0 }}
+          onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 30)))}
+          max={30}
         />
-        <TextField
+        <Counter
           label="Teleop Amplified Speaker"
           type="number"
           value={formData.data.teleop.amped_speaker}
-          onChange={(e) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(e.target.value, 10)))}
-        />
+          onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 30)))}
+          max={30}
+        /></>)}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Miscellaneous</h3>
