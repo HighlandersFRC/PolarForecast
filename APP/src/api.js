@@ -1,7 +1,7 @@
 // const API_ENDPOINT = "http://localhost:8000";
 const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
-
+ 
 const default_ttl = 5; //5 minutes expiry time
 
 function setWithExpiry(key, value, ttl) {
