@@ -786,7 +786,7 @@ const Tables = () => {
           <Tab icon={<Visibility />} label="Match Scouting" {...a11yProps(2)} />
           <Tab icon={<GroupAdd />} label="Pit Scouting" {...a11yProps(3)} />
           {qualPredictions.length > 0 && <Tab icon={<SportsScore />} label="Quals" {...a11yProps(4)} />}
-          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
+          {autos.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
           {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
         </Tabs>
       </AppBar>

@@ -10,9 +10,6 @@ const Footer = () => {
       justifyContent="center"
       sx={{ position: "absolute", bottom: 0, width: "100%", padding: 0 }}
     >
-      <Typography variant="body2" color="text.secondary">
-        © {new Date().getFullYear()}{" "}
-      </Typography>
     </Grid>
   );
 };
