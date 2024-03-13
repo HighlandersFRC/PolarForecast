@@ -39,28 +39,39 @@ client = MongoClient(MONGO_CONNECTION)
 testDB = client["Database_Test"]
 
 testCollection = testDB["Test"]
+
 TBACollection = testDB["TBA"]
 TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
-ScoutDataCollection = testDB["ScoutingData"]
+
 ScoutingData2024Collection = testDB["Scouting2024Data"]
 ScoutingData2024Collection.create_index([("event_code", pymongo.ASCENDING), (
     "team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING)], unique=True)
-CalculatedDataCollection = testDB["CalculatedData"]
+
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
+
 PitScoutingCollection = testDB["PitScouting"]
 PitScoutingCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
+
 PitStatusCollection = testDB["PitScoutingStatus"]
 PitStatusCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+
+CalculatedDataCollection = testDB["CalculatedData"]
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+
 ETagCollection = testDB["ETag"]
 ETagCollection.create_index([("key", pymongo.ASCENDING)], unique=True)
+
+FollowUpCollection = testDB["FollowUp"]
+FollowUpCollection.create_index(
+    [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
 
 
 @app.on_event("startup")
@@ -127,6 +138,9 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 @app.get("/{year}/{event}/stats")
 def get_Event_Stats(year: int, event: str):
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
+    for i, team in enumerate(data["data"][1:]):
+        team = get_event_Team_Stats(year, event, team["key"])
+        data["data"][i+1] = team
     data.pop("_id")
     return data
 
@@ -465,6 +479,95 @@ def get_event_autos(year: int, event: str):
     return autos
 
 
+@app.post("/{year}/{event}/{team}/FollowUp")
+def post_team_follow_up(data: list, year: int, event: str, team: str):
+    if not len(data) == 0:
+        for idx, death in enumerate(data):
+            match_number = int(death["match_number"])
+            teamInMatch = False
+            teamDied = False
+            matchScoutingEntries = get_scout_entries(team, event, year)
+            for entry in matchScoutingEntries:
+                if entry["match_number"] == match_number:
+                    teamInMatch = True
+                if entry['data']["miscellaneous"]["died"]:
+                    teamDied = True
+            if not teamInMatch:
+                raise HTTPException(
+                    400, "Check Match Number for Death #"+str(idx+1))
+            if not teamDied:
+                raise HTTPException(400, "This Team Never Died in Match #" +
+                                    str(int(match_number)+1)+" in Death #"+str(idx+1))
+        sum = 0
+        for death in data:
+            if type(death["severity"]) == int:
+                sum += death["severity"]
+        average = sum/len(data)
+        DBEntry = {"event_code": str(year)+event, "team_key": team,
+                   "team_number": team[3:], "deaths": data, "average": average, "total": sum}
+        try:
+            FollowUpCollection.insert_one(DBEntry)
+        except:
+            FollowUpCollection.find_one_and_delete(
+                {"event_code": str(year)+event, "team_key": team})
+            FollowUpCollection.insert_one(DBEntry)
+        newStatus = "Done"
+        for death in data:
+            if death["severity"] == '' or death["death_reason"] == '':
+                newStatus = "Incomplete"
+        statuses = PitStatusCollection.find_one(
+            {"event_code": str(year)+event})
+        for status in statuses["data"]:
+            if status["key"] == team[3:]:
+                status["follow_up_status"] = newStatus
+        PitStatusCollection.find_one_and_delete(
+            {"event_code": str(year)+event})
+        PitStatusCollection.insert_one(statuses)
+        DBEntry.pop("_id")
+        return DBEntry
+    else:
+        raise HTTPException(400, "No Deaths Reported")
+
+
+@app.get("/{year}/{event}/{team}/FollowUp")
+def get_team_follow_up(team: str, event: str, year: int):
+    data = FollowUpCollection.find_one(
+        {"event_code": str(year)+event, "team_key": team})
+    if data is not None:
+        data.pop("_id")
+        scoutEntries = get_scout_entries(team, event, year)
+        deathEntries = []
+        for entry in scoutEntries:
+            if entry["data"]["miscellaneous"]["died"]:
+                deathEntries.append(entry)
+        for entry in deathEntries:
+            if not data["deaths"].__contains__({"match_number": entry["match_number"],
+                                                "death_reason": "",
+                                                "severity": '', }):
+                data["deaths"].append({"match_number": entry["match_number"],
+                                       "death_reason": "",
+                                       "severity": '', })
+        return data
+    else:
+        scoutEntries = get_scout_entries(team, event, year)
+        deathEntries = []
+        for entry in scoutEntries:
+            if entry["data"]["miscellaneous"]["died"]:
+                deathEntries.append(entry)
+        if len(deathEntries) == 0:
+            return {"event_code": str(year)+event, "team_key": team, "team_number": team[3:], "deaths": [], "average": 0, "total": 0}
+        else:
+            deaths = []
+            for entry in deathEntries:
+                if not deaths.__contains__({"match_number": entry["match_number"],
+                                            "death_reason": "",
+                                            "severity": '', }):
+                    deaths.append({"match_number": entry["match_number"],
+                                   "death_reason": "",
+                                   "severity": '', })
+            return {"event_code": str(year)+event, "team_key": team, "team_number": team[3:], "deaths": deaths, "average": 0, "total": 0}
+
+
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
@@ -509,7 +612,8 @@ def updateData(event_code: str):
         try:
             data = updatePredictions(TBAData, data, event_code)
         except Exception as e:
-            print(e)
+            # print(e)
+            pass
         metadata = {"last_modified": datetime.utcnow().timestamp(),
                     "etag": None, "tba": False}
         try:
@@ -520,7 +624,8 @@ def updateData(event_code: str):
                 result = CalculatedDataCollection.update_one(
                     {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
             except Exception as ex:
-                print(ex)
+                # print(ex)
+                pass
 
 
 def updatePredictions(TBAData, calculatedData, event_code):
@@ -638,7 +743,8 @@ def updatePredictions(TBAData, calculatedData, event_code):
                                 dataTeam["simulated_rp"] += match["score_breakdown"][alliance]["rp"]
                     calculatedData[idx] = dataTeam
                 except Exception as e:
-                    print(e)
+                    # print(e)
+                    pass
     sorted_list = sorted(
         calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
     for i, item in enumerate(sorted_list):
@@ -726,7 +832,7 @@ def update_database():
                         TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"],
                                                           "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
                 teams = [{"key": x[3:], "pit_status": "Not Started",
-                          "picture_status": "Not Started"} for x in list(set(teams))]
+                          "picture_status": "Not Started", "follow_up_status": "Not Started"} for x in list(set(teams))]
                 try:
                     existingTeams = PitStatusCollection.find_one(
                         {"event_code": event["key"]})["data"]
@@ -746,6 +852,7 @@ def update_database():
                 except Exception as e:
                     PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
                                                              "event_code": event["key"], "data": returnTeams})
+                    print(e)
                 try:
                     updateData(event["key"])
                 except Exception as e:
@@ -753,5 +860,6 @@ def update_database():
                     pass
         numRuns += 1
     except Exception as e:
+        print(e)
         pass
     logging.info("Done with data update #" + str(numRuns))

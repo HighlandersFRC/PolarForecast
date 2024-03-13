@@ -41,6 +41,9 @@ import { AutofpsSelect, GroupAdd, PrecisionManufacturing, SportsScore, StackedBa
 import { getAutos } from "api";
 import AutoDisplay from "components/AutosDisplay";
 import Counter from "components/Counter";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 
 
 const switchTheme = createTheme({
@@ -59,6 +62,7 @@ const switchTheme = createTheme({
     },
   },
 });
+
 
 const Tables = () => {
   const history = useHistory();
@@ -175,47 +179,42 @@ const Tables = () => {
     pickups: 0,
   })
 
+  const CustomLinkRenderer = (props) => {
+    const onClick = (e) => {
+      e.preventDefault(); // Prevent the default link behavior
+      statisticsTeamOnClick(props.data);
+    };
+
+    return (
+      <Link component="button" onClick={onClick} underline="always">
+        {props.value}
+      </Link>
+    );
+  };
+
   const statDescriptionCallback = async (data) => {
     const keys = [];
     const statColumns = [];
-    const pitScoutingStatColumns = [];
-    statColumns.push({
-      field: "id",
-      headerName: "",
-      filterable: false,
-      renderCell: (index) => index.api.getRowIndexRelativeToVisibleRows(index.row.key) + 1,
-      disableExport: true,
-      flex: 0.1,
-
-    });
 
     statColumns.push({
       field: "key",
       headerName: "Team",
-      filterable: false,
-      headerAlign: "center",
-      align: "center",
-      minWidth: 80,
-      flex: 0.5,
-      renderCell: (params) => {
-        const onClick = (e) => statisticsTeamOnClick(params.row);
-        return (
-          <Link component="button" onClick={onClick} underline="always">
-            {params.value}
-          </Link>
-        );
-      },
+      pinned: "left",
+      filter: true,
+      cellRenderer: CustomLinkRenderer,
+      width: 100,
+      flex: 0.3,
     });
+
     statColumns.push({
       field: "OPR",
       headerName: "OPR",
-      type: "number",
-      sortable: true,
-      headerAlign: "center",
+      filter: true,
       align: "center",
-      minWidth: 80,
+      minWidth: 100,
       flex: 0.5,
     });
+
     for (let i = 0; i < data.data.length; i++) {
       const stat = data.data[i];
       if (stat.report_stat && stat.stat_key !== "OPR") {
@@ -223,15 +222,53 @@ const Tables = () => {
         statColumns.push({
           field: stat.stat_key,
           headerName: stat.display_name,
-          type: "number",
+          filter: true,
           sortable: true,
-          headerAlign: "center",
           align: "center",
-          minWidth: 80,
+          minWidth: 100,
           flex: 0.5,
         });
       }
     }
+
+    for (let i = 0; i < data.pitData.length; i++) {
+      const stat = data.pitData[i];
+      if (stat.report_stat && stat.stat_key !== "OPR") {
+        keys.push(stat.stat_key);
+        statColumns.push({
+          field: stat.stat_key,
+          headerName: stat.display_name,
+          filter: true,
+          align: "center",
+          minWidth: 100,
+          flex: 0.5,
+        });
+      }
+    }
+    statColumns.forEach((column) => {
+      column.cellStyle = params => {
+        const type = typeof (params?.value)
+        const val = params.value
+        const key = params.field
+        const retval = { textAlign: "center" }
+        if (type == "string") {
+          if (val.toLowerCase().includes("orange")) retval.backgroundColor = "orange"
+          else if (val.toLowerCase().includes("red")) retval.backgroundColor = "red"
+          else if (val.toLowerCase().includes("blue")) retval.backgroundColor = "blue"
+          else if (val.toLowerCase().includes("purple")) retval.backgroundColor = "purple"
+          else if (val.toLowerCase().includes("green")) retval.backgroundColor = "green"
+          else if (val.toLowerCase().includes("yellow")) [retval.backgroundColor, retval.color] = ["yellow", "black"]
+          else if (val.toLowerCase().includes("teal")) retval.backgroundColor = "teal"
+          else if (val.toLowerCase().includes("black")) retval.backgroundColor = "black"
+          else if (val.toLowerCase().includes("pink")) retval.backgroundColor = "hotpink"
+          else if (val.toLowerCase().includes("gold")) retval.backgroundColor = "#D1B000"
+          else if (val.toLowerCase().includes("indigo")) retval.backgroundColor = "indigo"
+          else if (val.toLowerCase().includes("navy")) retval.backgroundColor = "navy"
+          else[retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)]
+        }
+        return retval
+      }
+    })
     setShowKeys(keys);
     setStatDescription(data.data);
     setStatColumns(statColumns);
@@ -266,8 +303,6 @@ const Tables = () => {
     pitScoutingStatColumns.push({
       field: "pit_status",
       headerName: "Pit Scouting",
-      type: "number",
-      sortable: true,
       headerAlign: "center",
       align: "center",
       minWidth: 80,
@@ -289,14 +324,33 @@ const Tables = () => {
     pitScoutingStatColumns.push({
       field: "picture_status",
       headerName: "Pictures",
-      type: "number",
-      sortable: true,
       headerAlign: "center",
       align: "center",
       minWidth: 80,
       flex: 0.5,
       renderCell: (params) => {
         const onClick = (e) => pictureEntryOnClick(params.row);
+        let color = "#4caf50";
+        if (params.value == "Not Started")
+          color = "#f44336"
+        else if (params.value == "Incomplete")
+          color = "#ffeb3b"
+        return (
+          <Link component="button" onClick={onClick} underline="always" color={color}>
+            {params.value}
+          </Link>
+        );
+      },
+    });
+    pitScoutingStatColumns.push({
+      field: "follow_up_status",
+      headerName: "Follow Up",
+      headerAlign: "center",
+      align: "center",
+      minWidth: 80,
+      flex: 0.5,
+      renderCell: (params) => {
+        const onClick = (e) => followUpOnClick(params.row);
         let color = "#4caf50";
         if (params.value == "Not Started")
           color = "#f44336"
@@ -338,6 +392,13 @@ const Tables = () => {
     history.push(`../../pitScouting/${year}/${eventKey}/${cellValues.key}`);
   }
 
+  const followUpOnClick = (cellValues) => {
+    const url = new URL(window.location.href);
+    const year = url.pathname.split("/")[3];
+    const eventKey = url.pathname.split("/")[4];
+    history.push(`../../followUp/${year}/${eventKey}/${cellValues.key}`);
+  }
+
   const rankingsCallback = async (data) => {
     try {
       data.data = data.data.filter((obj) => {
@@ -346,7 +407,6 @@ const Tables = () => {
         }
       });
       let oprList = [];
-
       for (const team of data?.data) {
         if (team.key) {
           team.key = team.key.replace("frc", "");
@@ -356,27 +416,15 @@ const Tables = () => {
           if (
             typeof value === "number" &&
             key.toLowerCase() !== "rank" &&
+            key.toLowerCase() !== "simulated_rank" &&
             key !== "expectedRanking" &&
             key.toLowerCase() !== "schedule"
           ) {
-            team[key] = team[key]?.toFixed(1);
+            team[key] = Number(Number(team[key]).toPrecision(3));
           } else {
-            team[key] = Number(team[key]);
+            team[key] = team[key];
           }
         }
-        team["elementsLow"] = (Number(team.autoLow) + Number(team.teleopLow)).toFixed(1);
-        team["elementsMid"] = (
-          Number(team.autoMidCones) +
-          Number(team.autoMidCubes) +
-          Number(team.teleopMidCones) +
-          Number(team.teleopMidCubes)
-        ).toFixed(1);
-        team["elementsHigh"] = (
-          Number(team.autoHighCones) +
-          Number(team.autoHighCubes) +
-          Number(team.teleopHighCones) +
-          Number(team.teleopHighCubes)
-        ).toFixed(1);
       }
       const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
 
@@ -499,6 +547,35 @@ const Tables = () => {
     const scaledY = y * imageScaleFactor;
     return { left: `${scaledX}px`, top: `${scaledY}px` };
   };
+
+  function getContrastColorByName(colorName) {
+    // Create a temporary div element
+    var div = document.createElement("div");
+    div.style.color = "black"; // Set default color for text
+    div.style.backgroundColor = colorName; // Set the background color
+    div.style.position = "absolute"; // Make sure it doesn't affect layout
+    div.style.visibility = "hidden"; // Make it invisible
+
+    // Append the div to the body
+    document.body.appendChild(div);
+
+    // Get the computed color value
+    var computedColor = window.getComputedStyle(div).backgroundColor;
+
+    // Remove the temporary div
+    document.body.removeChild(div);
+
+    // Convert the computed color value to RGB
+    var rgb = computedColor.match(/\d+/g).map(function (num) {
+      return parseInt(num, 10);
+    });
+
+    // Calculate luminance
+    var luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+
+    // Use a luminance threshold to determine text color
+    return luminance > 0.5 ? "black" : "white";
+  }
 
   // Function to handle piece selection
   const handlePieceClick = (pieceType) => {
@@ -703,7 +780,7 @@ const Tables = () => {
       autoFormData.selectedPieces.forEach(spot => {
         console.log(spot)
         console.log(auto.data.selectedPieces.includes(spot))
-        if (auto.data.selectedPieces.includes(spot)){
+        if (auto.data.selectedPieces.includes(spot)) {
         }
         else {
           hasSpots = false
@@ -786,7 +863,7 @@ const Tables = () => {
           <Tab icon={<Visibility />} label="Match Scouting" {...a11yProps(2)} />
           <Tab icon={<GroupAdd />} label="Pit Scouting" {...a11yProps(3)} />
           {qualPredictions.length > 0 && <Tab icon={<SportsScore />} label="Quals" {...a11yProps(4)} />}
-          {elimPredictions.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
+          {autos.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
           {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
         </Tabs>
       </AppBar>
@@ -796,61 +873,12 @@ const Tables = () => {
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Event Rankings - {eventTitle}</h3>
             </CardHeader>
-            <div style={{ height: containerHeight, width: "100%" }}>
-              {rankings.length > 0 ? (
-                <StripedDataGrid
-                  initialState={{
-                    sorting: {
-                      sortModel: [{ field: "OPR", sort: "desc" }],
-                      pagination: { paginationModel: { pageSize: 50 } },
-                    },
-                  }}
-                  disableColumnMenu
-                  sortingOrder={["desc", "asc"]}
-                  rows={rankings}
-                  getRowId={(row) => {
-                    return row.key;
-                  }}
-                  columns={statColumns}
-                  pageSize={100}
-                  rowsPerPageOptions={[100]}
-                  rowHeight={35}
-                  slots={{ toolbar: GridToolbar }}
-                  slotProps={{
-                    toolbar: {
-                      showQuickFilter: true,
-                      quickFilterProps: { debounceMs: 500 },
-                    },
-                  }}
-                  disableColumnFilter={!isDesktop}
-                  disableColumnSelector={!isDesktop}
-                  disableDensitySelector={!isDesktop}
-                  disableExportSelector={!isDesktop}
-                  sx={{
-                    mx: 0.5,
-                    border: 0,
-                    borderColor: "white",
-                    "& .MuiDataGrid-cell:hover": {
-                      color: "white",
-                    },
-                  }}
-                  getRowClassName={(params) =>
-                    params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
-                  }
-
-                />
-              ) : (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    minHeight: "calc(100vh - 300px)",
-                  }}
-                >
-                  <CircularProgress />
-                </Box>
-              )}
+            <div className="ag-theme-alpine-dark" style={{ height: containerHeight, width: "100%" }}>
+              <StripedAgGrid
+                rowData={rankings}
+                columnDefs={statColumns}
+                gridOptions={{ columnMenu: true, sideBar: "columns" }}
+              />
             </div>
           </Card>
         </TabPanel>
@@ -943,7 +971,6 @@ const Tables = () => {
                     },
                   }}
                   disableColumnMenu
-                  sortingOrder={["desc", "asc"]}
                   rows={pitScoutingStatus}
                   getRowId={(row) => {
                     return row.key;
@@ -1078,7 +1105,7 @@ const Tables = () => {
               control={<Checkbox />}
               label="Close"
               name="close"
-              sx={{color: "white"}}
+              sx={{ color: "white" }}
               checked={autoFormData.close}
               onChange={handleFilterChange}
             />
@@ -1086,25 +1113,25 @@ const Tables = () => {
               control={<Checkbox />}
               label="Far"
               name="far"
-              sx={{color: "white"}}
+              sx={{ color: "white" }}
               checked={autoFormData.far}
               onChange={handleFilterChange}
             />
-            <br/>
+            <br />
             <Counter
               label="Scores"
               name="scores"
               value={autoFormData.scores}
               max={9}
-              onChange={(value) => {handleCounterChange("scores", value)}}
+              onChange={(value) => { handleCounterChange("scores", value) }}
             />
-            <br/>
+            <br />
             <Counter
               label="Pickups"
               name="pickups"
               value={autoFormData.pickups}
               max={8}
-              onChange={(value) => {handleCounterChange("pickups", value)}}
+              onChange={(value) => { handleCounterChange("pickups", value) }}
             />
             {displayAutos.length > 0 ? <ImageList cols={3}>
               {displayAutos.map((val, idx, a) => {
@@ -1169,4 +1196,38 @@ const StripedDataGrid = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
+const StripedAgGrid = styled(AgGridReact)`
+  & .ag-root {
+    font-size: 16px;
+    background-color: #1a174d;
+  }
+
+  & .ag-header {
+    background-color: ${props => alpha("#1a174d", 1)}; // Adjust the opacity as needed
+    color: ${props => props.theme.palette.primary.contrastText};
+  }
+
+  & .ag-cell {
+    color: white; // Change cell text color to white
+  }
+
+  & .ag-row {
+    background-color: #1a174d;
+  }
+
+  & .ag-row-even {
+    background-color: #323a70; // Adjust the color and opacity as needed
+  }
+
+  & .ag-row.Mui-selected {
+    background-color: ${props => alpha(props.theme.palette.primary.main, 0.5)}; // Adjust the opacity as needed
+    &:hover, &.ag-row-hover {
+      background-color: ${props => alpha(props.theme.palette.primary.main, 0.6)}; // Adjust the opacity as needed
+    }
+  }
+  
+  & .ag-body-horizontal-scroll::-webkit-scrollbar-thumb {
+    background-color: #1a174d !important; /* Color of the scrollbar thumb */
+  }
+`;
 export default Tables;

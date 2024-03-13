@@ -8,8 +8,8 @@ const Counter = ({ label, onChange, value, max }) => {
 
   const handleChange = (event) => {
     const newValue = Math.max(Math.min(Number(event.target.value), max), 0);
-    onChange(newValue);
     setCount(newValue);
+    onChange(newValue);
   };
 
   useEffect(() => {
@@ -21,9 +21,9 @@ const Counter = ({ label, onChange, value, max }) => {
       <ButtonGroup>
         <Button
           onClick={() => {
-            const newValue = Math.min(Math.max(count - 1, 0), max || 9);
-            onChange(newValue);
+            const newValue = Math.min(Math.max(count - 1, 0), max);
             setCount(newValue);
+            onChange(newValue);
           }}
           disabled={count === 0}
         >
@@ -38,9 +38,9 @@ const Counter = ({ label, onChange, value, max }) => {
         />
         <Button
           onClick={() => {
-            const newValue = Math.max(Math.min(count + 1, max || 9), 0);
-            onChange(newValue);
+            const newValue = Math.max(Math.min(count + 1, max), 0);
             setCount(newValue);
+            onChange(newValue);
           }}
         >
           <AddIcon fontSize="small" />

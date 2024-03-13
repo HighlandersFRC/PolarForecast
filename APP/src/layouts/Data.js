@@ -73,6 +73,18 @@ const Data = (props) => {
             )}
           />
         );
+      } else if (prop.layout === "/data" && prop.path === "/followUp"){
+        return (
+          <Route
+            path={prop.layout + prop.path}
+            render={({ match: { url } }) => (
+              <>
+                <Route path={`${url}/:id/:id/:id`} component={prop.component} exact />
+                {/* <Route path={`${url}/:id/:id/:id/:id`} component={Selector} /> */}
+              </>
+            )}
+          />
+        );
       } else {
         return null;
       }

@@ -1,5 +1,5 @@
-// const API_ENDPOINT = "http://localhost:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT)
  
 const default_ttl = 5; //5 minutes expiry time
@@ -88,7 +88,8 @@ export const getRankings = async (year, event, callback) => {
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
+        console.log(data)
         callback(data);
       } else {
         callback({ data: [] });
@@ -469,6 +470,51 @@ export const getAutos = async (year, event, callback) => {
     const data = null
     if (data === null) {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/ScoutingData`;
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.status == 200) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback([]);
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const postFollowUp = async (data, year, event, team, callback) => {
+  try {
+    const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/FollowUp`;
+    console.log(endpoint)
+    let retval;
+    let json = JSON.stringify(data)
+    const response = await fetch(endpoint, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    });
+    const detail = await response.json()
+    const status = response.status
+    callback([status, detail]); // parses JSON response into native JavaScript objects
+  } catch (e) {
+    callback([0, { detail: "Failed" }])
+  }
+}
+
+export const getFollowUp = async (year, event, team, callback) => {
+  try {
+    const storage_name = `${year}${event}_${team}_deaths`;
+    const data = null
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/FollowUp`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.status == 200) {

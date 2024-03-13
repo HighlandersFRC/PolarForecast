@@ -26,10 +26,10 @@ function ResponsiveAppBar() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const params = url.pathname.split("/");
-    if (params[2]=="pictures" || params[2]=="pitScouting") {
+    if (params[2] == "pictures" || params[2] == "pitScouting" || params[2] == "followUp") {
       const temp_link = "/" + params[1] + "/event/" + params[3] + "/" + params[4];
       setLink(temp_link);
-    } else if(params.length > 5) {
+    } else if (params.length > 5) {
       const temp_link = "/" + params[1] + "/" + params[2] + "/" + params[3] + "/" + params[4];
       setLink(temp_link);
     } else {

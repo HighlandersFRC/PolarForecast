@@ -46,6 +46,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const [imageScaleFactor, setImageScaleFactor] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false)
   const fieldImageRef = useRef(null);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const NOTE_SIZE = 80;
 
   useEffect(() => {
     if (fieldImageRef.current) {
@@ -59,18 +61,21 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     if (text === "Unable to Submit.") setText(text + " Use QR Code")
   }, [text]);
 
-  useEffect(()=>{
+  useEffect(() => {
     getMatchDetails(year, event, eventCode + "_qm" + String(matchNumber), (data) => matchDataCallback(data.match));
   }, [matchNumber])
 
   useEffect(() => {
     // console.log(formData.data.selectedPieces)
     setMatchNumber(formData.match_number)
-  },[formData])
+  }, [formData])
 
   const calculatePosition = (x, y) => {
-    const scaledX = x * imageScaleFactor;
-    const scaledY = y * imageScaleFactor;
+    let scaledX = x * imageScaleFactor;
+    let scaledY = y * imageScaleFactor;
+    if (isFlipped) {
+      scaledX = fieldImageWidth - scaledX - (NOTE_SIZE * imageScaleFactor)
+    }
     return { left: `${scaledX}px`, top: `${scaledY}px` };
   };
 
@@ -96,115 +101,163 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setImageLoaded(true);
   };
 
+  const flipImage = () => {
+    setIsFlipped(!isFlipped);
+    if (fieldImageRef.current) {
+      const image = fieldImageRef.current;
+      const scaleX = isFlipped ? 1 : -1; // If isFlipped is true, scaleX is 1 (unflipped), else -1 (flipped)
+      image.style.transform = `scaleX(${scaleX})`; // Apply the transformation
+      changeBlueToRed(image); // Also apply color changes
+    }
+  };
+
+  const changeBlueToRed = (image) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    context.drawImage(image, 0, 0, image.width, image.height);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const red = data[i];
+      const green = data[i + 1];
+      const blue = data[i + 2];
+      if (isFlipped) {
+        if (red > 130 && blue < 100 && green < 100) {
+          // Change blue pixels to red
+          data[i] = blue; // Set red
+          data[i + 1] = 0; // Set green
+          data[i + 2] = red; // Set blue
+        }
+      } else {
+        if (blue > 130 && red < 100 && green < 100) {
+          // Change blue pixels to red
+          data[i] = blue; // Set red
+          data[i + 1] = 0; // Set green
+          data[i + 2] = red; // Set blue
+        }
+      }
+    }
+    context.putImageData(imageData, 0, 0);
+    image.src = canvas.toDataURL(); // Update the image source with modified data
+  };
+
   // Function to generate JSX for selectable pieces
   const renderSelectablePieces = (formData) => {
     return (
       <>
-        <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
-          {/* Display your field image here */}
-          <img
-            ref={fieldImageRef}
-            src={serverPath + "/AutosGameField.png"}
-            alt="Field"
-            style={{ maxWidth: '100%', height: 'auto' }}
-            onLoad={handleImageLoad}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(186, 978),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('spike_left')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(433, 978),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('spike_middle')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(679, 978),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('spike_right')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(108, 61),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('halfway_far_left')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(394, 61),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('halfway_middle_left')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(679, 61),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('halfway_middle')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(965, 61),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('halfway_middle_right')}
-          />
-          <img
-            src="/Note.png"
-            style={{
-              position: 'absolute',
-              ...calculatePosition(1251, 61),
-              width: `${60 * imageScaleFactor}px`,
-              height: `${60 * imageScaleFactor}px`,
-              cursor: 'pointer',
-              filter: formData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
-            }}
-            onClick={() => handlePieceClick('halfway_far_right')}
-          />
+        <div>
+          <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
+            {/* Display your field image here */}
+            <img
+              ref={fieldImageRef}
+              src={serverPath + "/AutosGameField.png"}
+              alt="Field"
+              style={{ maxWidth: '100%', height: 'auto' }}
+              onLoad={handleImageLoad}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(186, 978),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('spike_left')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(433, 978),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('spike_middle')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(679, 978),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('spike_right')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(108, 61),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('halfway_far_left')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(394, 61),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('halfway_middle_left')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(679, 61),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('halfway_middle')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(965, 61),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('halfway_middle_right')}
+            />
+            <img
+              src="/Note.png"
+              style={{
+                position: 'absolute',
+                ...calculatePosition(1251, 61),
+                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                cursor: 'pointer',
+                filter: formData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
+              }}
+              onClick={() => handlePieceClick('halfway_far_right')}
+            />
+          </div>
+          <Button variant="contained" onClick={flipImage}>
+            {isFlipped ? 'Unflip' : 'Flip'}
+          </Button>
         </div>
       </>
     );
@@ -237,7 +290,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       return updatedData
     });
     if (field === "match_number") {
-        setMatchNumber(value)
+      setMatchNumber(value)
     }
   };
 
@@ -301,27 +354,27 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setUpdate(false);
     setText('');
     setFormData((prevData) => {
-        prevData.match_number += 1;
-        prevData.team_number = 0;
-        prevData.data = {
-            auto: {
-                amp: 0,
-                speaker: 0,
-            },
-            teleop: {
-                amp: 0,
-                speaker: 0,
-                amped_speaker: 0,
-            },
-            miscellaneous: {
-                died: false,
-            },
-            selectedPieces: [],
-        };
-        return prevData;
+      prevData.match_number += 1;
+      prevData.team_number = 0;
+      prevData.data = {
+        auto: {
+          amp: 0,
+          speaker: 0,
+        },
+        teleop: {
+          amp: 0,
+          speaker: 0,
+          amped_speaker: 0,
+        },
+        miscellaneous: {
+          died: false,
+        },
+        selectedPieces: [],
+      };
+      return prevData;
     });
     setMatchNumber(matchNumber + 1);
-};
+  };
 
 
   const handleUpdate = () => {
@@ -387,27 +440,28 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Teleop Fields</h3>
-        {formData && (<><Counter
-          label="Teleop Amp"
-          type="number"
-          value={formData.data.teleop.amp}
-          onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 30)))}
-          max={30}
-        />
-        <Counter
-          label="Teleop Speaker"
-          type="number"
-          value={formData.data.teleop.speaker}
-          onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 30)))}
-          max={30}
-        />
-        <Counter
-          label="Teleop Amplified Speaker"
-          type="number"
-          value={formData.data.teleop.amped_speaker}
-          onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 30)))}
-          max={30}
-        /></>)}
+        {formData && (<>
+          <Counter
+            label="Teleop Amp"
+            type="number"
+            value={formData.data.teleop.amp}
+            onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 10)))}
+            max={30}
+          />
+          <Counter
+            label="Teleop Speaker"
+            type="number"
+            value={formData.data.teleop.speaker}
+            onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 10)))}
+            max={30}
+          />
+          <Counter
+            label="Teleop Amplified Speaker"
+            type="number"
+            value={formData.data.teleop.amped_speaker}
+            onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 10)))}
+            max={30}
+          /></>)}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Miscellaneous</h3>
@@ -431,10 +485,10 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           <div style={{ display: 'flex', marginTop: '0px', justifyContent: 'center', alignItems: 'center' }}>
             {/* Display the QR code only when showQRCode is true */}
             <BrowserView>
-              <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"81"} logoWidth={"138"} bgColor='#1a174d' fgColor='#90caf9' />
+              <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"81"} logoWidth={"138"} fgColor='#1a174d' bgColor='#90caf9' />
             </BrowserView>
-            <MobileView>
-              <QRCode size={300} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"54"} logoWidth={"92"} bgColor='#1a174d' fgColor='#90caf9' />
+            <MobileView>me":
+              <QRCode size={300} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"54"} logoWidth={"92"} fgColor='#1a174d' bgColor='#90caf9' />
             </MobileView>
           </div>
         </>

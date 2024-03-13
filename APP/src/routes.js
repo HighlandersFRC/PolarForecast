@@ -26,6 +26,7 @@ import Event from "views/Event.js";
 import Team from "views/Team.js";
 import PitImages from "views/PitImages";
 import PitScouting from "views/PitScouting";
+import PostQualPitScoutingForm from "views/FollowUp";
 
 var routes = [
   // {
@@ -103,6 +104,13 @@ var routes = [
     name: "Pit-Scouting", 
     icon: "ni ni-circle-08 text-pink",
     component: PitScouting,
+    layout: "/data"
+  },
+  {
+    path: "/followUp",
+    name: "Follow-Up", 
+    icon: "ni ni-circle-08 text-pink",
+    component: PostQualPitScoutingForm,
     layout: "/data"
   }
 ];
