@@ -89,7 +89,7 @@ export const getRankings = async (year, event, callback) => {
       if (response.ok) {
         const data = await response.json();
         // setWithExpiry(storage_name, data, default_ttl);
-        console.log(data)
+        // console.log(data)
         callback(data);
       } else {
         callback({ data: [] });
@@ -406,7 +406,7 @@ export const getPitScoutingData = async (year, event, team, callback) => {
 
 export const getTeamScoutingData = async (year, event, team, callback) => {
   try {
-    const storage_name = `${year}${event}_${team}_pitData`;
+    const storage_name = `${year}${event}_${team}_matchScouting`;
     const data = null
     if (data === null) {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/ScoutEntries`;
@@ -515,6 +515,30 @@ export const getFollowUp = async (year, event, team, callback) => {
     const data = null
     if (data === null) {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/FollowUp`;
+      console.log("Requesting Data from: " + endpoint);
+      const response = await fetch(endpoint);
+      if (response.status == 200) {
+        const data = await response.json();
+        setWithExpiry(storage_name, data, default_ttl);
+        callback(data);
+      } else {
+        callback([]);
+      }
+    } else {
+      console.log("Using cached data for: " + storage_name);
+      callback(data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const getEventMatchScouting = async (year, event, callback) => {
+  try {
+    const storage_name = `${year}${event}_matchScouting`;
+    const data = null
+    if (data === null) {
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/ScoutEntries`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.status == 200) {

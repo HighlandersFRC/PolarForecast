@@ -16,7 +16,7 @@
 
 */
 import { Card, CardHeader, Container, Row } from "reactstrap";
-import { Checkbox, FormControlLabel, ImageList, ImageListItem, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, TextField, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { alpha, styled, ThemeProvider, createTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
@@ -44,6 +44,8 @@ import Counter from "components/Counter";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { getEventMatchScouting } from "api";
+import { CartesianGrid, Label, Legend, Line, LineChart, XAxis, YAxis } from "recharts";
 
 
 const switchTheme = createTheme({
@@ -178,6 +180,27 @@ const Tables = () => {
     scores: 0,
     pickups: 0,
   })
+  const [scoutingData, setScoutingData] = useState([])
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [chartData, setChartData] = useState([])
+  const [chartTeamNumber, setChartTeamNumber] = useState(0)
+  const [chartWidth, setChartWidth] = useState(window.innerWidth * 0.8); // Adjust width as needed
+  const [chartHeight, setChartHeight] = useState(window.innerHeight * 0.6); // Adjust height as needed
+
+  useEffect(() => {
+    const handleResize = () => {
+      setChartWidth(window.innerWidth * 0.8);
+      setChartHeight(window.innerHeight * 0.6);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    getStatDescription(year, eventCode, statDescriptionCallback);
+  }, [scoutingData])
 
   const CustomLinkRenderer = (props) => {
     const onClick = (e) => {
@@ -192,10 +215,100 @@ const Tables = () => {
     );
   };
 
+  function averageJSONsByMatch(jsons) {
+    const matchMap = {};
+    jsons.forEach(json => {
+      const matchNumber = json.match_number;
+      if (!matchMap[matchNumber]) {
+        matchMap[matchNumber] = {
+          match_number: matchNumber,
+          data: {
+            auto: { amp: 0, speaker: 0 },
+            teleop: { amp: 0, speaker: 0, amped_speaker: 0 },
+            miscellaneous: { died: 0 }
+          },
+          count: 0
+        };
+      }
+      for (const section in json.data) {
+        for (const key in json.data[section]) {
+          if (!matchMap[matchNumber].data[section]) {
+            matchMap[matchNumber].data[section] = {};
+          }
+          if (!matchMap[matchNumber].data[section][key]) {
+            matchMap[matchNumber].data[section][key] = 0;
+          }
+          matchMap[matchNumber].data[section][key] += json.data[section][key];
+        }
+      }
+      matchMap[matchNumber].count++;
+    });
+    for (const matchNumber in matchMap) {
+      const match = matchMap[matchNumber];
+      const count = match.count;
+      for (const section in match.data) {
+        for (const key in match.data[section]) {
+          match.data[section][key] /= count;
+        }
+      }
+      delete match.count;
+    }
+    const result = Object.values(matchMap);
+    return result;
+  }
+
+  const ChartRenderer = (props, stat, scoutingData) => {
+    const teamNumber = props.data.key
+    const teamData = scoutingData.filter((entry) => {
+      return Number(entry.team_number) == Number(teamNumber)
+    })
+    teamData.sort((a, b) => a.match_number - b.match_number)
+    const uniqueMatches = averageJSONsByMatch(teamData)
+    const flattenedData = uniqueMatches.map((entry) => {
+      return flattenJSON(entry.data)
+    })
+    if (stat.solve_strategy == "sum")
+      flattenedData.forEach((entry) => {
+        entry[stat.stat_key] = 0
+        stat.stat.component_stats.forEach((componentStat) => {
+          entry[stat.stat_key] += entry[componentStat]
+        })
+      })
+    const displayData = flattenedData.map((entry, idx) => {
+      return {
+        "Match Number": uniqueMatches[idx].match_number,
+        [stat.display_name]: entry[stat.stat_key]
+      };
+    })
+    if (displayData.length > 0) {
+      setChartTeamNumber(teamNumber)
+      setChartData(displayData)
+      setDialogOpen(true)
+    }
+  }
+
+  function flattenJSON(data, parentKey = '') {
+    let flattened = {};
+
+    for (let key in data) {
+      if (data.hasOwnProperty(key)) {
+        let newKey = parentKey ? `${parentKey}_${key}` : key;
+
+        if (typeof data[key] === 'object' && data[key] !== null) {
+          Object.assign(flattened, flattenJSON(data[key], newKey));
+        } else {
+          flattened[newKey] = data[key];
+        }
+      }
+    }
+
+    return flattened;
+  }
+
   const statDescriptionCallback = async (data) => {
     const keys = [];
     const statColumns = [];
-
+    setStatDescription(data);
     statColumns.push({
       field: "key",
       headerName: "Team",
@@ -219,13 +332,23 @@ const Tables = () => {
       const stat = data.data[i];
       if (stat.report_stat && stat.stat_key !== "OPR") {
         keys.push(stat.stat_key);
-        statColumns.push({
+        if (stat?.chart) statColumns.push({
           field: stat.stat_key,
           headerName: stat.display_name,
           filter: true,
           sortable: true,
           align: "center",
-          minWidth: 100,
+          minWidth: 175,
+          flex: 0.5,
+          onCellClicked: (props) => ChartRenderer(props, stat, scoutingData)
+        });
+        else statColumns.push({
+          field: stat.stat_key,
+          headerName: stat.display_name,
+          filter: true,
+          sortable: true,
+          align: "center",
+          minWidth: 175,
           flex: 0.5,
         });
       }
@@ -240,7 +363,7 @@ const Tables = () => {
           headerName: stat.display_name,
           filter: true,
           align: "center",
-          minWidth: 100,
+          minWidth: 175,
           flex: 0.5,
         });
       }
@@ -270,7 +393,6 @@ const Tables = () => {
       }
     })
     setShowKeys(keys);
-    setStatDescription(data.data);
     setStatColumns(statColumns);
   };
 
@@ -409,7 +531,7 @@ const Tables = () => {
       let oprList = [];
       for (const team of data?.data) {
         if (team.key) {
-          team.key = team.key.replace("frc", "");
+          team.key = Number(team.key.replace("frc", ""));
         }
         oprList.push(team.OPR);
         for (const [key, value] of Object.entries(team)) {
@@ -418,6 +540,7 @@ const Tables = () => {
             key.toLowerCase() !== "rank" &&
             key.toLowerCase() !== "simulated_rank" &&
             key !== "expectedRanking" &&
+            key !== "key" &&
             key.toLowerCase() !== "schedule"
           ) {
             team[key] = Number(Number(team[key]).toPrecision(3));
@@ -541,6 +664,11 @@ const Tables = () => {
   const autosCallback = async (data) => {
     setAutos(data)
   };
+
+  const matchScoutingCallback = async (data) => {
+    console.log(data)
+    setScoutingData(data)
+  }
 
   const calculatePosition = (x, y) => {
     const scaledX = x * imageScaleFactor;
@@ -719,11 +847,12 @@ const Tables = () => {
       setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
     }
 
-    getStatDescription(year, eventKey, statDescriptionCallback);
+    // getStatDescription(year, eventKey, statDescriptionCallback);
     getRankings(year, eventKey, rankingsCallback);
     getMatchPredictions(year, eventKey, predictionsCallback);
     getPitStatus(year, eventKey, pitScoutingStatusCallback);
-    getAutos(year, eventKey, autosCallback)
+    getAutos(year, eventKey, autosCallback);
+    getEventMatchScouting(year, eventKey, matchScoutingCallback);
     pitScoutingStatCallback(null);
     getSearchKeys(searchKeysCallback);
   }, []);
@@ -778,8 +907,8 @@ const Tables = () => {
       if ((auto.data.auto.amp + auto.data.auto.speaker) < autoFormData.scores) return false
       let hasSpots = true
       autoFormData.selectedPieces.forEach(spot => {
-        console.log(spot)
-        console.log(auto.data.selectedPieces.includes(spot))
+        // console.log(spot)
+        // console.log(auto.data.selectedPieces.includes(spot))
         if (auto.data.selectedPieces.includes(spot)) {
         }
         else {
@@ -845,6 +974,47 @@ const Tables = () => {
       [name]: value,
     }));
   }
+  const LineChartRenderer = ({ data }) => {
+    // Render the line chart
+    let key = "stat_key"
+    if (!(data.length == 0)) key = Object.keys(data[0])[1]
+    // console.log(key)
+    return (
+      <LineChart
+        data={data}
+        width={chartWidth}
+        height={chartHeight}
+        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="Match Number" >
+          <Label value="Match Number" position="insideBottom" offset={-10} />
+        </XAxis>
+        <YAxis >
+          <Label value={key} angle={90} position="insideLeft" offset={10} />
+        </YAxis>
+        <Tooltip />
+        <Line type="monotone" dataKey={key} stroke="#1976d2" />
+      </LineChart>
+    );
+  };
+
+  const ChartDialog = ({ open, onClose, data, rowData, columnDefs }) => {
+    let key = "Line Graph"
+    if (!(data.length == 0)) key = Object.keys(data[0])[1]
+    return (
+      <Dialog open={open} onClose={onClose} maxWidth={false} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{key} Team #{chartTeamNumber}</DialogTitle>
+        <DialogContent sx={{ backgroundColor: "#1a174d" }}>
+          <LineChartRenderer data={data} />
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
 
   return (
     <>
@@ -877,8 +1047,10 @@ const Tables = () => {
               <StripedAgGrid
                 rowData={rankings}
                 columnDefs={statColumns}
+                scoutingData={scoutingData}
                 gridOptions={{ columnMenu: true, sideBar: "columns" }}
               />
+              <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} rowData={rankings} columnDefs={statColumns} />
             </div>
           </Card>
         </TabPanel>

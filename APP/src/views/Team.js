@@ -422,6 +422,7 @@ const Team = () => {
       returnrow.teleop_amp = row.data.teleop.amp
       returnrow.teleop_amped_speaker = row.data.teleop.amped_speaker
       returnrow.died = String(row.data.miscellaneous.died)
+      returnrow.comments = row.miscellaneous?.comments
       returnRows.push(returnrow)
     }
     setScoutingRows(returnRows)
@@ -508,6 +509,10 @@ const Team = () => {
 
   const handleDeleteImage = (id, password) => {
     deleteTeamPictures(year, eventKey, team, id, password, (status) => { uploadStatusCallback(status) })
+  };
+
+  const getRowHeight = (params) => {
+    return params.row.comments.split('\n').length * 20 + 35;
   };
 
   return (
@@ -671,7 +676,7 @@ const Team = () => {
                 columns={scoutingColumns}
                 pageSize={100}
                 rowsPerPageOptions={[100]}
-                rowHeight={35}
+                rowHeight={getRowHeight}
                 sx={{
                   boxShadow: 2,
                   border: 0,
