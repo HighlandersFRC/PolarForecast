@@ -67,10 +67,18 @@
   ],
   "pitData": [
     {
+      "stat_key": "drive_train",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Drive Train",
+      "stat_type": "str",
+      "stat": {}
+    },
+    {
       "stat_key": "amp_scoring",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Amp",
+      "display_name": "Amp Scoring",
       "stat_type": "bool",
       "stat": {}
     },
@@ -78,7 +86,7 @@
       "stat_key": "speaker_scoring",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Speaker",
+      "display_name": "Speaker Scoring",
       "stat_type": "bool",
       "stat": {}
     },
@@ -86,7 +94,7 @@
       "stat_key": "trap_scoring",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Trap",
+      "display_name": "Trap Scoring",
       "stat_type": "bool",
       "stat": {}
     },
@@ -94,7 +102,15 @@
       "stat_key": "can_climb",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Climbing",
+      "display_name": "Climbing?",
+      "stat_type": "bool",
+      "stat": {}
+    },
+    {
+      "stat_key": "can_harmonize",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Harmony?",
       "stat_type": "bool",
       "stat": {}
     },
@@ -107,18 +123,10 @@
       "stat": {}
     },
     {
-      "stat_key": "drive_train",
-      "solve_strategy": "custom",
-      "report_stat": true,
-      "display_name": "Drive Train",
-      "stat_type": "str",
-      "stat": {}
-    },
-    {
       "stat_key": "ground_pick_up",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Ground Pick Up",
+      "display_name": "Ground Pickup?",
       "stat_type": "bool",
       "stat": {}
     },
@@ -126,7 +134,7 @@
       "stat_key": "feeder_pick_up",
       "solve_strategy": "custom",
       "report_stat": true,
-      "display_name": "Feeder Pick Up",
+      "display_name": "Feeder Pickup?",
       "stat_type": "bool",
       "stat": {}
     },
