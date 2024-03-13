@@ -107,6 +107,7 @@ def analyzeData(m_data: list):
     harmonyPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
     teamCooperatition = np.zeros(len(teams))
+    matchScoutingCount = np.zeros(len(teams))
     
     # Counting the number of matches that each team has
     for k in range(3):
@@ -131,6 +132,7 @@ def analyzeData(m_data: list):
     
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
+        matchScoutingCount[teams.index(entry["team_number"])] += 1
         teamDeaths[teams.index(entry["team_number"])] += entry["data"]["miscellaneous"]["died"]
     # print("found Scouting only stats")
     
@@ -334,7 +336,7 @@ def analyzeData(m_data: list):
     teamMobility /= teamMatchCount
     teamClimbing /= teamMatchCount
     teamTrap /= teamMatchCount
-    teamDeaths /= teamMatchCount
+    teamDeaths /= matchScoutingCount
     harmonyPoints = XMatrix["harmony"]
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
