@@ -33,14 +33,15 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MoodBadIcon from "@mui/icons-material/MoodBad";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import { getTeamPictures } from "api";
-import { Button, ImageList, ImageListItem, Popover, TextField } from "@mui/material";
+import { Button, FormControl, ImageList, ImageListItem, InputLabel, MenuItem, Popover, Select, TextField } from "@mui/material";
 import ImageWithPopup from "components/ImageWithPopup";
 import { deleteTeamPictures } from "api";
 import { getTeamScoutingData } from "api";
 import { deactivateMatchData } from "api";
 import { activateMatchData } from "api";
 import AutoDisplay from "components/AutosDisplay";
-import { Assignment, EventNote, Photo, PrecisionManufacturing, Storage } from "@mui/icons-material";
+import { Assignment, EventNote, Photo, PrecisionManufacturing, PrivacyTip, Storage } from "@mui/icons-material";
+import { getFollowUp } from "api";
 
 const Team = () => {
   const history = useHistory();
@@ -180,6 +181,7 @@ const Team = () => {
     },
   ]);
   const [matchesRows, setMatchesRows] = useState([]);
+  const [deaths, setDeaths] = useState([]);
 
   const statisticsMatchOnClick = (cellValues) => {
     history.push("match-" + cellValues.key);
@@ -426,6 +428,10 @@ const Team = () => {
     getStatDescription(year, eventKey, (descriptions) => statDescriptionCallback(descriptions, data));
   };
 
+  const followUpCallback = async (data) => {
+    setDeaths(data?.deaths || [])
+  } 
+
   useEffect(() => {
     if (window.location.hash.length > 0) {
       setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
@@ -434,6 +440,7 @@ const Team = () => {
     setTeamNumber(team);
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
+    getFollowUp(year, eventKey, "frc" + team, followUpCallback)
   }, []);
 
   useEffect(async () => {
@@ -520,6 +527,7 @@ const Team = () => {
           <Tab icon={<Photo />} label="Pictures" {...a11yProps(2)} />
           <Tab icon={<Assignment />} label="Match Scouting" {...a11yProps(3)} />
           <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(4)} />
+          <Tab icon={<PrivacyTip />} label="Deaths" {...a11yProps(4)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -704,6 +712,60 @@ const Team = () => {
                 <br />
               </>}
             </div>
+          </Card>
+        </ThemeProvider>
+      </TabPanel>
+      <TabPanel value={value} index={5} dir={darkTheme.direction}>
+        <ThemeProvider theme={darkTheme}>
+          <Card className="polar-box">
+            <CardHeader className="bg-transparent">
+              <h3 className="text-white mb-0">Team {teamNumber} Deaths</h3>
+            </CardHeader>
+            {deaths.length > 0 ? deaths.map((death, idx) => (
+              <div key={idx}>
+                <br />
+                <h2 className="text-white mb-0">Death #{idx + 1}</h2>
+                <br />
+                <TextField
+                  label="Match Number"
+                  variant="outlined"
+                  type="number"
+                  fullWidth
+                  name="match_number"
+                  value={death.match_number}
+                  disabled
+                />
+                <br />
+                <br />
+                <TextField
+                  label="Reason for Team Death"
+                  variant="outlined"
+                  fullWidth
+                  name="death_reason"
+                  disabled
+                  value={death.death_reason}
+                />
+                <br />
+                <br />
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel id="severity">Severity</InputLabel>
+                  <Select
+                    labelId="severity"
+                    label="Severity"
+                    fullWidth
+                    name="severity"
+                    disabled
+                    value={death.severity}
+                  >
+                    <MenuItem value={1}>1 (One time error)</MenuItem>
+                    <MenuItem value={2}>2 (Can Be Fixed Before Elims)</MenuItem>
+                    <MenuItem value={3}>3 (Permanently Broken)</MenuItem>
+                  </Select>
+                </FormControl>
+                <br />
+                <br />
+              </div>
+            )) : <><h2 className="text-white mb-0">No Deaths Found</h2></>}
           </Card>
         </ThemeProvider>
       </TabPanel>
