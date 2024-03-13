@@ -31,9 +31,10 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         amped_speaker: 0,
       },
       miscellaneous: {
-        died: false // Changed to boolean
+        died: false,
+        comments: "",
       },
-      selectedPieces: [], // Added to store selected pieces
+      selectedPieces: [],
     },
     time: 0
   }
@@ -282,7 +283,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       for (let i = 0; i < fieldPath.length - 1; i++) {
         currentField = currentField[fieldPath[i]];
       }
-      if (field === "scout_info.name") {
+      if (field === "scout_info.name" || field === "data.miscellaneous.comments") {
         currentField[fieldPath[fieldPath.length - 1]] = value;
       } else {
         currentField[fieldPath[fieldPath.length - 1]] = Math.max(0, value); // Set minimum value of 0
@@ -368,6 +369,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         },
         miscellaneous: {
           died: false,
+          comments: "",
         },
         selectedPieces: [],
       };
@@ -471,6 +473,12 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           checked={formData.data.miscellaneous.died}
           onChange={(e) => handleChange('data.miscellaneous.died', e.target.checked)}
           color="warning"
+        />
+        <TextField
+          label="Comments/Notes"
+          value={formData.data.miscellaneous.comments}
+          onChange={(e) => handleChange('data.miscellaneous.comments', e.target.value)}
+          inputProps={{}}
         />
       </div>
       {!update && <Button variant="contained" onClick={handleSubmit}>

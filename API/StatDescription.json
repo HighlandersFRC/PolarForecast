@@ -63,6 +63,14 @@
       "display_name": "Died?",
       "stat_type": "int",
       "stat": {}
+    },
+    {
+      "stat_key": "comments",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Comments",
+      "stat_type": "str",
+      "stat": {}
     }
   ],
   "pitData": [
@@ -197,44 +205,123 @@
       "stat_type": "num"
     },
     {
-      "stat_key": "auto_speaker",
-      "solve_strategy": "custom",
-      "report_stat": false,
-      "display_name": "AS",
+      "stat_key": "auto_notes",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Auto Notes",
+      "stat": {
+        "component_stats": [
+          "auto_speaker",
+          "auto_amp"
+        ]
+      },
+      "stat_type": "num",
+      "chart": true
+    },
+    {
+      "stat_key": "teleop_notes",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Teleop Notes",
+      "stat": {
+        "component_stats": [
+          "teleop_speaker",
+          "teleop_amped_speaker",
+          "teleop_amp"
+        ]
+      },
+      "stat_type": "num",
+      "chart": true
+    },
+    {
+      "stat_key": "notes",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Notes",
+      "stat": {
+        "component_stats": [
+          "auto_speaker",
+          "auto_amp",
+          "teleop_speaker",
+          "teleop_amped_speaker",
+          "teleop_amp"
+        ]
+      },
+      "stat_type": "num",
+      "chart": true
+    },
+    {
+      "stat_key": "auto_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Auto",
       "stat": {},
       "stat_type": "num"
+    },
+    {
+      "stat_key": "teleop_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "Teleop",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "endgame_points",
+      "solve_strategy": "sum",
+      "report_stat": true,
+      "display_name": "End Game",
+      "stat": {
+        "component_stats": [
+          "endGameChargeStation"
+        ]
+      },
+      "stat_type": "num"
+    },
+    {
+      "stat_key": "auto_speaker",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "AS",
+      "stat": {},
+      "stat_type": "num",
+      "chart": true
     },
     {
       "stat_key": "auto_amp",
       "solve_strategy": "custom",
-      "report_stat": false,
+      "report_stat": true,
       "display_name": "AA",
       "stat": {},
-      "stat_type": "num"
+      "stat_type": "num",
+      "chart": true
     },
     {
       "stat_key": "teleop_speaker",
       "solve_strategy": "custom",
-      "report_stat": false,
+      "report_stat": true,
       "display_name": "TS",
       "stat": {},
-      "stat_type": "num"
+      "stat_type": "num",
+      "chart": true
     },
     {
       "stat_key": "teleop_amped_speaker",
       "solve_strategy": "custom",
-      "report_stat": false,
+      "report_stat": true,
       "display_name": "TAS",
       "stat": {},
-      "stat_type": "num"
+      "stat_type": "num",
+      "chart": true
     },
     {
       "stat_key": "teleop_amp",
       "solve_strategy": "custom",
-      "report_stat": false,
+      "report_stat": true,
       "display_name": "TA",
       "stat": {},
-      "stat_type": "num"
+      "stat_type": "num",
+      "chart": true
     },
     {
       "stat_key": "mic",
@@ -282,58 +369,6 @@
       "report_stat": false,
       "display_name": "Trap Rate",
       "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "auto_notes",
-      "solve_strategy": "custom",
-      "report_stat": false,
-      "display_name": "Auto Notes",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "teleop_notes",
-      "solve_strategy": "custom",
-      "report_stat": false,
-      "display_name": "Teleop Notes",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "notes",
-      "solve_strategy": "custom",
-      "report_stat": true,
-      "display_name": "Notes",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "auto_points",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "Auto",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "teleop_points",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "Teleop",
-      "stat": {},
-      "stat_type": "num"
-    },
-    {
-      "stat_key": "endgame_points",
-      "solve_strategy": "sum",
-      "report_stat": true,
-      "display_name": "End Game",
-      "stat": {
-        "component_stats": [
-          "endGameChargeStation"
-        ]
-      },
       "stat_type": "num"
     },
     {

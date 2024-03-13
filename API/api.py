@@ -109,8 +109,8 @@ def get_event_Team_Stats(year: int, event: str, team: str):
                 foundTeam = True
                 break
     if not foundTeam:
-        raise HTTPException(400, "No team key \""+team +
-                            "\" in "+str(year)+event)
+        raise HTTPException(400, "No team key '"+team +
+                            "' in "+str(year)+event)
     try:
         pitData = PitScoutingCollection.find_one(
             {"event_code": str(year) + event, "team_number": int(team[3:])})
@@ -462,13 +462,21 @@ def get_pit_status(year: int, event: str):
 
 
 @app.get("/{year}/{event}/{team}/ScoutEntries")
-def get_scout_entries(team: str, event: str, year: int):
+def get_scout_team_entries(team: str, event: str, year: int):
     retval = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event, "team_number": team[3:]}))
     for entry in retval:
         entry.pop("_id")
     return retval
 
+
+@app.get("/{year}/{event}/ScoutEntries")
+def get_scout_event_entries(event: str, year: int):
+    retval = list(ScoutingData2024Collection.find(
+        {"event_code": str(year)+event}))
+    for entry in retval:
+        entry.pop("_id")
+    return retval
 
 @app.get("/{year}/{event}/ScoutingData")
 def get_event_autos(year: int, event: str):
@@ -486,7 +494,7 @@ def post_team_follow_up(data: list, year: int, event: str, team: str):
             match_number = int(death["match_number"])
             teamInMatch = False
             teamDied = False
-            matchScoutingEntries = get_scout_entries(team, event, year)
+            matchScoutingEntries = get_scout_team_entries(team, event, year)
             for entry in matchScoutingEntries:
                 if entry["match_number"] == match_number:
                     teamInMatch = True
@@ -535,7 +543,7 @@ def get_team_follow_up(team: str, event: str, year: int):
         {"event_code": str(year)+event, "team_key": team})
     if data is not None:
         data.pop("_id")
-        scoutEntries = get_scout_entries(team, event, year)
+        scoutEntries = get_scout_team_entries(team, event, year)
         deathEntries = []
         for entry in scoutEntries:
             if entry["data"]["miscellaneous"]["died"]:
@@ -549,7 +557,7 @@ def get_team_follow_up(team: str, event: str, year: int):
                                        "severity": '', })
         return data
     else:
-        scoutEntries = get_scout_entries(team, event, year)
+        scoutEntries = get_scout_team_entries(team, event, year)
         deathEntries = []
         for entry in scoutEntries:
             if entry["data"]["miscellaneous"]["died"]:
@@ -852,7 +860,7 @@ def update_database():
                 except Exception as e:
                     PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
                                                              "event_code": event["key"], "data": returnTeams})
-                    print(e)
+                    # print(e)
                 try:
                     updateData(event["key"])
                 except Exception as e:

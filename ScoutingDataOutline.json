@@ -13,7 +13,7 @@
       "teleop": {
         "amp": 0,
         "speaker": 0,
-        "trap": 0
+        "amped_speaker": 0
       },
       "miscellaneous": {
         "died": 0
