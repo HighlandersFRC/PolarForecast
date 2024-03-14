@@ -599,15 +599,28 @@ def convertData(calculatedData, year, event_code):
 
 
 def updateData(event_code: str):
+    print(event_code)
     TBAData = list(TBACollection.find({'event_key': event_code}))
     ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code, 'active': True}))
+    scouts = []
+    numEntries = []
+    try:
+        for entry in ScoutingData:
+            entry["scout_info"]["name"] = entry["scout_info"]["name"].replace(" ", "")
+            if not scouts.__contains__(entry["scout_info"]["name"]):
+                scouts.append(entry["scout_info"]["name"])
+                numEntries.append(0)
+            numEntries[scouts.index(entry["scout_info"]["name"])] += 1
+    except Exception as e:
+        print(e)
     if TBAData is not None:
         try:
-            calculatedData = analyzeData([TBAData, ScoutingData])
+            calculatedData, ratings = analyzeData([TBAData, ScoutingData])
             data = calculatedData.to_dict("list")
             data = convertData(data, YEAR, event_code)
         except:
+            ratings = {}
             keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
             keyList = [keyStr+"index"]
             teams = ETagCollection.find_one({"key": event_code})["teams"]
@@ -624,15 +637,24 @@ def updateData(event_code: str):
             pass
         metadata = {"last_modified": datetime.utcnow().timestamp(),
                     "etag": None, "tba": False}
+        try :
+            print("manufacturing scout rankings")
+            ratings = {"scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
+            ratings["entries"] = list(numpy.zeros(len(ratings["scouts"])))
+            for idx, scout in enumerate(ratings["scouts"]):
+                ratings["entries"][idx] = numEntries[scouts.index(scout["name"])]
+        except Exception as e:
+            print(e)
         try:
+            print("Inserting data")
             CalculatedDataCollection.insert_one(
-                {"event_code": event_code, "data": data, "metadata": metadata})
+                {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
         except Exception as e:
             try:
                 result = CalculatedDataCollection.update_one(
-                    {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata}})
+                    {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
             except Exception as ex:
-                # print(ex)
+                print(ex)
                 pass
 
 

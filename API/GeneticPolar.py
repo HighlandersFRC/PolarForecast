@@ -208,7 +208,7 @@ def analyzeData(m_data: list):
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
     try:
-        scoutingData = scoutingDataFunction(oprMatchDataFrame, scoutingData)
+        scoutingData, ratings = scoutingDataFunction(oprMatchDataFrame, scoutingData)
     except Exception as e:
         print(e)
     # print("threw away scouting data")
@@ -366,4 +366,4 @@ def analyzeData(m_data: list):
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
     # print(XMatrix)
-    return XMatrix
+    return XMatrix, ratings

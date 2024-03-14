@@ -256,8 +256,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               onClick={() => handlePieceClick('halfway_far_right')}
             />
           </div>
-          <Button variant="contained" onClick={flipImage}>
-            {isFlipped ? 'Unflip' : 'Flip'}
+          <Button variant="contained" fullWidth onClick={flipImage} sx={{color: isFlipped? 'blue' : 'red'}}>
+            {isFlipped ? 'Flip to Blue' : 'Flip to Red'}
           </Button>
         </div>
       </>
