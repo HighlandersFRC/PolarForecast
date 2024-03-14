@@ -45,7 +45,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { getEventMatchScouting } from "api";
-import { CartesianGrid, Label, Legend, Line, LineChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 
 const switchTheme = createTheme({
@@ -985,16 +985,25 @@ const Tables = () => {
         width={chartWidth}
         height={chartHeight}
         margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-        style={{color: "white"}}
+        style={{ color: "white" }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" />
-        <XAxis dataKey="Match Number" stroke="#ffffff" color="white" >
+        <CartesianGrid strokeDasharray="5 5" stroke="#ffffff" />
+        <XAxis type={'number'} dataKey="Match Number" stroke="#ffffff" color="white" domain={[0, qualPredictions.length]}>
           <Label value="Match Number" position="insideBottom" offset={-10} fill="white" />
         </XAxis>
-        <YAxis stroke="#ffffff" color="white">
+        <YAxis stroke="#ffffff" dataKey={key} color="white">
           <Label value={key} angle={90} position="insideLeft" offset={10} fill="white" />
         </YAxis>
-        <Line type="monotone" dataKey={key} stroke="#1976d2" animationDuration={1500} accumulate={true}/>
+        <Tooltip
+          contentStyle={{ backgroundColor: "#323a70" }}
+          formatter={(value) => {
+            return (typeof value === 'number' ? value.toFixed(1) : value)
+          }}
+          labelFormatter={(value) => {
+            return "Match " + value
+          }}
+        />
+        <Line type="monotone" dataKey={key} stroke="#1976d2" animationDuration={1500} accumulate={true} />
       </LineChart>
     );
   };
