@@ -1058,7 +1058,7 @@ const Tables = () => {
         />
         <Legend />
         {Object.keys(data[0]).map((key, idx) => {
-          if (idx !== 0) return <Area type="monotone" stackId={"Notes"} dataKey={key} stroke={colors[idx]} fill={colors[idx]} />
+          if (idx !== 0) return <Area type="monotone" dot stackId={"Notes"} dataKey={key} stroke={colors[idx]} fill={colors[idx]} />
         })}
       </AreaChart>
     );
