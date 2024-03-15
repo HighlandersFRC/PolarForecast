@@ -274,7 +274,7 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list):
         scoutRatings = {"scouts": scouts, "trustRatings": scoutTrustRatings}
     return scoutRatings
 
-def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
+def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> (list, list):
     for entry in scoutingData:
         entry["data"].pop("selectedPieces")
         entry["data"].pop("miscellaneous")
@@ -327,4 +327,4 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> list:
     # print("adjusted data")
     retval = removeOutliers(retval)
     # print("removed more outliers")
-    return retval
+    return retval, scoutRatings

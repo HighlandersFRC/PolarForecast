@@ -16,7 +16,7 @@
 
 */
 import { Card, CardHeader, Container, Row } from "reactstrap";
-import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, TextField, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, useMediaQuery, useTheme } from "@mui/material";
 import { alpha, styled, ThemeProvider, createTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
@@ -45,7 +45,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { getEventMatchScouting } from "api";
-import { CartesianGrid, Label, Legend, Line, LineChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 
 const switchTheme = createTheme({
@@ -978,23 +978,32 @@ const Tables = () => {
     // Render the line chart
     let key = "stat_key"
     if (!(data.length == 0)) key = Object.keys(data[0])[1]
-    // console.log(key)
+    // console.log(data)
     return (
       <LineChart
         data={data}
         width={chartWidth}
         height={chartHeight}
         margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+        style={{ color: "white" }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="Match Number" >
-          <Label value="Match Number" position="insideBottom" offset={-10} />
+        <CartesianGrid strokeDasharray="5 5" stroke="#ffffff" />
+        <XAxis type={'number'} dataKey="Match Number" stroke="#ffffff" color="white" domain={[0, qualPredictions.length]}>
+          <Label value="Match Number" position="insideBottom" offset={-10} fill="white" />
         </XAxis>
-        <YAxis >
-          <Label value={key} angle={90} position="insideLeft" offset={10} />
+        <YAxis stroke="#ffffff" dataKey={key} color="white">
+          <Label value={key} angle={90} position="insideLeft" offset={10} fill="white" />
         </YAxis>
-        <Tooltip />
-        <Line type="monotone" dataKey={key} stroke="#1976d2" />
+        <Tooltip
+          contentStyle={{ backgroundColor: "#323a70" }}
+          formatter={(value) => {
+            return (typeof value === 'number' ? value.toFixed(1) : value)
+          }}
+          labelFormatter={(value) => {
+            return "Match " + value
+          }}
+        />
+        <Line type="monotone" dataKey={key} stroke="#1976d2" animationDuration={1500} accumulate={true} />
       </LineChart>
     );
   };
