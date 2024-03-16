@@ -45,7 +45,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { getEventMatchScouting } from "api";
-import { CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 
 const switchTheme = createTheme({
@@ -186,6 +186,14 @@ const Tables = () => {
   const [chartTeamNumber, setChartTeamNumber] = useState(0)
   const [chartWidth, setChartWidth] = useState(window.innerWidth * 0.8); // Adjust width as needed
   const [chartHeight, setChartHeight] = useState(window.innerHeight * 0.6); // Adjust height as needed
+  const [areaChart, setAreaChart] = useState(false);
+  const colors = [
+    "#4D9DE0", "#E15554", "#7768AE", "#3BB273",
+    "#FFD700", "#8A2BE2", "#FF6347", "#32CD32",
+    "#9370DB", "#FFA07A", "#00CED1", "#FF4500",
+    "#4169E1", "#FF69B4", "#20B2AA", "#FF8C00",
+    "#483D8B", "#FFDAB9", "#00FA9A", "#8B4513",
+  ];
 
   useEffect(() => {
     const handleResize = () => {
@@ -267,23 +275,37 @@ const Tables = () => {
     const flattenedData = uniqueMatches.map((entry) => {
       return flattenJSON(entry.data)
     })
-    if (stat.solve_strategy == "sum")
-      flattenedData.forEach((entry) => {
-        entry[stat.stat_key] = 0
+    if (stat.solve_strategy == "sum") {
+      const displayData = []
+      flattenedData.forEach((entry, idx) => {
+        const chartFieldData = {
+          "Match Number": uniqueMatches[idx].match_number,
+        }
         stat.stat.component_stats.forEach((componentStat) => {
-          entry[stat.stat_key] += entry[componentStat]
+          chartFieldData[componentStat] = entry[componentStat]
         })
+        displayData.push(chartFieldData)
       })
-    const displayData = flattenedData.map((entry, idx) => {
-      return {
-        "Match Number": uniqueMatches[idx].match_number,
-        [stat.display_name]: entry[stat.stat_key]
-      };
-    })
-    if (displayData.length > 0) {
-      setChartTeamNumber(teamNumber)
-      setChartData(displayData)
-      setDialogOpen(true)
+      if (displayData.length > 0) {
+        console.log(displayData)
+        setChartTeamNumber(teamNumber)
+        setChartData(displayData)
+        setAreaChart(true)
+        setDialogOpen(true)
+      }
+    } else {
+      const displayData = flattenedData.map((entry, idx) => {
+        return {
+          "Match Number": uniqueMatches[idx].match_number,
+          [stat.display_name]: entry[stat.stat_key]
+        };
+      })
+      if (displayData.length > 0) {
+        setChartTeamNumber(teamNumber)
+        setChartData(displayData)
+        setAreaChart(false)
+        setDialogOpen(true)
+      }
     }
   }
 
@@ -974,6 +996,7 @@ const Tables = () => {
       [name]: value,
     }));
   }
+
   const LineChartRenderer = ({ data }) => {
     // Render the line chart
     let key = "stat_key"
@@ -1008,14 +1031,47 @@ const Tables = () => {
     );
   };
 
-  const ChartDialog = ({ open, onClose, data, rowData, columnDefs }) => {
+  const AreaChartRenderer = ({ data }) => {
+    return (
+      <AreaChart
+        data={data}
+        width={chartWidth}
+        height={chartHeight}
+        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+        style={{ color: "white" }}
+      >
+        <CartesianGrid strokeDasharray="5 5" stroke="#ffffff" />
+        <XAxis type={'number'} dataKey="Match Number" stroke="#ffffff" color="white" domain={[0, qualPredictions.length]}>
+          {/* <Label value="Match Number" position="insideBottom" offset={-10} fill="white" /> */}
+        </XAxis>
+        <YAxis stroke="#ffffff" color="white">
+          <Label value={'Notes'} angle={90} position="insideLeft" offset={10} fill="white" />
+        </YAxis>
+        <Tooltip
+          contentStyle={{ backgroundColor: "#323a70" }}
+          formatter={(value) => {
+            return (typeof value === 'number' ? value.toFixed(1) : value)
+          }}
+          labelFormatter={(value) => {
+            return "Match " + value
+          }}
+        />
+        <Legend />
+        {Object.keys(data[0]).map((key, idx) => {
+          if (idx !== 0) return <Area type="monotone" dot stackId={"Notes"} dataKey={key} stroke={colors[idx]} fill={colors[idx]} />
+        })}
+      </AreaChart>
+    );
+  };
+
+  const ChartDialog = ({ open, onClose, data, area, rowData, columnDefs }) => {
     let key = "Line Graph"
     if (!(data.length == 0)) key = Object.keys(data[0])[1]
     return (
       <Dialog open={open} onClose={onClose} maxWidth={false} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}>
-        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{key} Team #{chartTeamNumber}</DialogTitle>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{area? "": key} Team #{chartTeamNumber}</DialogTitle>
         <DialogContent sx={{ backgroundColor: "#1a174d" }}>
-          <LineChartRenderer data={data} />
+          {area ? <AreaChartRenderer data={data} /> : <LineChartRenderer data={data} />}
         </DialogContent>
       </Dialog>
     );
@@ -1059,7 +1115,7 @@ const Tables = () => {
                 scoutingData={scoutingData}
                 gridOptions={{ columnMenu: true, sideBar: "columns" }}
               />
-              <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} rowData={rankings} columnDefs={statColumns} />
+              <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} area={areaChart} rowData={rankings} columnDefs={statColumns} />
             </div>
           </Card>
         </TabPanel>

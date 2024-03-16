@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import logging
+import math
 from types import TracebackType
 from typing import Annotated
 import zipfile
@@ -140,6 +141,8 @@ def get_Event_Stats(year: int, event: str):
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
     for i, team in enumerate(data["data"][1:]):
         team = get_event_Team_Stats(year, event, team["key"])
+        if math.isnan(team["death_rate"]):
+            team["death_rate"] = 0
         data["data"][i+1] = team
     data.pop("_id")
     return data
