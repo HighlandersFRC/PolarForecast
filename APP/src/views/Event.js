@@ -46,6 +46,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { getEventMatchScouting } from "api";
 import { Area, AreaChart, CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import ExportToCSV from "components/ExportData";
 
 
 const switchTheme = createTheme({
@@ -1109,6 +1110,7 @@ const Tables = () => {
               <h3 className="text-white mb-0">Event Rankings - {eventTitle}</h3>
             </CardHeader>
             <div className="ag-theme-alpine-dark" style={{ height: containerHeight, width: "100%" }}>
+              <ExportToCSV rows={rankings} columns={statColumns}/>
               <StripedAgGrid
                 rowData={rankings}
                 columnDefs={statColumns}

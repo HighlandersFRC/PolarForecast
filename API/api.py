@@ -112,15 +112,7 @@ def get_event_Team_Stats(year: int, event: str, team: str):
     if not foundTeam:
         raise HTTPException(400, "No team key '"+team +
                             "' in "+str(year)+event)
-    try:
-        pitData = PitScoutingCollection.find_one(
-            {"event_code": str(year) + event, "team_number": int(team[3:])})
-        for key in pitData["data"]:
-            if not key == "_id":
-                doc[key] = pitData["data"][key]
-        return doc
-    except Exception as e:
-        return doc
+    return doc
 
 
 @app.get("/{year}/{event}/{team}/matches")
@@ -140,7 +132,6 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 def get_Event_Stats(year: int, event: str):
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
     for i, team in enumerate(data["data"][1:]):
-        team = get_event_Team_Stats(year, event, team["key"])
         if math.isnan(team["death_rate"]):
             team["death_rate"] = 0
         data["data"][i+1] = team
@@ -261,6 +252,24 @@ def post_pit_scouting_data(data: dict):
     status.pop("_id")
     PitStatusCollection.find_one_and_replace(
         {"event_code": data["event_code"]}, status)
+    eventData = CalculatedDataCollection.find_one(
+        {"event_code": data["event_code"]})
+    foundTeam = False
+    i = 0
+    team = data["team_number"]
+    for doc in eventData["data"][1:]:
+        i += 1
+        if not i == 1:
+            if doc["key"] == f"frc{team}":
+                foundTeam = True
+                for key in data["data"]:
+                    if not key == "_id":
+                        doc[key] = data["data"][key]
+                break
+    if not foundTeam:
+        raise HTTPException(400, "No team key '"+str(data["team_number"]) +
+                            "' in "+data["event_code"])
+    CalculatedDataCollection.find_one_and_replace({"event_code": data["event_code"]}, eventData)
     try:
         PitScoutingCollection.insert_one(data)
     except Exception as e:
@@ -481,6 +490,7 @@ def get_scout_event_entries(event: str, year: int):
         entry.pop("_id")
     return retval
 
+
 @app.get("/{year}/{event}/ScoutingData")
 def get_event_autos(year: int, event: str):
     autos = list(ScoutingData2024Collection.find(
@@ -602,7 +612,7 @@ def convertData(calculatedData, year, event_code):
 
 
 def updateData(event_code: str):
-    print(event_code)
+    # print(event_code)
     TBAData = list(TBACollection.find({'event_key': event_code}))
     ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code, 'active': True}))
@@ -610,7 +620,8 @@ def updateData(event_code: str):
     numEntries = []
     try:
         for entry in ScoutingData:
-            entry["scout_info"]["name"] = entry["scout_info"]["name"].replace(" ", "")
+            entry["scout_info"]["name"] = entry["scout_info"]["name"].replace(
+                " ", "")
             if not scouts.__contains__(entry["scout_info"]["name"]):
                 scouts.append(entry["scout_info"]["name"])
                 numEntries.append(0)
@@ -640,16 +651,18 @@ def updateData(event_code: str):
             pass
         metadata = {"last_modified": datetime.utcnow().timestamp(),
                     "etag": None, "tba": False}
-        try :
-            print("manufacturing scout rankings")
-            ratings = {"scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
+        try:
+            # print("manufacturing scout rankings")
+            ratings = {
+                "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
             ratings["entries"] = list(numpy.zeros(len(ratings["scouts"])))
             for idx, scout in enumerate(ratings["scouts"]):
-                ratings["entries"][idx] = numEntries[scouts.index(scout["name"])]
+                ratings["entries"][idx] = numEntries[scouts.index(
+                    scout["name"])]
         except Exception as e:
             print(e)
         try:
-            print("Inserting data")
+            # print("Inserting data")
             CalculatedDataCollection.insert_one(
                 {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
         except Exception as e:
