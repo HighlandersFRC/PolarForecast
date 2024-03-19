@@ -27,7 +27,9 @@ const PostQualPitScoutingForm = () => {
     const followUpCallback = (data) => {
         setDeaths(data?.deaths)
     }
-
+    useEffect(() => {
+        console.log(deaths)
+    }, [deaths])
     const followUpPostCallback = ([status, detail]) => {
         if (status == 200) {
             setFormSubmitted(true);
@@ -45,10 +47,6 @@ const PostQualPitScoutingForm = () => {
             mode: "dark",
         },
     });
-
-    const handleAddDeath = () => {
-        setDeaths([...deaths, defaultDeathData]);
-    };
 
     const handleChange = (event, index) => {
         const { name, value } = event.target;
@@ -145,11 +143,6 @@ const PostQualPitScoutingForm = () => {
                                                     <br />
                                                 </div>
                                             ))}
-                                            <div>
-                                                <Button variant="contained" color="primary" onClick={handleAddDeath}>
-                                                    Add Death
-                                                </Button>
-                                            </div>
                                             <div style={{ marginTop: '20px', textAlign: 'center' }}>
                                                 <Button variant="contained" color="primary" onClick={handleSubmit}>
                                                     Submit

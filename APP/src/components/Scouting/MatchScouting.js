@@ -31,7 +31,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         amped_speaker: 0,
       },
       miscellaneous: {
-        died: false,
+        died: 0,
         comments: "",
       },
       selectedPieces: [],
