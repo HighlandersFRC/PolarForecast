@@ -46,7 +46,7 @@ TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 
 ScoutingData2024Collection = testDB["Scouting2024Data"]
 ScoutingData2024Collection.create_index([("event_code", pymongo.ASCENDING), (
-    "team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING)], unique=True)
+    "team_number", pymongo.ASCENDING), ("scout_info.name", pymongo.ASCENDING), ("match_number", pymongo.ASCENDING)], unique=True)
 
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
@@ -269,7 +269,8 @@ def post_pit_scouting_data(data: dict):
     if not foundTeam:
         raise HTTPException(400, "No team key '"+str(data["team_number"]) +
                             "' in "+data["event_code"])
-    CalculatedDataCollection.find_one_and_replace({"event_code": data["event_code"]}, eventData)
+    CalculatedDataCollection.find_one_and_replace(
+        {"event_code": data["event_code"]}, eventData)
     try:
         PitScoutingCollection.insert_one(data)
     except Exception as e:
@@ -307,6 +308,8 @@ def post_match_scouting(data: dict):
     matchNumber = data["match_number"]
     teamNumber = data["team_number"]
     scoutName = data["scout_info"]["name"]
+    year = data["event_code"][-4:]
+    eventKey = data["event_code"][:-4]
     if scoutName == "":
         raise HTTPException(400, "Check Your Scout Name")
     match = TBACollection.find_one(
@@ -333,10 +336,20 @@ def post_match_scouting(data: dict):
         else:
             raise HTTPException(400, "Check Your Team Number")
     data["team_number"] = str(data["team_number"])
+    status = PitStatusCollection.find_one({"event_code": data["event_code"]})
+    if data["data"]["miscellaneous"]["died"]:
+        for team in status["data"]:
+            if team["key"] == data["team_number"]:
+                if team["follow_up_status"] == "Done":
+                    team["follow_up_status"] = "Incomplete"
+                break
     try:
         ScoutingData2024Collection.insert_one(data)
     except pymongo.errors.DuplicateKeyError as e:
         raise HTTPException(status_code=307, detail="Duplicate Entry")
+    if data["data"]["miscellaneous"]["died"] == 1:
+        PitStatusCollection.find_one_and_replace(
+            {"event_code": data["event_code"]}, status)
     data.pop("_id")
     return data
 
@@ -347,6 +360,8 @@ def update_match_scouting(data: dict):
     matchNumber = data["match_number"]
     teamNumber = data["team_number"]
     scoutName = data["scout_info"]["name"]
+    year = data["event_code"][-4:]
+    eventKey = data["event_code"][:-4]
     event = ETagCollection.find_one({"key": eventCode})
     event["up_to_date"] = False
     ETagCollection.find_one_and_replace({"key": eventCode}, event)
@@ -378,6 +393,17 @@ def update_match_scouting(data: dict):
     data["team_number"] = str(data["team_number"])
     ScoutingData2024Collection.find_one_and_replace(
         {"event_code": data["event_code"], "team_number": data["team_number"], "scout_info.name": data["scout_info"]["name"]}, data)
+    # print(data["data"]["miscellaneous"]["died"])
+    if data["data"]["miscellaneous"]["died"] == 1:
+        status = PitStatusCollection.find_one(
+            {"event_code": data["event_code"]})
+        for team in status["data"]:
+            if team["key"] == data["team_number"]:
+                if team["follow_up_status"] == "Done":
+                    team["follow_up_status"] = "Incomplete"
+                break
+        PitStatusCollection.find_one_and_replace(
+            {"event_code": data["event_code"]}, status)
     return data
 
 
@@ -508,10 +534,12 @@ def post_team_follow_up(data: list, year: int, event: str, team: str):
             teamInMatch = False
             teamDied = False
             matchScoutingEntries = get_scout_team_entries(team, event, year)
+            # print(match_number)
             for entry in matchScoutingEntries:
+                # print(entry["match_number"])
                 if entry["match_number"] == match_number:
                     teamInMatch = True
-                if entry['data']["miscellaneous"]["died"]:
+                if entry['data']["miscellaneous"]["died"] == 1:
                     teamDied = True
             if not teamInMatch:
                 raise HTTPException(
@@ -562,9 +590,11 @@ def get_team_follow_up(team: str, event: str, year: int):
             if entry["data"]["miscellaneous"]["died"]:
                 deathEntries.append(entry)
         for entry in deathEntries:
-            if not data["deaths"].__contains__({"match_number": entry["match_number"],
-                                                "death_reason": "",
-                                                "severity": '', }):
+            notRecorded = True
+            for death in data["deaths"]:
+                if death["match_number"] == entry["match_number"]:
+                    notRecorded = False
+            if notRecorded:
                 data["deaths"].append({"match_number": entry["match_number"],
                                        "death_reason": "",
                                        "severity": '', })
@@ -634,7 +664,7 @@ def updateData(event_code: str):
             data = calculatedData.to_dict("list")
             data = convertData(data, YEAR, event_code)
         except:
-            ratings = {}
+            ratings = {"scouts": [], "trustRatings": []}
             keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
             keyList = [keyStr+"index"]
             teams = ETagCollection.find_one({"key": event_code})["teams"]
@@ -878,7 +908,7 @@ def update_database():
                         TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"],
                                                           "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
                 teams = [{"key": x[3:], "pit_status": "Not Started",
-                          "picture_status": "Not Started", "follow_up_status": "Not Started"} for x in list(set(teams))]
+                          "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
                 try:
                     existingTeams = PitStatusCollection.find_one(
                         {"event_code": event["key"]})["data"]
