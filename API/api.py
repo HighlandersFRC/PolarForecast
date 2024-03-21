@@ -258,14 +258,14 @@ def post_pit_scouting_data(data: dict):
     i = 0
     team = data["team_number"]
     for doc in eventData["data"][1:]:
+        # print(doc)
         i += 1
-        if not i == 1:
-            if doc["key"] == f"frc{team}":
-                foundTeam = True
-                for key in data["data"]:
-                    if not key == "_id":
-                        doc[key] = data["data"][key]
-                break
+        if doc["key"] == f"frc{team}":
+            foundTeam = True
+            for key in data["data"]:
+                if not key == "_id":
+                    doc[key] = data["data"][key]
+            break
     if not foundTeam:
         raise HTTPException(400, "No team key '"+str(data["team_number"]) +
                             "' in "+data["event_code"])
