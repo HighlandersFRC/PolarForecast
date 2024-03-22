@@ -654,9 +654,6 @@ def convertData(calculatedData, year, event_code):
 def updateData(event_code: str):
     # print(event_code)
     TBAData = list(TBACollection.find({'event_key': event_code}))
-    for match in TBAData:
-        if match["score_breakdown"] is None:
-            TBAData.remove(match)
     ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code, 'active': True}))
     scouts = []
@@ -707,11 +704,11 @@ def updateData(event_code: str):
         try:
             prevData = CalculatedDataCollection.find_one({"event_code": event_code})["data"]
             for idx, team in enumerate(prevData):
-                if not idx == 1:
-                    for newTeam in data:
+                if not idx == 0:
+                    for newTeam in data[1:]:
                         if team["key"] == newTeam["key"]:
                             for key in team:
-                                if not data[idx].__contains__(key):
+                                if not newTeam.__contains__(key):
                                     newTeam[key] = team[key]
                                     # print(team[key])
                             break
