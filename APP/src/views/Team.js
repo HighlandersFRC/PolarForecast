@@ -422,7 +422,7 @@ const Team = () => {
       returnrow.teleop_amp = row.data.teleop.amp
       returnrow.teleop_amped_speaker = row.data.teleop.amped_speaker
       returnrow.died = String(row.data.miscellaneous.died)
-      returnrow.comments = row.miscellaneous?.comments
+      returnrow.comments = String(row.data.miscellaneous?.comments)
       returnRows.push(returnrow)
     }
     setScoutingRows(returnRows)
