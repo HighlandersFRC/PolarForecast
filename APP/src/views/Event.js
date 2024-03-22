@@ -288,7 +288,7 @@ const Tables = () => {
         displayData.push(chartFieldData)
       })
       if (displayData.length > 0) {
-        console.log(displayData)
+        // console.log(displayData)
         setChartTeamNumber(teamNumber)
         setChartData(displayData)
         setAreaChart(true)
@@ -689,7 +689,7 @@ const Tables = () => {
   };
 
   const matchScoutingCallback = async (data) => {
-    console.log(data)
+    // console.log(data)
     setScoutingData(data)
   }
 

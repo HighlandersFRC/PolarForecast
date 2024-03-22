@@ -692,6 +692,16 @@ def updateData(event_code: str):
         except Exception as e:
             print(e)
         try:
+            prevData = CalculatedDataCollection.find_one({"event_code": event_code})["data"]
+            for idx, team in enumerate(prevData):
+                if not idx == 1:
+                    for key in team:
+                        if not data[idx].__contains__(key):
+                            data[idx][key] = team[key]
+                            print(team[key])
+        except Exception as e:
+            print(e)
+        try:
             # print("Inserting data")
             CalculatedDataCollection.insert_one(
                 {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
