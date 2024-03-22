@@ -28,7 +28,7 @@ const PostQualPitScoutingForm = () => {
         setDeaths(data?.deaths)
     }
     useEffect(() => {
-        console.log(deaths)
+        // console.log(deaths)
     }, [deaths])
     const followUpPostCallback = ([status, detail]) => {
         if (status == 200) {
