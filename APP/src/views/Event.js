@@ -333,6 +333,14 @@ const Tables = () => {
     const statColumns = [];
     setStatDescription(data);
     statColumns.push({
+      headerName: '#',
+      field: 'rowNumber',
+      width: 51,
+      pinned: 'left',
+      valueGetter: (params) => params.node.rowIndex + 1, // Calculates row number
+    });
+
+    statColumns.push({
       field: "key",
       headerName: "Team",
       pinned: "left",
@@ -564,7 +572,8 @@ const Tables = () => {
             key.toLowerCase() !== "simulated_rank" &&
             key !== "expectedRanking" &&
             key !== "key" &&
-            key.toLowerCase() !== "schedule"
+            key.toLowerCase() !== "schedule" &&
+            key.toLowerCase() !== "#"
           ) {
             team[key] = Number(Number(team[key]).toPrecision(3));
           } else {
@@ -1070,7 +1079,7 @@ const Tables = () => {
     if (!(data.length == 0)) key = Object.keys(data[0])[1]
     return (
       <Dialog open={open} onClose={onClose} maxWidth={false} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}>
-        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{area? "": key} Team #{chartTeamNumber}</DialogTitle>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{area ? "" : key} Team #{chartTeamNumber}</DialogTitle>
         <DialogContent sx={{ backgroundColor: "#1a174d" }}>
           {area ? <AreaChartRenderer data={data} /> : <LineChartRenderer data={data} />}
         </DialogContent>
@@ -1103,14 +1112,14 @@ const Tables = () => {
           {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
         </Tabs>
       </AppBar>
-      <div style={{ height: containerDivHeight, width: "100%", overflow: "auto" }}>
+      <div style={{ height: `calc(${containerDivHeight} - 0px)`, width: "100%", overflow: "auto" }}>
         <TabPanel value={tabIndex} index={0} dir={darkTheme.direction}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Event Rankings - {eventTitle}</h3>
             </CardHeader>
-            <div className="ag-theme-alpine-dark" style={{ height: containerHeight, width: "100%" }}>
-              <ExportToCSV rows={rankings} columns={statColumns}/>
+            <ExportToCSV rows={rankings} columns={statColumns} />
+            <div className="ag-theme-alpine-dark" style={{ height: `calc(${containerHeight} - 35px)`, width: "100%" }}>
               <StripedAgGrid
                 rowData={rankings}
                 columnDefs={statColumns}
