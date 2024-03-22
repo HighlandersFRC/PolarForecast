@@ -74,6 +74,16 @@ FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
 
+def flatten_dict(dd, separator="_", prefix=""):
+    return (
+        {
+            prefix + separator + k if prefix else k: v
+            for kk, vv in dd.items()
+            for k, v in flatten_dict(vv, separator, kk).items()
+        }
+        if isinstance(dd, dict)
+        else {prefix: dd}
+    )
 
 @app.on_event("startup")
 def onStart():
@@ -644,6 +654,9 @@ def convertData(calculatedData, year, event_code):
 def updateData(event_code: str):
     # print(event_code)
     TBAData = list(TBACollection.find({'event_key': event_code}))
+    for match in TBAData:
+        if match["score_breakdown"] is None:
+            TBAData.remove(match)
     ScoutingData = list(ScoutingData2024Collection.find(
         {'event_code': event_code, 'active': True}))
     scouts = []
@@ -695,10 +708,13 @@ def updateData(event_code: str):
             prevData = CalculatedDataCollection.find_one({"event_code": event_code})["data"]
             for idx, team in enumerate(prevData):
                 if not idx == 1:
-                    for key in team:
-                        if not data[idx].__contains__(key):
-                            data[idx][key] = team[key]
-                            print(team[key])
+                    for newTeam in data:
+                        if team["key"] == newTeam["key"]:
+                            for key in team:
+                                if not data[idx].__contains__(key):
+                                    newTeam[key] = team[key]
+                                    # print(team[key])
+                            break
         except Exception as e:
             print(e)
         try:
@@ -712,6 +728,37 @@ def updateData(event_code: str):
             except Exception as ex:
                 print(ex)
                 pass
+    # TODO make it work without TBA Data and only scouting data
+    # if TBAData == [] and (ScoutingData is not [] or ScoutingData is not None):
+    #     teams = []
+    #     calculatedData = []
+    #     for entry in ScoutingData:
+    #         if not teams.__contains__(entry["team_number"]):
+    #             teams.append(entry["team_number"])
+    #     for team in teams:
+    #         teamEntries = []
+    #         for entry in ScoutingData:
+    #             if entry["team_number"] == team:
+    #                 teamEntries.append(entry)
+    #         cumulativeData = {
+    #             "historical": False,
+    #             "key": "frc"+str(team),
+    #             "team_number": str(team),
+    #         }
+    #         for entry in teamEntries:
+    #             if entry["data"].__contains__("miscellaneous"):
+    #                 entry["data"]["died"] = entry["data"]["miscellaneous"]["died"]
+    #                 entry.pop("miscellaneous")
+    #             if entry["data"].__contains__("selecte"):
+    #                 entry["data"].pop("miscellaneous")
+    #             flattenedData = flatten_dict(entry["data"])
+    #             for key in flattenedData:
+    #                 if not cumulativeData.__contains__(key):
+    #                     cumulativeData[key] = 0
+    #                 cumulativeData[key] += flattenedData[key]
+                
+            
+    # pass
 
 
 def updatePredictions(TBAData, calculatedData, event_code):
