@@ -2,7 +2,7 @@ import React, { useState, useEffect, createRef, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { getMatchDetails } from 'api';
-import { FormControl, InputLabel, MenuItem, Select, Switch } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Switch } from '@mui/material';
 import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
@@ -66,9 +66,9 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   useEffect(() => {
     if (driverStation) {
       if (isFlipped) {
-        if (driverStation > 4) flipImage() // Flip the image to match red DS
+        if (driverStation > 3) flipImage() // Flip the image to match red DS
       } else {
-        if (driverStation <= 4) flipImage() // Flip the image to match blue DS
+        if (driverStation <= 3) flipImage() // Flip the image to match blue DS
       }
     }
   }, [driverStation])
@@ -444,6 +444,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
             <MenuItem value={5} sx={{color:'#1976d2'}}>B2</MenuItem>
             <MenuItem value={6} sx={{color:'#1976d2'}}>B3</MenuItem>
           </Select>
+          <FormHelperText>Driver Station Not Required</FormHelperText>
         </FormControl>
         <TextField
           label="Match Number"

@@ -26,9 +26,17 @@ import ImageUpload from "components/ImageUpload";
 import CameraCapture from "components/CameraCapture";
 import { postTeamPictures } from "api";
 import { AppBar } from "@mui/material";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 const PitImages = () => {
   const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
+  const history = useHistory()
+  const url = new URL(window.location.href);
+  const serverPath = url.pathname.split("/")[0];
+  let eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
+  let year = url.pathname.split("/")[3]
+  let eventCode = url.pathname.split("/")[4]
+  let team = url.pathname.split("/")[5].replace("team-", "")
   return (
     <>
       <Header />
@@ -39,7 +47,7 @@ const PitImages = () => {
               <div style={{ height: containerHeight, width: "100%" }}>
                 <Card className="polar-box">
                   <CardHeader className="bg-transparent">
-                    <h3 className="text-white mb-0">Picture</h3>
+                    <h1 className="text-white mb-0">Pictures - {team}</h1>
                   </CardHeader>
                   <div style={{ width: "100%" }}>
                     <CameraCapture />
