@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Autocomplete, Switch, ThemeProvider, createTheme } from '@mui/material';
+import { Autocomplete, ImageList, Switch, ThemeProvider, createTheme } from '@mui/material';
 import Header from 'components/Headers/Header';
 import { Card, CardHeader, Container, Row } from 'reactstrap';
 import { postPitScouting } from 'api';
@@ -323,10 +323,12 @@ const PitScoutingForm = ({ teamPage }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {!teamPage && <>
                         <h4 className='text-white mb-0'>Autos</h4>
-                        {formData.data.autos.map((auto, idx) => {
-                            // console.log(auto, idx)
-                            return <RenderSelectablePieces auto={auto} idx={idx} />
-                        })}
+                        <ImageList cols={1}>
+                            {formData.data.autos.map((auto, idx) => {
+                                // console.log(auto, idx)
+                                return <RenderSelectablePieces auto={auto} idx={idx} />
+                            })}
+                        </ImageList>
                         <Button variant="contained" onClick={addAuto}>
                             Add an Auto
                         </Button>
@@ -562,9 +564,11 @@ const PitScoutingForm = ({ teamPage }) => {
                     </Button> : <>
                         <h4 className='text-white mb-0'>Autos</h4>
                         {formData.data.autos.length === 0 && <h5 className='text-white mb-0'>No Auto Data</h5>}
-                        {formData.data.autos.map((auto, idx) => {
-                            return <RenderSelectablePieces auto={auto} idx={idx} />
-                        })}
+                        <ImageList cols={3}>
+                            {formData.data.autos.map((auto, idx) => {
+                                return <RenderSelectablePieces auto={auto} idx={idx} />
+                            })}
+                        </ImageList >
                     </>
                 }
             </form>}
