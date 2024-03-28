@@ -301,7 +301,7 @@ const PitScoutingForm = ({ teamPage }) => {
     return (<>
         <Card className="polar-box">
             <CardHeader className="bg-transparent">
-                <h3 className="text-white mb-0">PitScouting</h3>
+                <h3 className="text-white mb-0">Pit Scouting - {team}</h3>
             </CardHeader>
             {showForm && <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
