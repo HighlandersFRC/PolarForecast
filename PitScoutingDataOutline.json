@@ -13,6 +13,8 @@
         "drive_train": "",
         "ground_pick_up": false,
         "feeder_pick_up": false,
-        "favorite_color": ""
+        "favorite_color": "",
+        "spares": "",
+        "autos": []
     }
 }

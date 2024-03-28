@@ -335,7 +335,7 @@ const Tables = () => {
     statColumns.push({
       headerName: '#',
       field: 'rowNumber',
-      width: 51,
+      width: 55,
       pinned: 'left',
       valueGetter: (params) => params.node.rowIndex + 1, // Calculates row number
     });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Autocomplete, ImageList, Switch, ThemeProvider, createTheme } from '@mui/material';
+import { Autocomplete, FormControl, ImageList, InputLabel, MenuItem, Select, Switch, ThemeProvider, createTheme } from '@mui/material';
 import Header from 'components/Headers/Header';
 import { Card, CardHeader, Container, Row } from 'reactstrap';
 import { postPitScouting } from 'api';
@@ -37,6 +37,7 @@ const PitScoutingForm = ({ teamPage }) => {
             ground_pick_up: false,
             feeder_pick_up: false,
             favorite_color: "",
+            spares: "",
             autos: [],
         }
     });
@@ -88,6 +89,7 @@ const PitScoutingForm = ({ teamPage }) => {
     const pitScoutingDataCallback = (value) => {
         if (value !== null && value !== undefined) {
             if (!value.data?.autos) value.data.autos = [];
+            if (!value.data?.spares) value.data.spares = "";
             // console.log(value)
             setFormData(value)
         }
@@ -404,6 +406,23 @@ const PitScoutingForm = ({ teamPage }) => {
                         onChange={(e) => handleChange('data.feeder_pick_up', e.target.checked)}
                         disabled={teamPage}
                     />
+                    <FormControl variant="outlined" fullWidth>
+                        <InputLabel id="spare-parts">Spare Parts</InputLabel>
+                        <Select
+                            labelId="spare-parts"
+                            label="Spare Parts"
+                            fullWidth
+                            name="spare-parts"
+                            value={formData.data?.spares}
+                            onChange={(e) => handleChange('data.spares', e.target.value)}
+                            disabled={teamPage}
+                        >
+                            <MenuItem value={1}>1 (No Spare Parts)</MenuItem>
+                            <MenuItem value={2}>2 (Spare Part For Most Mechanisms)</MenuItem>
+                            <MenuItem value={3}>3 (Spare Parts For All Mechanisms)</MenuItem>
+                            <MenuItem value={4}>4 (Multiple Spare Parts For All Mechanisms)</MenuItem>
+                        </Select>
+                    </FormControl>
                     <Autocomplete
                         disablePortal
                         id="Favorite Color"
