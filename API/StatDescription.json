@@ -147,6 +147,14 @@
       "stat": {}
     },
     {
+      "stat_key": "spares",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Spare Parts?",
+      "stat_type": "num",
+      "stat": {}
+    },
+    {
       "stat_key": "favorite_color",
       "solve_strategy": "custom",
       "report_stat": true,

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Button, Box, Switch } from '@mui/material';
 import { postTeamPictures } from 'api';
@@ -17,6 +17,9 @@ const CameraCapture = () => {
   const [show, setShow] = useState(true)
   const [status, setStatus] = useState("Upload Failed")
 
+  // useEffect (()=>{
+  //   console.log(capturedImage)
+  // }, [capturedImage])
   const handleCapture = () => {
     const imageSrc = webcamRef.current.getScreenshot({
       type: 'image/jpeg',
@@ -32,7 +35,7 @@ const CameraCapture = () => {
   };
 
   const uploadStatusCallback = (status) => {
-    if (status === 200){
+    if (status === 200) {
       setShow(false)
       setStatus("Image Uploaded Successfully")
     } else {
@@ -45,12 +48,6 @@ const CameraCapture = () => {
     postTeamPictures(year, eventCode, team, capturedImage, uploadStatusCallback)
   };
 
-  const handleSwitchCamera = () => {
-    setFacingMode((prevFacingMode) =>
-      prevFacingMode === 'user' ? 'environment' : 'user'
-    );
-  };
-  
   const backToScouting = () => {
     history.push(`../../../event/${year}/${eventCode}#pit-scouting`);
   }
@@ -61,79 +58,88 @@ const CameraCapture = () => {
     setIsCapturing(true)
   }
 
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    console.log(file)
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCapturedImage(reader.result);
+        setIsCapturing(false)
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <>
-    {show && <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px'}}>
-      <h3 className="text-white mb-0">Camera Capture</h3>
-      {isCapturing ? (
-        <>
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            screenshotQuality={1.0} // Adjust the quality if needed
-            videoConstraints={{ facingMode }}
-            style={{ width: '60%', alignSelf: "center"}}
-          />
-          <Button variant="contained" color="primary" onClick={handleCapture}>
-            Capture
-          </Button>
-        </>
-      ) : (
-        <>
-          {capturedImage &&
-            <>
-              <img
-                src={capturedImage}
-                alt="Captured Image"
-                style={{
-                  width: '60%', // Set width to 100% to match the webcam feed
-                  height: 'auto', // Maintain aspect ratio
-                  alignSelf: "center"
-                }}
+      {show && <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+        <h3 className="text-white mb-0">Camera Capture</h3>
+        {isCapturing ? (
+          <>
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }} // Hide the input element
+                id="image-input"
               />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleRecapture}
-              >
-                Recapture
-              </Button>
-            </>
-          }
-        </>
-      )}
-      {capturedImage && (
-        <>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleUpload}
-          >
-            Upload
-          </Button>
-        </>
-      )}
-      <Box mt={2}>
-        <label className="text-white mb-0">Switch Camera</label>
-        <Switch
-          color="primary"
-          checked={facingMode === 'user'}
-          onChange={handleSwitchCamera}
-        />
-      </Box>
-    </div>}
-    {(!show) &&
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
-        <h1 className="text-white mb-0">{status}</h1>
-        <Button variant="contained" color="primary" onClick={backToScouting}>
+              <label htmlFor="image-input">
+                <Button fullWidth variant="contained" component="span">
+                  Capture Image
+                </Button>
+              </label>
+            </div>
+          </>
+        ) : (
+          <>
+            {capturedImage &&
+              <>
+                <img
+                  src={capturedImage}
+                  alt="Captured Image"
+                  style={{
+                    width: '100%', // Set width to 100% to match the webcam feed
+                    height: 'auto', // Maintain aspect ratio
+                    alignSelf: "center"
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleRecapture}
+                >
+                  Recapture
+                </Button>
+              </>
+            }
+          </>
+        )}
+        {capturedImage && (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleUpload}
+            >
+              Upload
+            </Button>
+          </>
+        )}
+      </div>}
+      {(!show) &&
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+          <h1 className="text-white mb-0">{status}</h1>
+          <Button variant="contained" color="primary" onClick={backToScouting}>
             Back To Scouting
-        </Button>
-        <Button variant="contained" color="primary" onClick={addAnotherPicture}>
+          </Button>
+          <Button variant="contained" color="primary" onClick={addAnotherPicture}>
             Add Another Picture
-        </Button>
-      </div>
-    }
+          </Button>
+        </div>
+      }
     </>
   );
 };

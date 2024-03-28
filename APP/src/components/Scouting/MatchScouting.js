@@ -2,7 +2,7 @@ import React, { useState, useEffect, createRef, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { getMatchDetails } from 'api';
-import { Switch } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Switch } from '@mui/material';
 import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
@@ -48,6 +48,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const [imageLoaded, setImageLoaded] = useState(false)
   const fieldImageRef = useRef(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [driverStation, setDriverStation] = useState('');
   const NOTE_SIZE = 80;
 
   useEffect(() => {
@@ -63,8 +64,18 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   }, [text]);
 
   useEffect(() => {
+    if (driverStation) {
+      if (isFlipped) {
+        if (driverStation > 3) flipImage() // Flip the image to match red DS
+      } else {
+        if (driverStation <= 3) flipImage() // Flip the image to match blue DS
+      }
+    }
+  }, [driverStation])
+
+  useEffect(() => {
     getMatchDetails(year, event, eventCode + "_qm" + String(matchNumber), (data) => matchDataCallback(data.match));
-  }, [matchNumber])
+  }, [matchNumber, driverStation])
 
   useEffect(() => {
     // console.log(formData.data.selectedPieces)
@@ -256,7 +267,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               onClick={() => handlePieceClick('halfway_far_right')}
             />
           </div>
-          <Button variant="contained" fullWidth onClick={flipImage} sx={{color: isFlipped? 'blue' : 'red'}}>
+          <Button variant="contained" fullWidth onClick={flipImage} sx={{ color: isFlipped ? 'blue' : 'red' }}>
             {isFlipped ? 'Flip to Blue' : 'Flip to Red'}
           </Button>
         </div>
@@ -269,29 +280,34 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     const updatedData = { ...formData };
     let random = Math.floor(Math.random() * 6)
     try {
-      updatedData.team_number = matchTeams(data)[random].substr(3)
+      if (!driverStation) updatedData.team_number = matchTeams(data)[random].substr(3)
+      else updatedData.team_number = matchTeams(data)[driverStation - 1].substr(3)
       updatedData.match_number = data.match_number
       setFormData(updatedData)
     } catch { }
   }
 
   const handleChange = async (field, value) => {
-    setFormData((prevData) => {
-      const updatedData = { ...prevData };
-      const fieldPath = field.split('.');
-      let currentField = updatedData;
-      for (let i = 0; i < fieldPath.length - 1; i++) {
-        currentField = currentField[fieldPath[i]];
+    if (field === "station") {
+      setDriverStation(value)
+    } else {
+      setFormData((prevData) => {
+        const updatedData = { ...prevData };
+        const fieldPath = field.split('.');
+        let currentField = updatedData;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+          currentField = currentField[fieldPath[i]];
+        }
+        if (field === "scout_info.name" || field === "data.miscellaneous.comments") {
+          currentField[fieldPath[fieldPath.length - 1]] = value;
+        } else {
+          currentField[fieldPath[fieldPath.length - 1]] = Math.max(0, value); // Set minimum value of 0
+        }
+        return updatedData
+      });
+      if (field === "match_number") {
+        setMatchNumber(value)
       }
-      if (field === "scout_info.name" || field === "data.miscellaneous.comments") {
-        currentField[fieldPath[fieldPath.length - 1]] = value;
-      } else {
-        currentField[fieldPath[fieldPath.length - 1]] = Math.max(0, value); // Set minimum value of 0
-      }
-      return updatedData
-    });
-    if (field === "match_number") {
-      setMatchNumber(value)
     }
   };
 
@@ -337,9 +353,9 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       let allianceStr = ""
       for (let i = 0; i < 2; i++) {
         if (i === 0) {
-          allianceStr = "blue"
-        } else if (i === 1) {
           allianceStr = "red"
+        } else if (i === 1) {
+          allianceStr = "blue"
         }
         teams = teams.concat(data.alliances[allianceStr].team_keys)
       }
@@ -407,6 +423,29 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           inputProps={{ min: 0 }}
         // disabled // Disable the Team Number field
         />
+        <FormControl >
+          <InputLabel id="driver-station-label">Driver Station</InputLabel>
+          <Select
+            label="Driver Station"
+            type="number"
+            id="driver-station"
+            labelId="driver-station-label"
+            value={driverStation}
+            sx={{color:driverStation ? driverStation<4 ? 'red' : '#1976d2' : ''}}
+            onChange={(e) => handleChange('station', e.target.value)}
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={1} sx={{color:'red'}}>R1</MenuItem>
+            <MenuItem value={2} sx={{color:'red'}}>R2</MenuItem>
+            <MenuItem value={3} sx={{color:'red'}}>R3</MenuItem>
+            <MenuItem value={4} sx={{color:'#1976d2'}}>B1</MenuItem>
+            <MenuItem value={5} sx={{color:'#1976d2'}}>B2</MenuItem>
+            <MenuItem value={6} sx={{color:'#1976d2'}}>B3</MenuItem>
+          </Select>
+          <FormHelperText>Driver Station Not Required</FormHelperText>
+        </FormControl>
         <TextField
           label="Match Number"
           type="number"
