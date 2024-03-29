@@ -40,12 +40,13 @@ import { getTeamScoutingData } from "api";
 import { deactivateMatchData } from "api";
 import { activateMatchData } from "api";
 import AutoDisplay from "components/AutosDisplay";
-import { Assignment, EventNote, Photo, PrecisionManufacturing, PrivacyTip, Storage } from "@mui/icons-material";
+import { Assignment, EventNote, Photo, PrecisionManufacturing, PrivacyTip, Storage, Visibility } from "@mui/icons-material";
 import { getFollowUp } from "api";
+import PitScoutingForm from "components/Scouting/PitScoutingForm";
 
 const Team = () => {
   const history = useHistory();
-  const tabDict = ["schedule", "team-stats", "pictures", "match-scouting", "autos"];
+  const tabDict = ["schedule", "team-stats", "pictures", "match-scouting", "pit-scouting", "autos", "deaths"];
   const url = new URL(window.location.href);
   const params = url.pathname.split("/");
   const year = params[3];
@@ -431,7 +432,7 @@ const Team = () => {
 
   const followUpCallback = async (data) => {
     setDeaths(data?.deaths || [])
-  } 
+  }
 
   useEffect(() => {
     if (window.location.hash.length > 0) {
@@ -530,9 +531,10 @@ const Team = () => {
           <Tab icon={<EventNote />} label="Schedule" {...a11yProps(0)} />
           <Tab icon={<Storage />} label="Team Stats" {...a11yProps(1)} />
           <Tab icon={<Photo />} label="Pictures" {...a11yProps(2)} />
-          <Tab icon={<Assignment />} label="Match Scouting" {...a11yProps(3)} />
-          <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(4)} />
-          <Tab icon={<PrivacyTip />} label="Deaths" {...a11yProps(4)} />
+          <Tab icon={<Visibility />} label="Match Scouting" {...a11yProps(3)} />
+          <Tab icon={<Assignment />} label="Pit Scouting" {...a11yProps(4)} />
+          <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(5)} />
+          <Tab icon={<PrivacyTip />} label="Deaths" {...a11yProps(6)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={darkTheme.direction}>
@@ -702,11 +704,16 @@ const Team = () => {
       </TabPanel>
       <TabPanel value={value} index={4} dir={darkTheme.direction}>
         <ThemeProvider theme={darkTheme}>
+          <PitScoutingForm teamPage={true} />
+        </ThemeProvider>
+      </TabPanel>
+      <TabPanel value={value} index={5} dir={darkTheme.direction}>
+        <ThemeProvider theme={darkTheme}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Team {teamNumber} Autos</h3>
             </CardHeader>
-            <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
+            <div>
               {scoutingData.length > 0 ? <ImageList cols={3} variant="masonry">
                 {scoutingData.map((val, idx, a) => {
                   return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
@@ -720,7 +727,7 @@ const Team = () => {
           </Card>
         </ThemeProvider>
       </TabPanel>
-      <TabPanel value={value} index={5} dir={darkTheme.direction}>
+      <TabPanel value={value} index={6} dir={darkTheme.direction}>
         <ThemeProvider theme={darkTheme}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
