@@ -714,7 +714,7 @@ const Team = () => {
               <h3 className="text-white mb-0">Team {teamNumber} Autos</h3>
             </CardHeader>
             <div>
-              {scoutingData.length > 0 ? <ImageList cols={3} variant="masonry">
+              {scoutingData.length > 0 ? <ImageList cols={3}>
                 {scoutingData.map((val, idx, a) => {
                   return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
                 })}
