@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 
 function ExportToCSV({ rows, columns }) {
-    const url = new URL(window.location.href);
-    const serverPath = url.pathname.split("/")[0];
-    const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
-    const year = url.pathname.split("/")[3]
-    const eventCode = url.pathname.split("/")[4]
+    const [dataRows, setDataRows] = useState(rows)
+    const [dataColumns, setDataColumns] = useState(columns)
+    useEffect(() => {
+        setDataRows(rows)
+        // console.log(rows)
+    }, [rows])
+    useEffect(() => {
+        setDataColumns(columns)
+        // console.log(columns)
+    }, [columns])
     const exportToCSV = () => {
+        // console.log("Exporting to CSV...");
+        // console.log(dataRows, dataColumns)
+        // Define current date and time
         const today = new Date();
+        const year = today.getFullYear();
         const month = (today.getMonth() + 1).toString().padStart(2, '0');
         const day = today.getDate().toString().padStart(2, '0');
         const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thur', 'fri', 'sat'][today.getDay()];
@@ -17,23 +26,42 @@ function ExportToCSV({ rows, columns }) {
         const seconds = today.getSeconds();
         const amOrPm = hours >= 12 ? 'pm' : 'am';
         const time = `${hours % 12 || 12}-${minutes}-${seconds}-${amOrPm}`;
-        let csvContent = "data:text/csv;charset=utf-8,";
-        const headerRow = columns.map(column => column.headerName);
+
+        let csvContent = "";
+
+        // Write header row
+        const headerRow = dataColumns.map(column => column.headerName);
         csvContent += headerRow.join(",") + "\r\n";
-        rows.forEach(row => {
-            const rowData = columns.map(column => {
+
+        // Write data rows
+        dataRows.forEach(row => {
+            const rowData = dataColumns.map(column => {
                 const field = column.field;
                 return row[field] !== undefined && row[field] !== null ? row[field] : '';
             });
             csvContent += rowData.join(",") + "\r\n";
         });
-        const encodedUri = encodeURI(csvContent);
+
+        // console.log("CSV content:", csvContent);
+
+        // Create Blob
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+
+        // Create temporary URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link element to trigger the download
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Polar_Forecast_${year}_${eventCode}_${month}-${day}-${dayOfWeek}_${time}.csv`);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Polar_Forecast_${year}_${month}-${day}-${dayOfWeek}_${time}.csv`);
         document.body.appendChild(link);
+
+        // Trigger the download
         link.click();
+
+        // Cleanup
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     return (
