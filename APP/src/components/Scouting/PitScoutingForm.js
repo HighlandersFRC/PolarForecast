@@ -18,7 +18,7 @@ const PitScoutingForm = ({ teamPage }) => {
     let year = url.pathname.split("/")[3]
     let eventCode = url.pathname.split("/")[4]
     let team = url.pathname.split("/")[5].replace("team-", "")
-
+    if (url.pathname.split("/")[5].split("-")[0] == "match") team = url.hash.replace("#", "")
     // console.log(eventName, year, eventCode, team)
 
     const [text, setText] = useState("Submission Failed")

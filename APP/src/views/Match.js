@@ -29,11 +29,12 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Box from "@mui/material/Box";
 import "../assets/css/polar-css.css";
 import DrawingCanvas from "components/WhiteBoard";
-import { AppBar, ImageList, ImageListItem, Tab, Tabs } from "@mui/material";
+import { AppBar, Dialog, DialogContent, DialogTitle, ImageList, ImageListItem, Tab, Tabs } from "@mui/material";
 import { getTeamPictures } from "api";
 import { getTeamScoutingData } from "api";
 import AutoDisplay from "components/AutosDisplay";
 import { Assignment, PrecisionManufacturing } from "@mui/icons-material";
+import PitScoutingForm from "components/Scouting/PitScoutingForm";
 
 const Match = () => {
   const history = useHistory();
@@ -70,6 +71,7 @@ const Match = () => {
       headerAlign: "center",
       align: "center",
       flex: 0.5,
+      minWidth: 65,
       renderCell: (params) => {
         const onClick = () => statisticsTeamOnClick(params.row);
         return (
@@ -79,6 +81,27 @@ const Match = () => {
             </Link>
           </div>
         );
+      },
+    },
+    {
+      field: "details",
+      headerName: "Pit",
+      sortable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.75,
+      minWidth: 75,
+      renderCell: (params) => {
+        const onDetailsClick = () => handleOpenPopup(params.row.team);
+        if (params.row.team)
+          return (
+            <div>
+              <Link component="button" onClick={onDetailsClick} underline="always">
+                Pit Data
+              </Link>
+            </div>
+          );
       },
     },
     {
@@ -97,7 +120,8 @@ const Match = () => {
       disableExport: true,
       headerAlign: "center",
       align: "center",
-      flex: 0.5,
+      flex: 1,
+      minWidth: 80
     },
     {
       field: "endgame_points",
@@ -107,11 +131,11 @@ const Match = () => {
       headerAlign: "center",
       align: "center",
       flex: 0.5,
-      minWidth: 100,
+      minWidth: 90,
     },
     {
       field: "climbing",
-      headerName: "Climbing",
+      headerName: "Climb",
       filterable: false,
       disableExport: true,
       headerAlign: "center",
@@ -136,7 +160,8 @@ const Match = () => {
       disableExport: true,
       headerAlign: "center",
       align: "center",
-      flex: 0.3,
+      flex: 0.5,
+      minWidth: 65,
     },
   ]);
 
@@ -181,6 +206,15 @@ const Match = () => {
     }
   };
 
+  const [openPopup, setOpenPopup] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+
+  // Function to handle opening the pop-up
+  const handleOpenPopup = (team) => {
+    history.push(`#${team}`);
+    setSelectedTeam(team);
+    setOpenPopup(true);
+  };
 
   const matchInfoCallback = async (restData) => {
     setData(restData)
@@ -363,6 +397,12 @@ const Match = () => {
         </AppBar>
         <TabPanel value={value} index={0} dir={darkTheme.direction}>
           <ThemeProvider theme={darkTheme}>
+            <Dialog open={openPopup} onClose={() => setOpenPopup(false)}>
+              <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{`Details for Team ${selectedTeam}`}</DialogTitle>
+              <DialogContent sx={{ backgroundColor: "#1a174d" }}>
+                <PitScoutingForm teamPage={true}/>
+              </DialogContent>
+            </Dialog>
             <Container>
               <Row>
                 <div style={{ width: "100%" }}>
