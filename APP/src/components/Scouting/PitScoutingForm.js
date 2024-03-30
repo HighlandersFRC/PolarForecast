@@ -38,6 +38,7 @@ const PitScoutingForm = ({ teamPage }) => {
             feeder_pick_up: false,
             favorite_color: "",
             spares: "",
+            shooting_range: "",
             autos: [],
         }
     });
@@ -364,13 +365,22 @@ const PitScoutingForm = ({ teamPage }) => {
                         onChange={(e) => handleChange('data.speaker_scoring', e.target.checked)}
                         disabled={teamPage}
                     />
-                    <h4 className="text-white mb-0">Scores in Trap?</h4>
-                    <Switch
-                        label="Scores in Trap?"
-                        checked={formData.data.trap_scoring}
-                        onChange={(e) => handleChange('data.trap_scoring', e.target.checked)}
-                        disabled={teamPage}
-                    />
+                    {formData.data.speaker_scoring && <FormControl variant="outlined" fullWidth>
+                        <InputLabel id="shooting-range">Shooting Range</InputLabel>
+                        <Select
+                            labelId="shooting-range"
+                            label="Shooting Range"
+                            fullWidth
+                            name="shooting-range"
+                            value={formData.data?.shooting_range}
+                            onChange={(e) => handleChange('data.shooting_range', e.target.value)}
+                            disabled={teamPage}
+                        >
+                            <MenuItem value={1}>1 (Only Against Subwoofer)</MenuItem>
+                            <MenuItem value={2}>2 (From Podium)</MenuItem>
+                            <MenuItem value={3}>3 (Anywhere in the Wing)</MenuItem>
+                        </Select>
+                    </FormControl>}
                     <h4 className="text-white mb-0">Can Climb?</h4>
                     <Switch
                         label="Can Climb?"
@@ -378,13 +388,24 @@ const PitScoutingForm = ({ teamPage }) => {
                         onChange={(e) => handleChange('data.can_climb', e.target.checked)}
                         disabled={teamPage}
                     />
-                    <h4 className="text-white mb-0">Can Harmonize?</h4>
-                    <Switch
-                        label="Can Harmonize?"
-                        checked={formData.data.can_harmonize}
-                        onChange={(e) => handleChange('data.can_harmonize', e.target.checked)}
-                        disabled={teamPage}
-                    />
+                    {formData.data.can_climb && <>
+                        <h4 className="text-info mb-0" style={{marginLeft: 30}}>Scores in Trap?</h4>
+                        <Switch
+                            label="Scores in Trap?"
+                            checked={formData.data.trap_scoring}
+                            onChange={(e) => handleChange('data.trap_scoring', e.target.checked)}
+                            sx={{marginLeft: 30/4}}
+                            disabled={teamPage}
+                        />
+                        <h4 className="text-info mb-0" style={{marginLeft: 30}}>Can Harmonize?</h4>
+                        <Switch
+                            label="Can Harmonize?"
+                            checked={formData.data.can_harmonize}
+                            onChange={(e) => handleChange('data.can_harmonize', e.target.checked)}
+                            sx={{marginLeft: 30/4}}
+                            disabled={teamPage}
+                        />
+                    </>}
                     <h4 className="text-white mb-0">Can Fit Under Stage?</h4>
                     <Switch
                         label="Can Fit Under Stage?"

@@ -82,8 +82,8 @@ const Match = () => {
       },
     },
     {
-      field: "auto_points",
-      headerName: "Auto",
+      field: "amp_total",
+      headerName: "Amp",
       filterable: false,
       disableExport: true,
       headerAlign: "center",
@@ -91,8 +91,8 @@ const Match = () => {
       flex: 0.5,
     },
     {
-      field: "teleop_points",
-      headerName: "Teleop",
+      field: "speaker_total",
+      headerName: "Speaker",
       filterable: false,
       disableExport: true,
       headerAlign: "center",
@@ -188,8 +188,8 @@ const Match = () => {
     const blueAutoRows = [];
     let i = 0;
     let blueMicPoints = 0;
-    let blueAutoPoints = 0;
-    let blueTeleopPoints = 0;
+    let blueAmpTotal = 0;
+    let blueSpeakerTotal = 0;
     let blueEndgamePoints = 0;
     let blueClimbing = 0;
     getTeamScoutingData(year, eventKey, restData.blue_teams[0].key, (data) => scoutingDataCallback(data, 0, "blue"))
@@ -200,8 +200,8 @@ const Match = () => {
         key: i,
         team: team.key.replace("frc", ""),
         OPR: team.OPR.toFixed(1),
-        auto_points: team.auto_points.toFixed(1),
-        teleop_points: team.teleop_points.toFixed(1),
+        amp_total: team.amp_total.toFixed(1),
+        speaker_total: team.speaker_total.toFixed(1),
         endgame_points: team.endgame_points.toFixed(1),
         climbing: team.climbing.toFixed(1),
         mic: team.mic.toFixed(1),
@@ -209,8 +209,8 @@ const Match = () => {
       blueAutoRows.push(newRow);
       i = i + 1;
       blueMicPoints += team.mic
-      blueAutoPoints += team.auto_points
-      blueTeleopPoints += team.teleop_points
+      blueAmpTotal += team.amp_total
+      blueSpeakerTotal += team.speaker_total
       blueEndgamePoints += team.endgame_points
       blueClimbing += team.climbing
     }
@@ -218,8 +218,8 @@ const Match = () => {
       key: 4,
       team: "",
       OPR: restData?.prediction.blue_score.toFixed(1),
-      auto_points: blueAutoPoints.toFixed(1),
-      teleop_points: blueTeleopPoints.toFixed(1),
+      amp_total: blueAmpTotal.toFixed(1),
+      speaker_total: blueSpeakerTotal.toFixed(1),
       endgame_points: blueEndgamePoints.toFixed(1),
       climbing: blueClimbing.toFixed(1),
       mic: blueMicPoints.toFixed(1),
@@ -230,8 +230,8 @@ const Match = () => {
     const redAutoRows = [];
     i = 0;
     let redMicPoints = 0;
-    let redAutoPoints = 0;
-    let redTeleopPoints = 0;
+    let redAmpTotal = 0;
+    let redSpeakerTotal = 0;
     let redEndgamePoints = 0;
     let redClimbing = 0;
 
@@ -243,8 +243,8 @@ const Match = () => {
         key: i,
         team: team.key.replace("frc", ""),
         OPR: team.OPR.toFixed(1),
-        auto_points: team.auto_points.toFixed(1),
-        teleop_points: team.teleop_points.toFixed(1),
+        amp_total: team.amp_total.toFixed(1),
+        speaker_total: team.speaker_total.toFixed(1),
         endgame_points: team.endgame_points.toFixed(1),
         climbing: team.climbing.toFixed(1),
         mic: team.mic.toFixed(1),
@@ -252,8 +252,8 @@ const Match = () => {
       redAutoRows.push(newRow);
       i = i + 1;
       redMicPoints += team.mic
-      redAutoPoints += team.auto_points
-      redTeleopPoints += team.teleop_points
+      redAmpTotal += team.amp_total
+      redSpeakerTotal += team.speaker_total
       redEndgamePoints += team.endgame_points
       redClimbing += team.climbing
     }
@@ -261,8 +261,8 @@ const Match = () => {
       key: 4,
       team: "",
       OPR: restData?.prediction.red_score.toFixed(1),
-      auto_points: redAutoPoints.toFixed(1),
-      teleop_points: redTeleopPoints.toFixed(1),
+      amp_total: redAmpTotal.toFixed(1),
+      speaker_total: redSpeakerTotal.toFixed(1),
       endgame_points: redEndgamePoints.toFixed(1),
       climbing: redClimbing.toFixed(1),
       mic: redMicPoints.toFixed(1),
@@ -484,27 +484,17 @@ const Match = () => {
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
               <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3}>
-                {<ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[0].key.replace("frc", "")}</h1>
-                    {redScouting[0].length > 0 ? redScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>}
-                {<ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[1].key.replace("frc", "")}</h1>
-                    {redScouting[1].length > 0 ? redScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>}
-                {<ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[2].key.replace("frc", "")}</h1>
-                    {redScouting[2].length > 0 ? redScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>}
+                {[0, 1, 2].map((i) => {
+                  return (
+                    <div style={{ backgroundColor: i === 1 ? "#323a70" : "" }}>
+                      <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.red_teams?.[i].key.replace("frc", "")}</h1>
+                      {redScouting[i].length > 0 ? <ImageList cols={2}>
+                        {redScouting[i].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                      </ImageList>
+                        : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
+                    </div>
+                  )
+                })}
               </ImageList>
             </Card>
           </div>
@@ -515,27 +505,17 @@ const Match = () => {
               <CardHeader className="bg-transparent" style={{ textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}></CardHeader>
               <DrawingCanvas backgroundImageSrc={serverPath + "/2024GameField.png"} />
               <ImageList cols={3}>
-                <ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[0].key.replace("frc", "")}</h1>
-                    {blueScouting[0].length > 0 ? blueScouting[0].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>
-                <ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[1].key.replace("frc", "")}</h1>
-                    {blueScouting[1].length > 0 ? blueScouting[1].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>
-                <ImageListItem>
-                  <div>
-                    <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[2].key.replace("frc", "")}</h1>
-                    {blueScouting[2].length > 0 ? blueScouting[2].map((val) => { return <><AutoDisplay scoutingData={val} /></> })
-                      : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
-                  </div>
-                </ImageListItem>
+                {[0, 1, 2].map((i) => {
+                  return (
+                    <div style={{ backgroundColor: i === 1 ? "#323a70" : "" }}>
+                      <h1 className="text-white mb-0" style={{ textAlign: "center" }}>Team: {data?.blue_teams?.[i].key.replace("frc", "")}</h1>
+                      {blueScouting[i].length > 0 ? <ImageList cols={2}>
+                        {blueScouting[i].map((val) => { return <><AutoDisplay scoutingData={val} /></> })}
+                      </ImageList>
+                        : <h2 className="text-white mb-0" style={{ textAlign: "center" }}>No Auto Data</h2>}
+                    </div>
+                  )
+                })}
               </ImageList>
             </Card>
           </div>
