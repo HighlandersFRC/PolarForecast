@@ -546,7 +546,7 @@ const Tables = () => {
           filter: true,
           sortable: true,
           align: "center",
-          minWidth: 175,
+          minWidth: stat.display_name.length*8+70,
           flex: 0.5,
           onCellClicked: (props) => ChartRenderer(props, stat, scoutingData),
           cellStyle: params => {
@@ -568,7 +568,7 @@ const Tables = () => {
           filter: true,
           sortable: true,
           align: "center",
-          minWidth: 175,
+          minWidth: stat.display_name.length*8+70,
           flex: 0.5,
           cellStyle: params => {
             const type = typeof (params?.value);
@@ -596,7 +596,7 @@ const Tables = () => {
           headerName: stat.display_name,
           filter: true,
           align: "center",
-          minWidth: 175,
+          minWidth: stat.display_name.length*8+70,
           flex: 0.5,
           cellStyle: params => {
             const type = typeof (params?.value);
@@ -1314,6 +1314,7 @@ const Tables = () => {
                 rowData={rankings}
                 columnDefs={statColumns}
                 scoutingData={scoutingData}
+                rowHeight={25}
                 gridOptions={{ columnMenu: true, sideBar: "columns" }}
               />
               <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} area={areaChart} rowData={rankings} columnDefs={statColumns} />
