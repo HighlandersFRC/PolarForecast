@@ -196,6 +196,151 @@ const Tables = () => {
     "#483D8B", "#FFDAB9", "#00FA9A", "#8B4513",
   ];
 
+  function getMaxValue(numbers) {
+    if (!Array.isArray(numbers) || numbers.length === 0) {
+      return undefined; // Return undefined if the input is not a non-empty array
+    }
+
+    let max = numbers[0]; // Initialize max to the first element of the array
+
+    for (let i = 1; i < numbers.length; i++) {
+      if (numbers[i] > max) {
+        max = numbers[i]; // Update max if the current number is greater
+      }
+    }
+
+    return max;
+  }
+
+  function getMinValue(numbers) {
+    if (!Array.isArray(numbers) || numbers.length === 0) {
+      return undefined; // Return undefined if the input is not a non-empty array
+    }
+
+    let min = numbers[0]; // Initialize min to the first element of the array
+
+    for (let i = 1; i < numbers.length; i++) {
+      if (numbers[i] < min) {
+        min = numbers[i]; // Update min if the current number is smaller
+      }
+    }
+
+    return min;
+  }
+
+  const heatMap = (props, ascending, saturationFactor = 0.7) => {
+    const colName = props.colDef.field;
+    const colData = [];
+    rankings.forEach((row) => {
+      colData.push(row[colName]);
+    });
+
+    const min = getMinValue(colData);
+    const max = getMaxValue(colData);
+    const val = props.value;
+
+    if (isNaN(min) || isNaN(max) || typeof (val) === "boolean") {
+      // console.error("No valid numerical values found.");
+      return ''; // Default color (white) if no valid values found
+    }
+
+    const normalizedValue = Math.max(Math.min(val, max), min);
+
+    let position;
+    // console.log(ascending)
+    if (ascending) {
+      position = (normalizedValue - min) / (max - min);
+    } else {
+      position = 1 - (normalizedValue - min) / (max - min); // Adjusted for descending gradient
+    }
+
+    let red, green;
+
+    if (position <= 0.5) {
+      red = 255;
+      green = Math.round(255 * (2 * position));
+    } else {
+      red = Math.round(255 * (2 - 2 * position));
+      green = 255;
+    }
+
+    let hsl = rgbToHsl(red, green, 0);
+    hsl[1] *= saturationFactor;
+
+    const [adjustedRed, adjustedGreen] = hslToRgb(hsl[0], hsl[1], hsl[2]);
+
+    const hexColor = "#" + Math.round(adjustedRed).toString(16).padStart(2, '0') + Math.round(adjustedGreen).toString(16).padStart(2, '0') + "00";
+
+    const contrastTextColor = getContrastColor(hexColor);
+
+    return { backgroundColor: hexColor, color: contrastTextColor };
+  };
+
+  // Function to convert RGB to HSL
+  const rgbToHsl = (r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max == min) {
+      h = s = 0; // achromatic
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return [h, s, l];
+  };
+
+  // Function to convert HSL to RGB
+  const hslToRgb = (h, s, l) => {
+    let r, g, b;
+
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return [r * 255, g * 255, b * 255];
+  };
+
+  // Function to determine contrasting text color (white or black)
+  const getContrastColor = (hexColor) => {
+    // Convert hexadecimal color to RGB
+    const r = parseInt(hexColor.substring(1, 3), 16);
+    const g = parseInt(hexColor.substring(3, 5), 16);
+    const b = parseInt(hexColor.substring(5, 7), 16);
+
+    // Calculate relative luminance (Y) of the color
+    const Y = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Choose white or black as the contrasting text color based on the luminance
+    return Y >= 0.5 ? '#000000' : '#ffffff';
+  };
+
+
   useEffect(() => {
     const handleResize = () => {
       setChartWidth(window.innerWidth * 0.8);
@@ -210,6 +355,10 @@ const Tables = () => {
   useEffect(() => {
     getStatDescription(year, eventCode, statDescriptionCallback);
   }, [scoutingData])
+
+  useEffect(() => {
+    getStatDescription(year, eventCode, statDescriptionCallback);
+  }, [rankings])
 
   const CustomLinkRenderer = (props) => {
     const onClick = (e) => {
@@ -357,11 +506,39 @@ const Tables = () => {
       align: "center",
       minWidth: 100,
       flex: 0.5,
+      cellStyle: params => {
+        const type = typeof (params?.value);
+        const val = params.value;
+        const key = params.field;
+        let retval = { textAlign: "center" };
+        if (type === "string") {
+          [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+        } else {
+          retval = heatMap(params, true);
+        }
+        return retval;
+      }
+    });
+    statColumns.push({
+      field: "rank",
+      headerName: "Rank",
+      filter: true,
+      align: "center",
+      minWidth: 100,
+      flex: 0.5,
+    });
+    statColumns.push({
+      field: "simulated_rank",
+      headerName: "Sim Rank",
+      filter: true,
+      align: "center",
+      minWidth: 125,
+      flex: 0.5,
     });
 
     for (let i = 0; i < data.data.length; i++) {
       const stat = data.data[i];
-      if (stat.report_stat && stat.stat_key !== "OPR") {
+      if (stat.report_stat && stat.stat_key !== "OPR" && stat.stat_key !== "rank" && stat.stat_key !== "simulated_rank") {
         keys.push(stat.stat_key);
         if (stat?.chart) statColumns.push({
           field: stat.stat_key,
@@ -371,7 +548,19 @@ const Tables = () => {
           align: "center",
           minWidth: 175,
           flex: 0.5,
-          onCellClicked: (props) => ChartRenderer(props, stat, scoutingData)
+          onCellClicked: (props) => ChartRenderer(props, stat, scoutingData),
+          cellStyle: params => {
+            const type = typeof (params?.value);
+            const val = params.value;
+            const key = params.field;
+            let retval = { textAlign: "center" };
+            if (type === "string") {
+              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+            } else {
+              retval = heatMap(params, true);
+            }
+            return retval;
+          }
         });
         else statColumns.push({
           field: stat.stat_key,
@@ -381,6 +570,19 @@ const Tables = () => {
           align: "center",
           minWidth: 175,
           flex: 0.5,
+          cellStyle: params => {
+            const type = typeof (params?.value);
+            const val = params.value;
+            const key = params.field;
+            let retval = { textAlign: "center" };
+            if (type === "string") {
+              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+            } else {
+              if (stat.stat_key == "death_rate") { retval = heatMap(params, false) }
+              else retval = heatMap(params, true);
+            }
+            return retval;
+          }
         });
       }
     }
@@ -396,33 +598,22 @@ const Tables = () => {
           align: "center",
           minWidth: 175,
           flex: 0.5,
+          cellStyle: params => {
+            const type = typeof (params?.value);
+            const val = params.value;
+            const key = params.field;
+            let retval = { textAlign: "center" };
+            if (type === "string") {
+              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+            } else {
+              retval = heatMap(params, true);
+            }
+            return retval;
+          }
         });
       }
     }
-    statColumns.forEach((column) => {
-      column.cellStyle = params => {
-        const type = typeof (params?.value)
-        const val = params.value
-        const key = params.field
-        const retval = { textAlign: "center" }
-        if (type == "string") {
-          if (val.toLowerCase().includes("orange")) retval.backgroundColor = "orange"
-          else if (val.toLowerCase().includes("red")) retval.backgroundColor = "red"
-          else if (val.toLowerCase().includes("blue")) retval.backgroundColor = "blue"
-          else if (val.toLowerCase().includes("purple")) retval.backgroundColor = "purple"
-          else if (val.toLowerCase().includes("green")) retval.backgroundColor = "green"
-          else if (val.toLowerCase().includes("yellow")) [retval.backgroundColor, retval.color] = ["yellow", "black"]
-          else if (val.toLowerCase().includes("teal")) retval.backgroundColor = "teal"
-          else if (val.toLowerCase().includes("black")) retval.backgroundColor = "black"
-          else if (val.toLowerCase().includes("pink")) retval.backgroundColor = "hotpink"
-          else if (val.toLowerCase().includes("gold")) retval.backgroundColor = "#D1B000"
-          else if (val.toLowerCase().includes("indigo")) retval.backgroundColor = "indigo"
-          else if (val.toLowerCase().includes("navy")) retval.backgroundColor = "navy"
-          else[retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)]
-        }
-        return retval
-      }
-    })
+
     setShowKeys(keys);
     setStatColumns(statColumns);
   };
@@ -582,7 +773,6 @@ const Tables = () => {
         }
       }
       const sortedData = [...data.data].sort((a, b) => Number(b.OPR) - Number(a.OPR));
-
       setRankings(sortedData);
     } catch { }
   };

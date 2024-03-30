@@ -1,33 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Webcam from 'react-webcam';
-import { Button, Box, Switch } from '@mui/material';
+import React, { useState } from 'react';
+import { Button } from '@mui/material';
 import { postTeamPictures } from 'api';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 const CameraCapture = () => {
   const history = useHistory()
-  const webcamRef = useRef(null);
   const url = new URL(window.location.href);
   const year = url.pathname.split("/")[3]
   const eventCode = url.pathname.split("/")[4]
   const team = url.pathname.split("/")[5]
   const [capturedImage, setCapturedImage] = useState(null);
   const [isCapturing, setIsCapturing] = useState(true);
-  const [facingMode, setFacingMode] = useState('user'); // 'user' for front camera, 'environment' for rear camera
   const [show, setShow] = useState(true)
   const [status, setStatus] = useState("Upload Failed")
 
   // useEffect (()=>{
   //   console.log(capturedImage)
   // }, [capturedImage])
-  const handleCapture = () => {
-    const imageSrc = webcamRef.current.getScreenshot({
-      type: 'image/jpeg',
-      quality: 1.0, // Adjust the quality if needed
-    });
-    setCapturedImage(imageSrc);
-    setIsCapturing(false); // Stop live feed after capture
-  };
 
   const handleRecapture = () => {
     setCapturedImage(null); // Clear captured image
@@ -60,7 +49,7 @@ const CameraCapture = () => {
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
-    console.log(file)
+    // console.log(file)
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -99,7 +88,7 @@ const CameraCapture = () => {
               <>
                 <img
                   src={capturedImage}
-                  alt="Captured Image"
+                  alt="Captured"
                   style={{
                     width: '100%', // Set width to 100% to match the webcam feed
                     height: 'auto', // Maintain aspect ratio
