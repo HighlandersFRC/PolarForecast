@@ -40,7 +40,7 @@ export const getStatDescription = async (year, event, callback) => {
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback({ data: [] });
@@ -113,7 +113,7 @@ export const getMatchPredictions = async (year, event, callback) => {
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback({ data: [] });
@@ -231,8 +231,6 @@ export const postMatchScouting = async (data, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/MatchScouting/`;
     console.log(endpoint)
-    let retval;
-    let json = JSON.stringify(data)
     const response = await fetch(endpoint, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
@@ -252,8 +250,6 @@ export const putMatchScouting = async (data, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/MatchScouting/`;
     console.log(endpoint)
-    let retval;
-    let json = JSON.stringify(data)
     const response = await fetch(endpoint, {
       method: "PUT", // *GET, POST, PUT, DELETE, etc.
       headers: {
@@ -272,8 +268,6 @@ export const postPitScouting = async (data, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/PitScouting/`;
     console.log(endpoint)
-    let retval;
-    let json = JSON.stringify(data)
     const response = await fetch(endpoint, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
@@ -388,7 +382,7 @@ export const getPitScoutingData = async (year, event, team, callback) => {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/PitScouting`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
         setWithExpiry(storage_name, data, default_ttl);
         callback(data);
@@ -412,7 +406,7 @@ export const getTeamScoutingData = async (year, event, team, callback) => {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/ScoutEntries`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
         setWithExpiry(storage_name, data, default_ttl);
         callback(data);
@@ -472,9 +466,9 @@ export const getAutos = async (year, event, callback) => {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/ScoutingData`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback([]);
@@ -492,8 +486,6 @@ export const postFollowUp = async (data, year, event, team, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/FollowUp`;
     console.log(endpoint)
-    let retval;
-    let json = JSON.stringify(data)
     const response = await fetch(endpoint, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
@@ -517,7 +509,7 @@ export const getFollowUp = async (year, event, team, callback) => {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/${team}/FollowUp`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
         setWithExpiry(storage_name, data, default_ttl);
         callback(data);
@@ -541,9 +533,9 @@ export const getEventMatchScouting = async (year, event, callback) => {
       const endpoint = `${API_ENDPOINT}/${year}/${event}/ScoutEntries`;
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
-      if (response.status == 200) {
+      if (response.status === 200) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback([]);
