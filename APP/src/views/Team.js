@@ -43,6 +43,7 @@ import AutoDisplay from "components/AutosDisplay";
 import { Assignment, EventNote, Photo, PrecisionManufacturing, PrivacyTip, Storage, Visibility } from "@mui/icons-material";
 import { getFollowUp } from "api";
 import PitScoutingForm from "components/Scouting/PitScoutingForm";
+import FollowUpDisplay from "components/Scouting/FollowUpDisplay";
 
 const Team = () => {
   const history = useHistory();
@@ -430,10 +431,6 @@ const Team = () => {
     getStatDescription(year, eventKey, (descriptions) => statDescriptionCallback(descriptions, data));
   };
 
-  const followUpCallback = async (data) => {
-    setDeaths(data?.deaths || [])
-  }
-
   useEffect(() => {
     if (window.location.hash.length > 0) {
       setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
@@ -442,7 +439,6 @@ const Team = () => {
     setTeamNumber(team);
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
-    getFollowUp(year, eventKey, "frc" + team, followUpCallback)
   }, []);
 
   useEffect(async () => {
@@ -733,51 +729,7 @@ const Team = () => {
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Team {teamNumber} Deaths</h3>
             </CardHeader>
-            {deaths.length > 0 ? deaths.map((death, idx) => (
-              <div key={idx}>
-                <br />
-                <h2 className="text-white mb-0">Death #{idx + 1}</h2>
-                <br />
-                <TextField
-                  label="Match Number"
-                  variant="outlined"
-                  type="number"
-                  fullWidth
-                  name="match_number"
-                  value={death.match_number}
-                  disabled
-                />
-                <br />
-                <br />
-                <TextField
-                  label="Reason for Team Death"
-                  variant="outlined"
-                  fullWidth
-                  name="death_reason"
-                  disabled
-                  value={death.death_reason}
-                />
-                <br />
-                <br />
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel id="severity">Severity</InputLabel>
-                  <Select
-                    labelId="severity"
-                    label="Severity"
-                    fullWidth
-                    name="severity"
-                    disabled
-                    value={death.severity}
-                  >
-                    <MenuItem value={1}>1 (One time error)</MenuItem>
-                    <MenuItem value={2}>2 (Can Be Fixed Before Elims)</MenuItem>
-                    <MenuItem value={3}>3 (Permanently Broken)</MenuItem>
-                  </Select>
-                </FormControl>
-                <br />
-                <br />
-              </div>
-            )) : <><h2 className="text-white mb-0">No Deaths Found</h2></>}
+            <FollowUpDisplay team={team}/>
           </Card>
         </ThemeProvider>
       </TabPanel>
