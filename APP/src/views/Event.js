@@ -47,6 +47,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { getEventMatchScouting } from "api";
 import { Area, AreaChart, CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import ExportToCSV from "components/ExportData";
+import FollowUpDisplay from "components/Scouting/FollowUpDisplay";
 
 
 const switchTheme = createTheme({
@@ -188,6 +189,8 @@ const Tables = () => {
   const [chartWidth, setChartWidth] = useState(window.innerWidth * 0.8); // Adjust width as needed
   const [chartHeight, setChartHeight] = useState(window.innerHeight * 0.6); // Adjust height as needed
   const [areaChart, setAreaChart] = useState(false);
+  const [deathTeam, setDeathTeam] = useState("");
+  const [deathDialogOpen, setDeathDialogOpen] = useState(false)
   const colors = [
     "#4D9DE0", "#E15554", "#7768AE", "#3BB273",
     "#FFD700", "#8A2BE2", "#FF6347", "#32CD32",
@@ -340,7 +343,6 @@ const Tables = () => {
     return Y >= 0.5 ? '#000000' : '#ffffff';
   };
 
-
   useEffect(() => {
     const handleResize = () => {
       setChartWidth(window.innerWidth * 0.8);
@@ -459,6 +461,12 @@ const Tables = () => {
     }
   }
 
+  const DeathsRenderer = (props) => {
+    const teamKey = props.data.key;
+    setDeathTeam(teamKey)
+    setDeathDialogOpen(true)
+  }
+
   function flattenJSON(data, parentKey = '') {
     let flattened = {};
 
@@ -546,7 +554,7 @@ const Tables = () => {
           filter: true,
           sortable: true,
           align: "center",
-          minWidth: stat.display_name.length*8+70,
+          minWidth: stat.display_name.length * 8 + 70,
           flex: 0.5,
           onCellClicked: (props) => ChartRenderer(props, stat, scoutingData),
           cellStyle: params => {
@@ -568,7 +576,7 @@ const Tables = () => {
           filter: true,
           sortable: true,
           align: "center",
-          minWidth: stat.display_name.length*8+70,
+          minWidth: stat.display_name.length * 8 + 70,
           flex: 0.5,
           cellStyle: params => {
             const type = typeof (params?.value);
@@ -582,7 +590,8 @@ const Tables = () => {
               else retval = heatMap(params, true);
             }
             return retval;
-          }
+          },
+          onCellClicked: stat.stat_key === "death_rate" ? DeathsRenderer : null
         });
       }
     }
@@ -596,7 +605,7 @@ const Tables = () => {
           headerName: stat.display_name,
           filter: true,
           align: "center",
-          minWidth: stat.display_name.length*8+70,
+          minWidth: stat.display_name.length * 8 + 70,
           flex: 0.5,
           cellStyle: params => {
             const type = typeof (params?.value);
@@ -1281,6 +1290,10 @@ const Tables = () => {
     setDialogOpen(false);
   };
 
+  const handleDeathDialogClose = () => {
+    setDeathDialogOpen(false);
+  };
+
   return (
     <>
       <Header />
@@ -1318,6 +1331,12 @@ const Tables = () => {
                 gridOptions={{ columnMenu: true, sideBar: "columns" }}
               />
               <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} area={areaChart} rowData={rankings} columnDefs={statColumns} />
+              <Dialog open={deathDialogOpen} onClose={handleDeathDialogClose}>
+                <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>Team {deathTeam} Deaths</DialogTitle>
+                <DialogContent sx={{ backgroundColor: "#1a174d" }}>
+                  <FollowUpDisplay team={deathTeam} />
+                </DialogContent>
+              </Dialog>
             </div>
           </Card>
         </TabPanel>

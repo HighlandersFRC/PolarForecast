@@ -84,6 +84,7 @@ def analyzeData(m_data: list):
                         oprMatchEntry["mic"] += 1
                 oprMatchList.append(copy.deepcopy(oprMatchEntry))
     oprMatchDataFrame = pd.DataFrame(oprMatchList)
+    # print(oprMatchDataFrame)  
     teams = []
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:

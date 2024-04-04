@@ -74,6 +74,7 @@ FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
 
+
 def flatten_dict(dd, separator="_", prefix=""):
     return (
         {
@@ -84,6 +85,7 @@ def flatten_dict(dd, separator="_", prefix=""):
         if isinstance(dd, dict)
         else {prefix: dd}
     )
+
 
 @app.on_event("startup")
 def onStart():
@@ -100,7 +102,7 @@ def onStart():
             pass
         try:
             ETagCollection.insert_one(
-                {"key": eventCode, "etag": "", "event": event, "up_to_date": False})
+                {"key": eventCode, "etag": "", "teamEtag": "", "event": event, "up_to_date": False})
         except:
             pass
 
@@ -264,21 +266,22 @@ def post_pit_scouting_data(data: dict):
         {"event_code": data["event_code"]}, status)
     eventData = CalculatedDataCollection.find_one(
         {"event_code": data["event_code"]})
-    foundTeam = False
+    teams = ETagCollection.find_one(
+        {"key": data["event_code"]})["teams"]
+    teams = [team[3:] for team in teams]
     i = 0
     team = data["team_number"]
+    if not teams.contains(team):
+        raise HTTPException(400, "No team key '"+str(data["team_number"]) +
+                            "' in "+data["event_code"])
     for doc in eventData["data"][1:]:
         # print(doc)
         i += 1
         if doc["key"] == f"frc{team}":
-            foundTeam = True
             for key in data["data"]:
                 if not key == "_id":
                     doc[key] = data["data"][key]
             break
-    if not foundTeam:
-        raise HTTPException(400, "No team key '"+str(data["team_number"]) +
-                            "' in "+data["event_code"])
     CalculatedDataCollection.find_one_and_replace(
         {"event_code": data["event_code"]}, eventData)
     try:
@@ -632,7 +635,10 @@ def get_team_follow_up(team: str, event: str, year: int):
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
-    rankings = ETagCollection.find_one({"key": event_code})["rankings"]
+    try:
+        rankings = ETagCollection.find_one({"key": event_code})["rankings"]
+    except:
+        rankings = [{"team_key": "frc"+str(team), "rank": 0} for team in calculatedData["team_number"]]
     for team in calculatedData["team_number"]:
         keyList.append(keyStr+team)
     retval0 = {"data": {"keys": keyList}}
@@ -643,7 +649,6 @@ def convertData(calculatedData, year, event_code):
             if item["team_key"] == data["key"]:
                 data["rank"] = item["rank"]
                 break
-
         idx = calculatedData["team_number"].index(team)
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
@@ -668,63 +673,68 @@ def updateData(event_code: str):
             numEntries[scouts.index(entry["scout_info"]["name"])] += 1
     except Exception as e:
         print(e)
-    if TBAData is not None:
+    # if TBAData is not None:
+    try:
+        calculatedData, ratings = analyzeData([TBAData, ScoutingData])
+        data = calculatedData.to_dict("list")
+        data = convertData(data, YEAR, event_code)
+    except Exception as e:
+        print(e)
+        ratings = {"scouts": [], "trustRatings": []}
+        keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
+        keyList = [keyStr+"index"]
+        etagData = ETagCollection.find_one({"key": event_code})
+        # print(etagData)
+        teams = etagData["teams"]
+        for team in teams:
+            keyList.append(keyStr+team[3:])
+        retval0 = {"data": {"keys": keyList}}
+        data = [retval0]
+        data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
+                        "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
+    try:
+        data = updatePredictions(TBAData, data, event_code)
+    except Exception as e:
+        print(e)
+        pass
+    metadata = {"last_modified": datetime.utcnow().timestamp(),
+                "etag": None, "tba": False}
+    try:
+        # print("manufacturing scout rankings")
+        ratings = {
+            "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
+        ratings["entries"] = list(numpy.zeros(len(ratings["scouts"])))
+        for idx, scout in enumerate(ratings["scouts"]):
+            ratings["entries"][idx] = numEntries[scouts.index(
+                scout["name"])]
+    except Exception as e:
+        print(e)
+    try:
+        prevData = CalculatedDataCollection.find_one(
+            {"event_code": event_code})["data"]
+        for idx, team in enumerate(prevData):
+            if not idx == 0:
+                for newTeam in data[1:]:
+                    if team["key"] == newTeam["key"]:
+                        for key in team:
+                            if not newTeam.__contains__(key):
+                                newTeam[key] = team[key]
+                                # print(team[key])
+                        break
+    except Exception as e:
+        print(e)
+    try:
+        # print("Inserting data")
+        CalculatedDataCollection.insert_one(
+            {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
+    except Exception as e:
+        # print(e)
         try:
-            calculatedData, ratings = analyzeData([TBAData, ScoutingData])
-            data = calculatedData.to_dict("list")
-            data = convertData(data, YEAR, event_code)
-        except:
-            ratings = {"scouts": [], "trustRatings": []}
-            keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
-            keyList = [keyStr+"index"]
-            teams = ETagCollection.find_one({"key": event_code})["teams"]
-            for team in teams:
-                keyList.append(keyStr+team[3:])
-            retval0 = {"data": {"keys": keyList}}
-            data = [retval0]
-            data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
-                          "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
-        try:
-            data = updatePredictions(TBAData, data, event_code)
-        except Exception as e:
-            # print(e)
+            result = CalculatedDataCollection.update_one(
+                {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
+        except Exception as ex:
+            print(ex)
             pass
-        metadata = {"last_modified": datetime.utcnow().timestamp(),
-                    "etag": None, "tba": False}
-        try:
-            # print("manufacturing scout rankings")
-            ratings = {
-                "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
-            ratings["entries"] = list(numpy.zeros(len(ratings["scouts"])))
-            for idx, scout in enumerate(ratings["scouts"]):
-                ratings["entries"][idx] = numEntries[scouts.index(
-                    scout["name"])]
-        except Exception as e:
-            print(e)
-        try:
-            prevData = CalculatedDataCollection.find_one({"event_code": event_code})["data"]
-            for idx, team in enumerate(prevData):
-                if not idx == 0:
-                    for newTeam in data[1:]:
-                        if team["key"] == newTeam["key"]:
-                            for key in team:
-                                if not newTeam.__contains__(key):
-                                    newTeam[key] = team[key]
-                                    # print(team[key])
-                            break
-        except Exception as e:
-            print(e)
-        try:
-            # print("Inserting data")
-            CalculatedDataCollection.insert_one(
-                {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
-        except Exception as e:
-            try:
-                result = CalculatedDataCollection.update_one(
-                    {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
-            except Exception as ex:
-                print(ex)
-                pass
     # TODO make it work without TBA Data and only scouting data
     # if TBAData == [] and (ScoutingData is not [] or ScoutingData is not None):
     #     teams = []
@@ -753,8 +763,7 @@ def updateData(event_code: str):
     #                 if not cumulativeData.__contains__(key):
     #                     cumulativeData[key] = 0
     #                 cumulativeData[key] += flattenedData[key]
-                
-            
+
     # pass
 
 
@@ -930,6 +939,50 @@ def update_database():
                        "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
             r = requests.get(TBA_API_URL+"event/" +
                              event["key"]+"/matches", headers=headers)
+            try:
+                headers["If-None-Match"] = event["teamEtag"]
+                req = requests.get(
+                    TBA_API_URL+"event/" + event["key"] + "/teams/keys", headers=headers)
+                if req.status_code == 200:
+                    teams = json.loads(req.text)
+                else:
+                    teams = event["teams"]
+                event["teamEtag"] = req.headers["Etag"]
+            except Exception as e:
+                # print(e)
+                teams = []
+            # print("got Teams")
+            event["teams"] = teams
+            # print(teams)
+            # print(event)
+            ETagCollection.find_one_and_replace(
+                {"key": event["key"]}, event)
+            # print(teams)
+            teams = [{"key": x[3:], "pit_status": "Not Started",
+                      "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
+            try:
+                existingTeams = PitStatusCollection.find_one(
+                    {"event_code": event["key"]})["data"]
+            except:
+                existingTeams = []
+            # print("961")
+            returnTeams = []
+            for team in teams:
+                for existingTeam in existingTeams:
+                    if existingTeam["key"] == team["key"]:
+                        team = existingTeam
+                        break
+                returnTeams.append(team)
+            # print("got new teams")
+            try:
+                # print(returnTeams)
+                PitStatusCollection.insert_one(
+                    {"event_code": event["key"], "data": returnTeams})
+            except Exception as e:
+                # logging.error(e)
+                PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
+                                                         "event_code": event["key"], "data": returnTeams})
+            # print("977")
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
                     headers.pop("If-None-Match")
@@ -939,18 +992,9 @@ def update_database():
                 except Exception as e:
                     logging.error(str(e)+" "+event["key"])
                     event["rankings"] = []
-                event["etag"] = r.headers["ETag"]
-                event["up_to_date"] = True
-                try:
-                    teams = json.loads(requests.get(
-                        TBA_API_URL+"event/" + event["key"] + "/teams/keys", headers=headers).text)
-                except:
-                    teams = []
-                event["teams"] = teams
                 ETagCollection.find_one_and_replace(
-                    {"key": event["key"]}, event)
+                {"key": event["key"]}, event)
                 responseJson = json.loads(r.text)
-
                 for x in responseJson:
                     try:
                         x.pop("_id")
@@ -960,36 +1004,20 @@ def update_database():
                         TBACollection.insert_one(x)
                     except:
                         TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"],
-                                                          "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
-                teams = [{"key": x[3:], "pit_status": "Not Started",
-                          "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
-                try:
-                    existingTeams = PitStatusCollection.find_one(
-                        {"event_code": event["key"]})["data"]
-                except:
-                    existingTeams = []
-                returnTeams = []
-                for team in teams:
-                    for existingTeam in existingTeams:
-                        if existingTeam["key"] == team["key"]:
-                            team = existingTeam
-                            break
-                    returnTeams.append(team)
-                try:
-                    # print(returnTeams)
-                    PitStatusCollection.insert_one(
-                        {"event_code": event["key"], "data": returnTeams})
-                except Exception as e:
-                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
-                                                             "event_code": event["key"], "data": returnTeams})
-                    # print(e)
+                                                                                       "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
+                event["etag"] = r.headers["ETag"]
+                event["up_to_date"] = True
+                ETagCollection.find_one_and_replace(
+                {"key": event["key"]}, event)
+                # print(e)
                 try:
                     updateData(event["key"])
                 except Exception as e:
-                    # print(e.with_traceback(None), event["key"])
+                    print(e, event["key"])
+                    
                     pass
         numRuns += 1
     except Exception as e:
-        print(e)
+        logging.error(e)
         pass
     logging.info("Done with data update #" + str(numRuns))
