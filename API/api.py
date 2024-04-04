@@ -270,8 +270,9 @@ def post_pit_scouting_data(data: dict):
         {"key": data["event_code"]})["teams"]
     teams = [team[3:] for team in teams]
     i = 0
-    team = data["team_number"]
-    if not teams.contains(team):
+    team = str(data["team_number"])
+    print(teams, team)
+    if not teams.__contains__(team):
         raise HTTPException(400, "No team key '"+str(data["team_number"]) +
                             "' in "+data["event_code"])
     for doc in eventData["data"][1:]:
@@ -299,8 +300,10 @@ def getStatus(data: dict, originalStatus: dict):
     if data["data"]["drive_train"] != "":
         if data["data"]["favorite_color"] != "":
             status = "Done"
+    print(originalStatus)
     for entry in originalStatus["data"]:
         if entry["key"] == str(data["team_number"]):
+            print(entry["key"], data["team_number"])
             found = True
             entry["pit_status"] = status
     if (not found):
@@ -945,9 +948,10 @@ def update_database():
                     TBA_API_URL+"event/" + event["key"] + "/teams/keys", headers=headers)
                 if req.status_code == 200:
                     teams = json.loads(req.text)
+                    event["teamEtag"] = req.headers["Etag"]
                 else:
+                    print(req.status_code, event["key"])
                     teams = event["teams"]
-                event["teamEtag"] = req.headers["Etag"]
             except Exception as e:
                 # print(e)
                 teams = []
