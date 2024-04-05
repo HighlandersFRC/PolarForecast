@@ -712,7 +712,7 @@ const Team = () => {
             <div>
               {scoutingData.length > 0 ? <ImageList cols={3}>
                 {scoutingData.map((val, idx, a) => {
-                  return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
+                  if (val?.active) return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
                 })}
               </ImageList> : <>
                 <br />
