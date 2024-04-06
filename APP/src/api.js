@@ -189,7 +189,7 @@ export const getTeamMatchPredictions = async (year, event, team, callback) => {
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setWithExpiry(storage_name, data, default_ttl);
+        // setWithExpiry(storage_name, data, default_ttl);
         callback(data);
       } else {
         callback({ data: [] });
