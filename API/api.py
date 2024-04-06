@@ -853,6 +853,10 @@ def updatePredictions(TBAData, calculatedData, event_code):
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
                 matchPrediction[f"{alliance}_ensemble_rp"] + \
                 matchPrediction[f"{alliance}_melody_rp"]
+            if not matchPrediction["predicted"]:
+                matchPrediction[f"{alliance}_display_rp"] = match["score_breakdown"][alliance]["rp"]
+            else:
+                matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
         matchPredictions.append(matchPrediction)
     try:
         PredictionCollection.insert_one(

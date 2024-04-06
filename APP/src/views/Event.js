@@ -126,7 +126,7 @@ const Tables = () => {
       flex: 0.5,
     },
     {
-      field: "blue_score",
+      field: "blue_display_rp",
       headerName: "Blue",
       sortable: false,
       disableExport: true,
@@ -150,7 +150,7 @@ const Tables = () => {
       },
     },
     {
-      field: "red_score",
+      field: "red_display_rp",
       headerName: "Red",
       sortable: false,
       disableExport: true,
