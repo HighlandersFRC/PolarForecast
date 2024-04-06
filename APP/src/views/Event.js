@@ -127,7 +127,7 @@ const Tables = () => {
     },
     {
       field: "blue_display_rp",
-      headerName: "Blue",
+      headerName: "Blue RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
@@ -151,7 +151,7 @@ const Tables = () => {
     },
     {
       field: "red_display_rp",
-      headerName: "Red",
+      headerName: "Red RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
