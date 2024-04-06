@@ -126,8 +126,8 @@ const Tables = () => {
       flex: 0.5,
     },
     {
-      field: "blue_score",
-      headerName: "Blue",
+      field: "blue_display_rp",
+      headerName: "Blue RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
@@ -150,8 +150,8 @@ const Tables = () => {
       },
     },
     {
-      field: "red_score",
-      headerName: "Red",
+      field: "red_display_rp",
+      headerName: "Red RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
@@ -1593,7 +1593,7 @@ const Tables = () => {
             />
             {displayAutos.length > 0 ? <ImageList cols={3}>
               {displayAutos.map((val, idx, a) => {
-                return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
+                if (val?.active) return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
               })}
             </ImageList> : <>
               <br />

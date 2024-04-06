@@ -118,8 +118,8 @@ const Team = () => {
       },
     },
     {
-      field: "blue_score",
-      headerName: "Blue Score",
+      field: "blue_display_rp",
+      headerName: "Blue RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
@@ -150,8 +150,8 @@ const Team = () => {
       },
     },
     {
-      field: "red_score",
-      headerName: "Red Score",
+      field: "red_display_rp",
+      headerName: "Red RPs",
       sortable: false,
       disableExport: true,
       headerAlign: "center",
@@ -712,7 +712,7 @@ const Team = () => {
             <div>
               {scoutingData.length > 0 ? <ImageList cols={3}>
                 {scoutingData.map((val, idx, a) => {
-                  return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
+                  if (val?.active) return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
                 })}
               </ImageList> : <>
                 <br />
