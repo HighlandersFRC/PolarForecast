@@ -118,6 +118,70 @@ const Team = () => {
       },
     },
     {
+      field: "blue_score",
+      headerName: "Blue Score",
+      sortable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      renderCell: (params) => {
+        let showTrophy = false;
+        if (params.row.data_type === "Result") {
+          showTrophy = true;
+        }
+        if (parseFloat(params.row.blue_score) > parseFloat(params.row.red_score)) {
+          if (params.row.alliance_color.toLowerCase() === "blue") {
+            return (
+              <Typography fontWeight="bold" color="primary">
+                {showTrophy && <EmojiEventsIcon />} {params.value}
+              </Typography>
+            );
+          } else {
+            return (
+              <Typography fontWeight="bold" color="primary">
+                {showTrophy && <MoodBadIcon />} {params.value}
+              </Typography>
+            );
+          }
+        } else {
+          return <Typography color="#FFFFFF"> {params.value}</Typography>;
+        }
+      },
+    },
+    {
+      field: "red_score",
+      headerName: "Red Score",
+      sortable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      renderCell: (params) => {
+        let showTrophy = false;
+        if (params.row.data_type === "Result") {
+          showTrophy = true;
+        }
+        if (parseFloat(params.row.blue_score) < parseFloat(params.row.red_score)) {
+          if (params.row.alliance_color.toLowerCase() === "red") {
+            return (
+              <Typography fontWeight="bold" color="#FF0000">
+                {showTrophy && <EmojiEventsIcon />} {params.value}
+              </Typography>
+            );
+          } else {
+            return (
+              <Typography fontWeight="bold" color="#FF0000">
+                {showTrophy && <MoodBadIcon />} {params.value}
+              </Typography>
+            );
+          }
+        } else {
+          return <Typography color="#FFFFFF"> {params.value}</Typography>;
+        }
+      },
+    },
+    {
       field: "blue_display_rp",
       headerName: "Blue RPs",
       sortable: false,
@@ -217,6 +281,8 @@ const Team = () => {
           match_number: "QM-" + data.data[i].match_number,
           alliance_color: color,
           blue_score: data.data[i].blue_score.toFixed(0),
+          blue_display_rp: data.data[i].blue_display_rp.toFixed(0),
+          red_display_rp: data.data[i].red_display_rp.toFixed(0),
           red_score: data.data[i].red_score.toFixed(0),
         });
       } else if (data.data[i].comp_level === "sf") {
@@ -242,6 +308,8 @@ const Team = () => {
             "-" +
             Number(data.data[i].set_number).toFixed(0),
           alliance_color: color,
+          blue_display_rp: data.data[i].blue_display_rp.toFixed(0),
+          red_display_rp: data.data[i].red_display_rp.toFixed(0),
           blue_score: data.data[i].blue_score.toFixed(0),
           red_score: data.data[i].red_score.toFixed(0),
         });
@@ -268,6 +336,8 @@ const Team = () => {
             "-" +
             Number(data.data[i].match_number).toFixed(0),
           alliance_color: color,
+          blue_display_rp: data.data[i].blue_display_rp.toFixed(0),
+          red_display_rp: data.data[i].red_display_rp.toFixed(0),
           blue_score: data.data[i].blue_score.toFixed(0),
           red_score: data.data[i].red_score.toFixed(0),
         });
