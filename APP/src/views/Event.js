@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { Card, CardHeader, Container, Row } from "reactstrap";
+import { Button, Card, CardHeader, Container, Row } from "reactstrap";
 import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, useMediaQuery, useTheme } from "@mui/material";
 import { alpha, styled, ThemeProvider, createTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
@@ -24,7 +24,7 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Header from "components/Headers/Header.js";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getStatDescription, getRankings, getMatchPredictions, getSearchKeys } from "api.js";
 import { DataGrid, gridClasses, GridToolbar } from "@mui/x-data-grid";
 import { useHistory } from "react-router-dom";
@@ -82,7 +82,7 @@ const Tables = () => {
   const [containerDivHeight, setContainerDivHeight] = useState(`calc(100vh - 250px)`);
   const [chartNumber, setChartNumber] = useState(32);
   const [snowflakeCount, setSnowflakeCount] = useState(50);
-  const [statDescription, setStatDescription] = useState([]);
+  // const [statDescription, setStatDescription] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [eventTitle, setEventTitle] = useState("");
   const [rankings, setRankings] = useState([]);
@@ -96,7 +96,7 @@ const Tables = () => {
   const fieldImageRef = useRef(null);
   const [imageScaleFactor, setImageScaleFactor] = useState(1);
   const [displayAutos, setDisplayAutos] = useState([])
-  const [fieldImageWidth, setFieldImageWidth] = useState(0);
+  // const [fieldImageWidth, setFieldImageWidth] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false)
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
@@ -417,8 +417,8 @@ const Tables = () => {
     return result;
   }
 
-  const ChartRenderer = (props, stat, scoutingData) => {
-    const teamNumber = props.data.key
+  const ChartRenderer = (props, stat) => {
+    const teamNumber = props.row.key
     const teamData = scoutingData.filter((entry) => {
       return Number(entry.team_number) == Number(teamNumber)
     })
@@ -433,7 +433,7 @@ const Tables = () => {
         const chartFieldData = {
           "Match Number": uniqueMatches[idx].match_number,
         }
-        stat.stat.component_stats.forEach((componentStat) => {
+        stat.stat?.component_stats?.forEach((componentStat) => {
           chartFieldData[componentStat] = entry[componentStat]
         })
         displayData.push(chartFieldData)
@@ -441,9 +441,9 @@ const Tables = () => {
       if (displayData.length > 0) {
         // console.log(displayData)
         setChartTeamNumber(teamNumber)
-        setChartData(displayData)
-        setAreaChart(true)
-        setDialogOpen(true)
+        // setChartData(displayData)
+        // setAreaChart(true)
+        // setDialogOpen(true)
       }
     } else {
       const displayData = flattenedData.map((entry, idx) => {
@@ -454,9 +454,9 @@ const Tables = () => {
       })
       if (displayData.length > 0) {
         setChartTeamNumber(teamNumber)
-        setChartData(displayData)
-        setAreaChart(false)
-        setDialogOpen(true)
+        // setChartData(displayData)
+        // setAreaChart(false)
+        // setDialogOpen(true)
       }
     }
   }
@@ -488,141 +488,117 @@ const Tables = () => {
   const statDescriptionCallback = async (data) => {
     const keys = [];
     const statColumns = [];
-    setStatDescription(data);
+
+    // statColumns.push({
+    //   field: 'rowNumber',
+    //   headerName: '#',
+    //   width: 55,
+    //   pinned: 'left',
+    //   valueGetter: (params) => params.rowIndex + 1, // Calculates row number
+    // });
+
     statColumns.push({
-      headerName: '#',
-      field: 'rowNumber',
-      width: 55,
+      field: 'key',
+      headerName: 'Team',
       pinned: 'left',
-      valueGetter: (params) => params.node.rowIndex + 1, // Calculates row number
-    });
-
-    statColumns.push({
-      field: "key",
-      headerName: "Team",
-      pinned: "left",
-      filter: true,
-      cellRenderer: CustomLinkRenderer,
+      filterable: true, // Changed from 'filter' to 'filterable'
       width: 100,
-      flex: 0.3,
+      // flex: 0.3,
     });
 
     statColumns.push({
-      field: "OPR",
-      headerName: "OPR",
-      filter: true,
-      align: "center",
+      field: 'OPR',
+      headerName: 'OPR',
+      filterable: true, // Changed from 'filter' to 'filterable'
+      align: 'center',
       minWidth: 100,
-      flex: 0.5,
-      cellStyle: params => {
-        const type = typeof (params?.value);
-        const val = params.value;
-        const key = params.field;
-        let retval = { textAlign: "center" };
-        if (type === "string") {
-          [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
-        } else {
-          retval = heatMap(params, true);
-        }
-        return retval;
-      }
+      // flex: 0.5,
+      // cellStyle: (params) => {
+      //   const type = typeof params?.value;
+      //   const val = params.value;
+      //   const key = params.field;
+      //   let retval: { textAlign: 'center' };
+      //   if (type === 'string') {
+      //     [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+      //   } else {
+      //     retval = heatMap(params, true);
+      //   }
+      //   return retval;
+      // },
     });
+
     statColumns.push({
-      field: "rank",
-      headerName: "Rank",
-      filter: true,
-      align: "center",
+      field: 'rank',
+      headerName: 'Rank',
+      filterable: true, // Changed from 'filter' to 'filterable'
+      align: 'center',
       minWidth: 100,
-      flex: 0.5,
+      // flex: 0.5,
     });
+
     statColumns.push({
-      field: "simulated_rank",
-      headerName: "Sim Rank",
-      filter: true,
-      align: "center",
+      field: 'simulated_rank',
+      headerName: 'Sim Rank',
+      filterable: true, // Changed from 'filter' to 'filterable'
+      align: 'center',
       minWidth: 125,
-      flex: 0.5,
+      // flex: 0.5,
     });
 
-    for (let i = 0; i < data.data.length; i++) {
-      const stat = data.data[i];
-      if (stat.report_stat && stat.stat_key !== "OPR" && stat.stat_key !== "rank" && stat.stat_key !== "simulated_rank") {
-        keys.push(stat.stat_key);
-        if (stat?.chart) statColumns.push({
-          field: stat.stat_key,
-          headerName: stat.display_name,
-          filter: true,
-          sortable: true,
-          align: "center",
-          minWidth: stat.display_name.length * 8 + 70,
-          flex: 0.5,
-          onCellClicked: (props) => ChartRenderer(props, stat, scoutingData),
-          cellStyle: params => {
-            const type = typeof (params?.value);
-            const val = params.value;
-            const key = params.field;
-            let retval = { textAlign: "center" };
-            if (type === "string") {
-              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
-            } else {
-              retval = heatMap(params, true);
-            }
-            return retval;
-          }
-        });
-        else statColumns.push({
-          field: stat.stat_key,
-          headerName: stat.display_name,
-          filter: true,
-          sortable: true,
-          align: "center",
-          minWidth: stat.display_name.length * 8 + 70,
-          flex: 0.5,
-          cellStyle: params => {
-            const type = typeof (params?.value);
-            const val = params.value;
-            const key = params.field;
-            let retval = { textAlign: "center" };
-            if (type === "string") {
-              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
-            } else {
-              if (stat.stat_key == "death_rate") { retval = heatMap(params, false) }
-              else retval = heatMap(params, true);
-            }
-            return retval;
-          },
-          onCellClicked: stat.stat_key === "death_rate" ? DeathsRenderer : null
-        });
-      }
-    }
-
-    for (let i = 0; i < data.pitData.length; i++) {
-      const stat = data.pitData[i];
-      if (stat.report_stat && stat.stat_key !== "OPR") {
+    // Loop through data.data
+    for (const stat of data.data) {
+      if (stat.report_stat && !['OPR', 'rank', 'simulated_rank'].includes(stat.stat_key)) {
         keys.push(stat.stat_key);
         statColumns.push({
           field: stat.stat_key,
           headerName: stat.display_name,
-          filter: true,
-          align: "center",
+          filterable: true, // Changed from 'filter' to 'filterable'
+          sortable: true,
+          align: 'center',
           minWidth: stat.display_name.length * 8 + 70,
-          flex: 0.5,
-          cellStyle: params => {
-            const type = typeof (params?.value);
-            const val = params.value;
-            const key = params.field;
-            let retval = { textAlign: "center" };
-            if (type === "string") {
-              [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
-            } else {
-              retval = heatMap(params, true);
-            }
-            return retval;
-          }
+          // cellClassName: (params) => heatMap(params, true),
+          // flex: 0.5,
+          renderCell: (props) => (
+            stat.chart && <Link component="button" onClick={(event) => {
+              event.preventDefault()
+              return ChartRenderer(props, stat)
+            }}
+              underline="always"
+            >
+              {props.value}
+            </Link>
+          ), // Assuming ChartRenderer is defined
+          // cellStyle: (params) => {
+          //   const type = typeof params?.value;
+          //   const val = params.value;
+          //   const key = params.field;
+          //   let retval: { textAlign: 'center' };
+          //   if (type === 'string') {
+          //     [retval.backgroundColor, retval.color] = [val.toLowerCase(), getContrastColorByName(val)];
+          //   } else {
+          //     retval = heatMap(params, true);
+          //   }
+          //   return retval;
+          // },
         });
       }
     }
 
+    // Loop through data.pitData
+    for (const stat of data.pitData) {
+      if (stat.report_stat && stat.stat_key !== 'OPR') {
+        keys.push(stat.stat_key);
+        statColumns.push({
+          field: stat.stat_key,
+          headerName: stat.display_name,
+          filterable: true, // Changed from 'filter' to 'filterable'
+          align: 'center',
+          minWidth: stat.display_name.length * 8 + 70,
+          // flex: 0.5,
+          cellClassName: (params) => heatMap(params, true)
+        });
+      }
+    }
     setShowKeys(keys);
     setStatColumns(statColumns);
   };
@@ -1091,7 +1067,7 @@ const Tables = () => {
   useEffect(() => {
     if (fieldImageRef.current) {
       const { naturalWidth, offsetWidth } = fieldImageRef.current;
-      setFieldImageWidth(offsetWidth);
+      // setFieldImageWidth(offsetWidth);
       setImageScaleFactor(offsetWidth / naturalWidth);
     }
   }, [imageLoaded]);
@@ -1163,7 +1139,7 @@ const Tables = () => {
         {...other}
       >
         {value === index && (
-          <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 210px)" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", overflowY: 'auto', height: "calc(100vh - 210px)" }}>
             <ThemeProvider theme={darkTheme}>
               <Container>
                 <Row>
@@ -1271,24 +1247,22 @@ const Tables = () => {
         })}
       </AreaChart>
     );
+    // return <></>
   };
 
-  const ChartDialog = ({ open, onClose, data, area, rowData, columnDefs }) => {
+  const ChartDialog = ({ data, area }) => {
     let key = "Line Graph"
+    // console.log(Object.keys(data[0]))
     if (!(data.length == 0)) key = Object.keys(data[0])[1]
     return (
-      <Dialog open={open} onClose={onClose} maxWidth={false} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}>
-        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{area ? "" : key} Team #{chartTeamNumber}</DialogTitle>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} /* maxWidth={false} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}*/>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{areaChart ? "" : key} {`Team #${chartTeamNumber}`}</DialogTitle>
         <DialogContent sx={{ backgroundColor: "#1a174d" }}>
-          {area ? <AreaChartRenderer data={data} /> : <LineChartRenderer data={data} />}
+          {areaChart ? <AreaChartRenderer data={chartData} /> : <LineChartRenderer data={chartData} />}
         </DialogContent>
       </Dialog>
     );
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+  }
 
   const handleDeathDialogClose = () => {
     setDeathDialogOpen(false);
@@ -1315,30 +1289,61 @@ const Tables = () => {
           {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
         </Tabs>
       </AppBar>
+      {/* <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} PaperProps={{ style: { width: (chartWidth * 1.1), height: chartHeight * 1.3 } }}>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>{areaChart ? "" : !(chartData.length == 0) ? Object.keys(chartData[0])[1] : ""} {`Team #${chartTeamNumber}`}</DialogTitle>
+        <DialogContent sx={{ backgroundColor: "#1a174d" }}>
+          {areaChart ? <AreaChartRenderer data={chartData} /> : <LineChartRenderer data={chartData} />}
+        </DialogContent>
+      </Dialog> */}
+      <Dialog open={deathDialogOpen} onClose={handleDeathDialogClose}>
+        <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>Team {deathTeam} Deaths</DialogTitle>
+        <DialogContent sx={{ backgroundColor: "#1a174d" }}>
+          <FollowUpDisplay team={deathTeam} />
+        </DialogContent>
+      </Dialog>
       <div style={{ height: `calc(${containerDivHeight} - 0px)`, width: "100%", overflow: "auto" }}>
         <TabPanel value={tabIndex} index={0} dir={darkTheme.direction}>
-          <Card className="polar-box">
-            <CardHeader className="bg-transparent">
-              <h3 className="text-white mb-0">Event Rankings - {eventTitle}</h3>
-            </CardHeader>
-            <ExportToCSV rows={rankings} columns={statColumns} />
-            <div className="ag-theme-alpine-dark" style={{ height: `calc(${containerHeight} - 35px)`, width: "100%" }}>
-              <StripedAgGrid
-                rowData={rankings}
-                columnDefs={statColumns}
-                scoutingData={scoutingData}
-                rowHeight={25}
-                gridOptions={{ columnMenu: true, sideBar: "columns" }}
-              />
-              <ChartDialog open={dialogOpen} onClose={handleCloseDialog} data={chartData} area={areaChart} rowData={rankings} columnDefs={statColumns} />
-              <Dialog open={deathDialogOpen} onClose={handleDeathDialogClose}>
-                <DialogTitle sx={{ backgroundColor: "#1a174d", color: "#1976d2" }}>Team {deathTeam} Deaths</DialogTitle>
-                <DialogContent sx={{ backgroundColor: "#1a174d" }}>
-                  <FollowUpDisplay team={deathTeam} />
-                </DialogContent>
-              </Dialog>
-            </div>
-          </Card>
+          <Container>
+            <Row>
+              <div style={{ width: "100%" }}>
+                <Card className="polar-box">
+                  <CardHeader className="bg-transparent">
+                    <h3 className="text-white mb-0">Event Rankings - {eventTitle}</h3>
+                  </CardHeader>
+                  <StripedDataGrid
+                    disableColumnMenu
+                    rows={rankings}
+                    getRowId={(row) => {
+                      return row.key;
+                    }}
+                    columns={statColumns}
+                    autoHeight
+                    rowsPerPageOptions={[100]}
+                    rowHeight={35}
+                    disableExtendRowFullWidth={false}
+                    sx={{
+                      boxShadow: 2,
+                      border: 0,
+                      borderColor: "white",
+                      "& .MuiDataGrid-cell:hover": {
+                        color: "white",
+                      },
+                    }}
+                    components={{
+                      NoRowsOverlay: () => (
+                        <Stack height="100%" alignItems="center" justifyContent="center">
+                          No Match Data
+                        </Stack>
+                      ),
+                    }}
+                    getRowClassName={(params) =>
+                      params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+                    }
+                  />
+                </Card>
+              </div>
+            </Row>
+          </Container>
         </TabPanel>
         <TabPanel value={tabIndex} index={1} dir={darkTheme.direction}>
           <div style={{ height: containerDivHeight, width: "100%" }}>
