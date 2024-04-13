@@ -278,13 +278,14 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
 
   const matchDataCallback = (data) => {
     // setMatchTeams(data)
-    const updatedData = { ...formData };
     let random = Math.floor(Math.random() * 6)
     try {
-      if (!driverStation) updatedData.team_number = matchTeams(data)[random].substr(3)
-      else updatedData.team_number = matchTeams(data)[driverStation - 1].substr(3)
-      updatedData.match_number = data.match_number
-      setFormData(updatedData)
+      setFormData((prevData) => {
+        const newData = { ...prevData }
+        if (!driverStation) newData.team_number = matchTeams(data)[random].substr(3)
+        else newData.team_number = matchTeams(data)[driverStation - 1].substr(3)
+        return newData
+      })
     } catch { }
   }
 
