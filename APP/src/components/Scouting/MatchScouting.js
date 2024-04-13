@@ -27,6 +27,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       },
       teleop: {
         amp: 0,
+        pass: 0,
         speaker: 0,
         amped_speaker: 0,
       },
@@ -431,18 +432,18 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
             id="driver-station"
             labelId="driver-station-label"
             value={driverStation}
-            sx={{color:driverStation ? driverStation<4 ? 'red' : '#1976d2' : ''}}
+            sx={{ color: driverStation ? driverStation < 4 ? 'red' : '#1976d2' : '' }}
             onChange={(e) => handleChange('station', e.target.value)}
           >
             <MenuItem value="">
               <em>None</em>
             </MenuItem>
-            <MenuItem value={1} sx={{color:'red'}}>R1</MenuItem>
-            <MenuItem value={2} sx={{color:'red'}}>R2</MenuItem>
-            <MenuItem value={3} sx={{color:'red'}}>R3</MenuItem>
-            <MenuItem value={4} sx={{color:'#1976d2'}}>B1</MenuItem>
-            <MenuItem value={5} sx={{color:'#1976d2'}}>B2</MenuItem>
-            <MenuItem value={6} sx={{color:'#1976d2'}}>B3</MenuItem>
+            <MenuItem value={1} sx={{ color: 'red' }}>R1</MenuItem>
+            <MenuItem value={2} sx={{ color: 'red' }}>R2</MenuItem>
+            <MenuItem value={3} sx={{ color: 'red' }}>R3</MenuItem>
+            <MenuItem value={4} sx={{ color: '#1976d2' }}>B1</MenuItem>
+            <MenuItem value={5} sx={{ color: '#1976d2' }}>B2</MenuItem>
+            <MenuItem value={6} sx={{ color: '#1976d2' }}>B3</MenuItem>
           </Select>
           <FormHelperText>Driver Station Not Required</FormHelperText>
         </FormControl>
@@ -483,26 +484,34 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         <h3 className="text-white mb-0">Teleop Fields</h3>
         {formData && (<>
           <Counter
+            label="Pass"
+            type="number"
+            value={formData.data.teleop.amped_speaker}
+            onChange={(value) => handleChange('data.teleop.pass', Math.max(0, parseInt(value, 10)))}
+            max={50}
+          />
+          <Counter
             label="Teleop Amp"
             type="number"
             value={formData.data.teleop.amp}
             onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 10)))}
-            max={30}
+            max={50}
           />
           <Counter
             label="Teleop Speaker"
             type="number"
             value={formData.data.teleop.speaker}
             onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 10)))}
-            max={30}
+            max={50}
           />
           <Counter
             label="Teleop Amplified Speaker"
             type="number"
             value={formData.data.teleop.amped_speaker}
             onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 10)))}
-            max={30}
-          /></>)}
+            max={50}
+          />
+        </>)}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <h3 className="text-white mb-0">Miscellaneous</h3>
