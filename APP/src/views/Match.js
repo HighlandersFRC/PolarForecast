@@ -120,8 +120,18 @@ const Match = () => {
       disableExport: true,
       headerAlign: "center",
       align: "center",
-      flex: 1,
+      flex: 0.75,
       minWidth: 80
+    },
+    {
+      field: "pass",
+      headerName: "Pass",
+      filterable: false,
+      disableExport: true,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.5,
+      minWidth: 75
     },
     {
       field: "endgame_points",
@@ -224,6 +234,7 @@ const Match = () => {
     let blueMicPoints = 0;
     let blueAmpTotal = 0;
     let blueSpeakerTotal = 0;
+    let blueFeedingTotal = 0;
     let blueEndgamePoints = 0;
     let blueClimbing = 0;
     getTeamScoutingData(year, eventKey, restData.blue_teams[0].key, (data) => scoutingDataCallback(data, 0, "blue"))
@@ -236,6 +247,7 @@ const Match = () => {
         OPR: team.OPR.toFixed(1),
         amp_total: team.amp_total.toFixed(1),
         speaker_total: team.speaker_total.toFixed(1),
+        pass: team?.pass?.toFixed(1),
         endgame_points: team.endgame_points.toFixed(1),
         climbing: team.climbing.toFixed(1),
         mic: team.mic.toFixed(1),
@@ -245,6 +257,7 @@ const Match = () => {
       blueMicPoints += team.mic
       blueAmpTotal += team.amp_total
       blueSpeakerTotal += team.speaker_total
+      blueFeedingTotal += team.pass
       blueEndgamePoints += team.endgame_points
       blueClimbing += team.climbing
     }
@@ -254,6 +267,7 @@ const Match = () => {
       OPR: restData?.prediction.blue_score.toFixed(1),
       amp_total: blueAmpTotal.toFixed(1),
       speaker_total: blueSpeakerTotal.toFixed(1),
+      pass: blueFeedingTotal.toFixed(1),
       endgame_points: blueEndgamePoints.toFixed(1),
       climbing: blueClimbing.toFixed(1),
       mic: blueMicPoints.toFixed(1),
@@ -266,6 +280,7 @@ const Match = () => {
     let redMicPoints = 0;
     let redAmpTotal = 0;
     let redSpeakerTotal = 0;
+    let redFeedingTotal = 0;
     let redEndgamePoints = 0;
     let redClimbing = 0;
 
@@ -280,6 +295,7 @@ const Match = () => {
         OPR: team.OPR.toFixed(1),
         amp_total: team.amp_total.toFixed(1),
         speaker_total: team.speaker_total.toFixed(1),
+        pass: team?.pass?.toFixed(1),
         endgame_points: team.endgame_points.toFixed(1),
         climbing: team.climbing.toFixed(1),
         mic: team.mic.toFixed(1),
@@ -289,6 +305,7 @@ const Match = () => {
       redMicPoints += team.mic
       redAmpTotal += team.amp_total
       redSpeakerTotal += team.speaker_total
+      redFeedingTotal += team.pass
       redEndgamePoints += team.endgame_points
       redClimbing += team.climbing
     }
@@ -298,6 +315,7 @@ const Match = () => {
       OPR: restData?.prediction.red_score.toFixed(1),
       amp_total: redAmpTotal.toFixed(1),
       speaker_total: redSpeakerTotal.toFixed(1),
+      pass: redFeedingTotal.toFixed(1),
       endgame_points: redEndgamePoints.toFixed(1),
       climbing: redClimbing.toFixed(1),
       mic: redMicPoints.toFixed(1),
