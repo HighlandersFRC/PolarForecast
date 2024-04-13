@@ -1,4 +1,6 @@
 import copy
+import math
+from types import TracebackType
 import pandas as pd
 import numpy as np
 import warnings
@@ -21,6 +23,15 @@ def flatten_dict(dd, separator="_", prefix=""):
         if isinstance(dd, dict)
         else {prefix: dd}
     )
+
+def unpack_nested_list(nested_list):
+    flat_list = []
+    for item in nested_list:
+        if isinstance(item, list):
+            flat_list.extend(unpack_nested_list(item))
+        else:
+            flat_list.append(item)
+    return flat_list
 
 
 def getPieceScored(
@@ -59,6 +70,7 @@ def analyzeData(m_data: list):
     for row in data:
         if not row["score_breakdown"] == None:
             for allianceStr in row["alliances"]:
+                opposition = "red" if allianceStr == "blue" else "blue"
                 oprMatchEntry = copy.deepcopy(blankOprEntry)
                 oprMatchEntry["allianceStr"] = allianceStr
                 oprMatchEntry["match_number"] = row["match_number"]
@@ -77,6 +89,7 @@ def analyzeData(m_data: list):
                 oprMatchEntry["teleop_amp"] = row["score_breakdown"][allianceStr]["teleopAmpNoteCount"]
                 oprMatchEntry["coopertition"] = 1 if row["score_breakdown"][allianceStr]["coopertitionCriteriaMet"] else 0
                 oprMatchEntry["harmony"] = row["score_breakdown"][allianceStr]["endGameHarmonyPoints"]
+                oprMatchEntry["foul_points_given"] = row["score_breakdown"][opposition]["foulPoints"]
                 for stage in ["CenterStage", "StageLeft", "StageRight"]:
                     oprMatchEntry["trap" +
                                 stage] = row["score_breakdown"][allianceStr]["trap" + stage]
@@ -107,7 +120,7 @@ def analyzeData(m_data: list):
     teleopPoints = np.zeros(len(teams))
     harmonyPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
-    teamCooperatition = np.zeros(len(teams))
+    teamCoopertition = np.zeros(len(teams))
     matchScoutingCount = np.zeros(len(teams))
     
     # Counting the number of matches that each team has
@@ -121,6 +134,7 @@ def analyzeData(m_data: list):
         for k in range(3):
             matchTeam = row["station" + str(k + 1)]
             idx = teams.index(matchTeam)
+            teamCoopertition[idx] += row["coopertition"]
             if row["endGameRobot" + str(k + 1)] == "Parked":
                 teamParking[idx] += 1
             elif not row["endGameRobot" + str(k + 1)] == "None":
@@ -141,23 +155,26 @@ def analyzeData(m_data: list):
     ScoutingDataKeys = [
         "auto_speaker",
         "auto_amp",
-        "teleop_speaker",
+        ["teleop_speaker",
         "teleop_amped_speaker",
-        "teleop_amp",
+        "teleop_amp"],
+        "foul_points_given"
     ]
     ScoutingDataMins = [
         0,
         0,
+        [0,
         0,
-        0,
-        0,
+        0],
+        0
     ]
     ScoutingDataMaxs = [
         9,
         9,
-        56,
+        [56,
         54,
-        56,
+        56],
+        148
     ] 
     TBAOnlyKeys = [
         "harmony",
@@ -180,17 +197,20 @@ def analyzeData(m_data: list):
         2,
         5,
         1,
+        -1,
         1,
     ]
 
     numEntries = len(scoutingBaseData)
     j = numEntries # set j to the max number of scout entries to analyze
-    
+    # print("setup hardcoded stuff")
     # TBA Data
-    YMatrix = pd.DataFrame(None, columns=ScoutingDataKeys)
+    YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
     TBAOnlyYMatrix = pd.DataFrame(None, columns=TBAOnlyKeys)
-    YMatrix = oprMatchDataFrame[ScoutingDataKeys]
+    YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
+    # print("ymatrix set up")
     TBAOnlyYMatrix = pd.DataFrame(oprMatchDataFrame[TBAOnlyKeys])
+    # print("tba only ymatrix set up")
     matchTeamMatrix = oprMatchDataFrame[["station1", "station2", "station3"]]
     blankAEntry = {}
     for team in teams:
@@ -233,7 +253,7 @@ def analyzeData(m_data: list):
     teamIdx = -1
     for team in teams:
         teamIdx += 1
-        teamYEntry = np.zeros(len(ScoutingDataKeys))
+        teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
             for entry in scoutingData:
@@ -250,7 +270,7 @@ def analyzeData(m_data: list):
                         and entry["match_number"] == teamMatch
                     ):
                         data = flatten_dict(entry["data"])
-                        newY = [data[key] for key in ScoutingDataKeys]
+                        newY = [data[key] for key in unpack_nested_list(ScoutingDataKeys)]
                         teamYEntry = [
                             teamYEntry[i]
                             + (newY[i] / len(teamMatchesList[team]) / numEntries)
@@ -260,7 +280,7 @@ def analyzeData(m_data: list):
         teamAEntry = copy.deepcopy(blankAEntry)
         teamAEntry[team] = 1
         Alist.append(teamAEntry)
-        
+    
     # Compiling data into matrices
     AMatrix = pd.DataFrame(Alist, columns=teams)
     APseudoInverse = np.linalg.pinv(AMatrix[teams])
@@ -289,7 +309,7 @@ def analyzeData(m_data: list):
             return error
         return func
 
-    mutation_percent_genes = 0.02
+    mutation_percent_genes = 0.01
 
     # Define a function to perform the genetic algorithm operation
     # print("doing genetic algorithm")
@@ -301,12 +321,14 @@ def analyzeData(m_data: list):
             mutation_percent_genes,
         )
         result = ga.run()
-        return result[0], i
+        for key in result[0].columns:
+            if type(result[0][key].tolist()) is not None:
+                results.append(result[0][key].tolist())
     # Number of processes to run simultaneously
     num_processes = 10  # Adjust this value based on your system's capabilities
     results = []
     for i in range(len(ScoutingDataKeys)):
-        results.append(perform_genetic_algorithm(i))
+        perform_genetic_algorithm(i)
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
     # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
@@ -317,35 +339,49 @@ def analyzeData(m_data: list):
             mutation_percent_genes,
         )
         result = ga.run()
-        results.append((result[0], len(ScoutingDataKeys)+i))
-    
-    dataKeys = copy.deepcopy(ScoutingDataKeys)
-    dataKeys.extend(TBAOnlyKeys)
-    
-    for result, i in results:
-        # print(i)
-        array = np.array(result).ravel()
-        XMatrix[dataKeys[i]] = result
-        if i < 2:
-            autoPoints += array*OPRWeights[i]
-            autoPieces += array
-        elif i < 5:
-            teleopPoints += array*OPRWeights[i]
-            teleopPieces += array
-
+        # print(result[0].columns)
+        for key in result[0].columns:
+            if result[0][key].tolist() is not None:
+                results.append(result[0][key].tolist())
+        # results.append((result[0], len(ScoutingDataKeys)+i))
+    dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
+    dataKeys.extend(unpack_nested_list(TBAOnlyKeys))
+    # print("compiling data to json")
+    # print(results)
+    for i, result in enumerate(results):
+        # try:
+            array = np.array(result).ravel()
+            XMatrix[dataKeys[i]] = result
+            if i < 2:
+                autoPoints += array*OPRWeights[i]
+                autoPieces += array
+            elif i < 6:
+                teleopPoints += array*OPRWeights[i]
+                teleopPieces += array
+        # except Exception as e:
+        #     print(i, e)
+    # print("looped through results")
+    teamCoopertition = XMatrix["coopertition"]
     teamParking /= teamMatchCount
     teamMobility /= teamMatchCount
     teamClimbing /= teamMatchCount
     teamTrap /= teamMatchCount
     teamDeaths /= matchScoutingCount
+    for i in range(len(teamDeaths)):
+        if math.isnan(teamDeaths[i]):
+            teamDeaths[i] = 0
+    teamFouls = XMatrix["foul_points_given"]
     harmonyPoints = XMatrix["harmony"]
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
     totalSpeaker = XMatrix["auto_speaker"] + XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]
-    endgamePoints = teamClimbing * 3 + teamParking
-    teamOPR = endgamePoints + autoPoints + teleopPoints
+    # print(teamTrap)
+    teleopPoints += teamFouls
+    endgamePoints = teamClimbing * 3 + teamParking + harmonyPoints + teamTrap * 5
+    teamOPR = endgamePoints + autoPoints + teleopPoints - teamFouls
     piecesScored = autoPieces + teleopPieces
 
+    
     XMatrix.insert(0, 'parking', pd.Series(teamParking))
     XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))
     XMatrix.insert(0, 'mobility', pd.Series(teamMobility))
