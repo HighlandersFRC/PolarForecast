@@ -1,4 +1,5 @@
 import copy
+import random
 import numpy as np
 import pandas as pd
 
@@ -14,7 +15,7 @@ class geneticAlg:
         self.errorFunction = errorFunction
         self.startingValue = startingValue
         self.mutationPercent = mutationPercent
-        self.numParents = 4
+        self.numParents = 3
         self.populationSize = 0
         for i in range(self.numParents+1):
             self.populationSize += i
@@ -32,7 +33,7 @@ class geneticAlg:
         for column in mutant.columns:
             if column != "team_number":
                 for index, value in mutant[column].items():
-                    rand = np.random.random()
+                    rand = random.random()
                     if rand < self.mutationPercent:
                         mutant.at[index, column] = self.mutate_gene(
                             value,
@@ -109,9 +110,9 @@ class geneticAlg:
                 self.generationsSinceImprovement = 0
             else:
                 self.generationsSinceImprovement += 1
-            if self.generationsSinceImprovement >= 250:
+            if self.generationsSinceImprovement >= 25:
                 foundSolution = True
-            if generationNumber > 25000:
+            if generationNumber > 1500:
                 foundSolution = True
             generationNumber += 1
             # print("generation", generationNumber)

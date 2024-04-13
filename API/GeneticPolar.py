@@ -70,7 +70,6 @@ def analyzeData(m_data: list):
     for row in data:
         if not row["score_breakdown"] == None:
             for allianceStr in row["alliances"]:
-                opposition = "red" if allianceStr == "blue" else "blue"
                 oprMatchEntry = copy.deepcopy(blankOprEntry)
                 oprMatchEntry["allianceStr"] = allianceStr
                 oprMatchEntry["match_number"] = row["match_number"]
@@ -89,7 +88,6 @@ def analyzeData(m_data: list):
                 oprMatchEntry["teleop_amp"] = row["score_breakdown"][allianceStr]["teleopAmpNoteCount"]
                 oprMatchEntry["coopertition"] = 1 if row["score_breakdown"][allianceStr]["coopertitionCriteriaMet"] else 0
                 oprMatchEntry["harmony"] = row["score_breakdown"][allianceStr]["endGameHarmonyPoints"]
-                oprMatchEntry["foul_points_given"] = row["score_breakdown"][opposition]["foulPoints"]
                 for stage in ["CenterStage", "StageLeft", "StageRight"]:
                     oprMatchEntry["trap" +
                                 stage] = row["score_breakdown"][allianceStr]["trap" + stage]
@@ -158,7 +156,6 @@ def analyzeData(m_data: list):
         ["teleop_speaker",
         "teleop_amped_speaker",
         "teleop_amp"],
-        "foul_points_given"
     ]
     ScoutingDataMins = [
         0,
@@ -166,7 +163,6 @@ def analyzeData(m_data: list):
         [0,
         0,
         0],
-        0
     ]
     ScoutingDataMaxs = [
         9,
@@ -174,7 +170,6 @@ def analyzeData(m_data: list):
         [56,
         54,
         56],
-        148
     ] 
     TBAOnlyKeys = [
         "harmony",
@@ -197,7 +192,6 @@ def analyzeData(m_data: list):
         2,
         5,
         1,
-        -1,
         1,
     ]
 
@@ -313,6 +307,7 @@ def analyzeData(m_data: list):
 
     # Define a function to perform the genetic algorithm operation
     # print("doing genetic algorithm")
+    results = []
     def perform_genetic_algorithm(i):
         ga = geneticAlg(
             createfitness_func(ScoutingDataMins[i], ScoutingDataMaxs[i]),
@@ -326,7 +321,6 @@ def analyzeData(m_data: list):
                 results.append(result[0][key].tolist())
     # Number of processes to run simultaneously
     num_processes = 10  # Adjust this value based on your system's capabilities
-    results = []
     for i in range(len(ScoutingDataKeys)):
         perform_genetic_algorithm(i)
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
@@ -350,6 +344,7 @@ def analyzeData(m_data: list):
     # print(results)
     for i, result in enumerate(results):
         # try:
+            # print(dataKeys[i])
             array = np.array(result).ravel()
             XMatrix[dataKeys[i]] = result
             if i < 2:
@@ -370,15 +365,13 @@ def analyzeData(m_data: list):
     for i in range(len(teamDeaths)):
         if math.isnan(teamDeaths[i]):
             teamDeaths[i] = 0
-    teamFouls = XMatrix["foul_points_given"]
-    harmonyPoints = XMatrix["harmony"]
+    harmonyPoints = XMatrix["harmony"]*2
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
     totalSpeaker = XMatrix["auto_speaker"] + XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]
     # print(teamTrap)
-    teleopPoints += teamFouls
     endgamePoints = teamClimbing * 3 + teamParking + harmonyPoints + teamTrap * 5
-    teamOPR = endgamePoints + autoPoints + teleopPoints - teamFouls
+    teamOPR = endgamePoints + autoPoints + teleopPoints
     piecesScored = autoPieces + teleopPieces
 
     
