@@ -212,6 +212,7 @@ def get_match_details(year: int, event: str, match_key: str):
             "red_teams": redTeamStats,
             "blue_teams": blueTeamStats
         }
+        # print(retval)
         return retval
     except Exception as e:
         raise HTTPException(400, str(e))
@@ -300,7 +301,7 @@ def getStatus(data: dict, originalStatus: dict):
     if data["data"]["drive_train"] != "":
         if data["data"]["favorite_color"] != "":
             status = "Done"
-    print(originalStatus)
+    # print(originalStatus)
     for entry in originalStatus["data"]:
         if entry["key"] == str(data["team_number"]):
             print(entry["key"], data["team_number"])
@@ -714,9 +715,8 @@ def updateData(event_code: str):
         print(e)
     try:
         prevData = CalculatedDataCollection.find_one(
-            {"event_code": event_code})["data"]
+            {"event_code": event_code})["data"][1:]
         for idx, team in enumerate(prevData):
-            if not idx == 0:
                 for newTeam in data[1:]:
                     if team["key"] == newTeam["key"]:
                         for key in team:
@@ -845,9 +845,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 opponent = "red"
             matchPrediction[f"{alliance}_win_rp"] = 2 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_climbing"] >= 6 else 0
-            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[
-                f"{alliance}_ensemble_rp"] == 1 and matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
+            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
             matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 18 or (
                 matchPrediction[f"{alliance}_notes"] >= 15 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \

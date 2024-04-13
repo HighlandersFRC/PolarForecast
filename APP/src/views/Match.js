@@ -273,6 +273,7 @@ const Match = () => {
     getTeamScoutingData(year, eventKey, restData.red_teams[1].key, (data) => scoutingDataCallback(data, 1, "red"))
     getTeamScoutingData(year, eventKey, restData.red_teams[2].key, (data) => scoutingDataCallback(data, 2, "red"))
     for (const team of restData?.red_teams) {
+      // console.log(team)
       newRow = {
         key: i,
         team: team.key.replace("frc", ""),
