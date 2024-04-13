@@ -287,6 +287,14 @@
       "stat_type": "num"
     },
     {
+      "stat_key": "foul_points_given",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Foul Points",
+      "stat": {},
+      "stat_type": "num"
+    },
+    {
       "stat_key": "auto_speaker",
       "solve_strategy": "custom",
       "report_stat": true,
