@@ -305,6 +305,15 @@
       "chart": true
     },
     {
+      "stat_key": "pass",
+      "solve_strategy": "custom",
+      "report_stat": true,
+      "display_name": "Pass",
+      "stat": {},
+      "stat_type": "num",
+      "chart": true
+    },
+    {
       "stat_key": "teleop_speaker",
       "solve_strategy": "custom",
       "report_stat": true,
