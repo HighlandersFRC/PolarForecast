@@ -29,9 +29,13 @@ const AutoDisplay = ({ scoutingData }) => {
         setImageLoaded(true);
     };
 
+    const pieces = ['spike_left', 'spike_middle', 'spike_right', 'halfway_far_left', 'halfway_middle_left', 'halfway_middle', 'halfway_middle_right', 'halfway_far_right'];
+    const pieceX = [186, 433, 679, 70, 355, 640, 925, 1210]
+    const pieceY = [850, 850, 850, 61, 61, 61, 61, 61]
+
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
-            <p className="text-white mb-0">{params.length == 5 ?`Team: ${scoutingData.team_number} |`: ""}  Match: {scoutingData.match_number}  |  {params.length == 6 && params[5]?.split("-")[0] == "team" ? `Scout: ${scoutingData.scout_info.name} |` : ""} Scored: {scoutingData.data.auto.amp+scoutingData.data.auto.speaker}</p>
+            <p className="text-white mb-0">{params.length == 5 ? `Team: ${scoutingData.team_number} |` : ""}  Match: {scoutingData.match_number}  |  {params.length == 6 && params[5]?.split("-")[0] == "team" ? `Scout: ${scoutingData.scout_info.name} |` : ""} Scored: {scoutingData.data.auto.amp + scoutingData.data.auto.speaker}</p>
             <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
                 {/* Display your field image here */}
                 <img
@@ -41,86 +45,25 @@ const AutoDisplay = ({ scoutingData }) => {
                     style={{ maxWidth: '100%', height: 'auto' }}
                     onLoad={handleImageLoad}
                 />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(186, 850),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(433, 850),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(679, 850),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(70, 61),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(355, 61),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(640, 61),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(925, 61),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
-                <img
-                    src="/Note.png"
-                    style={{
-                        position: 'absolute',
-                        ...calculatePosition(1210, 61),
-                        width: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        height: `${ NOTE_SIZE * imageScaleFactor}px`,
-                        filter: scoutingData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
-                    }}
-                />
+                {pieces.map((piece, idx) => {
+                    return (
+                        <div
+                            key={piece}
+                            style={{
+                                position: 'absolute',
+                                ...calculatePosition(pieceX[idx], pieceY[idx]),
+                                width: `${NOTE_SIZE * imageScaleFactor}px`,
+                                height: `${NOTE_SIZE * imageScaleFactor}px`,
+                                filter: scoutingData.data.selectedPieces.includes(piece) ? 'none' : 'grayscale(100%)',
+                            }}
+                        >
+                            <img src="/Note.png" alt={`Note ${piece}`} style={{ width: '100%', height: '100%' }} />
+                            <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: `${100*imageScaleFactor}px`, fontWeight: 'bold'}}>
+                                {scoutingData.data.selectedPieces.indexOf(piece) === -1 ? "" : scoutingData.data.selectedPieces.indexOf(piece) + 1}
+                            </span>
+                        </div>
+                    )
+                })}
             </div>
         </div>
     );
