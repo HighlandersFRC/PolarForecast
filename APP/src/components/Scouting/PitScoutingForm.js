@@ -92,6 +92,7 @@ const PitScoutingForm = ({ teamPage }) => {
             if (!value.data?.autos) value.data.autos = [];
             if (!value.data?.spares) value.data.spares = "";
             // console.log(value)
+
             setFormData(value)
         }
     }
@@ -110,7 +111,7 @@ const PitScoutingForm = ({ teamPage }) => {
         history.push(`../../../event/${year}/${eventCode}#pit-scouting`);
     }
 
-    const RenderSelectablePieces = ({ auto, idx }) => {
+    const RenderAuto = ({ auto, idx }) => {
         const NOTE_SIZE = 80;
         const fieldImageRef = useRef(null)
         const [fieldImageWidth, setFieldImageWidth] = useState(0);
@@ -126,7 +127,7 @@ const PitScoutingForm = ({ teamPage }) => {
         }, [imageLoaded]);
         const handlePieceClick = (pieceType) => {
             if (!teamPage) {
-                const selectedPieces = [...auto];
+                const selectedPieces = [...auto.pieces];
                 const index = selectedPieces.indexOf(pieceType);
                 if (index === -1) {
                     selectedPieces.push(pieceType); // If not selected, add it
@@ -141,7 +142,22 @@ const PitScoutingForm = ({ teamPage }) => {
                             autos: [...prevData.data.autos]
                         }
                     }
-                    newData.data.autos[idx] = selectedPieces
+                    newData.data.autos[idx].pieces = selectedPieces
+                    return newData
+                });
+            }
+        };
+        const handleAutoChange = (type) => {
+            if (!teamPage) {
+                setFormData((prevData) => {
+                    const newData = {
+                        ...prevData,
+                        data: {
+                            ...prevData.data,
+                            autos: [...prevData.data.autos]
+                        }
+                    }
+                    newData.data.autos[idx][type] = !newData.data.autos[idx][type]
                     return newData
                 });
             }
@@ -170,6 +186,10 @@ const PitScoutingForm = ({ teamPage }) => {
                 return newData
             })
         }
+
+        const pieces = ['spike_left', 'spike_middle', 'spike_right', 'halfway_far_left', 'halfway_middle_left', 'halfway_middle', 'halfway_middle_right', 'halfway_far_right'];
+        const pieceX = [186, 433, 679, 108, 394, 679, 965, 1251]
+        const pieceY = [978, 978, 978, 61, 61, 61, 61, 61]
         return (
             <>
                 <div>
@@ -182,107 +202,49 @@ const PitScoutingForm = ({ teamPage }) => {
                             style={{ maxWidth: '100%', height: 'auto' }}
                             onLoad={handleImageLoad}
                         />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(186, 978),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('spike_left') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('spike_left')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(433, 978),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('spike_middle') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('spike_middle')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(679, 978),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('spike_right') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('spike_right')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(108, 61),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('halfway_far_left')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(394, 61),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('halfway_middle_left')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(679, 61),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('halfway_middle')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(965, 61),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('halfway_middle_right')}
-                        />
-                        <img
-                            src="/Note.png"
-                            style={{
-                                position: 'absolute',
-                                ...calculatePosition(1251, 61),
-                                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                                cursor: !teamPage ? 'pointer' : '',
-                                filter: auto.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
-                            }}
-                            onClick={() => handlePieceClick('halfway_far_right')}
-                        />
+                        {pieces.map((piece, idx) => {
+                            return (
+                                <div
+                                    key={piece}
+                                    style={{
+                                        position: 'absolute',
+                                        ...calculatePosition(pieceX[idx], pieceY[idx]),
+                                        width: `${NOTE_SIZE * imageScaleFactor}px`,
+                                        height: `${NOTE_SIZE * imageScaleFactor}px`,
+                                        cursor: 'pointer',
+                                        filter: auto.pieces.includes(piece) ? 'none' : 'grayscale(100%)',
+                                    }}
+                                    onClick={() => handlePieceClick(piece)}
+                                >
+                                    <img src="/Note.png" alt={`Note ${piece}`} style={{ width: '100%', height: '100%' }} />
+                                    <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: `${50 * imageScaleFactor}px`, fontWeight: 'bold' }}>
+                                        {auto.pieces.indexOf(piece) === -1 ? "" : auto.pieces.indexOf(piece) + 1}
+                                    </span>
+                                </div>
+                            )
+                        })}
                     </div>
+                    <h4 className="text-white mb-0">Shoots Preload?</h4>
+                    <Switch
+                        label="Pre-Load?"
+                        checked={auto.preload}
+                        onChange={(e) => handleAutoChange('preload')}
+                        disabled={teamPage}
+                    />
+                    <h4 className="text-white mb-0">Exits Community?</h4>
+                    <Switch
+                        label="Exit?"
+                        checked={auto.exit}
+                        onChange={(e) => handleAutoChange('exit')}
+                        disabled={teamPage}
+                    />
+                    <br />
+                    <br />
                     {!teamPage && <Button fullWidth variant="contained" onClick={deleteAuto} sx={{ color: "red" }}>
                         Delete Auto
                     </Button>}
-                </div>
+                    <br />
+                    </div>
             </>
         );
     };
@@ -293,7 +255,11 @@ const PitScoutingForm = ({ teamPage }) => {
                 ...prevData,
                 data: {
                     ...prevData.data,
-                    autos: [...prevData.data.autos, []]
+                    autos: [...prevData.data.autos, {
+                        exit: false,
+                        preload: false,
+                        pieces: [],
+                    }]
                 }
             }
             // console.log(newData)
@@ -329,7 +295,7 @@ const PitScoutingForm = ({ teamPage }) => {
                         <ImageList cols={1}>
                             {formData.data.autos.map((auto, idx) => {
                                 // console.log(auto, idx)
-                                return <RenderSelectablePieces auto={auto} idx={idx} />
+                                return <RenderAuto auto={auto} idx={idx} />
                             })}
                         </ImageList>
                         <Button variant="contained" onClick={addAuto}>
@@ -389,20 +355,20 @@ const PitScoutingForm = ({ teamPage }) => {
                         disabled={teamPage}
                     />
                     {formData.data.can_climb && <>
-                        <h4 className="text-info mb-0" style={{marginLeft: 30}}>Scores in Trap?</h4>
+                        <h4 className="text-info mb-0" style={{ marginLeft: 30 }}>Scores in Trap?</h4>
                         <Switch
                             label="Scores in Trap?"
                             checked={formData.data.trap_scoring}
                             onChange={(e) => handleChange('data.trap_scoring', e.target.checked)}
-                            sx={{marginLeft: 30/4}}
+                            sx={{ marginLeft: 30 / 4 }}
                             disabled={teamPage}
                         />
-                        <h4 className="text-info mb-0" style={{marginLeft: 30}}>Can Harmonize?</h4>
+                        <h4 className="text-info mb-0" style={{ marginLeft: 30 }}>Can Harmonize?</h4>
                         <Switch
                             label="Can Harmonize?"
                             checked={formData.data.can_harmonize}
                             onChange={(e) => handleChange('data.can_harmonize', e.target.checked)}
-                            sx={{marginLeft: 30/4}}
+                            sx={{ marginLeft: 30 / 4 }}
                             disabled={teamPage}
                         />
                     </>}
@@ -606,7 +572,7 @@ const PitScoutingForm = ({ teamPage }) => {
                         {formData.data.autos.length === 0 && <h5 className='text-white mb-0'>No Auto Data</h5>}
                         <ImageList cols={3}>
                             {formData.data.autos.map((auto, idx) => {
-                                return <RenderSelectablePieces auto={auto} idx={idx} />
+                                return <RenderAuto auto={auto} idx={idx} />
                             })}
                         </ImageList >
                     </>

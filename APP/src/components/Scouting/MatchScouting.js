@@ -159,11 +159,13 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
 
   // Function to generate JSX for selectable pieces
   const renderSelectablePieces = (formData) => {
+    const pieces = ['spike_left', 'spike_middle', 'spike_right', 'halfway_far_left', 'halfway_middle_left', 'halfway_middle', 'halfway_middle_right', 'halfway_far_right'];
+    const pieceX = [186, 433, 679, 108, 394, 679, 965, 1251]
+    const pieceY = [978, 978, 978, 61, 61, 61, 61, 61]
     return (
       <>
         <div>
           <div style={{ position: 'relative', maxWidth: '100%', height: 'auto' }}>
-            {/* Display your field image here */}
             <img
               ref={fieldImageRef}
               src={serverPath + "/AutosGameField.png"}
@@ -171,102 +173,27 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
               style={{ maxWidth: '100%', height: 'auto' }}
               onLoad={handleImageLoad}
             />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(186, 978),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('spike_left') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('spike_left')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(433, 978),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('spike_middle') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('spike_middle')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(679, 978),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('spike_right') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('spike_right')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(108, 61),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('halfway_far_left') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('halfway_far_left')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(394, 61),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('halfway_middle_left') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('halfway_middle_left')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(679, 61),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('halfway_middle') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('halfway_middle')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(965, 61),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('halfway_middle_right') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('halfway_middle_right')}
-            />
-            <img
-              src="/Note.png"
-              style={{
-                position: 'absolute',
-                ...calculatePosition(1251, 61),
-                width: `${NOTE_SIZE * imageScaleFactor}px`,
-                height: `${NOTE_SIZE * imageScaleFactor}px`,
-                cursor: 'pointer',
-                filter: formData.data.selectedPieces.includes('halfway_far_right') ? 'none' : 'grayscale(100%)'
-              }}
-              onClick={() => handlePieceClick('halfway_far_right')}
-            />
+            {pieces.map((piece, idx) => {
+              return (
+                <div
+                  key={piece}
+                  style={{
+                    position: 'absolute',
+                    ...calculatePosition(pieceX[idx], pieceY[idx]),
+                    width: `${NOTE_SIZE * imageScaleFactor}px`,
+                    height: `${NOTE_SIZE * imageScaleFactor}px`,
+                    cursor: 'pointer',
+                    filter: formData.data.selectedPieces.includes(piece) ? 'none' : 'grayscale(100%)',
+                  }}
+                  onClick={() => handlePieceClick(piece)}
+                >
+                  <img src="/Note.png" alt={`Note ${piece}`} style={{ width: '100%', height: '100%' }} />
+                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: `${50*imageScaleFactor}px`, fontWeight: 'bold'}}>
+                    {formData.data.selectedPieces.indexOf(piece) === -1 ? "" : formData.data.selectedPieces.indexOf(piece)+1}
+                  </span>
+                </div>
+              )
+            })}
           </div>
           <Button variant="contained" fullWidth onClick={flipImage} sx={{ color: isFlipped ? 'blue' : 'red' }}>
             {isFlipped ? 'Flip to Blue' : 'Flip to Red'}
