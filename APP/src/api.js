@@ -306,28 +306,28 @@ export const getTeamPictures = async (year, event, team, callback) => {
   }
 }
 
-export const getEventPictures = async (year, event, callback) => {
-  try {
-    const storage_name = `${year}${event}_Pictures`;
-    const data = null
-    if (data === null) {
-      const endpoint = `${API_ENDPOINT}/${year}/${event}/getPictures`
-      console.log("Requesting Data from: " + endpoint);
-      const response = await fetch(endpoint);
-      if (response.ok) {
-        const data = await response.json();
-        callback(data);
-      } else {
-        callback([]);
-      }
-    } else {
-      console.log("Using cached data for: " + storage_name);
-      callback(data);
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
+// export const getEventPictures = async (year, event, callback) => {
+//   try {
+//     const storage_name = `${year}${event}_Pictures`;
+//     const data = null
+//     if (data === null) {
+//       const endpoint = `${API_ENDPOINT}/${year}/${event}/getPictures`
+//       console.log("Requesting Data from: " + endpoint);
+//       const response = await fetch(endpoint);
+//       if (response.ok) {
+//         const data = await response.json();
+//         callback(data);
+//       } else {
+//         callback([]);
+//       }
+//     } else {
+//       console.log("Using cached data for: " + storage_name);
+//       callback(data);
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
 
 export const postTeamPictures = async (year, event, team, data, callback) => {
   try {
