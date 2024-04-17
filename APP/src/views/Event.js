@@ -37,7 +37,7 @@ import "../assets/css/polar-css.css";
 import MatchScouting from "components/Scouting/MatchScouting";
 import { getPitStatus } from "api";
 import BarChartWithWeights from "components/BarChartWithWeights";
-import { AutofpsSelect, GroupAdd, PrecisionManufacturing, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
+import { AutofpsSelect, GroupAdd, Image, PrecisionManufacturing, SportsScore, StackedBarChart, TrendingUp, Visibility, WorkspacePremium } from "@mui/icons-material";
 import { getAutos } from "api";
 import AutoDisplay from "components/AutosDisplay";
 import Counter from "components/Counter";
@@ -48,6 +48,9 @@ import { getEventMatchScouting } from "api";
 import { Area, AreaChart, CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import ExportToCSV from "components/ExportData";
 import FollowUpDisplay from "components/Scouting/FollowUpDisplay";
+import { getEventPictures } from "api";
+import ImageWithPopup from "components/ImageWithPopup";
+import { deleteTeamPictures } from "api";
 
 
 const switchTheme = createTheme({
@@ -70,7 +73,7 @@ const switchTheme = createTheme({
 
 const Tables = () => {
   const history = useHistory();
-  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting", "quals", "elims", "autos"];
+  const tabDict = ["rankings", "charts", "match-scouting", "pit-scouting", "pictures", "quals", "elims", "autos"];
   const url = new URL(window.location.href);
   const serverPath = url.pathname.split("/")[0];
   const eventName = url.pathname.split("/")[3] + url.pathname.split("/")[4];
@@ -97,6 +100,7 @@ const Tables = () => {
   const [imageScaleFactor, setImageScaleFactor] = useState(1);
   const [displayAutos, setDisplayAutos] = useState([])
   const [fieldImageWidth, setFieldImageWidth] = useState(0);
+  const [pictures, setPictures] = React.useState([]);
   const [imageLoaded, setImageLoaded] = useState(false)
   const [matchPredictionColumns, setMatchPredictionColumns] = useState([
     {
@@ -719,6 +723,34 @@ const Tables = () => {
     setPitScoutingStatColumns(pitScoutingStatColumns);
   }
 
+  const picturesCallback = (data) => {
+    const rows = data.map((item) => (
+      <ImageListItem>
+        <div>
+          <p className="text-white mb-0">Team {item.team}</p>
+          <ImageWithPopup
+            key={`data:image/jpeg;base64,${item.file}`} // Make sure to provide a unique key for each image
+            imageUrl={`data:image/jpeg;base64,${item.file}`}
+            onDelete={(password) => handleDeleteImage(item._id, password, item.team)} // Pass the index to the onDelete function
+          />
+        </div>
+      </ImageListItem>
+    ));
+    setPictures(rows);
+  };
+
+  const handleDeleteImage = (id, password, team) => {
+    deleteTeamPictures(year, eventCode, team, id, password, (status) => { uploadStatusCallback(status, team) })
+  };
+
+  const uploadStatusCallback = (status, team) => {
+    if (status === 200) {
+      getEventPictures(year, eventCode, team, picturesCallback)
+    } else {
+      alert("deletion failed, status: " + status)
+    }
+  }
+
   const statisticsTeamOnClick = (cellValues) => {
     const url = new URL(window.location.href);
     const eventKey = url.pathname.split("/")[4];
@@ -1084,6 +1116,7 @@ const Tables = () => {
     getPitStatus(year, eventKey, pitScoutingStatusCallback);
     getAutos(year, eventKey, autosCallback);
     getEventMatchScouting(year, eventKey, matchScoutingCallback);
+    getEventPictures(year, eventKey, picturesCallback);
     pitScoutingStatCallback(null);
     getSearchKeys(searchKeysCallback);
   }, []);
@@ -1310,9 +1343,10 @@ const Tables = () => {
           <Tab icon={<StackedBarChart />} label="Charts" {...a11yProps(1)} />
           <Tab icon={<Visibility />} label="Match Scouting" {...a11yProps(2)} />
           <Tab icon={<GroupAdd />} label="Pit Scouting" {...a11yProps(3)} />
-          {qualPredictions.length > 0 && <Tab icon={<SportsScore />} label="Quals" {...a11yProps(4)} />}
-          {autos.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(5)} />}
-          {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(6)} />}
+          <Tab icon={<Image />} label="Pictures" {...a11yProps(4)} />
+          {qualPredictions.length > 0 && <Tab icon={<SportsScore />} label="Quals" {...a11yProps(5)} />}
+          {autos.length > 0 && <Tab icon={<WorkspacePremium />} label="Elims" {...a11yProps(6)} />}
+          {autos.length > 0 && <Tab icon={<PrecisionManufacturing />} label="Autos" {...a11yProps(7)} />}
         </Tabs>
       </AppBar>
       <div style={{ height: `calc(${containerDivHeight} - 0px)`, width: "100%", overflow: "auto" }}>
@@ -1477,6 +1511,17 @@ const Tables = () => {
         </TabPanel>
         <TabPanel value={tabIndex} index={4} dir={darkTheme.direction}>
           <Card className="polar-box">
+            {pictures.length > 0 ? <ImageList cols={3} variant="masonry">
+              {pictures}
+            </ImageList> : <>
+              <br />
+              <h1 className="text-white mb-0" style={{ textAlign: "center" }}>No Pictures</h1>
+              <br />
+            </>}
+          </Card>
+        </TabPanel>
+        <TabPanel value={tabIndex} index={5} dir={darkTheme.direction}>
+          <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Quals - {eventTitle}</h3>
             </CardHeader>
@@ -1514,7 +1559,7 @@ const Tables = () => {
             </div>
           </Card>
         </TabPanel>
-        <TabPanel value={tabIndex} index={5} dir={darkTheme.direction}>
+        <TabPanel value={tabIndex} index={6} dir={darkTheme.direction}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Eliminations - {eventTitle}</h3>
@@ -1553,7 +1598,7 @@ const Tables = () => {
             </div>
           </Card>
         </TabPanel>
-        <TabPanel value={tabIndex} index={6} dir={darkTheme.direction}>
+        <TabPanel value={tabIndex} index={7} dir={darkTheme.direction}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
               <h3 className="text-white mb-0">Autos Search - {eventTitle}</h3>

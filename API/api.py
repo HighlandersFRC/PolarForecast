@@ -454,6 +454,28 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, pictures: 
     # Return the list of image data as a JSON response
     return image_data
 
+@app.get("/{year}/{event}/getPictures")
+async def get_event_pictures(year: str, event: str):
+    eventCode = str(year) + event
+    # Query the collection using the key
+    pictures = PictureCollection.find({"eventCode": eventCode})
+    if not pictures:
+        raise HTTPException(status_code=404, detail="Pictures not found")
+
+    # Create a list of image data
+    image_data = []
+    for picture in pictures:
+        content_type = picture["content_type"]
+        file_content = picture["file"]
+        team = picture["team"][3:]
+        id = str(picture["_id"])
+        # Encode the binary data as base64
+        file_content_base64 = base64.b64encode(file_content).decode("utf-8")
+        image_data.append({"content_type": content_type,
+                          "file": file_content_base64, "_id": id, "team": team})
+
+    # Return the list of image data as a JSON response
+    return image_data
 
 @app.post("/{year}/{event}/{team}/pictures/")
 def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int):
@@ -836,7 +858,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"] + \
                     teamData["harmony"]
                 matchPrediction[f"{alliance}_notes"] += teamData["notes"]
-                matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
+                matchPrediction[f"{alliance}_coopertition"] += (teamData["coopertition"]/3)
 
         for alliance in match["alliances"]:
             if alliance == "red":
@@ -846,8 +868,8 @@ def updatePredictions(TBAData, calculatedData, event_code):
             matchPrediction[f"{alliance}_win_rp"] = 2 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
             matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
-            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 18 or (
-                matchPrediction[f"{alliance}_notes"] >= 15 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
+            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 25 or (
+                matchPrediction[f"{alliance}_notes"] >= 21 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
                 matchPrediction[f"{alliance}_ensemble_rp"] + \
                 matchPrediction[f"{alliance}_melody_rp"]
