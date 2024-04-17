@@ -508,6 +508,7 @@ const Team = () => {
 
     setTeamNumber(team);
     getTeamMatchPredictions(year, eventKey, "frc" + team, teamPredictionsCallback);
+    getTeamPictures(year, eventKey, team, picturesCallback)
     getTeamStatDescription(year, eventKey, "frc" + team, teamStatsCallback);
   }, []);
 
@@ -551,7 +552,6 @@ const Team = () => {
     history.push({ hash: tabDict[newValue] });
     setValue(newValue);
     setTabIndex(newValue)
-    getTeamPictures(year, eventKey, team, picturesCallback)
     getTeamScoutingData(year, eventKey, "frc" + team, scoutingDataCallback);
   };
 
