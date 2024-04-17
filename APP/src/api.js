@@ -1,3 +1,4 @@
+
 // const API_ENDPOINT = "http://localhost:8000";
 const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net"; 
 console.log(API_ENDPOINT)
