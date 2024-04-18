@@ -52,6 +52,9 @@ def getPieceScored(
 def analyzeData(m_data: list):
     data = m_data[0]
     scoutingBaseData = m_data[1]
+    for entry in scoutingBaseData:
+        if not entry.__contains__(""):
+            entry["data"]["teleop"]["pass"] = 0
     oprMatchList = []
     # Isolating Data Related to OPR
     blankOprEntry = {
