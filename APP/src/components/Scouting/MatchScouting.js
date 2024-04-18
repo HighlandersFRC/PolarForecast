@@ -311,6 +311,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           amp: 0,
           speaker: 0,
           amped_speaker: 0,
+          pass: 0,
         },
         miscellaneous: {
           died: false,
