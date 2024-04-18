@@ -76,9 +76,10 @@ def getError(combination: dict, TBAMatch: pd.Series) -> float:
         data.append(flatten_dict(combination[team]["data"]))
     addedData = data[0]
     for field in addedData:
-        addedData[field] = data[0][field] + data[1][field] + data[2][field]
-        total += abs(TBAMatch[field])
-        error += abs(TBAMatch[field] - addedData[field])
+        if not field == "teleop_pass":
+            addedData[field] = data[0][field] + data[1][field] + data[2][field]
+            total += abs(TBAMatch[field])
+            error += abs(TBAMatch[field] - addedData[field])
     if total > 0:
         errorPercent = error / total
     return errorPercent
