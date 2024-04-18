@@ -414,7 +414,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           <Counter
             label="Pass"
             type="number"
-            value={formData.data.teleop.amped_speaker}
+            value={formData.data.teleop.pass}
             onChange={(value) => handleChange('data.teleop.pass', Math.max(0, parseInt(value, 10)))}
             max={50}
           />
