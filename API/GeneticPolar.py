@@ -411,7 +411,7 @@ def analyzeData(m_data: list):
     XMatrix["harmony"] = pd.Series(harmonyPoints/2)
     XMatrix.insert(0, 'harmony_points', pd.Series(harmonyPoints))
     XMatrix.insert(0, 'teleop_notes', pd.Series(teleopPieces))
-    XMatrix.insert(0, 'pass', pd.Series(teamFeeding))
+    XMatrix.insert(0, 'teleop_pass', pd.Series(teamFeeding))
     XMatrix.insert(0, 'notes', pd.Series(piecesScored))
     XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
     XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))
