@@ -1408,6 +1408,7 @@ const Tables = () => {
                     { index: 0, name: "Speaker", key: "speaker_total", enabled: true, weight: 1 },
                     { index: 1, name: "Amp", key: "amp_total", enabled: true, weight: 1 },
                     { index: 2, name: "Trap", key: "trap", enabled: true, weight: 1 },
+                    { index: 3, name: "Pass", key: "pass", enabled: true, weight: 0.5}
                   ]}
                 />
                 <br />
@@ -1421,6 +1422,7 @@ const Tables = () => {
                     { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2 },
                     { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5 },
                     { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1 },
+                    { index: 3, name: "Pass", key: "pass", enabled: true, weight: 1},
                     { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5 },
                     { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2 },
                     { index: 7, name: "Park", key: "parking", enabled: true, weight: 1 },

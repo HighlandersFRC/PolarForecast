@@ -235,7 +235,8 @@
         "component_stats": [
           "teleop_speaker",
           "teleop_amped_speaker",
-          "teleop_amp"
+          "teleop_amp",
+          "pass"
         ]
       },
       "stat_type": "num",
@@ -252,7 +253,8 @@
           "auto_amp",
           "teleop_speaker",
           "teleop_amped_speaker",
-          "teleop_amp"
+          "teleop_amp",
+          "pass"
         ]
       },
       "stat_type": "num",
