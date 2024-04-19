@@ -53,7 +53,7 @@ def analyzeData(m_data: list):
     data = m_data[0]
     scoutingBaseData = m_data[1]
     for entry in scoutingBaseData:
-        if not entry.__contains__(""):
+        if not entry["data"]["teleop"].__contains__("pass"):
             entry["data"]["teleop"]["pass"] = 0
     oprMatchList = []
     # Isolating Data Related to OPR
@@ -152,8 +152,12 @@ def analyzeData(m_data: list):
     for entry in scoutingBaseData:
         matchScoutingCount[teams.index(entry["team_number"])] += 1
         if entry["data"]["teleop"].__contains__("pass"):
-            teamFeeding[teams.index(entry["team_number"])
-                        ] += entry["data"]["teleop"]["pass"]
+            try:
+                teamFeeding[teams.index(entry["team_number"])
+                            ] += entry["data"]["teleop"]["pass"]
+            except:
+                pass
+            # print(entry["data"]["teleop"]["pass"])
         teamDeaths[teams.index(entry["team_number"])
                    ] += entry["data"]["miscellaneous"]["died"]
     # print("found Scouting only stats")
@@ -382,7 +386,7 @@ def analyzeData(m_data: list):
             teamDeaths[i] = 0
         if math.isnan(teamFeeding[i]):
             teamFeeding[i] = 0
-    teleopPieces += teamFeeding/2
+    teleopPieces += (teamFeeding/2)
     harmonyPoints = XMatrix["harmony"]*2
     autoPoints += teamMobility * 2
     totalAmp = XMatrix["auto_amp"] + XMatrix["teleop_amp"]
@@ -390,6 +394,7 @@ def analyzeData(m_data: list):
         XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]
     # print(teamTrap)
     endgamePoints = teamClimbing * 3 + teamParking + harmonyPoints + teamTrap * 5
+    teleopPoints += teamFeeding
     teamOPR = endgamePoints + autoPoints + teleopPoints
     piecesScored = autoPieces + teleopPieces
 

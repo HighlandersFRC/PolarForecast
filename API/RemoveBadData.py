@@ -279,6 +279,7 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list) -> (list, list):
     for entry in scoutingData:
         entry["data"].pop("selectedPieces")
         entry["data"].pop("miscellaneous")
+        entry["data"]["teleop"].pop("pass")
     # print("Removed selected Pieces")
     teams = []
     retval =[]
