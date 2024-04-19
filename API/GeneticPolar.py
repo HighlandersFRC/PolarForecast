@@ -394,7 +394,7 @@ def analyzeData(m_data: list):
         XMatrix["teleop_amped_speaker"] + XMatrix["teleop_speaker"]
     # print(teamTrap)
     endgamePoints = teamClimbing * 3 + teamParking + harmonyPoints + teamTrap * 5
-    teleopPoints += teamFeeding
+    # teleopPoints += teamFeeding
     teamOPR = endgamePoints + autoPoints + teleopPoints
     piecesScored = autoPieces + teleopPieces
 
