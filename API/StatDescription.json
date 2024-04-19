@@ -307,7 +307,7 @@
       "chart": true
     },
     {
-      "stat_key": "pass",
+      "stat_key": "teleop_pass",
       "solve_strategy": "custom",
       "report_stat": true,
       "display_name": "Pass",
