@@ -236,7 +236,7 @@
           "teleop_speaker",
           "teleop_amped_speaker",
           "teleop_amp",
-          "pass"
+          "teleop_pass"
         ]
       },
       "stat_type": "num",
@@ -254,7 +254,7 @@
           "teleop_speaker",
           "teleop_amped_speaker",
           "teleop_amp",
-          "pass"
+          "teleop_pass"
         ]
       },
       "stat_type": "num",
