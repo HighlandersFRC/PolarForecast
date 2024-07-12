@@ -86,27 +86,6 @@ def flatten_dict(dd, separator="_", prefix=""):
         else {prefix: dd}
     )
 
-
-@app.on_event("startup")
-def onStart():
-    headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
-    events = json.loads(requests.get(
-        TBA_API_URL+"events/"+YEAR, headers=headers).text)
-    for i in range(len(events)):
-        event = events[i]
-        eventCode = YEAR+event["event_code"]
-        try:
-            CalculatedDataCollection.insert_one(
-                {"event_code": (eventCode), "data": {}})
-        except:
-            pass
-        try:
-            ETagCollection.insert_one(
-                {"key": eventCode, "etag": "", "teamEtag": "", "event": event, "up_to_date": False})
-        except:
-            pass
-
-
 @app.get("/{year}/{event}/{team}/stats")
 def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
@@ -698,14 +677,14 @@ def updateData(event_code: str):
                 numEntries.append(0)
             numEntries[scouts.index(entry["scout_info"]["name"])] += 1
     except Exception as e:
-        print(e)
+        logging.error(e)
     # if TBAData is not None:
     try:
         calculatedData, ratings = analyzeData([TBAData, ScoutingData])
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
     except Exception as e:
-        print(e)
+        logging.error(e)
         ratings = {"scouts": [], "trustRatings": []}
         keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
         keyList = [keyStr+"index"]
@@ -721,7 +700,7 @@ def updateData(event_code: str):
     try:
         data = updatePredictions(TBAData, data, event_code)
     except Exception as e:
-        print(e)
+        logging.error(e)
         pass
     metadata = {"last_modified": datetime.utcnow().timestamp(),
                 "etag": None, "tba": False}
@@ -734,7 +713,7 @@ def updateData(event_code: str):
             ratings["entries"][idx] = numEntries[scouts.index(
                 scout["name"])]
     except Exception as e:
-        print(e)
+        logging.error(e)
     try:
         prevData = CalculatedDataCollection.find_one(
             {"event_code": event_code})["data"][1:]
@@ -747,13 +726,13 @@ def updateData(event_code: str):
                                 # print(team[key])
                         break
     except Exception as e:
-        print(e)
+        logging.error(e)
     try:
         # print("Inserting data")
         CalculatedDataCollection.insert_one(
             {"event_code": event_code, "data": data, "metadata": metadata, "scout_ratings": ratings})
     except Exception as e:
-        # print(e)
+        # logging.error(e)
         try:
             result = CalculatedDataCollection.update_one(
                 {"event_code": event_code}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
@@ -851,14 +830,15 @@ def updatePredictions(TBAData, calculatedData, event_code):
                 for i in range(1, len(calculatedData)):
                     if calculatedData[i]["key"] == team:
                         teamData = calculatedData[i]
-                matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
-                matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
-                matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
-                matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"] + \
-                    teamData["harmony"]
-                matchPrediction[f"{alliance}_notes"] += teamData["notes"]
-                matchPrediction[f"{alliance}_coopertition"] += (teamData["coopertition"]/3)
+                if teamData != {}:
+                    matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                    matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
+                    matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                    matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                    matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"] + \
+                        teamData["harmony"]
+                    matchPrediction[f"{alliance}_notes"] += teamData["notes"]
+                    matchPrediction[f"{alliance}_coopertition"] += (teamData["coopertition"]/3)
 
         for alliance in match["alliances"]:
             if alliance == "red":
@@ -909,7 +889,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
                                 dataTeam["simulated_rp"] += match["score_breakdown"][alliance]["rp"]
                     calculatedData[idx] = dataTeam
                 except Exception as e:
-                    # print(e)
+                    # logging.error(e)
                     pass
     sorted_list = sorted(
         calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
@@ -957,6 +937,22 @@ def read_root():
 @app.on_event("startup")
 @repeat_every(seconds=float(TBA_POLLING_INTERVAL))
 def update_database():
+    headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
+    events = json.loads(requests.get(
+        TBA_API_URL+"events/"+YEAR, headers=headers).text)
+    for i in range(len(events)):
+        event = events[i]
+        eventCode = YEAR+event["event_code"]
+        try:
+            CalculatedDataCollection.insert_one(
+                {"event_code": (eventCode), "data": {}})
+        except:
+            pass
+        try:
+            ETagCollection.insert_one(
+                {"key": eventCode, "etag": "", "teamEtag": "", "event": event, "up_to_date": False})
+        except:
+            pass
     logging.info("Starting Polar Forecast")
     try:
         global numRuns
@@ -977,8 +973,8 @@ def update_database():
                     print(req.status_code, event["key"])
                     teams = event["teams"]
             except Exception as e:
-                # print(e)
-                teams = []
+                # logging.error(e)
+                teams = event["teams"]
             # print("got Teams")
             event["teams"] = teams
             # print(teams)
@@ -1037,7 +1033,7 @@ def update_database():
                 event["up_to_date"] = True
                 ETagCollection.find_one_and_replace(
                 {"key": event["key"]}, event)
-                # print(e)
+                # logging.error(e)
                 try:
                     updateData(event["key"])
                 except Exception as e:
