@@ -3,7 +3,6 @@ import sys
 import logging
 from loguru import logger
 from redis import Redis
-import aioredis
 
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 TBA_API_URL = "https://www.thebluealliance.com/api/v3/"
@@ -78,7 +77,7 @@ def get_redis_client():
     return RedisClient
 
 # Mongo Parameters
-MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb+srv://admin:admin@localhost:27017/PolarForecast")
+MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb://localhost:27017")
 
 APP_HOST = os.environ.get("APP_HOST", "")
 ALLOW_ORIGINS = [

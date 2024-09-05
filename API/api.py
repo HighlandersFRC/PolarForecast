@@ -1,4 +1,5 @@
 import base64
+from functools import wraps
 import io
 import json
 import logging
@@ -19,8 +20,6 @@ from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
 from fastapi_utils.tasks import repeat_every
-
-
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
@@ -79,7 +78,10 @@ redisClient = get_redis_client()
 
 
 def store_in_cache(key, value):
-    redisClient.set(key, json.dumps(value), ex=300)
+    try:
+        redisClient.set(key, json.dumps(value), ex=300)
+    except Exception as e:
+        pass
 
 def get_from_cache(key):
     if redisClient is None:
@@ -90,6 +92,29 @@ def get_from_cache(key):
     except Exception as e:
         logging.error(f"Error getting from cache {key}: {str(e)}")
         return None
+    
+def cacheValue(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Convert positional arguments to strings
+        keyargs = [str(arg) for arg in args]
+        
+        # Convert keyword arguments to strings
+        keykwargs = [str(kwarg) + str(value) for kwarg, value in kwargs.items()]
+        
+        # Create a unique cache key by combining all arguments with the function name
+        key = ''.join(keyargs + keykwargs) + func.__name__
+        
+        # Check if the result is already in the cache
+        value = get_from_cache(key)
+        if value is not None:
+            return value
+        
+        # Call the original function and store the result in cache
+        result = func(*args, **kwargs)
+        store_in_cache(key, result)
+        return result
+    return wrapper
 
 
 def flatten_dict(dd, separator="_", prefix=""):
@@ -105,11 +130,8 @@ def flatten_dict(dd, separator="_", prefix=""):
 
 
 @app.get("/{year}/{event}/{team}/stats")
+@cacheValue
 def get_event_Team_Stats(year: int, event: str, team: str):
-    cache_key = f"/{year}/{event}/{team}/stats"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     foundTeam = False
     data = CalculatedDataCollection.find_one({
         "event_code": str(year) + event,
@@ -125,16 +147,12 @@ def get_event_Team_Stats(year: int, event: str, team: str):
     if not foundTeam:
         raise HTTPException(400, "No team key '"+team +
                             "' in "+str(year)+event)
-    store_in_cache(cache_key, doc)
     return doc
 
 
 @app.get("/{year}/{event}/{team}/matches")
+@cacheValue
 def get_Team_Event_Matches(year: int, event: str, team: str):
-    cache_key = f"/{year}/{event}/{team}/matches"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     cursor = TBACollection.find({"event_key": str(
         year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
     data = list(cursor)
@@ -143,43 +161,32 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
     data.extend(list(cursor))
     for doc in data:
         doc["_id"] = str(doc["_id"])
-    store_in_cache(cache_key, data)
     return data
 
 
 @app.get("/{year}/{event}/stats")
+@cacheValue
 def get_Event_Stats(year: int, event: str):
-    cache_key = f"/{year}/{event}/stats"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
     for i, team in enumerate(data["data"][1:]):
         if math.isnan(team["death_rate"]):
             team["death_rate"] = 0
         data["data"][i+1] = team
     data.pop("_id")
-    store_in_cache(cache_key, data)
     return data
 
 
 @app.get("/events/{year}")
+@cacheValue
 def get_Year_Events(year: int):
-    cache_key = f"/events/{year}"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
-    store_in_cache(cache_key, events)
     return events
 
 
 @app.get("/search_keys")
+@cacheValue
 def get_Search_Keys():
-    cachedValue = get_from_cache("search_keys")
-    if cachedValue:
-        return {"data": cachedValue}
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
     retval = []
@@ -191,32 +198,23 @@ def get_Search_Keys():
             "start": event["start_date"],
             "end": event["end_date"],
         })
-    store_in_cache("search_keys", retval)
     return {"data": retval}
 
 
 @app.get("/{year}/{event}/predictions")
+@cacheValue
 def get_Event_Predictions(year: int, event: str):
-    cache_key = f"/{year}/{event}/predictions"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     try:
         data = PredictionCollection.find_one({"event_code": str(year)+event})
         data.pop("_id")
-        store_in_cache(cache_key, {"data": data["data"]})
         return {"data": data["data"]}
     except:
-        store_in_cache(cache_key, {"data": []})
         return {"data": []}
 
 
 @app.get("/{year}/{event}/{match_key}/match_details")
+@cacheValue
 def get_match_details(year: int, event: str, match_key: str):
-    cache_key = f"/{year}/{event}/{match_key}/match_details"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     try:
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
@@ -243,18 +241,14 @@ def get_match_details(year: int, event: str, match_key: str):
             "red_teams": redTeamStats,
             "blue_teams": blueTeamStats
         }
-        store_in_cache(cache_key, retval)
         return retval
     except Exception as e:
         raise HTTPException(400, str(e))
 
 
 @app.get("/{year}/{event}/{team}/predictions")
+@cacheValue
 def get_team_match_predictions(year: int, event: str, team: str):
-    cache_key = f"/{year}/{event}/{team}/predictions"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     event_code = str(year) + event
     data = PredictionCollection.find_one({"event_code": event_code})
     matches = []
@@ -262,29 +256,21 @@ def get_team_match_predictions(year: int, event: str, team: str):
         for match in data["data"]:
             if match[alliance+"_teams"].__contains__(team):
                 matches.append(match)
-    store_in_cache(cache_key, {"data": matches})
     return {"data": matches}
 
 
 @app.get("/{year}/{event}/stat_description")
+@cacheValue
 def get_Stat_Descriptions():
-    cache_key = "stat_description"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
-    file = open("StatDescription.json")
+    file = open("app/StatDescription.json")
     description = json.load(file)
     file.close()
-    store_in_cache(cache_key, description)
     return description
 
 
 @app.get("/{year}/{event}/{team}/PitScouting")
+@cacheValue
 def get_pit_scouting_data(year: int, event: str, team: str):
-    cache_key = f"/{year}/{event}/{team}/PitScouting"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     try:
         data = PitScoutingCollection.find_one(
             {"event_code": str(year) + event, "team_number": int(team[3:])})
@@ -292,7 +278,6 @@ def get_pit_scouting_data(year: int, event: str, team: str):
             data.pop("_id")
         except:
             pass
-        store_in_cache(cache_key, data)
         return data
     except Exception as e:
         raise HTTPException(404, str(e))
@@ -482,12 +467,7 @@ def get_pictures(team: str, event: str, year: int):
 
 
 @app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse)
-async def get_pit_scouting_pictures(team: str, event: str, year: int):
-    cache_key = f"/{year}/{event}/{team}/getPictures"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
-    
+async def get_pit_scouting_pictures(team: str, event: str, year: int):    
     pictures = get_pictures(year=year, event=event, team=team)
     if not pictures:
         raise HTTPException(status_code=404, detail="Pictures not found")
@@ -504,16 +484,12 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int):
                           "file": file_content_base64, "_id": id})
 
     # Return the list of image data as a JSON response
-    store_in_cache(cache_key, image_data)
     return image_data
 
 
 @app.get("/{year}/{event}/getPictures")
+@cacheValue
 async def get_event_pictures(year: str, event: str):
-    cache_key = f"/{year}/{event}/getPictures"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     eventCode = str(year) + event
     # Query the collection using the key
     pictures = PictureCollection.find({"eventCode": eventCode})
@@ -533,7 +509,6 @@ async def get_event_pictures(year: str, event: str):
                           "file": file_content_base64, "_id": id, "team": team})
 
     # Return the list of image data as a JSON response
-    store_in_cache(cache_key, image_data)
     return image_data
 
 
@@ -599,44 +574,32 @@ def get_pit_status(year: int, event: str):
 
 
 @app.get("/{year}/{event}/{team}/ScoutEntries")
+@cacheValue
 def get_scout_team_entries(team: str, event: str, year: int):
-    cache_key = f"/{year}/{event}/{team}/ScoutEntries"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     retval = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event, "team_number": team[3:]}))
     for entry in retval:
         entry.pop("_id")
-    store_in_cache(cache_key, retval)
     return retval
 
 
 @app.get("/{year}/{event}/ScoutEntries")
+@cacheValue
 def get_scout_event_entries(event: str, year: int):
-    cache_key = f"/{year}/{event}/ScoutEntries"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     retval = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event}))
     for entry in retval:
         entry.pop("_id")
-    store_in_cache(cache_key, retval)
     return retval
 
 
 @app.get("/{year}/{event}/ScoutingData")
+@cacheValue
 def get_event_autos(year: int, event: str):
-    cache_key = f"/{year}/{event}/ScoutingData"
-    cached_value = get_from_cache(cache_key)
-    if cached_value:
-        return cached_value
     autos = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event}))
     for auto in autos:
         auto.pop("_id")
-    store_in_cache(cache_key, autos)
     return autos
 
 
@@ -1025,7 +988,6 @@ def activate_match_data(data: dict, password: str):
         return data
     else:
         raise HTTPException(400, "Incorrect Password")
-
 
 @app.get("/")
 def read_root():
