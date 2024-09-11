@@ -248,7 +248,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     }));
     setText("Submitting...")
     setShowReset(true)
-    postMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, false));
+    postMatchScouting(formData, url.searchParams.get("session_state"), (data) => MatchScoutingStatusCallback(data, false));
   };
 
   const MatchScoutingStatusCallback = ([status, response], update) => {
@@ -335,7 +335,11 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setShowReset(true)
     putMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, true));
   };
-
+  if (!url.searchParams.get('session_state')){
+    window.location.href = `http://localhost:8084/realms/polarforecast/protocol/openid-connect/auth?client_id=polarforecast-gui&redirect_uri=${url.protocol}//${url.host+url.pathname}&response_type=code`
+  } else {
+    console.log(url.searchParams.get('session_state'));
+  }
   return (
     <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

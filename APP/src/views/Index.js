@@ -26,6 +26,7 @@ import React, { useEffect, useState } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import MatchDataScanner from "components/MatchDataScanner";
+import { Redirect } from "react-router-dom/cjs/react-router-dom";
 
 const Index = () => {
   const theme = useTheme();
@@ -109,7 +110,6 @@ const Index = () => {
       setContainerHeight(`calc(100vh - 170px)`)
     }
   }, [isDesktop]);
-
   return (
     <>
       <Header />

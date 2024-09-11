@@ -8,7 +8,7 @@ from types import TracebackType
 from typing import Annotated
 import zipfile
 from bson import ObjectId
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 import numpy
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from auth import check_token_active
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -348,6 +349,7 @@ numRuns = 0
 
 
 @app.post("/MatchScouting/")
+@check_token_active
 def post_match_scouting(data: dict):
     eventCode = data["event_code"]
     event = ETagCollection.find_one({"key": eventCode})

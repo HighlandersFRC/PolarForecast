@@ -1,7 +1,10 @@
 
 const API_ENDPOINT = "http://localhost:8000";
-// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net"; 
-console.log(API_ENDPOINT)
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
+console.log(API_ENDPOINT);
+console.log("Hello " + process.env.REACT_APP_HELLO)
+const AUTH_ENDPOINT = process.env.REACT_APP_KEYCLOAK_LOGIN_IP;
+console.log("Auth endpoint:"+AUTH_ENDPOINT);
  
 const default_ttl = 5; //5 minutes expiry time
 
@@ -228,7 +231,7 @@ export const getLeaderboard = async (year, callback) => {
   }
 };
 
-export const postMatchScouting = async (data, callback) => {
+export const postMatchScouting = async (data, token, callback) => {
   try {
     const endpoint = `${API_ENDPOINT}/MatchScouting/`;
     console.log(endpoint)
@@ -236,6 +239,7 @@ export const postMatchScouting = async (data, callback) => {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
+        "token": token,
       },
       body: JSON.stringify(data), // body data type must match "Content-Type" header
     });

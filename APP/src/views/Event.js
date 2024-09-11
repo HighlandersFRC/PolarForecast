@@ -1217,7 +1217,10 @@ const Tables = () => {
   }
 
   const handleChange = (event, newValue) => {
-    history.push({ hash: tabDict[newValue] });
+    if (url.searchParams.toString())
+      history.push(`${eventCode}?${url.searchParams.toString()}#${tabDict[newValue]}`);
+    else
+      history.push(`${eventCode}#${tabDict[newValue]}`);
     setTabIndex(newValue);
   };
 
@@ -1439,7 +1442,7 @@ const Tables = () => {
           <div style={{ height: containerHeight, width: "100%" }}>
             <Card className="polar-box">
               <CardHeader className="bg-transparent">
-                <h3 className="text-white mb-0">MatchScouting - {eventTitle}</h3>
+                <h3 className="text-white mb-0">Match Scouting - {eventTitle}</h3>
               </CardHeader>
               <MatchScouting
                 defaultEventCode={eventName}
@@ -1452,7 +1455,7 @@ const Tables = () => {
         <TabPanel value={tabIndex} index={3} dir={darkTheme.direction}>
           <Card className="polar-box">
             <CardHeader className="bg-transparent">
-              <h3 className="text-white mb-0">Pit Scounting - {eventTitle}</h3>
+              <h3 className="text-white mb-0">Pit Scouting - {eventTitle}</h3>
             </CardHeader>
             <div style={{ height: containerHeight, width: "100%" }}>
               {pitScoutingStatus.length > 0 ? (

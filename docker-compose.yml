@@ -9,6 +9,7 @@ services:
     container_name: pfredis
     ports:
       - "6379:6379"
+
   api:
     build: .
     container_name: pfbackend
@@ -31,6 +32,7 @@ services:
       - PF_TBA_POLLING=${PF_TBA_POLLING}
       - PF_TBA_POLLING_INTERVAL=${PF_TBA_POLLING_INTERVAL}
       - PF_EDIT_PASSWORD=${PF_EDIT_PASSWORD}
+
   app:
     build: ./APP
     ports:
@@ -41,3 +43,45 @@ services:
         - action: sync
           path: .
           target: /APP
+    environment:
+      - KEYCLOAK_LOGIN_IP=${KEYCLOAK_LOGIN_IP}
+    env_file:
+      - .env
+
+  keycloak:
+    build:
+      context: ./AUTH/
+      dockerfile: Dockerfile
+      args:
+        KEYCLOAK_LOGIN_THEME_NAME: ${KEYCLOAK_LOGIN_THEME_NAME}.jar
+    container_name: pfkeycloak
+    restart: always
+    extra_hosts:
+      ${WEBAPP_DOMAIN}: ${APP_HOST_IP}
+      ${KEYCLOAK_DOMAIN}: ${KC_HOST_IP}
+    ports:
+      - '8084:8080'
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      WEBAPP_ORIGIN: http://${APP_DOMAIN}
+      WEBAPP_CM_ORIGIN: http://${APP_CM_ORIGIN}
+      KC_HEALTH_ENABLED: true
+      # KC_DB: postgres
+      # KC_DB_URL: jdbc:postgresql://${PG_DB_HOST}/postgres?currentSchema=keycloak
+      # KC_DB_USERNAME: ${PG_DB_USER}
+      # KC_DB_PASSWORD: ${PG_DB_PASS}
+      KC_HOSTNAME: ${KEYCLOAK_DOMAIN}
+      KEYCLOAK_API_CLIENT_SECRET_KEY: ${KEYCLOAK_API_CLIENT_SECRET_KEY}
+      KEYCLOAK_CM_API_CLIENT_SECRET_KEY: ${KEYCLOAK_CM_API_CLIENT_SECRET_KEY}
+    command:
+      - start-dev
+      - --log-level=${KC_LOGGING_LEVEL}
+      - --import-realm
+      - --spi-theme-welcome-theme=custom-welcome
+    logging:
+      options:
+        max-size: '10m'
+volumes:
+  pgdb:
+    driver: local

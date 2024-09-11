@@ -11,10 +11,6 @@ COPY package*.json ./
 RUN npm install
 
 
-RUN npm install -g sass
-
-
-# Copy the rest of the application code
 COPY . .
 
 
