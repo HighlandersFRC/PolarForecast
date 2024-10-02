@@ -16,7 +16,7 @@
 
 */
 import { Card, CardHeader, Container, Row } from "reactstrap";
-import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, useMediaQuery, useTheme } from "@mui/material";
+import { Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, ImageList, ImageListItem, useMediaQuery, useTheme , Pagination} from "@mui/material";
 import { alpha, styled, ThemeProvider, createTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
@@ -201,6 +201,21 @@ const Tables = () => {
     "#4169E1", "#FF69B4", "#20B2AA", "#FF8C00",
     "#483D8B", "#FFDAB9", "#00FA9A", "#8B4513",
   ];
+  // State to track the current page
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  // Calculate the index for slicing
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = displayAutos.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(displayAutos.length / itemsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   function getMaxValue(numbers) {
     if (!Array.isArray(numbers) || numbers.length === 0) {
@@ -1408,7 +1423,7 @@ const Tables = () => {
                     { index: 0, name: "Speaker", key: "speaker_total", enabled: true, weight: 1 },
                     { index: 1, name: "Amp", key: "amp_total", enabled: true, weight: 1 },
                     { index: 2, name: "Trap", key: "trap", enabled: true, weight: 1 },
-                    { index: 3, name: "Pass", key: "teleop_pass", enabled: true, weight: 0.5}
+                    { index: 3, name: "Pass", key: "teleop_pass", enabled: true, weight: 0.5 }
                   ]}
                 />
                 <br />
@@ -1422,7 +1437,7 @@ const Tables = () => {
                     { index: 2, name: "TS", key: "teleop_speaker", enabled: true, weight: 2 },
                     { index: 3, name: "TAS", key: "teleop_amped_speaker", enabled: true, weight: 5 },
                     { index: 4, name: "TA", key: "teleop_amp", enabled: true, weight: 1 },
-                    { index: 3, name: "Pass", key: "teleop_pass", enabled: true, weight: 1},
+                    { index: 3, name: "Pass", key: "teleop_pass", enabled: true, weight: 1 },
                     { index: 5, name: "Trap", key: "trap", enabled: true, weight: 5 },
                     { index: 6, name: "Taxi", key: "mobility", enabled: true, weight: 2 },
                     { index: 7, name: "Park", key: "parking", enabled: true, weight: 1 },
@@ -1637,15 +1652,34 @@ const Tables = () => {
               max={8}
               onChange={(value) => { handleCounterChange("pickups", value) }}
             />
-            {displayAutos.length > 0 ? <ImageList cols={3}>
-              {displayAutos.map((val, idx, a) => {
-                if (val?.active) return (<ImageListItem><AutoDisplay scoutingData={val} /></ImageListItem>)
-              })}
-            </ImageList> : <>
-              <br />
-              <h1 className="text-white mb-0" style={{ textAlign: "center" }}>No Autonomous Data</h1>
-              <br />
-            </>}
+            {currentItems.length > 0 ? (
+              <ImageList cols={3}>
+                {currentItems.map((val, idx) => (
+                  val?.active && (
+                    <ImageListItem key={idx}>
+                      <AutoDisplay scoutingData={val} />
+                    </ImageListItem>
+                  )
+                ))}
+              </ImageList>
+            ) : (
+              <Box textAlign="center" mt={2}>
+                <Typography variant="h5" color="white">
+                  No Autonomous Data
+                </Typography>
+              </Box>
+            )}
+
+            <Box display="flex" justifyContent="center" mt={3}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                siblingCount={1}
+                boundaryCount={1}
+              />
+            </Box>
           </Card>
         </TabPanel>
       </div>
