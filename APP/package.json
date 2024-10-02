@@ -55,6 +55,7 @@
     "chart.js": "2.9.4",
     "classnames": "2.3.1",
     "fs": "^0.0.1-security",
+    "keycloak-js": "^25.0.5",
     "moment": "2.29.4",
     "nouislider": "15.2.0",
     "package.json": "^2.0.1",

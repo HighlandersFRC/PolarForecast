@@ -7,6 +7,8 @@ import { postMatchScouting, putMatchScouting } from 'api';
 import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
 import Counter from 'components/Counter';
+import { login } from 'api';
+import { getToken } from 'api';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
@@ -50,6 +52,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const fieldImageRef = useRef(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [driverStation, setDriverStation] = useState('');
+  const [token, setToken] = useState(getToken());
   const NOTE_SIZE = 80;
 
   useEffect(() => {
@@ -188,8 +191,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
                   onClick={() => handlePieceClick(piece)}
                 >
                   <img src="/Note.png" alt={`Note ${piece}`} style={{ width: '100%', height: '100%' }} />
-                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: `${50*imageScaleFactor}px`, fontWeight: 'bold'}}>
-                    {formData.data.selectedPieces.indexOf(piece) === -1 ? "" : formData.data.selectedPieces.indexOf(piece)+1}
+                  <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: `${50 * imageScaleFactor}px`, fontWeight: 'bold' }}>
+                    {formData.data.selectedPieces.indexOf(piece) === -1 ? "" : formData.data.selectedPieces.indexOf(piece) + 1}
                   </span>
                 </div>
               )
@@ -335,160 +338,166 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setShowReset(true)
     putMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, true));
   };
-  if (!url.searchParams.get('session_state')){
-    window.location.href = `http://localhost:8084/realms/polarforecast/protocol/openid-connect/auth?client_id=polarforecast-gui&redirect_uri=${url.protocol}//${url.host+url.pathname}&response_type=code`
-  } else {
-    console.log(url.searchParams.get('session_state'));
-  }
-  return (
-    <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <TextField
-          label="Event Code"
-          value={formData.event_code}
-          onChange={(e) => handleChange('event_code', e.target.value)}
-          disabled // Disable the Event Code field
-        />
-        <TextField
-          label="Team Number"
-          type="number"
-          value={formData.team_number}
-          onChange={(e) => handleChange('team_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 10000))}
-          inputProps={{ min: 0 }}
-        // disabled // Disable the Team Number field
-        />
-        <FormControl >
-          <InputLabel id="driver-station-label">Driver Station</InputLabel>
-          <Select
-            label="Driver Station"
+  if (token)
+    return (
+      <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <TextField
+            label="Event Code"
+            value={formData.event_code}
+            onChange={(e) => handleChange('event_code', e.target.value)}
+            disabled // Disable the Event Code field
+          />
+          <TextField
+            label="Team Number"
             type="number"
-            id="driver-station"
-            labelId="driver-station-label"
-            value={driverStation}
-            sx={{ color: driverStation ? driverStation < 4 ? 'red' : '#1976d2' : '' }}
-            onChange={(e) => handleChange('station', e.target.value)}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={1} sx={{ color: 'red' }}>R1</MenuItem>
-            <MenuItem value={2} sx={{ color: 'red' }}>R2</MenuItem>
-            <MenuItem value={3} sx={{ color: 'red' }}>R3</MenuItem>
-            <MenuItem value={4} sx={{ color: '#1976d2' }}>B1</MenuItem>
-            <MenuItem value={5} sx={{ color: '#1976d2' }}>B2</MenuItem>
-            <MenuItem value={6} sx={{ color: '#1976d2' }}>B3</MenuItem>
-          </Select>
-          <FormHelperText>Driver Station Not Required</FormHelperText>
-        </FormControl>
-        <TextField
-          label="Match Number"
-          type="number"
-          value={formData.match_number}
-          onChange={(e) => handleChange('match_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 1000))}
-          inputProps={{ min: 0 }}
-        />
-        <TextField
-          label="Scout Name"
-          value={formData.scout_info.name}
-          onChange={(e) => handleChange('scout_info.name', e.target.value)}
-          inputProps={{ maxLength: 15 }}
-        />
-      </div>
-      <h3 className="text-white mb-0">Select The Pieces That The Robot Controls During Auto</h3>
-      {renderSelectablePieces(formData)}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <h3 className="text-white mb-0">Auto Fields</h3>
-        <Counter
-          label="Auto Amp"
-          type="number"
-          value={formData.data.auto.amp}
-          onChange={(value) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(value, 10)), 9))}
-          max={9}
-        />
-        <Counter
-          label="Auto Speaker"
-          type="number"
-          value={formData.data.auto.speaker}
-          onChange={(value) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(value, 10)), 9))}
-          max={9}
-        />
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <h3 className="text-white mb-0">Teleop Fields</h3>
-        {formData && (<>
+            value={formData.team_number}
+            onChange={(e) => handleChange('team_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 10000))}
+            inputProps={{ min: 0 }}
+          // disabled // Disable the Team Number field
+          />
+          <FormControl >
+            <InputLabel id="driver-station-label">Driver Station</InputLabel>
+            <Select
+              label="Driver Station"
+              type="number"
+              id="driver-station"
+              labelId="driver-station-label"
+              value={driverStation}
+              sx={{ color: driverStation ? driverStation < 4 ? 'red' : '#1976d2' : '' }}
+              onChange={(e) => handleChange('station', e.target.value)}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value={1} sx={{ color: 'red' }}>R1</MenuItem>
+              <MenuItem value={2} sx={{ color: 'red' }}>R2</MenuItem>
+              <MenuItem value={3} sx={{ color: 'red' }}>R3</MenuItem>
+              <MenuItem value={4} sx={{ color: '#1976d2' }}>B1</MenuItem>
+              <MenuItem value={5} sx={{ color: '#1976d2' }}>B2</MenuItem>
+              <MenuItem value={6} sx={{ color: '#1976d2' }}>B3</MenuItem>
+            </Select>
+            <FormHelperText>Driver Station Not Required</FormHelperText>
+          </FormControl>
+          <TextField
+            label="Match Number"
+            type="number"
+            value={formData.match_number}
+            onChange={(e) => handleChange('match_number', Math.min(Math.max(0, parseInt(e.target.value, 10)), 1000))}
+            inputProps={{ min: 0 }}
+          />
+          <TextField
+            label="Scout Name"
+            value={formData.scout_info.name}
+            onChange={(e) => handleChange('scout_info.name', e.target.value)}
+            inputProps={{ maxLength: 15 }}
+          />
+        </div>
+        <h3 className="text-white mb-0">Select The Pieces That The Robot Controls During Auto</h3>
+        {renderSelectablePieces(formData)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <h3 className="text-white mb-0">Auto Fields</h3>
           <Counter
-            label="Pass"
+            label="Auto Amp"
             type="number"
-            value={formData.data.teleop.pass}
-            onChange={(value) => handleChange('data.teleop.pass', Math.max(0, parseInt(value, 10)))}
-            max={50}
+            value={formData.data.auto.amp}
+            onChange={(value) => handleChange('data.auto.amp', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+            max={9}
           />
           <Counter
-            label="Teleop Amp"
+            label="Auto Speaker"
             type="number"
-            value={formData.data.teleop.amp}
-            onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 10)))}
-            max={50}
+            value={formData.data.auto.speaker}
+            onChange={(value) => handleChange('data.auto.speaker', Math.min(Math.max(0, parseInt(value, 10)), 9))}
+            max={9}
           />
-          <Counter
-            label="Teleop Speaker"
-            type="number"
-            value={formData.data.teleop.speaker}
-            onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 10)))}
-            max={50}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <h3 className="text-white mb-0">Teleop Fields</h3>
+          {formData && (<>
+            <Counter
+              label="Pass"
+              type="number"
+              value={formData.data.teleop.pass}
+              onChange={(value) => handleChange('data.teleop.pass', Math.max(0, parseInt(value, 10)))}
+              max={50}
+            />
+            <Counter
+              label="Teleop Amp"
+              type="number"
+              value={formData.data.teleop.amp}
+              onChange={(value) => handleChange('data.teleop.amp', Math.max(0, parseInt(value, 10)))}
+              max={50}
+            />
+            <Counter
+              label="Teleop Speaker"
+              type="number"
+              value={formData.data.teleop.speaker}
+              onChange={(value) => handleChange('data.teleop.speaker', Math.max(0, parseInt(value, 10)))}
+              max={50}
+            />
+            <Counter
+              label="Teleop Amplified Speaker"
+              type="number"
+              value={formData.data.teleop.amped_speaker}
+              onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 10)))}
+              max={50}
+            />
+          </>)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <h3 className="text-white mb-0">Miscellaneous</h3>
+          <h4 className="text-white mb-0">Died?</h4>
+          <Switch
+            label="Died?"
+            checked={formData.data.miscellaneous.died}
+            onChange={(e) => handleChange('data.miscellaneous.died', e.target.checked)}
+            color="warning"
           />
-          <Counter
-            label="Teleop Amplified Speaker"
-            type="number"
-            value={formData.data.teleop.amped_speaker}
-            onChange={(value) => handleChange('data.teleop.amped_speaker', Math.max(0, parseInt(value, 10)))}
-            max={50}
+          <TextField
+            label="Comments/Notes"
+            value={formData.data.miscellaneous.comments}
+            onChange={(e) => handleChange('data.miscellaneous.comments', e.target.value)}
+            inputProps={{}}
           />
-        </>)}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <h3 className="text-white mb-0">Miscellaneous</h3>
-        <h4 className="text-white mb-0">Died?</h4>
-        <Switch
-          label="Died?"
-          checked={formData.data.miscellaneous.died}
-          onChange={(e) => handleChange('data.miscellaneous.died', e.target.checked)}
-          color="warning"
-        />
-        <TextField
-          label="Comments/Notes"
-          value={formData.data.miscellaneous.comments}
-          onChange={(e) => handleChange('data.miscellaneous.comments', e.target.value)}
-          inputProps={{}}
-        />
-      </div>
-      {!update && <Button variant="contained" onClick={handleSubmit}>
-        Submit
-      </Button>}
-      {update && <Button variant="contained" onClick={handleUpdate}>
-        Update
-      </Button>}
-      <h1 className="text-white mb-0">{text}</h1>
-      {showQRCode && (
-        <>
-          <div style={{ display: 'flex', marginTop: '0px', justifyContent: 'center', alignItems: 'center' }}>
-            {/* Display the QR code only when showQRCode is true */}
-            <BrowserView>
-              <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"81"} logoWidth={"138"} fgColor='#1a174d' bgColor='#90caf9' />
-            </BrowserView>
-            <MobileView>me":
-              <QRCode size={300} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"54"} logoWidth={"92"} fgColor='#1a174d' bgColor='#90caf9' />
-            </MobileView>
-          </div>
-        </>
-      )}
-      {showReset &&
-        <Button variant="contained" onClick={handleReset}>
-          Reset
-        </Button>
-      }
-    </form>
-  );
+        </div>
+        {!update && <Button variant="contained" onClick={handleSubmit}>
+          Submit
+        </Button>}
+        {update && <Button variant="contained" onClick={handleUpdate}>
+          Update
+        </Button>}
+        <h1 className="text-white mb-0">{text}</h1>
+        {showQRCode && (
+          <>
+            <div style={{ display: 'flex', marginTop: '0px', justifyContent: 'center', alignItems: 'center' }}>
+              {/* Display the QR code only when showQRCode is true */}
+              <BrowserView>
+                <QRCode size={400} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"81"} logoWidth={"138"} fgColor='#1a174d' bgColor='#90caf9' />
+              </BrowserView>
+              <MobileView>me":
+                <QRCode size={300} value={JSON.stringify(formData)} logoImage={serverPath + "/PolarbearHead.png"} logoHeight={"54"} logoWidth={"92"} fgColor='#1a174d' bgColor='#90caf9' />
+              </MobileView>
+            </div>
+          </>
+        )}
+        {showReset &&
+          <Button variant="contained" onClick={handleReset}>
+            Reset
+          </Button>
+        }
+      </form>
+    );
+  else
+    return (
+      <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <h1 className="text-white mb-0">Login Required</h1>
+          <br></br>
+          <Button variant="contained" onClick={() => login(url)}>Login</Button>
+        </div>
+      </form>
+    )
 };
 
 export default MatchScouting;

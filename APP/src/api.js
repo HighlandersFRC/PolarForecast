@@ -1,13 +1,25 @@
-
-const API_ENDPOINT = "http://localhost:8000";
+import Keycloak from "keycloak-js";
+const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT;
 // const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net";
 console.log(API_ENDPOINT);
 console.log("Hello " + process.env.REACT_APP_HELLO)
 const AUTH_ENDPOINT = process.env.REACT_APP_KEYCLOAK_LOGIN_IP;
 console.log("Auth endpoint:"+AUTH_ENDPOINT);
- 
+const keycloak = new Keycloak({
+  url: AUTH_ENDPOINT,
+  realm: 'polarforecast',
+  clientId: 'polarforecast-gui'
+});
+keycloak.init({checkLoginIframe: false});
 const default_ttl = 5; //5 minutes expiry time
+export const login = (currentUrl) => {
+  if (keycloak.token){
+    return keycloak.token;
+  }
+  keycloak.login({redirectUri: `${currentUrl.protocol}//${currentUrl.host+currentUrl.pathname}`}).catch(error => localStorage.clear());
+}
 
+export const getToken = () => keycloak.token;
 function setWithExpiry(key, value, ttl) {
   const expiry = Math.floor(new Date().getTime() + ttl * 60 * 1000.0);
   const item = {
