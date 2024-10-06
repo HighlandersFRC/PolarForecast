@@ -1,6 +1,6 @@
 
-// const API_ENDPOINT = "http://localhost:8000";
-const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net"; 
+const API_ENDPOINT = "http://localhost:8000";
+// const API_ENDPOINT = "https://highlanderscouting.azurewebsites.net"; 
 console.log(API_ENDPOINT)
  
 const default_ttl = 5; //5 minutes expiry time
@@ -84,7 +84,7 @@ export const getRankings = async (year, event, callback) => {
     const storage_name = year + event + "_rankings";
     const data = getWithExpiry(storage_name);
     if (data === null) {
-      const endpoint = `${API_ENDPOINT}/${year}/${event}/stats`;
+      const endpoint = `${API_ENDPOINT}/${year}/${event}/stats`; 
       console.log("Requesting Data from: " + endpoint);
       const response = await fetch(endpoint);
       if (response.ok) {

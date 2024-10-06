@@ -127,9 +127,9 @@ def analyzeData(m_data: list):
     matchScoutingCount = np.zeros(len(teams))
 
     # Counting the number of matches that each team has
-    for k in range(3):
-        for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
-            teamMatchCount[teams.index(matchTeam)] += 1
+    stations = ['station1', 'station2', 'station3']
+    team_match_counts = oprMatchDataFrame[stations].apply(pd.Series.value_counts).reindex(teams, fill_value=0).sum(axis=1)
+    teamMatchCount[:] = team_match_counts.values
     # print("Counted Matches per team")
 
     # Analyzing data that is directly extracted from
@@ -300,7 +300,7 @@ def analyzeData(m_data: list):
     TBAOnlyXMatrix = pd.DataFrame(TBAOnlyAPseudoInverse @ TBAOnlyYMatrix)
     # Run Genetic Algorithm
 
-    def createfitness_func(min: float, max: float):
+    def create_fitness_func(min: float, max: float):
         def func(solution, functionInputs):
             solutionMatrix = np.array(solution)
             a = np.array(functionInputs[0])
@@ -318,7 +318,7 @@ def analyzeData(m_data: list):
             return error
         return func
 
-    mutation_percent_genes = 0.01
+    mutation_percent_genes = 0.02
 
     # Define a function to perform the genetic algorithm operation
     # print("doing genetic algorithm")
@@ -326,7 +326,7 @@ def analyzeData(m_data: list):
 
     def perform_genetic_algorithm(i):
         ga = geneticAlg(
-            createfitness_func(ScoutingDataMins[i], ScoutingDataMaxs[i]),
+            create_fitness_func(ScoutingDataMins[i], ScoutingDataMaxs[i]),
             [pd.DataFrame(AMatrix[teams]), pd.DataFrame(
                 YMatrix[ScoutingDataKeys[i]])],
             pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
@@ -344,7 +344,7 @@ def analyzeData(m_data: list):
     # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
-            createfitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
+            create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
             [pd.DataFrame(TBAOnlyAList, columns=teams),
              pd.DataFrame(TBAOnlyYMatrix[TBAOnlyKeys[i]])],
             pd.DataFrame(TBAOnlyXMatrix[TBAOnlyKeys[i]]),
