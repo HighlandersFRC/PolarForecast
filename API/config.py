@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 from loguru import logger
+import redis
 
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 TBA_API_URL = "https://www.thebluealliance.com/api/v3/"
@@ -65,13 +66,20 @@ if len(TOA_API_KEY) == 0:
 
 
 # REDIS Parameters
-REDIS_HOST = os.environ.get("PF_REDIS_HOST", "localhost")
-REDIS_PORT = os.environ.get("PF_REDIS_PORT", 6379)
-REDIS_PRIMARY_KEY = os.environ.get("PF_REDIS_PRIMARY_KEY", "")
-REDIS_STRICT = os.environ.get("PF_REDIS_STRICT", False)
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+def get_redis_client():
+    try:
+        RedisClient = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, ssl=True)
+    except Exception as e:
+        logging.error(str(e))
+        logging.info("redis connection: " + REDIS_HOST + " " + REDIS_PORT + " " + REDIS_PASSWORD)
+        RedisClient = None
+    return RedisClient
 
 # Mongo Parameters
-MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb+srv://admin:admin@localhost:27017/PolarForecast")
+MONGO_CONNECTION = os.environ.get("PF_MONGO_CONNECTION", "mongodb://localhost:27017")
 
 APP_HOST = os.environ.get("APP_HOST", "")
 ALLOW_ORIGINS = [
