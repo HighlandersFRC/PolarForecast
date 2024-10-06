@@ -84,13 +84,17 @@ def store_in_cache(key, value):
         pass
 
 def get_from_cache(key):
+    global redisClient
     if redisClient is None:
+        logging.error("No Redis Cache")
         return None
     try:
         logging.info(f"Getting from cache {key}")
         return json.loads(redisClient.get(key))
     except Exception as e:
         logging.error(f"Error getting from cache {key}: {str(e)}")
+        if Exception is ConnectionError:
+            redisClient = get_redis_client()
         return None
     
 def cacheValue(func):

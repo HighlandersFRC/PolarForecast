@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 from loguru import logger
-from redis import Redis
+import redis
 
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 TBA_API_URL = "https://www.thebluealliance.com/api/v3/"
@@ -69,11 +69,13 @@ if len(TOA_API_KEY) == 0:
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
-try:
-    RedisClient = Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD)
-except:
-    RedisClient = None
 def get_redis_client():
+    try:
+        RedisClient = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, ssl=True)
+    except Exception as e:
+        logging.error(str(e))
+        logging.info("redis connection: " + REDIS_HOST + " " + REDIS_PORT + " " + REDIS_PASSWORD)
+        RedisClient = None
     return RedisClient
 
 # Mongo Parameters
