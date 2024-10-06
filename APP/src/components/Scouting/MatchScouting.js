@@ -384,10 +384,11 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           inputProps={{ min: 0 }}
         />
         <TextField
-          label="Scout Name"
+          label="Scout Team Number"
+          type="number"
           value={formData.scout_info.name}
           onChange={(e) => handleChange('scout_info.name', e.target.value)}
-          inputProps={{ maxLength: 15 }}
+          inputProps={{ min: 0, maxLength: 15 }}
         />
       </div>
       <h3 className="text-white mb-0">Select The Pieces That The Robot Controls During Auto</h3>
