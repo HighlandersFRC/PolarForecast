@@ -20,6 +20,7 @@ from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
 from fastapi_utils.tasks import repeat_every
+from StatDescription import stat_description
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
@@ -266,10 +267,7 @@ def get_team_match_predictions(year: int, event: str, team: str):
 @app.get("/{year}/{event}/stat_description")
 @cacheValue
 def get_Stat_Descriptions():
-    file = open("app/StatDescription.json")
-    description = json.load(file)
-    file.close()
-    return description
+    return stat_description
 
 
 @app.get("/{year}/{event}/{team}/PitScouting")
