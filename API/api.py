@@ -84,6 +84,7 @@ def store_in_cache(key, value):
     except Exception as e:
         pass
 
+
 def get_from_cache(key):
     global redisClient
     if redisClient is None:
@@ -97,24 +98,26 @@ def get_from_cache(key):
         if Exception is ConnectionError:
             redisClient = get_redis_client()
         return None
-    
+
+
 def cacheValue(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Convert positional arguments to strings
         keyargs = [str(arg) for arg in args]
-        
+
         # Convert keyword arguments to strings
-        keykwargs = [str(kwarg) + str(value) for kwarg, value in kwargs.items()]
-        
+        keykwargs = [str(kwarg) + str(value)
+                     for kwarg, value in kwargs.items()]
+
         # Create a unique cache key by combining all arguments with the function name
         key = ''.join(keyargs + keykwargs) + func.__name__
-        
+
         # Check if the result is already in the cache
         value = get_from_cache(key)
         if value is not None:
             return value
-        
+
         # Call the original function and store the result in cache
         result = func(*args, **kwargs)
         store_in_cache(key, result)
@@ -469,7 +472,7 @@ def get_pictures(team: str, event: str, year: int):
 
 
 @app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse)
-async def get_pit_scouting_pictures(team: str, event: str, year: int):    
+async def get_pit_scouting_pictures(team: str, event: str, year: int):
     pictures = get_pictures(year=year, event=event, team=team)
     if not pictures:
         raise HTTPException(status_code=404, detail="Pictures not found")
@@ -991,6 +994,7 @@ def activate_match_data(data: dict, password: str):
     else:
         raise HTTPException(400, "Incorrect Password")
 
+
 @app.get("/")
 def read_root():
     return {"polar": "forecast"}
@@ -1034,40 +1038,40 @@ def update_database():
                 else:
                     print(req.status_code, event["key"])
                     teams = event["teams"]
+                # print("got Teams")
+                event["teams"] = teams
+                # print(teams)
+                # print(event)
+                ETagCollection.find_one_and_replace(
+                    {"key": event["key"]}, event)
+                # print(teams)
+                teams = [{"key": x[3:], "pit_status": "Not Started",
+                        "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
+                try:
+                    existingTeams = PitStatusCollection.find_one(
+                        {"event_code": event["key"]})["data"]
+                except:
+                    existingTeams = []
+                # print("961")
+                returnTeams = []
+                for team in teams:
+                    for existingTeam in existingTeams:
+                        if existingTeam["key"] == team["key"]:
+                            team = existingTeam
+                            break
+                    returnTeams.append(team)
+                # print("got new teams")
+                try:
+                    # print(returnTeams)
+                    PitStatusCollection.insert_one(
+                        {"event_code": event["key"], "data": returnTeams})
+                except Exception as e:
+                    # logging.error(e)
+                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
+                                                            "event_code": event["key"], "data": returnTeams})
             except Exception as e:
-                # logging.error(e)
-                teams = event["teams"]
-            # print("got Teams")
-            event["teams"] = teams
-            # print(teams)
-            # print(event)
-            ETagCollection.find_one_and_replace(
-                {"key": event["key"]}, event)
-            # print(teams)
-            teams = [{"key": x[3:], "pit_status": "Not Started",
-                      "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
-            try:
-                existingTeams = PitStatusCollection.find_one(
-                    {"event_code": event["key"]})["data"]
-            except:
-                existingTeams = []
-            # print("961")
-            returnTeams = []
-            for team in teams:
-                for existingTeam in existingTeams:
-                    if existingTeam["key"] == team["key"]:
-                        team = existingTeam
-                        break
-                returnTeams.append(team)
-            # print("got new teams")
-            try:
-                # print(returnTeams)
-                PitStatusCollection.insert_one(
-                    {"event_code": event["key"], "data": returnTeams})
-            except Exception as e:
-                # logging.error(e)
-                PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
-                                                         "event_code": event["key"], "data": returnTeams})
+                logging.error(e)
+
             # print("977")
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
