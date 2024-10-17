@@ -21,6 +21,7 @@ from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
 from fastapi_utils.tasks import repeat_every
+from StatDescription import stat_description
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
@@ -84,33 +85,40 @@ def store_in_cache(key, value):
     except Exception as e:
         pass
 
+
 def get_from_cache(key):
+    global redisClient
     if redisClient is None:
+        logging.error("No Redis Cache")
         return None
     try:
         logging.info(f"Getting from cache {key}")
         return json.loads(redisClient.get(key))
     except Exception as e:
         logging.error(f"Error getting from cache {key}: {str(e)}")
+        if Exception is ConnectionError:
+            redisClient = get_redis_client()
         return None
-    
+
+
 def cacheValue(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Convert positional arguments to strings
         keyargs = [str(arg) for arg in args]
-        
+
         # Convert keyword arguments to strings
-        keykwargs = [str(kwarg) + str(value) for kwarg, value in kwargs.items()]
-        
+        keykwargs = [str(kwarg) + str(value)
+                     for kwarg, value in kwargs.items()]
+
         # Create a unique cache key by combining all arguments with the function name
         key = ''.join(keyargs + keykwargs) + func.__name__
-        
+
         # Check if the result is already in the cache
         value = get_from_cache(key)
         if value is not None:
             return value
-        
+
         # Call the original function and store the result in cache
         result = func(*args, **kwargs)
         store_in_cache(key, result)
@@ -263,10 +271,7 @@ def get_team_match_predictions(year: int, event: str, team: str):
 @app.get("/{year}/{event}/stat_description")
 @cacheValue
 def get_Stat_Descriptions():
-    file = open("app/StatDescription.json")
-    description = json.load(file)
-    file.close()
-    return description
+    return stat_description
 
 
 @app.get("/{year}/{event}/{team}/PitScouting")
@@ -469,7 +474,7 @@ def get_pictures(team: str, event: str, year: int):
 
 
 @app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse)
-async def get_pit_scouting_pictures(team: str, event: str, year: int):    
+async def get_pit_scouting_pictures(team: str, event: str, year: int):
     pictures = get_pictures(year=year, event=event, team=team)
     if not pictures:
         raise HTTPException(status_code=404, detail="Pictures not found")
@@ -911,8 +916,8 @@ def updatePredictions(TBAData, calculatedData, event_code):
             matchPrediction[f"{alliance}_win_rp"] = 2 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
             matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
-            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 25 or (
-                matchPrediction[f"{alliance}_notes"] >= 21 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
+            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 18 or (
+                matchPrediction[f"{alliance}_notes"] >= 15 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
                 matchPrediction[f"{alliance}_ensemble_rp"] + \
                 matchPrediction[f"{alliance}_melody_rp"]
@@ -991,6 +996,7 @@ def activate_match_data(data: dict, password: str):
     else:
         raise HTTPException(400, "Incorrect Password")
 
+
 @app.get("/")
 def read_root():
     return {"polar": "forecast"}
@@ -1034,40 +1040,40 @@ def update_database():
                 else:
                     print(req.status_code, event["key"])
                     teams = event["teams"]
+                # print("got Teams")
+                event["teams"] = teams
+                # print(teams)
+                # print(event)
+                ETagCollection.find_one_and_replace(
+                    {"key": event["key"]}, event)
+                # print(teams)
+                teams = [{"key": x[3:], "pit_status": "Not Started",
+                        "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
+                try:
+                    existingTeams = PitStatusCollection.find_one(
+                        {"event_code": event["key"]})["data"]
+                except:
+                    existingTeams = []
+                # print("961")
+                returnTeams = []
+                for team in teams:
+                    for existingTeam in existingTeams:
+                        if existingTeam["key"] == team["key"]:
+                            team = existingTeam
+                            break
+                    returnTeams.append(team)
+                # print("got new teams")
+                try:
+                    # print(returnTeams)
+                    PitStatusCollection.insert_one(
+                        {"event_code": event["key"], "data": returnTeams})
+                except Exception as e:
+                    # logging.error(e)
+                    PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
+                                                            "event_code": event["key"], "data": returnTeams})
             except Exception as e:
-                # logging.error(e)
-                teams = event["teams"]
-            # print("got Teams")
-            event["teams"] = teams
-            # print(teams)
-            # print(event)
-            ETagCollection.find_one_and_replace(
-                {"key": event["key"]}, event)
-            # print(teams)
-            teams = [{"key": x[3:], "pit_status": "Not Started",
-                      "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
-            try:
-                existingTeams = PitStatusCollection.find_one(
-                    {"event_code": event["key"]})["data"]
-            except:
-                existingTeams = []
-            # print("961")
-            returnTeams = []
-            for team in teams:
-                for existingTeam in existingTeams:
-                    if existingTeam["key"] == team["key"]:
-                        team = existingTeam
-                        break
-                returnTeams.append(team)
-            # print("got new teams")
-            try:
-                # print(returnTeams)
-                PitStatusCollection.insert_one(
-                    {"event_code": event["key"], "data": returnTeams})
-            except Exception as e:
-                # logging.error(e)
-                PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
-                                                         "event_code": event["key"], "data": returnTeams})
+                logging.error(e)
+
             # print("977")
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
