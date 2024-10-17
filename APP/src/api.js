@@ -10,16 +10,16 @@ const keycloak = new Keycloak({
   realm: 'polarforecast',
   clientId: 'polarforecast-gui'
 });
-keycloak.init({checkLoginIframe: false});
+await keycloak.init({checkLoginIframe: false});
 const default_ttl = 5; //5 minutes expiry time
 export const login = (currentUrl) => {
   if (keycloak.token){
     return keycloak.token;
   }
-  keycloak.login({redirectUri: `${currentUrl.protocol}//${currentUrl.host+currentUrl.pathname}`}).catch(error => localStorage.clear());
+  keycloak.login({redirectUri: `${currentUrl.toString()}`}).catch(error => localStorage.clear());
 }
-
 export const getToken = () => keycloak.token;
+export const getUserInfo = async () => await keycloak.loadUserInfo().catch(error => null);
 function setWithExpiry(key, value, ttl) {
   const expiry = Math.floor(new Date().getTime() + ttl * 60 * 1000.0);
   const item = {
@@ -243,8 +243,9 @@ export const getLeaderboard = async (year, callback) => {
   }
 };
 
-export const postMatchScouting = async (data, token, callback) => {
+export const postMatchScouting = async (data, callback) => {
   try {
+    const token = keycloak.token;
     const endpoint = `${API_ENDPOINT}/MatchScouting/`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
@@ -283,12 +284,14 @@ export const putMatchScouting = async (data, callback) => {
 
 export const postPitScouting = async (data, callback) => {
   try {
+    const token = keycloak.token;
     const endpoint = `${API_ENDPOINT}/PitScouting/`;
     console.log(endpoint)
     const response = await fetch(endpoint, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       headers: {
         "Content-Type": "application/json",
+        "token": token,
       },
       body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
@@ -347,6 +350,7 @@ export const getTeamPictures = async (year, event, team, callback) => {
 
 export const postTeamPictures = async (year, event, team, data, callback) => {
   try {
+    const token = keycloak.token;
     const endpoint = `${API_ENDPOINT}/${year}/${event}/frc${team}/pictures/`;
     console.log(endpoint);
     const blob = dataURItoBlob(data);
@@ -355,6 +359,9 @@ export const postTeamPictures = async (year, event, team, data, callback) => {
     const response = await fetch(endpoint, {
       method: 'POST',
       body: formData,
+      headers: {
+              'token': token,
+            },
     });
     callback(response.status);
   } catch (e) {

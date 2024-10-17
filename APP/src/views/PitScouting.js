@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, createTheme, Card, CardHeader, Button } from '@mui/material';
 import Header from 'components/Headers/Header';
 import { Container, Row } from 'reactstrap';
 import { postPitScouting } from 'api';
@@ -7,6 +7,7 @@ import { getPitScoutingData } from 'api';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 import Snowfall from 'react-snowfall';
 import PitScoutingForm from 'components/Scouting/PitScoutingForm';
+import { getToken, login } from 'api';
 
 const PitScouting = () => {
     const history = useHistory()
@@ -35,6 +36,7 @@ const PitScouting = () => {
     });
     const [containerHeight, setContainerHeight] = useState(`calc(100vh - 200px)`);
     const [showForm, setShowForm] = useState(true)
+    const [token, setToken] = useState(getToken());
     const handleChange = async (field, value) => {
         if (typeof (value) === undefined) {
             value = ""
@@ -99,30 +101,72 @@ const PitScouting = () => {
         history.push(`../../../event/${year}/${eventCode}#pit-scouting`);
     }
 
-    return (
-        <>
-            <Header />
-            <div style={{ height: containerHeight, width: "100%" }}>
-                <ThemeProvider theme={darkTheme}>
-                    <Container>
-                        <Row>
-                            <div style={{ height: containerHeight, width: "100%" }}>
-                                <PitScoutingForm teamPage={false}/>
-                            </div>
-                        </Row>
-                    </Container>
-                </ThemeProvider>
-                <Snowfall
-                    snowflakeCount={50}
-                    style={{
-                        position: "fixed",
-                        width: "100vw",
-                        height: "100vh",
-                    }}
-                ></Snowfall>
-            </div>
-        </>
-    );
+    if (token) {
+        return (
+            <>
+                <Header />
+                <div style={{ height: containerHeight, width: "100%" }}>
+                    <ThemeProvider theme={darkTheme}>
+                        <Container>
+                            <Row>
+                                <div style={{ height: containerHeight, width: "100%" }}>
+                                    <PitScoutingForm teamPage={false} />
+                                </div>
+                            </Row>
+                        </Container>
+                    </ThemeProvider>
+                    <Snowfall
+                        snowflakeCount={50}
+                        style={{
+                            position: "fixed",
+                            width: "100vw",
+                            height: "100vh",
+                        }}
+                    ></Snowfall>
+                </div>
+            </>
+        );
+    } else {
+        return (
+            <>
+                <Header />
+                <div style={{ height: containerHeight, width: "100%" }}>
+                    <ThemeProvider theme={darkTheme}>
+                        <Container>
+                            <Row>
+                                <div style={{ height: containerHeight, width: "100%" }}>
+                                    <>
+                                        <Card className="polar-box">
+                                            <CardHeader className="bg-transparent">
+                                                <h1 className="text-white mb-0">Pictures - {team}</h1>
+                                            </CardHeader>
+                                            <div style={{ width: "100%" }}>
+                                                <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                        <h1 className="text-white mb-0">Login Required</h1>
+                                                        <br></br>
+                                                        <Button fullwidth={true} variant="contained" onClick={() => setToken(login(url))}>Login</Button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </Card>
+                                    </>
+                                </div>
+                            </Row>
+                        </Container>
+                    </ThemeProvider>
+                    <Snowfall
+                        snowflakeCount={50}
+                        style={{
+                            position: "fixed",
+                            width: "100vw",
+                            height: "100vh",
+                        }}
+                    ></Snowfall>
+                </div>
+            </>
+        );
+    }
 };
 
 export default PitScouting;

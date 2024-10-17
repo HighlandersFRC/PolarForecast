@@ -16,7 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
-from auth import check_token_active
+from auth import check_token_active, get_token_active, get_user_info
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -296,7 +296,9 @@ def get_pit_scouting_status(year: int, event: str):
 
 
 @app.post("/PitScouting/")
-def post_pit_scouting_data(data: dict):
+def post_pit_scouting_data(data: dict, token: str = Depends(check_token_active)):
+    user_info = get_user_info(token)
+    data['scout_info'] = user_info
     status = getStatus(data, PitStatusCollection.find_one(
         {"event_code": data["event_code"]}))
     status.pop("_id")
@@ -309,7 +311,6 @@ def post_pit_scouting_data(data: dict):
     teams = [team[3:] for team in teams]
     i = 0
     team = str(data["team_number"])
-    print(teams, team)
     if not teams.__contains__(team):
         raise HTTPException(400, "No team key '"+str(data["team_number"]) +
                             "' in "+data["event_code"])
@@ -354,19 +355,15 @@ numRuns = 0
 
 
 @app.post("/MatchScouting/")
-@check_token_active
-def post_match_scouting(data: dict):
+def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
+    data["scout_info"] = get_user_info(token)
+    logging.info(str(data))
     eventCode = data["event_code"]
     event = ETagCollection.find_one({"key": eventCode})
     event["up_to_date"] = False
     ETagCollection.find_one_and_replace({"key": eventCode}, event)
     matchNumber = data["match_number"]
     teamNumber = data["team_number"]
-    scoutName = data["scout_info"]["name"]
-    year = data["event_code"][-4:]
-    eventKey = data["event_code"][:-4]
-    if scoutName == "":
-        raise HTTPException(400, "Check Your Scout Name")
     match = TBACollection.find_one(
         {"key": f"{eventCode}_qm{str(matchNumber)}"})
     if match is None:
@@ -520,7 +517,7 @@ async def get_event_pictures(year: str, event: str):
 
 
 @app.post("/{year}/{event}/{team}/pictures/")
-def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int):
+def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int, token: str = Depends(check_token_active)):
     status = PitStatusCollection.find_one({"event_code": str(year)+event})
     picStatus = "Done"
     found = False
@@ -537,6 +534,7 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: in
         "key": str(year) + event + "_" + team,
         "team": team,
         "eventCode": str(year) + event,
+        "scout_info": get_user_info(token)
     }
     file_data = {
         "filename": data.filename,

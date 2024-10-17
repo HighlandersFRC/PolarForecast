@@ -1121,7 +1121,8 @@ const Tables = () => {
     const eventKey = params[4];
 
     if (window.location.hash.length > 0) {
-      setTabIndex(tabDict.indexOf(String(window.location.hash.split("#")[1])));
+      var index = tabDict.indexOf(String(window.location.hash.split("#")[1]))
+      setTabIndex(index != -1 ? index: 2);
     }
 
     // getStatDescription(year, eventKey, statDescriptionCallback);

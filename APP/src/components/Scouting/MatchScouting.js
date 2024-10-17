@@ -8,11 +8,12 @@ import { QRCode } from 'react-qrcode-logo';
 import { BrowserView, MobileView } from 'react-device-detect';
 import Counter from 'components/Counter';
 import { login } from 'api';
-import { getToken } from 'api';
+import { getToken , getUserInfo } from 'api';
 
 const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const url = new URL(window.location.href);
   const serverPath = url.pathname.split("/")[0];
+  const [userData, setUserData] = useState(null);
   const [matchNumber, setMatchNumber] = useState(0)
   const defaultData = {
     event_code: eventCode,
@@ -34,7 +35,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         amped_speaker: 0,
       },
       miscellaneous: {
-        died: 0,
+        died: false,
         comments: "",
       },
       selectedPieces: [],
@@ -55,6 +56,10 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
   const [token, setToken] = useState(getToken());
   const NOTE_SIZE = 80;
 
+  useEffect(async () => {
+    setUserData(await getUserInfo());
+  }, []);
+
   useEffect(() => {
     if (fieldImageRef.current) {
       const { naturalWidth, offsetWidth } = fieldImageRef.current;
@@ -62,6 +67,17 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
       setImageScaleFactor(offsetWidth / naturalWidth);
     }
   }, [imageLoaded]);
+
+  useEffect(async () => {
+    if (userData)
+    setFormData((prevData) => {
+      var newData = {...prevData};
+      newData.scout_info = userData; 
+      console.log(newData);
+      return newData;
+    });
+    console.log(userData)
+  }, [userData]);
 
   useEffect(() => {
     if (text === "Unable to Submit.") setText(text + " Use QR Code")
@@ -251,7 +267,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     }));
     setText("Submitting...")
     setShowReset(true)
-    postMatchScouting(formData, url.searchParams.get("session_state"), (data) => MatchScoutingStatusCallback(data, false));
+    postMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, false));
   };
 
   const MatchScoutingStatusCallback = ([status, response], update) => {
@@ -338,7 +354,8 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
     setShowReset(true)
     putMatchScouting(formData, (data) => MatchScoutingStatusCallback(data, true));
   };
-  if (token)
+
+  if (token){
     return (
       <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -389,6 +406,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
           <TextField
             label="Scout Name"
             value={formData.scout_info.name}
+            disabled={true}
             onChange={(e) => handleChange('scout_info.name', e.target.value)}
             inputProps={{ maxLength: 15 }}
           />
@@ -488,7 +506,7 @@ const MatchScouting = ({ defaultEventCode: eventCode = '', year, event }) => {
         }
       </form>
     );
-  else
+  } else
     return (
       <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
