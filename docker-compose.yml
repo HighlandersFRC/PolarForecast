@@ -32,6 +32,12 @@ services:
       - PF_TBA_POLLING=${PF_TBA_POLLING}
       - PF_TBA_POLLING_INTERVAL=${PF_TBA_POLLING_INTERVAL}
       - PF_EDIT_PASSWORD=${PF_EDIT_PASSWORD}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_ENDPOINT=${KEYCLOAK_ENDPOINT}
+      - KEYCLOAK_LOGIN_IP=${KEYCLOAK_LOGIN_IP}
+      - KEYCLOAK_DOMAIN=${KEYCLOAK_DOMAIN}
+      - KEYCLOAK_API_CLIENT_ID=${KEYCLOAK_API_CLIENT_ID}
+      - KEYCLOAK_API_CLIENT_SECRET_KEY=${KEYCLOAK_API_CLIENT_SECRET_KEY}
 
   app:
     build: ./APP
@@ -43,8 +49,6 @@ services:
         - action: sync
           path: .
           target: /APP
-    environment:
-      - KEYCLOAK_LOGIN_IP=${KEYCLOAK_LOGIN_IP}
     env_file:
       - .env
 
@@ -60,7 +64,7 @@ services:
       ${WEBAPP_DOMAIN}: ${APP_HOST_IP}
       ${KEYCLOAK_DOMAIN}: ${KC_HOST_IP}
     ports:
-      - '8084:8080'
+      - '8080:8080'
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
