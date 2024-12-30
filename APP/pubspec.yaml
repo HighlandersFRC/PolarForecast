@@ -46,7 +46,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - .env
+    - ../.env
     - assets/PolarBearHead.png
     - assets/2024GameField.png
     - assets/2024BlankAutoField.png

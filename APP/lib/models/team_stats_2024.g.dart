@@ -1,0 +1,81 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'team_stats_2024.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$TeamStats2024Impl _$$TeamStats2024ImplFromJson(Map<String, dynamic> json) =>
+    _$TeamStats2024Impl(
+      rank: (json['rank'] as num).toInt(),
+      match_count: (json['match_count'] as num).toInt(),
+      OPR: (json['OPR'] as num).toDouble(),
+      endgame_points: (json['endgame_points'] as num).toDouble(),
+      teleop_points: (json['teleop_points'] as num).toDouble(),
+      auto_points: (json['auto_points'] as num).toDouble(),
+      notes: (json['notes'] as num).toDouble(),
+      teleop_pass: (json['teleop_pass'] as num).toDouble(),
+      teleop_notes: (json['teleop_notes'] as num).toDouble(),
+      harmony_points: (json['harmony_points'] as num).toDouble(),
+      speaker_total: (json['speaker_total'] as num).toDouble(),
+      amp_total: (json['amp_total'] as num).toDouble(),
+      trap_points: (json['trap_points'] as num).toDouble(),
+      trap: (json['trap'] as num).toDouble(),
+      auto_notes: (json['auto_notes'] as num).toDouble(),
+      climbing_points: (json['climbing_points'] as num).toDouble(),
+      climbing: (json['climbing'] as num).toDouble(),
+      mobility: (json['mobility'] as num).toDouble(),
+      death_rate: (json['death_rate'] as num).toDouble(),
+      parking: (json['parking'] as num).toDouble(),
+      auto_speaker: (json['auto_speaker'] as num).toDouble(),
+      auto_amp: (json['auto_amp'] as num).toDouble(),
+      teleop_speaker: (json['teleop_speaker'] as num).toDouble(),
+      teleop_amped_speaker: (json['teleop_amped_speaker'] as num).toDouble(),
+      teleop_amp: (json['teleop_amp'] as num).toDouble(),
+      harmony: (json['harmony'] as num).toDouble(),
+      mic: (json['mic'] as num).toDouble(),
+      coopertition: (json['coopertition'] as num).toDouble(),
+      simulated_rp: (json['simulated_rp'] as num).toDouble(),
+      simulated_rank: (json['simulated_rank'] as num).toDouble(),
+      pass: (json['pass'] as num).toDouble(),
+      key: json['key'] as String,
+      team_number: json['team_number'] as String,
+    );
+
+Map<String, dynamic> _$$TeamStats2024ImplToJson(_$TeamStats2024Impl instance) =>
+    <String, dynamic>{
+      'rank': instance.rank,
+      'match_count': instance.match_count,
+      'OPR': instance.OPR,
+      'endgame_points': instance.endgame_points,
+      'teleop_points': instance.teleop_points,
+      'auto_points': instance.auto_points,
+      'notes': instance.notes,
+      'teleop_pass': instance.teleop_pass,
+      'teleop_notes': instance.teleop_notes,
+      'harmony_points': instance.harmony_points,
+      'speaker_total': instance.speaker_total,
+      'amp_total': instance.amp_total,
+      'trap_points': instance.trap_points,
+      'trap': instance.trap,
+      'auto_notes': instance.auto_notes,
+      'climbing_points': instance.climbing_points,
+      'climbing': instance.climbing,
+      'mobility': instance.mobility,
+      'death_rate': instance.death_rate,
+      'parking': instance.parking,
+      'auto_speaker': instance.auto_speaker,
+      'auto_amp': instance.auto_amp,
+      'teleop_speaker': instance.teleop_speaker,
+      'teleop_amped_speaker': instance.teleop_amped_speaker,
+      'teleop_amp': instance.teleop_amp,
+      'harmony': instance.harmony,
+      'mic': instance.mic,
+      'coopertition': instance.coopertition,
+      'simulated_rp': instance.simulated_rp,
+      'simulated_rank': instance.simulated_rank,
+      'pass': instance.pass,
+      'key': instance.key,
+      'team_number': instance.team_number,
+    };
