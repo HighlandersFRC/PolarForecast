@@ -49,8 +49,8 @@ services:
         - action: sync
           path: .
           target: /APP
-    env_file:
-      - .env
+    environment:
+      PF_API_ENDPOINT: ${PF_API_ENDPOINT}
 
   keycloak:
     build:

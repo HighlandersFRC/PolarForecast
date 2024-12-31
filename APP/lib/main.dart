@@ -6,10 +6,10 @@ import 'package:scouting_app/pages/not_found_page.dart';
 import '../pages/home_page.dart';
 import 'theme/theme_provider.dart';
 import 'api_service.dart'; // Make sure this file contains the ApiService class
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future main() async {
-  await dotenv.load(fileName: '.env');
+  // await dotenv.load(fileName: '.env');
   usePathUrlStrategy();
   runApp(MyApp());
 }
@@ -21,7 +21,8 @@ class MyApp extends StatelessWidget {
       providers: [
         // Initialize ApiService with the base URL for API calls
         Provider<ApiService>(
-          create: (_) => ApiService(dotenv.env['API_URL'].toString()),
+          create: (_) =>
+              ApiService(const String.fromEnvironment('PF_API_ENDPOINT')),
         ),
         ChangeNotifierProvider(create: (_) => ThemeDataProvider()),
       ],

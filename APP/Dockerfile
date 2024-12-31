@@ -1,35 +1,28 @@
-# Install Operating system and dependencies
-FROM ubuntu:20.04
+# Provide nginx webserver
+FROM nginx:stable
 
-ENV DEBIAN_FRONTEND=noninteractive
+# Set directory to Copy App
+WORKDIR /app
 
-RUN apt-get update 
-RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback python3
-RUN apt-get clean
+# Prerequisites
+RUN apt update && apt install -y curl git unzip xz-utils zip libglu1-mesa
 
-ENV DEBIAN_FRONTEND=dialog
-ENV PUB_HOSTED_URL=https://pub.flutter-io.cn
-ENV FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+# Download Flutter SDK
+RUN git clone https://github.com/flutter/flutter.git
+ENV PATH "$PATH:/app/flutter/bin"
 
-# download Flutter SDK from Flutter Github repo
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
-
-# Set flutter environment path
-ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
-
-# Run flutter doctor
+# Run basic check to download Dark SDK
 RUN flutter doctor
 
-# Enable flutter web
-RUN flutter channel master
-RUN flutter upgrade
-RUN flutter config --enable-web
+# Copy Flutter App into Image
+COPY . .
 
-# Copy files to container and build
-RUN mkdir /app/
-COPY . /app/
-WORKDIR /app/
-RUN flutter build web --release
-EXPOSE 8000
+# Copy nginx config
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+RUN chmod +x /app/entrypoint.sh
 
-CMD ["python3", "-m", "http.server", "8000", "--directory", "build/web"]
+# Open http port
+EXPOSE 3000
+
+# Set custom entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
