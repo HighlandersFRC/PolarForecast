@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import '../pages/home_page.dart';
@@ -17,13 +18,26 @@ Future main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    const String APIURL = const String.fromEnvironment('PF_API_ENDPOINT'),
+        AUTHURL = const String.fromEnvironment('PF_KEYCLOAK_LOGIN_IP'),
+        APPURL = const String.fromEnvironment('APP_DOMAIN'),
+        REALM = const String.fromEnvironment('KEYCLOAK_REALM'),
+        CLIENT = const String.fromEnvironment('KEYCLOAK_APP_CLIENT_ID');
     return MultiProvider(
       providers: [
         // Initialize ApiService with the base URL for API calls
+
         Provider<ApiService>(
-          create: (_) =>
-              ApiService(const String.fromEnvironment('PF_API_ENDPOINT')),
-        ),
+            create: (_) => ApiService(
+                  APIURL: APIURL,
+                  AUTHURL: AUTHURL,
+                  APPURL: APPURL,
+                  REALM: REALM,
+                  CLIENT: CLIENT,
+                  authService:
+                      createAuthService(APIURL, AUTHURL, APPURL, REALM, CLIENT),
+                  cacheDuration: Duration(minutes: 5),
+                )),
         ChangeNotifierProvider(create: (_) => ThemeDataProvider()),
       ],
       child: MainApp(),
@@ -46,7 +60,7 @@ class MainApp extends StatelessWidget {
             if (pathSegments.isNotEmpty) {
               if (pathSegments[1] == 'event') {
                 if (pathSegments.length > 2) {
-                  final eventKey = pathSegments[2];
+                  final eventKey = pathSegments[2].split('?')[0];
                   return MaterialPageRoute(
                     builder: (context) =>
                         EventPage.fromEventKey(context, eventKey),

@@ -50,7 +50,7 @@ mixin _$TeamStats2024 {
   double get coopertition => throw _privateConstructorUsedError;
   double get simulated_rp => throw _privateConstructorUsedError;
   double get simulated_rank => throw _privateConstructorUsedError;
-  double get pass => throw _privateConstructorUsedError;
+  double? get pass => throw _privateConstructorUsedError;
   String get key => throw _privateConstructorUsedError;
   String get team_number => throw _privateConstructorUsedError;
 
@@ -101,7 +101,7 @@ abstract class $TeamStats2024CopyWith<$Res> {
       double coopertition,
       double simulated_rp,
       double simulated_rank,
-      double pass,
+      double? pass,
       String key,
       String team_number});
 }
@@ -151,7 +151,7 @@ class _$TeamStats2024CopyWithImpl<$Res, $Val extends TeamStats2024>
     Object? coopertition = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
-    Object? pass = null,
+    Object? pass = freezed,
     Object? key = null,
     Object? team_number = null,
   }) {
@@ -276,10 +276,10 @@ class _$TeamStats2024CopyWithImpl<$Res, $Val extends TeamStats2024>
           ? _value.simulated_rank
           : simulated_rank // ignore: cast_nullable_to_non_nullable
               as double,
-      pass: null == pass
+      pass: freezed == pass
           ? _value.pass
           : pass // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       key: null == key
           ? _value.key
           : key // ignore: cast_nullable_to_non_nullable
@@ -331,7 +331,7 @@ abstract class _$$TeamStats2024ImplCopyWith<$Res>
       double coopertition,
       double simulated_rp,
       double simulated_rank,
-      double pass,
+      double? pass,
       String key,
       String team_number});
 }
@@ -379,7 +379,7 @@ class __$$TeamStats2024ImplCopyWithImpl<$Res>
     Object? coopertition = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
-    Object? pass = null,
+    Object? pass = freezed,
     Object? key = null,
     Object? team_number = null,
   }) {
@@ -504,10 +504,10 @@ class __$$TeamStats2024ImplCopyWithImpl<$Res>
           ? _value.simulated_rank
           : simulated_rank // ignore: cast_nullable_to_non_nullable
               as double,
-      pass: null == pass
+      pass: freezed == pass
           ? _value.pass
           : pass // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       key: null == key
           ? _value.key
           : key // ignore: cast_nullable_to_non_nullable
@@ -624,7 +624,7 @@ class _$TeamStats2024Impl
   @override
   final double simulated_rank;
   @override
-  final double pass;
+  final double? pass;
   @override
   final String key;
   @override
@@ -826,7 +826,7 @@ abstract class _TeamStats2024 implements TeamStats2024 {
       required final double coopertition,
       required final double simulated_rp,
       required final double simulated_rank,
-      required final double pass,
+      required final double? pass,
       required final String key,
       required final String team_number}) = _$TeamStats2024Impl;
 
@@ -894,7 +894,7 @@ abstract class _TeamStats2024 implements TeamStats2024 {
   @override
   double get simulated_rank;
   @override
-  double get pass;
+  double? get pass;
   @override
   String get key;
   @override

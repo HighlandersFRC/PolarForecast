@@ -1,0 +1,1 @@
+flutter run --dart-define=PF_API_ENDPOINT=http://127.0.0.1:8000 --dart-define=PF_KEYCLOAK_LOGIN_IP=http://localhost:8080 --dart-define=KEYCLOAK_REALM=polarforecast --dart-define=KEYCLOAK_APP_CLIENT_ID=polarforecast-gui --dart-define=APP_DOMAIN=http://localhost:3000

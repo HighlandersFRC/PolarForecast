@@ -38,7 +38,7 @@ _$TeamStats2024Impl _$$TeamStats2024ImplFromJson(Map<String, dynamic> json) =>
       coopertition: (json['coopertition'] as num).toDouble(),
       simulated_rp: (json['simulated_rp'] as num).toDouble(),
       simulated_rank: (json['simulated_rank'] as num).toDouble(),
-      pass: (json['pass'] as num).toDouble(),
+      pass: (json['pass'] as num?)?.toDouble(),
       key: json['key'] as String,
       team_number: json['team_number'] as String,
     );

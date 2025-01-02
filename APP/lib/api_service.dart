@@ -3,15 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
-
+import 'auth/auth_service.dart';
 import 'models/team_stats_2024.dart';
 import 'models/tournament.dart';
 
 class ApiService {
-  final String APIURL;
+  final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
   final Duration cacheDuration;
+  final AuthService authService;
+  dynamic get token async => await authService.getToken();
+  // set token(dynamic token) => _token = token;
 
-  ApiService(this.APIURL, {this.cacheDuration = const Duration(minutes: 5)});
+  ApiService(
+      {required this.APIURL,
+      required this.AUTHURL,
+      required this.APPURL,
+      required this.REALM,
+      required this.CLIENT,
+      required this.authService,
+      required this.cacheDuration});
 
   Map<String, dynamic> _cache = {};
 
@@ -212,5 +222,22 @@ class ApiService {
     final url = '${APIURL}/${year}/${event}/${match_key}/match_details';
     var data = (await _fetchFromAPI(url, cacheKey));
     return MatchDetails2024.fromJson(data);
+  }
+
+  Future<void> login(String redirectPath) async {
+    // try {
+    final String? token = await authService.login(redirectPath);
+    if (token != null) {
+      print('Login successful! Access token: $token');
+    } else {
+      print('Login failed or canceled');
+    }
+    // } catch (e) {
+    //   print('Error during login: $e');
+    // }
+  }
+
+  Future<void> logout() async {
+    await authService.logout();
   }
 }

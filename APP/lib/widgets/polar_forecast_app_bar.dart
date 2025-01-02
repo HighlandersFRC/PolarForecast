@@ -1,17 +1,24 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/tournament.dart';
-import '../pages/event_page.dart';
 import '../api_service.dart';
 
 bool isMobile() {
   if (kIsWeb) {
     return false;
   }
-  return Platform.isAndroid || Platform.isIOS;
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.android:
+    case TargetPlatform.iOS:
+      return true;
+    case TargetPlatform.macOS:
+    case TargetPlatform.windows:
+    case TargetPlatform.linux:
+      return false;
+    default:
+      throw UnsupportedError('This platform is not supported');
+  }
 }
 
 class PolarForecastSliverBar extends SliverAppBar {
@@ -127,12 +134,6 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    bool isMobile() {
-      if (kIsWeb) {
-        return false;
-      }
-      return Platform.isAndroid || Platform.isIOS;
-    }
 
     return AppBar(
       automaticallyImplyLeading: true,

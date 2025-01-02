@@ -41,7 +41,7 @@ class TeamStats2024 with _$TeamStats2024 {
     required double coopertition,
     required double simulated_rp,
     required double simulated_rank,
-    required double pass,
+    required double? pass,
     required String key,
     required String team_number,
   }) = _TeamStats2024;
