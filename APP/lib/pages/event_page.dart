@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flat/flat.dart';
@@ -6,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
+import 'package:scouting_app/widgets/auto_pieces_2025.dart';
 import '../widgets/auto_pieces_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
@@ -869,10 +872,9 @@ class _ChartsTabState extends State<_ChartsTab> {
 class _MatchScoutingTab extends StatefulWidget {
   final EventPage widget;
   const _MatchScoutingTab(this.widget);
+
   @override
-  State<StatefulWidget> createState() {
-    return _MatchScoutingTabState();
-  }
+  State<StatefulWidget> createState() => _MatchScoutingTabState();
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
@@ -884,11 +886,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   String? token;
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
+
+  int _autoCoralLevel1 = 0, _autoCoralLevel2 = 0, _autoCoralLevel3 = 0, _autoCoralLevel4 = 0, _autoAlgae = 0;
+  int _teleopCoralL1 = 0, _teleopCoralL2 = 0, _teleopCoralL3 = 0, _teleopCoralL4 = 0;
+  int _teleopAlgae = 0, _teleopProcessor = 0;
+  bool _isParked = false, _isSuspended = false, _isDied = false;
+  String _comments = '';
+
   @override
   initState() {
     super.initState();
-    eventCodeController =
-        TextEditingController(text: widget.widget.tournament.key);
+    eventCodeController = TextEditingController(text: widget.widget.tournament.key);
     teamNumberController = TextEditingController();
     matchNumberController = TextEditingController();
     scoutNameController = TextEditingController();
@@ -904,16 +912,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   getNewMatchDetails(int matchNumber) {
-    if (matchNumber <= 0) {
-      return;
-    }
+    if (matchNumber <= 0) return;
     final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService
-        .fetchMatchDetails(
-            int.parse(widget.widget.tournament.key.substring(0, 4)),
-            widget.widget.tournament.key.substring(4),
-            '${widget.widget.tournament.key}_qm$matchNumber')
-        .then((value) {
+    apiService.fetchMatchDetails(
+      int.parse(widget.widget.tournament.key.substring(0, 4)),
+      widget.widget.tournament.key.substring(4),
+      '${widget.widget.tournament.key}_qm$matchNumber',
+    ).then((value) {
       if (matchNumber == int.parse(matchNumberController.text)) {
         setState(() {
           matchDetails = value;
@@ -924,9 +929,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   updateTeamNumber() {
-    if (matchDetails == null) {
-      return;
-    }
+    if (matchDetails == null) return;
     List<String> teams = [
       ...matchDetails!.match.alliances.red.team_keys,
       ...matchDetails!.match.alliances.blue.team_keys,
@@ -939,6 +942,50 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       team = teams[index];
     }
     teamNumberController.text = team.substring(3);
+  }
+
+  String _generateQRCodeData() {
+    try {
+      return jsonEncode({
+        'event_code': eventCodeController.text,
+        'team_number': int.tryParse(teamNumberController.text) ?? 0,
+        'match_number': int.tryParse(matchNumberController.text) ?? 0,
+        'scout_info': {
+          'name': scoutNameController.text,
+        },
+        'data': {
+          'driver_station': DRIVER_STATIONS[driverStationIndex],
+          'scoring': {
+            'auto': {
+              'coral_level1': _autoCoralLevel1,
+              'coral_level2': _autoCoralLevel2,
+              'coral_level3': _autoCoralLevel3,
+              'coral_level4': _autoCoralLevel4,
+              'algae': _autoAlgae,
+            },
+            'teleop': {
+              'coral': {
+                'L1': _teleopCoralL1,
+                'L2': _teleopCoralL2,
+                'L3': _teleopCoralL3,
+                'L4': _teleopCoralL4,
+              },
+              'algae': _teleopAlgae,
+              'processor': _teleopProcessor,
+            },
+          },
+          'endgame': {
+            'parked': _isParked,
+            'suspended': _isSuspended,
+            'died': _isDied,
+          },
+          'comments': _comments,
+        },
+      });
+    } catch (e) {
+      print('Error generating QR code data: $e');
+      return '';
+    }
   }
 
   @override
@@ -961,109 +1008,339 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         decodedToken = null;
       }
     }
+
     return SingleChildScrollView(
-        child: decodedToken == null
-            ? LoginWidget(
-                redirect_path: 'event/${widget.widget.tournament.key}')
-            : Card(
-                child: Padding(
+      child: decodedToken == null
+          ? LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}')
+          : Card(
+              color: Colors.grey[900],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.widget.tournament.display,
-                      style: TextStyle(color: Colors.blue, fontSize: 24),
+                      style: TextStyle(color: Colors.blueAccent, fontSize: 24),
                     ),
-                    Divider(),
-                    SizedBox(height: 4),
-                    TextField(
-                      readOnly: true,
-                      style: TextStyle(color: Colors.grey),
-                      controller: eventCodeController,
-                      decoration: InputDecoration(
-                          label: Text(
-                        'Event Code',
-                      )).applyDefaults(theme.inputDecorationTheme),
-                    ),
+                    Divider(color: Colors.blueAccent),
                     SizedBox(height: 8),
-                    TextField(
-                      controller: matchNumberController,
-                      inputFormatters: [
-                        FilteringTextInputFormatter
-                            .digitsOnly, // Allows only digits
-                      ],
-                      maxLength: 3,
-                      onChanged: (value) {
-                        getNewMatchDetails(int.tryParse(value) ?? -1);
-                      },
-                      decoration: InputDecoration(
-                        label: Text('Match Number'),
-                        counterText: '',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
+                    _buildTextField(eventCodeController, 'Event Code', true),
                     SizedBox(height: 8),
-                    TextField(
-                      controller: scoutNameController,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        label: Text('Scout Name'),
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
+                    _buildTextField(matchNumberController, 'Match Number', false, onChanged: (value) {
+                      getNewMatchDetails(int.tryParse(value) ?? -1);
+                    }),
                     SizedBox(height: 8),
-                    TextField(
-                      controller: teamNumberController,
-                      maxLength: 5,
-                      inputFormatters: [
-                        FilteringTextInputFormatter
-                            .digitsOnly, // Allows only digits
-                      ],
-                      decoration: InputDecoration(
-                        label: Text('Team Number'),
-                        counterText: '',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
+                    _buildTextField(scoutNameController, 'Scout Name', true),
                     SizedBox(height: 8),
-                    DropdownButtonFormField<int>(
-                      isExpanded: true,
-                      value: driverStationIndex,
-                      decoration: InputDecoration(
-                        labelText: 'Driver Station',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                      items: [
-                        DropdownMenuItem<int>(
-                          child: Text('None',
-                              style: TextStyle(fontStyle: FontStyle.italic)),
-                          value: -1,
-                        ),
-                        ...DRIVER_STATIONS.indexed.map(
-                          (value) => DropdownMenuItem<int>(
-                            child: Text(
-                              value.$2,
-                              style: TextStyle(
-                                  color: value.$2.contains('Red')
-                                      ? Colors.red
-                                      : Colors.blue),
-                            ),
-                            value: value.$1,
-                          ),
-                        )
-                      ],
-                      onChanged: (int? value) {
-                        setState(() => driverStationIndex = value ?? -1);
-                        updateTeamNumber();
-                      },
-                    ),
+                    _buildTextField(teamNumberController, 'Team Number', false),
                     SizedBox(height: 8),
-                    AutoPieces2024(
-                        selectedPieces: selectedPieces,
-                        onChanged: (newPieces) {
-                          setState(() => selectedPieces = newPieces);
-                        })
+                    _buildDriverStationDropdown(DRIVER_STATIONS),
+
+                
+
+                    SizedBox(height: 20),
+                    _buildSectionTitle('Auto Scoring'),
+                    SizedBox(height: 12),
+                    _buildAutoSection(),
+
+                    SizedBox(height: 20),
+                    _buildSectionTitle('Teleop Scoring'),
+                    SizedBox(height: 12),
+                    _buildTeleopSection(),
+
+                    SizedBox(height: 20),
+                    _buildSectionTitle('Endgame Scoring'),
+                    SizedBox(height: 12),
+                    _buildEndgameSection(),
+
+                    SizedBox(height: 20),
+                    _buildTextField(TextEditingController(text: _comments), 'Comments', false),
+
+                    SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          String qrData = _generateQRCodeData();
+                          if (qrData.isNotEmpty) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text("Generated QR Code"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Close'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        },
+                        child: Text("Generate QR Code"),
+                      ),
+                    ),
                   ],
                 ),
-              )));
+              ),
+            ),
+    );
+  }
+
+  Widget _buildDriverStationDropdown(List<String> driverStations) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey[800],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButton<int>(
+        value: driverStationIndex == -1 ? null : driverStationIndex,
+        hint: Text('Select Driver Station', style: TextStyle(color: Colors.white)),
+        onChanged: (int? value) {
+          setState(() {
+            driverStationIndex = value!;
+          });
+        },
+        items: List.generate(
+          driverStations.length,
+          (index) => DropdownMenuItem<int>(
+            value: index,
+            child: Text(driverStations[index], style: TextStyle(color: Colors.white)),
+          ),
+        ),
+        dropdownColor: Colors.blueGrey[900],
+        isExpanded: true,
+      ),
+    );
+  }
+
+  Widget _buildAutoSection() {
+    return Column(
+      children: [
+        _buildScoringRow('Coral Level 1:', _autoCoralLevel1, (value) {
+          setState(() {
+            _autoCoralLevel1 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 2:', _autoCoralLevel2, (value) {
+          setState(() {
+            _autoCoralLevel2 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 3:', _autoCoralLevel3, (value) {
+          setState(() {
+            _autoCoralLevel3 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 4:', _autoCoralLevel4, (value) {
+          setState(() {
+            _autoCoralLevel4 = value;
+          });
+        }),
+        _buildScoringRow('Algae:', _autoAlgae, (value) {
+          setState(() {
+            _autoAlgae = value;
+          });
+        }),
+      ],
+    );
+  }
+
+  Widget _buildTeleopSection() {
+    return Column(
+      children: [
+        _buildScoringRow('Coral Level 1:', _teleopCoralL1, (value) {
+          setState(() {
+            _teleopCoralL1 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 2:', _teleopCoralL2, (value) {
+          setState(() {
+            _teleopCoralL2 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 3:', _teleopCoralL3, (value) {
+          setState(() {
+            _teleopCoralL3 = value;
+          });
+        }),
+        _buildScoringRow('Coral Level 4:', _teleopCoralL4, (value) {
+          setState(() {
+            _teleopCoralL4 = value;
+          });
+        }),
+        _buildScoringRow('Algae:', _teleopAlgae, (value) {
+          setState(() {
+            _teleopAlgae = value;
+          });
+        }),
+        _buildScoringRow('Processor:', _teleopProcessor, (value) {
+          setState(() {
+            _teleopProcessor = value;
+          });
+        }),
+      ],
+    );
+  }
+
+  Widget _buildEndgameSection() {
+    return Column(
+      children: [
+        _buildSwitchRow('Parked:', _isParked, (value) {
+          setState(() {
+            _isParked = value;
+          });
+        }),
+        _buildSwitchRow('Suspended:', _isSuspended, (value) {
+          setState(() {
+            _isSuspended = value;
+          });
+        }),
+        _buildSwitchRow('Died:', _isDied, (value) {
+          setState(() {
+            _isDied = value;
+          });
+        }),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildScoringRow(String label, int value, Function(int) onChanged) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey[800],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.white)),
+          Row(
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.all(8),
+                ),
+                onPressed: () {
+                  if (value > 0) {
+                    onChanged(value - 1);
+                  }
+                },
+                child: Icon(Icons.remove, color: Colors.white),
+              ),
+              SizedBox(width: 8),
+              Text('$value', style: TextStyle(color: Colors.white)),
+              SizedBox(width: 8),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.all(8),
+                ),
+                onPressed: () {
+                  onChanged(value + 1);
+                },
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.white)),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Colors.blueAccent,
+          inactiveTrackColor: Colors.grey,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
+    return TextField(
+      controller: controller,
+      readOnly: isReadOnly,
+      onChanged: onChanged,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white),
+        filled: true,
+        fillColor: Colors.blueGrey[800],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
   }
 }
+
+
+  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
+    return TextField(
+      controller: controller,
+      readOnly: isReadOnly,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey[800],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      onChanged: onChanged,
+    );
+  }
+
+
+
+
+const List<String> DRIVER_STATIONS = [
+  'Red 1',
+  'Red 2',
+  'Red 3',
+  'Blue 1',
+  'Blue 2',
+  'Blue 3',
+];
+
+
+
+
 
 class _PitScoutingTab extends StatefulWidget {
   final EventPage widget;
