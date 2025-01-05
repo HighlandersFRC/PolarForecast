@@ -35,7 +35,7 @@ class EventPage extends StatefulWidget {
   static Widget fromEventKey(BuildContext context, String eventKey) {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final tournaments = apiService.fetchTournaments();
-    print(eventKey);
+    // print(eventKey);
     return FutureBuilder(
         future: tournaments,
         builder: (context, tournaments) {
