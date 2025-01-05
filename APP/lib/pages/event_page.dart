@@ -887,16 +887,28 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
 
-  int _autoCoralLevel1 = 0, _autoCoralLevel2 = 0, _autoCoralLevel3 = 0, _autoCoralLevel4 = 0, _autoAlgae = 0;
-  int _teleopCoralL1 = 0, _teleopCoralL2 = 0, _teleopCoralL3 = 0, _teleopCoralL4 = 0;
-  int _teleopAlgae = 0, _teleopProcessor = 0;
-  bool _isParked = false, _isSuspended = false, _isDied = false;
+  int _autoCoralLevel1 = 0,
+      _autoCoralLevel2 = 0,
+      _autoCoralLevel3 = 0,
+      _autoCoralLevel4 = 0,
+      _autoNet = 0,
+      _autoProcessor = 0;
+  int _teleopCoralL1 = 0,
+      _teleopCoralL2 = 0,
+      _teleopCoralL3 = 0,
+      _teleopCoralL4 = 0;
+  int _teleopNet = 0, _teleopProcessor = 0;
+  bool _isParked = false,
+      _shallowClimb = false,
+      _deepClimb = false,
+      _isDied = false;
   String _comments = '';
 
   @override
   initState() {
     super.initState();
-    eventCodeController = TextEditingController(text: widget.widget.tournament.key);
+    eventCodeController =
+        TextEditingController(text: widget.widget.tournament.key);
     teamNumberController = TextEditingController();
     matchNumberController = TextEditingController();
     scoutNameController = TextEditingController();
@@ -914,11 +926,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   getNewMatchDetails(int matchNumber) {
     if (matchNumber <= 0) return;
     final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService.fetchMatchDetails(
+    apiService
+        .fetchMatchDetails(
       int.parse(widget.widget.tournament.key.substring(0, 4)),
       widget.widget.tournament.key.substring(4),
       '${widget.widget.tournament.key}_qm$matchNumber',
-    ).then((value) {
+    )
+        .then((value) {
       if (matchNumber == int.parse(matchNumberController.text)) {
         setState(() {
           matchDetails = value;
@@ -961,7 +975,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               'coral_level2': _autoCoralLevel2,
               'coral_level3': _autoCoralLevel3,
               'coral_level4': _autoCoralLevel4,
-              'algae': _autoAlgae,
+              'autoNet': _autoNet,
+              'autoProcessor': _autoProcessor,
             },
             'teleop': {
               'coral': {
@@ -970,13 +985,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 'L3': _teleopCoralL3,
                 'L4': _teleopCoralL4,
               },
-              'algae': _teleopAlgae,
+              'net': _teleopNet,
               'processor': _teleopProcessor,
             },
           },
           'endgame': {
             'parked': _isParked,
-            'suspended': _isSuspended,
+            'shallow_climb': _shallowClimb,
+            'deep_climb': _deepClimb,
             'died': _isDied,
           },
           'comments': _comments,
@@ -1030,7 +1046,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     SizedBox(height: 8),
                     _buildTextField(eventCodeController, 'Event Code', true),
                     SizedBox(height: 8),
-                    _buildTextField(matchNumberController, 'Match Number', false, onChanged: (value) {
+                    _buildTextField(
+                        matchNumberController, 'Match Number', false,
+                        onChanged: (value) {
                       getNewMatchDetails(int.tryParse(value) ?? -1);
                     }),
                     SizedBox(height: 8),
@@ -1039,27 +1057,21 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     _buildTextField(teamNumberController, 'Team Number', false),
                     SizedBox(height: 8),
                     _buildDriverStationDropdown(DRIVER_STATIONS),
-
-                
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Auto Scoring'),
                     SizedBox(height: 12),
                     _buildAutoSection(),
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Teleop Scoring'),
                     SizedBox(height: 12),
                     _buildTeleopSection(),
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Endgame Scoring'),
                     SizedBox(height: 12),
                     _buildEndgameSection(),
-
                     SizedBox(height: 20),
-                    _buildTextField(TextEditingController(text: _comments), 'Comments', false),
-
+                    _buildTextField(TextEditingController(text: _comments),
+                        'Comments', false),
                     SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
@@ -1101,7 +1113,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       ),
       child: DropdownButton<int>(
         value: driverStationIndex == -1 ? null : driverStationIndex,
-        hint: Text('Select Driver Station', style: TextStyle(color: Colors.white)),
+        hint: Text('Select Driver Station',
+            style: TextStyle(color: Colors.white)),
         onChanged: (int? value) {
           setState(() {
             driverStationIndex = value!;
@@ -1111,7 +1124,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           driverStations.length,
           (index) => DropdownMenuItem<int>(
             value: index,
-            child: Text(driverStations[index], style: TextStyle(color: Colors.white)),
+            child: Text(driverStations[index],
+                style: TextStyle(color: Colors.white)),
           ),
         ),
         dropdownColor: Colors.blueGrey[900],
@@ -1127,25 +1141,30 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           setState(() {
             _autoCoralLevel1 = value;
           });
-        }),
+        }, max: 12 - _teleopCoralL1),
         _buildScoringRow('Coral Level 2:', _autoCoralLevel2, (value) {
           setState(() {
             _autoCoralLevel2 = value;
           });
-        }),
+        }, max: 12 - _teleopCoralL2),
         _buildScoringRow('Coral Level 3:', _autoCoralLevel3, (value) {
           setState(() {
             _autoCoralLevel3 = value;
           });
-        }),
+        }, max: 12 - _teleopCoralL3),
         _buildScoringRow('Coral Level 4:', _autoCoralLevel4, (value) {
           setState(() {
             _autoCoralLevel4 = value;
           });
-        }),
-        _buildScoringRow('Algae:', _autoAlgae, (value) {
+        }, max: 12 - _teleopCoralL4),
+        _buildScoringRow('Algae in Net:', _autoNet, (value) {
           setState(() {
-            _autoAlgae = value;
+            _autoNet = value;
+          });
+        }, max: 18 - _teleopNet),
+        _buildScoringRow('Algae in Processor:', _autoProcessor, (value) {
+          setState(() {
+            _autoProcessor = value;
           });
         }),
       ],
@@ -1159,27 +1178,27 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           setState(() {
             _teleopCoralL1 = value;
           });
-        }),
+        }, max: 12 - _autoCoralLevel1),
         _buildScoringRow('Coral Level 2:', _teleopCoralL2, (value) {
           setState(() {
             _teleopCoralL2 = value;
           });
-        }),
+        }, max: 12 - _autoCoralLevel2),
         _buildScoringRow('Coral Level 3:', _teleopCoralL3, (value) {
           setState(() {
             _teleopCoralL3 = value;
           });
-        }),
+        }, max: 12 - _autoCoralLevel3),
         _buildScoringRow('Coral Level 4:', _teleopCoralL4, (value) {
           setState(() {
             _teleopCoralL4 = value;
           });
-        }),
-        _buildScoringRow('Algae:', _teleopAlgae, (value) {
+        }, max: 12 - _autoCoralLevel4),
+        _buildScoringRow('Net:', _teleopNet, (value) {
           setState(() {
-            _teleopAlgae = value;
+            _teleopNet = value;
           });
-        }),
+        }, max: 18 - _autoNet),
         _buildScoringRow('Processor:', _teleopProcessor, (value) {
           setState(() {
             _teleopProcessor = value;
@@ -1196,12 +1215,27 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           setState(() {
             _isParked = value;
           });
-        }),
-        _buildSwitchRow('Suspended:', _isSuspended, (value) {
-          setState(() {
-            _isSuspended = value;
-          });
-        }),
+        }, isEnabled: !_deepClimb && !_shallowClimb),
+        _buildSwitchRow(
+          'Shallow Climb:',
+          _shallowClimb,
+          (value) {
+            setState(() {
+              _shallowClimb = value;
+            });
+          },
+          isEnabled: !_deepClimb && !_isParked,
+        ),
+        _buildSwitchRow(
+          'Deep Climb:',
+          _deepClimb,
+          (value) {
+            setState(() {
+              _deepClimb = value;
+            });
+          },
+          isEnabled: !_shallowClimb && !_isParked,
+        ),
         _buildSwitchRow('Died:', _isDied, (value) {
           setState(() {
             _isDied = value;
@@ -1222,7 +1256,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     );
   }
 
-  Widget _buildScoringRow(String label, int value, Function(int) onChanged) {
+  Widget _buildScoringRow(String label, int value, Function(int) onChanged,
+      {int min = 0, int max = 12}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6),
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -1244,11 +1279,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ),
                   padding: EdgeInsets.all(8),
                 ),
-                onPressed: () {
-                  if (value > 0) {
-                    onChanged(value - 1);
-                  }
-                },
+                onPressed: value > min
+                    ? () {
+                        onChanged(value - 1);
+                      }
+                    : null, // Disable button if value is at min
                 child: Icon(Icons.remove, color: Colors.white),
               ),
               SizedBox(width: 8),
@@ -1262,9 +1297,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ),
                   padding: EdgeInsets.all(8),
                 ),
-                onPressed: () {
-                  onChanged(value + 1);
-                },
+                onPressed: value < max
+                    ? () {
+                        onChanged(value + 1);
+                      }
+                    : null, // Disable button if value is at max
                 child: Icon(Icons.add, color: Colors.white),
               ),
             ],
@@ -1274,22 +1311,26 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     );
   }
 
-  Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged) {
+  Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged,
+      {bool isEnabled = true}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: Colors.white)),
         Switch(
           value: value,
-          onChanged: onChanged,
-          activeColor: Colors.blueAccent,
-          inactiveTrackColor: Colors.grey,
+          onChanged: isEnabled ? onChanged : null,
+          activeColor: isEnabled ? Colors.blueAccent : Colors.grey,
+          inactiveThumbColor: isEnabled ? null : Colors.grey[400],
+          inactiveTrackColor: isEnabled ? Colors.grey[400] : Colors.grey,
         ),
       ],
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
+  Widget _buildTextField(
+      TextEditingController controller, String label, bool isReadOnly,
+      {Function(String)? onChanged}) {
     return TextField(
       controller: controller,
       readOnly: isReadOnly,
@@ -1309,25 +1350,23 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 }
 
-
-  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
-    return TextField(
-      controller: controller,
-      readOnly: isReadOnly,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.grey[800],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+Widget _buildTextField(
+    TextEditingController controller, String label, bool isReadOnly,
+    {Function(String)? onChanged}) {
+  return TextField(
+    controller: controller,
+    readOnly: isReadOnly,
+    decoration: InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.grey[800],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      onChanged: onChanged,
-    );
-  }
-
-
-
+    ),
+    onChanged: onChanged,
+  );
+}
 
 const List<String> DRIVER_STATIONS = [
   'Red 1',
@@ -1337,10 +1376,6 @@ const List<String> DRIVER_STATIONS = [
   'Blue 2',
   'Blue 3',
 ];
-
-
-
-
 
 class _PitScoutingTab extends StatefulWidget {
   final EventPage widget;
