@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
+import 'package:scouting_app/utils.dart';
 import '../widgets/auto_pieces_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
@@ -880,6 +881,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       matchNumberController,
       scoutNameController;
   int driverStationIndex = -1;
+  String? token;
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
   @override
@@ -890,6 +892,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     teamNumberController = TextEditingController();
     matchNumberController = TextEditingController();
     scoutNameController = TextEditingController();
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    apiService.token.then((_token) {
+      if (mounted) {
+        setState(() {
+          token = _token;
+        });
+      }
+      token = _token;
+    });
   }
 
   getNewMatchDetails(int matchNumber) {
@@ -932,7 +943,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    final apiService = Provider.of<ApiService>(context);
     const List<String> DRIVER_STATIONS = [
       'Red 1',
       'Red 2',
@@ -942,8 +952,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 3'
     ];
     final theme = Theme.of(context);
+    Map<String, dynamic>? decodedToken;
+    if (token != null) {
+      try {
+        decodedToken = parseJwt(token!);
+        scoutNameController.text = decodedToken['preferred_username'];
+      } catch (e) {
+        decodedToken = null;
+      }
+    }
     return SingleChildScrollView(
-        child: apiService.token == null
+        child: decodedToken == null
             ? LoginWidget(
                 redirect_path: 'event/${widget.widget.tournament.key}')
             : Card(
@@ -985,6 +1004,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     SizedBox(height: 8),
                     TextField(
                       controller: scoutNameController,
+                      readOnly: true,
                       decoration: InputDecoration(
                         label: Text('Scout Name'),
                       ).applyDefaults(theme.inputDecorationTheme),

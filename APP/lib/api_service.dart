@@ -11,7 +11,7 @@ class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
   final Duration cacheDuration;
   final AuthService authService;
-  dynamic get token async => await authService.getToken();
+  Future<String?> get token async => await authService.getToken();
   // set token(dynamic token) => _token = token;
 
   ApiService(

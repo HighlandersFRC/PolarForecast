@@ -51,6 +51,10 @@ services:
           target: /APP
     environment:
       PF_API_ENDPOINT: ${PF_API_ENDPOINT}
+      PF_KEYCLOAK_LOGIN_IP: ${PF_KEYCLOAK_LOGIN_IP}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_APP_CLIENT_ID: ${KEYCLOAK_APP_CLIENT_ID}
+      APP_DOMAIN: ${APP_DOMAIN}
 
   keycloak:
     build:
