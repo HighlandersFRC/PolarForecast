@@ -35,7 +35,6 @@ dependencies:
   number_paginator: ^0.4.1
   flutter_dotenv: ^5.2.1
   flutter_appauth: ^8.0.3
-  openid_client: ^0.4.9
   url_launcher: ^6.3.1
 
 

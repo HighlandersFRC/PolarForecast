@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:http/http.dart';
 
 import 'auth_service.dart';
-import 'package:openid_client/openid_client_browser.dart';
 import 'dart:html';
 
 class WebAuthService implements AuthService {
@@ -48,6 +47,7 @@ class WebAuthService implements AuthService {
       // Redirect the user to the login URL
       window.location.href = loginUrl.toString();
     }
+    return null;
   }
 
   @override
