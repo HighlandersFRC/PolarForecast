@@ -1014,7 +1014,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 2',
       'Blue 3'
     ];
-    final theme = Theme.of(context);
     Map<String, dynamic>? decodedToken;
     if (token != null) {
       try {
@@ -1344,24 +1343,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       ),
     );
   }
-}
-
-Widget _buildTextField(
-    TextEditingController controller, String label, bool isReadOnly,
-    {Function(String)? onChanged}) {
-  return TextField(
-    controller: controller,
-    readOnly: isReadOnly,
-    decoration: InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: Colors.grey[800],
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    onChanged: onChanged,
-  );
 }
 
 const List<String> DRIVER_STATIONS = [
