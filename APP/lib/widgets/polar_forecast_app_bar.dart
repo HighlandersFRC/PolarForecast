@@ -125,9 +125,12 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.fetchTournaments().then((tournaments) {
-      setState(() {
+      if (mounted)
+        setState(() {
+          this.tournaments = tournaments;
+        });
+      else
         this.tournaments = tournaments;
-      });
     });
   }
 
