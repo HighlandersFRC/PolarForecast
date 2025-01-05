@@ -35,7 +35,7 @@ class EventPage extends StatefulWidget {
   static Widget fromEventKey(BuildContext context, String eventKey) {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final tournaments = apiService.fetchTournaments();
-    print(eventKey);
+    // print(eventKey);
     return FutureBuilder(
         future: tournaments,
         builder: (context, tournaments) {
@@ -1029,10 +1029,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       child: decodedToken == null
           ? LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}')
           : Card(
-              color: Colors.grey[900],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Column(

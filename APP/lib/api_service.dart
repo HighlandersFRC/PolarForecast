@@ -228,7 +228,7 @@ class ApiService {
     // try {
     final String? token = await authService.login(redirectPath);
     if (token != null) {
-      print('Login successful! Access token: $token');
+      // print('Login successful! Access token: $token');
     } else {
       print('Login failed or canceled');
     }

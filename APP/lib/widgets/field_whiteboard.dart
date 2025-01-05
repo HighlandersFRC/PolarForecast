@@ -198,7 +198,7 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
       );
       Navigator.of(context).pop();
     } else {
-      print('User canceled the file name input or provided no name');
+      // print('User canceled the file name input or provided no name');
     }
   }
 

@@ -72,7 +72,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      WEBAPP_ORIGIN: http://${APP_DOMAIN}
+      WEBAPP_ORIGIN: ${APP_DOMAIN}
       WEBAPP_CM_ORIGIN: http://${APP_CM_ORIGIN}
       KC_HEALTH_ENABLED: true
       # KC_DB: postgres

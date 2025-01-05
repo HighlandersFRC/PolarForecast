@@ -68,9 +68,9 @@ class WebAuthService implements AuthService {
     }
     final uri = Uri.parse(window.location.href);
     final authorizationCode = uri.queryParameters['code'];
-    print('Authorization code: $authorizationCode');
+    // print('Authorization code: $authorizationCode');
     if (authorizationCode == null) {
-      throw ('Authorization code: $authorizationCode');
+      // throw ('Authorization code: $authorizationCode');
     }
 
     // Keycloak token endpoint and client details
@@ -92,7 +92,7 @@ class WebAuthService implements AuthService {
 
     if (response.statusCode == 200) {
       final tokenData = jsonDecode(response.body);
-      print(tokenData);
+      // print(tokenData);
       window.sessionStorage['pf_token'] = tokenData['access_token'];
       return tokenData['access_token'] as String?;
     } else {
