@@ -887,8 +887,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
 
-  int _autoCoralLevel1 = 0, _autoCoralLevel2 = 0, _autoCoralLevel3 = 0, _autoCoralLevel4 = 0, _autoAlgae = 0;
-  int _teleopCoralL1 = 0, _teleopCoralL2 = 0, _teleopCoralL3 = 0, _teleopCoralL4 = 0;
+  int _autoCoralLevel1 = 0,
+      _autoCoralLevel2 = 0,
+      _autoCoralLevel3 = 0,
+      _autoCoralLevel4 = 0,
+      _autoAlgae = 0;
+  int _teleopCoralL1 = 0,
+      _teleopCoralL2 = 0,
+      _teleopCoralL3 = 0,
+      _teleopCoralL4 = 0;
   int _teleopAlgae = 0, _teleopProcessor = 0;
   bool _isParked = false, _isSuspended = false, _isDied = false;
   String _comments = '';
@@ -896,7 +903,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   @override
   initState() {
     super.initState();
-    eventCodeController = TextEditingController(text: widget.widget.tournament.key);
+    eventCodeController =
+        TextEditingController(text: widget.widget.tournament.key);
     teamNumberController = TextEditingController();
     matchNumberController = TextEditingController();
     scoutNameController = TextEditingController();
@@ -914,11 +922,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   getNewMatchDetails(int matchNumber) {
     if (matchNumber <= 0) return;
     final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService.fetchMatchDetails(
+    apiService
+        .fetchMatchDetails(
       int.parse(widget.widget.tournament.key.substring(0, 4)),
       widget.widget.tournament.key.substring(4),
       '${widget.widget.tournament.key}_qm$matchNumber',
-    ).then((value) {
+    )
+        .then((value) {
       if (matchNumber == int.parse(matchNumberController.text)) {
         setState(() {
           matchDetails = value;
@@ -1013,10 +1023,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       child: decodedToken == null
           ? LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}')
           : Card(
-              color: Colors.grey[900],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Column(
@@ -1030,7 +1036,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     SizedBox(height: 8),
                     _buildTextField(eventCodeController, 'Event Code', true),
                     SizedBox(height: 8),
-                    _buildTextField(matchNumberController, 'Match Number', false, onChanged: (value) {
+                    _buildTextField(
+                        matchNumberController, 'Match Number', false,
+                        onChanged: (value) {
                       getNewMatchDetails(int.tryParse(value) ?? -1);
                     }),
                     SizedBox(height: 8),
@@ -1039,27 +1047,21 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     _buildTextField(teamNumberController, 'Team Number', false),
                     SizedBox(height: 8),
                     _buildDriverStationDropdown(DRIVER_STATIONS),
-
-                
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Auto Scoring'),
                     SizedBox(height: 12),
                     _buildAutoSection(),
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Teleop Scoring'),
                     SizedBox(height: 12),
                     _buildTeleopSection(),
-
                     SizedBox(height: 20),
                     _buildSectionTitle('Endgame Scoring'),
                     SizedBox(height: 12),
                     _buildEndgameSection(),
-
                     SizedBox(height: 20),
-                    _buildTextField(TextEditingController(text: _comments), 'Comments', false),
-
+                    _buildTextField(TextEditingController(text: _comments),
+                        'Comments', false),
                     SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
@@ -1101,7 +1103,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       ),
       child: DropdownButton<int>(
         value: driverStationIndex == -1 ? null : driverStationIndex,
-        hint: Text('Select Driver Station', style: TextStyle(color: Colors.white)),
+        hint: Text('Select Driver Station',
+            style: TextStyle(color: Colors.white)),
         onChanged: (int? value) {
           setState(() {
             driverStationIndex = value!;
@@ -1111,7 +1114,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           driverStations.length,
           (index) => DropdownMenuItem<int>(
             value: index,
-            child: Text(driverStations[index], style: TextStyle(color: Colors.white)),
+            child: Text(driverStations[index],
+                style: TextStyle(color: Colors.white)),
           ),
         ),
         dropdownColor: Colors.blueGrey[900],
@@ -1289,7 +1293,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
+  Widget _buildTextField(
+      TextEditingController controller, String label, bool isReadOnly,
+      {Function(String)? onChanged}) {
     return TextField(
       controller: controller,
       readOnly: isReadOnly,
@@ -1309,25 +1315,23 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 }
 
-
-  Widget _buildTextField(TextEditingController controller, String label, bool isReadOnly, {Function(String)? onChanged}) {
-    return TextField(
-      controller: controller,
-      readOnly: isReadOnly,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.grey[800],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+Widget _buildTextField(
+    TextEditingController controller, String label, bool isReadOnly,
+    {Function(String)? onChanged}) {
+  return TextField(
+    controller: controller,
+    readOnly: isReadOnly,
+    decoration: InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.grey[800],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      onChanged: onChanged,
-    );
-  }
-
-
-
+    ),
+    onChanged: onChanged,
+  );
+}
 
 const List<String> DRIVER_STATIONS = [
   'Red 1',
@@ -1337,10 +1341,6 @@ const List<String> DRIVER_STATIONS = [
   'Blue 2',
   'Blue 3',
 ];
-
-
-
-
 
 class _PitScoutingTab extends StatefulWidget {
   final EventPage widget;
