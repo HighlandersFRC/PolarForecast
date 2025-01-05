@@ -881,6 +881,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       scoutNameController;
   int driverStationIndex = -1;
   List<String> selectedPieces = [];
+  int l4Coral = 0;
+  int l3Coral = 0;
+  int l2Coral = 0;
+  int l1Coral = 0;
+  int netAlgae = 0;
+  int processorAlgae = 0;
+
   MatchDetails2024? matchDetails = null;
   @override
   initState() {
@@ -949,98 +956,150 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             : Card(
                 child: Padding(
                 padding: EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      widget.widget.tournament.display,
-                      style: TextStyle(color: Colors.blue, fontSize: 24),
-                    ),
-                    Divider(),
-                    SizedBox(height: 4),
-                    TextField(
-                      readOnly: true,
-                      style: TextStyle(color: Colors.grey),
-                      controller: eventCodeController,
-                      decoration: InputDecoration(
-                          label: Text(
-                        'Event Code',
-                      )).applyDefaults(theme.inputDecorationTheme),
-                    ),
-                    SizedBox(height: 8),
-                    TextField(
-                      controller: matchNumberController,
-                      inputFormatters: [
-                        FilteringTextInputFormatter
-                            .digitsOnly, // Allows only digits
-                      ],
-                      maxLength: 3,
-                      onChanged: (value) {
-                        getNewMatchDetails(int.tryParse(value) ?? -1);
-                      },
-                      decoration: InputDecoration(
-                        label: Text('Match Number'),
-                        counterText: '',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
-                    SizedBox(height: 8),
-                    TextField(
-                      controller: scoutNameController,
-                      decoration: InputDecoration(
-                        label: Text('Scout Name'),
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
-                    SizedBox(height: 8),
-                    TextField(
-                      controller: teamNumberController,
-                      maxLength: 5,
-                      inputFormatters: [
-                        FilteringTextInputFormatter
-                            .digitsOnly, // Allows only digits
-                      ],
-                      decoration: InputDecoration(
-                        label: Text('Team Number'),
-                        counterText: '',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                    ),
-                    SizedBox(height: 8),
-                    DropdownButtonFormField<int>(
-                      isExpanded: true,
-                      value: driverStationIndex,
-                      decoration: InputDecoration(
-                        labelText: 'Driver Station',
-                      ).applyDefaults(theme.inputDecorationTheme),
-                      items: [
-                        DropdownMenuItem<int>(
-                          child: Text('None',
-                              style: TextStyle(fontStyle: FontStyle.italic)),
-                          value: -1,
-                        ),
-                        ...DRIVER_STATIONS.indexed.map(
-                          (value) => DropdownMenuItem<int>(
-                            child: Text(
-                              value.$2,
-                              style: TextStyle(
-                                  color: value.$2.contains('Red')
-                                      ? Colors.red
-                                      : Colors.blue),
-                            ),
-                            value: value.$1,
+                child: Column(children: [
+                  Text(
+                    widget.widget.tournament.display,
+                    style: TextStyle(color: Colors.blue, fontSize: 24),
+                  ),
+                  Divider(),
+                  SizedBox(height: 4),
+                  TextField(
+                    readOnly: true,
+                    style: TextStyle(color: Colors.grey),
+                    controller: eventCodeController,
+                    decoration: InputDecoration(
+                        label: Text(
+                      'Event Code',
+                    )).applyDefaults(theme.inputDecorationTheme),
+                  ),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: matchNumberController,
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // Allows only digits
+                    ],
+                    maxLength: 3,
+                    onChanged: (value) {
+                      getNewMatchDetails(int.tryParse(value) ?? -1);
+                    },
+                    decoration: InputDecoration(
+                      label: Text('Match Number'),
+                      counterText: '',
+                    ).applyDefaults(theme.inputDecorationTheme),
+                  ),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: scoutNameController,
+                    decoration: InputDecoration(
+                      label: Text('Scout Name'),
+                    ).applyDefaults(theme.inputDecorationTheme),
+                  ),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: teamNumberController,
+                    maxLength: 5,
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // Allows only digits
+                    ],
+                    decoration: InputDecoration(
+                      label: Text('Team Number'),
+                      counterText: '',
+                    ).applyDefaults(theme.inputDecorationTheme),
+                  ),
+                  SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    isExpanded: true,
+                    value: driverStationIndex,
+                    decoration: InputDecoration(
+                      labelText: 'Driver Station',
+                    ).applyDefaults(theme.inputDecorationTheme),
+                    items: [
+                      DropdownMenuItem<int>(
+                        child: Text('None',
+                            style: TextStyle(fontStyle: FontStyle.italic)),
+                        value: -1,
+                      ),
+                      ...DRIVER_STATIONS.indexed.map(
+                        (value) => DropdownMenuItem<int>(
+                          child: Text(
+                            value.$2,
+                            style: TextStyle(
+                                color: value.$2.contains('Red')
+                                    ? Colors.red
+                                    : Colors.blue),
                           ),
-                        )
-                      ],
-                      onChanged: (int? value) {
-                        setState(() => driverStationIndex = value ?? -1);
-                        updateTeamNumber();
-                      },
-                    ),
-                    SizedBox(height: 8),
-                    AutoPieces2024(
-                        selectedPieces: selectedPieces,
-                        onChanged: (newPieces) {
-                          setState(() => selectedPieces = newPieces);
-                        })
-                  ],
-                ),
+                          value: value.$1,
+                        ),
+                      )
+                    ],
+                    onChanged: (int? value) {
+                      setState(() => driverStationIndex = value ?? -1);
+                      updateTeamNumber();
+                    },
+                  ),
+                  SizedBox(height: 8),
+                  AutoPieces2024(
+                      selectedPieces: selectedPieces,
+                      onChanged: (newPieces) {
+                        setState(() => selectedPieces = newPieces);
+                      }),
+                  Counter(
+                      label: 'L4 Coral',
+                      value: l4Coral,
+                      max: 12,
+                      onChanged: (newValue) {
+                        setState(() {
+                          l4Coral = newValue;
+                        });
+                      }),
+                  Counter(
+                      label: 'L3 Coral',
+                      value: l3Coral,
+                      max: 12,
+                      onChanged: (newValue) {
+                        setState(() {
+                          l3Coral = newValue;
+                        });
+                      }),
+                  Counter(
+                      label: 'L2 Coral',
+                      value: l2Coral,
+                      max: 12,
+                      onChanged: (newValue) {
+                        setState(() {
+                          l2Coral = newValue;
+                        });
+                      }),
+                  Counter(
+                      label: 'L1 Coral',
+                      value: l1Coral,
+                      max: 12,
+                      onChanged: (newValue) {
+                        setState(() {
+                          l1Coral = newValue;
+                        });
+                      }),
+                  Counter(
+                      label: 'Algae In Net',
+                      value: netAlgae,
+                      max: 18 - processorAlgae,
+                      onChanged: (newValue) {
+                        setState(() {
+                          netAlgae = newValue;
+                        });
+                      }),
+                  Counter(
+                      label: 'Algae in Processor',
+                      value: processorAlgae,
+                      max: 18 - netAlgae,
+                      onChanged: (newValue) {
+                        setState(() {
+                          processorAlgae = newValue;
+                        });
+                      }),
+                ]),
               )));
   }
 }
