@@ -80,13 +80,24 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 
 def get_redis_client():
     try:
+        logging.info("trying normal connection")
         RedisClient = redis.Redis(
-            host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, ssl=True)
+            host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, ssl=False)
+        if not RedisClient.ping():
+            raise Exception("Redis connection failed")
     except Exception as e:
         logging.error(str(e))
-        logging.info("redis connection: " + REDIS_HOST +
-                     " " + REDIS_PORT + " " + REDIS_PASSWORD)
-        RedisClient = None
+        try:
+            logging.info("trying ssl connection")
+            RedisClient = redis.Redis(
+                host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, ssl=True)
+            if not RedisClient.ping():
+                raise Exception("Redis connection failed")
+        except Exception as e:
+            logging.error(str(e))
+            RedisClient = None
+    logging.info("redis connection: " + str(REDIS_HOST) +
+                 " " + str(REDIS_PORT) + " " + str(REDIS_PASSWORD))
     return RedisClient
 
 
