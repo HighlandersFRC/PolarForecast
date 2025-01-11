@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/match_scouting_2024.dart';
-
-import 'polar_forecast_app_bar.dart';
+import '../utils.dart';
 
 class AutoDisplay2024 extends StatefulWidget {
   final MatchScouting2024 scoutingData;

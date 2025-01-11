@@ -16,7 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
-from auth import check_token_active, get_token_active, get_user_info
+from auth import check_token_active, fetch_event_groups, find_user_groups, get_token_active, get_user_info, make_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -406,6 +406,23 @@ def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
     return data
 
 
+@app.post("/CreateGroup")
+def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None):
+    if group_name == None:
+        raise HTTPException(400, "Please provide a group name")
+    if (token is not None):
+        # user_info = get_user_info(token)
+        # userID = user_info["sub"]
+        # userGroups = get_user_groups(userID)
+        return make_group(token, group_name, event)
+
+
+@app.get("/{year}/{event}/Groups")
+def get_event_groups(year: int, event: str, token: str = Depends(check_token_active)):
+    eventCode = f"{year}{event}"
+    fetch_event_groups(eventCode)
+
+
 @app.put("/MatchScouting/")
 def update_match_scouting(data: dict):
     eventCode = data["event_code"]
@@ -699,6 +716,13 @@ def get_team_follow_up(team: str, event: str, year: int):
                                    "death_reason": "",
                                    "severity": '', })
             return {"event_code": str(year)+event, "team_key": team, "team_number": team[3:], "deaths": deaths, "average": 0, "total": 0}
+
+
+@app.get('/user_groups')
+def get_user_groups(token: str = Depends(check_token_active)):
+    user_data = get_user_info(token)
+    userID = user_data["sub"]
+    return find_user_groups(user_id=userID)
 
 
 def convertData(calculatedData, year, event_code):
@@ -1046,7 +1070,7 @@ def update_database():
                     {"key": event["key"]}, event)
                 # print(teams)
                 teams = [{"key": x[3:], "pit_status": "Not Started",
-                        "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
+                          "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
                 try:
                     existingTeams = PitStatusCollection.find_one(
                         {"event_code": event["key"]})["data"]
@@ -1068,7 +1092,7 @@ def update_database():
                 except Exception as e:
                     # logging.error(e)
                     PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
-                                                            "event_code": event["key"], "data": returnTeams})
+                        "event_code": event["key"], "data": returnTeams})
             except Exception as e:
                 logging.error(e)
 

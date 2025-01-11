@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../models/tournament.dart';
+import '../models/group.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 
 class GroupPage extends StatefulWidget {
-  final Tournament tournament;
-
-  const GroupPage(this.tournament, this.team);
+  final Group group;
+  const GroupPage(this.group);
 
   @override
   _GroupPageState createState() => _GroupPageState();
@@ -21,7 +20,7 @@ class _GroupPageState extends State<GroupPage> {
     final List<Widget> tabs = [];
     return Scaffold(
       appBar: PolarForecastAppBar(
-        extraText: '${widget.teamNumber} - ${widget.tournament.display}',
+        extraText: '${widget.group.name}',
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentTab,

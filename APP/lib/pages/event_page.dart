@@ -11,6 +11,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2025.dart';
+import 'package:scouting_app/widgets/need_group.dart';
+import '../models/group.dart';
 import '../widgets/auto_pieces_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
@@ -28,6 +30,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../models/match_details_2024.dart';
 import '../models/team_stats_2024.dart';
 import '../models/tournament.dart';
+import 'group_page.dart';
 import 'home_page.dart';
 
 class EventPage extends StatefulWidget {
@@ -143,7 +146,6 @@ class _EventPageState extends State<EventPage> {
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return [
               PolarForecastSliverBar(
-                context: context,
                 extraText: widget.tournament.display,
               ),
             ];
@@ -886,7 +888,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   String? token;
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
-
+  List<dynamic>? groups;
   int _autoCoralLevel1 = 0,
       _autoCoralLevel2 = 0,
       _autoCoralLevel3 = 0,
@@ -903,6 +905,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       _deepClimb = false,
       _isDied = false;
   String _comments = '';
+  bool loading = true;
 
   @override
   initState() {
@@ -914,12 +917,45 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     scoutNameController = TextEditingController();
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.token.then((_token) {
+      if (_token == null) {
+        if (mounted) {
+          setState(() {
+            loading = false;
+          });
+        }
+        loading = false;
+      } else
+        apiService.get_user_groups().then((_groups) {
+          if (mounted) {
+            setState(() {
+              groups = _groups;
+              loading = false;
+            });
+          }
+          groups = _groups;
+          print(groups);
+          loading = false;
+        }).onError((e, stackTrace) {
+          if (mounted) {
+            setState(() {
+              loading = false;
+            });
+          }
+          loading = false;
+        });
       if (mounted) {
         setState(() {
           token = _token;
         });
       }
       token = _token;
+    }).onError((e, stackTrace) {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+      loading = false;
     });
   }
 
@@ -1006,6 +1042,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     const List<String> DRIVER_STATIONS = [
       'Red 1',
       'Red 2',
@@ -1015,6 +1052,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 3'
     ];
     Map<String, dynamic>? decodedToken;
+    Map<String, dynamic>? group;
     if (token != null) {
       try {
         decodedToken = parseJwt(token!);
@@ -1023,79 +1061,164 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         decodedToken = null;
       }
     }
+    if (groups != null) {
+      for (var _group in groups!) {
+        try {
+          if (_group['attributes']['event'][0] ==
+              widget.widget.tournament.key) {
+            group = _group;
+            break;
+          }
+        } catch (e) {}
+      }
+    }
 
     return SingleChildScrollView(
-      child: decodedToken == null
-          ? LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}')
-          : Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.widget.tournament.display,
-                      style: TextStyle(color: Colors.blueAccent, fontSize: 24),
-                    ),
-                    Divider(color: Colors.blueAccent),
-                    SizedBox(height: 8),
-                    _buildTextField(eventCodeController, 'Event Code', true),
-                    SizedBox(height: 8),
-                    _buildTextField(
-                        matchNumberController, 'Match Number', false,
-                        onChanged: (value) {
-                      getNewMatchDetails(int.tryParse(value) ?? -1);
-                    }),
-                    SizedBox(height: 8),
-                    _buildTextField(scoutNameController, 'Scout Name', true),
-                    SizedBox(height: 8),
-                    _buildTextField(teamNumberController, 'Team Number', false),
-                    SizedBox(height: 8),
-                    _buildDriverStationDropdown(DRIVER_STATIONS),
-                    SizedBox(height: 20),
-                    _buildSectionTitle('Auto Scoring'),
-                    SizedBox(height: 12),
-                    _buildAutoSection(),
-                    SizedBox(height: 20),
-                    _buildSectionTitle('Teleop Scoring'),
-                    SizedBox(height: 12),
-                    _buildTeleopSection(),
-                    SizedBox(height: 20),
-                    _buildSectionTitle('Endgame Scoring'),
-                    SizedBox(height: 12),
-                    _buildEndgameSection(),
-                    SizedBox(height: 20),
-                    _buildTextField(TextEditingController(text: _comments),
-                        'Comments', false),
-                    SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          String qrData = _generateQRCodeData();
-                          if (qrData.isNotEmpty) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text("Generated QR Code"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: Text('Close'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                ],
+      child: loading
+          ? Center(
+              child: CircularProgressIndicator(
+              color: theme.primaryColor,
+            ))
+          : decodedToken == null
+              ? LoginWidget(
+                  redirect_path: 'event/${widget.widget.tournament.key}')
+              : (group == null)
+                  ? NeedGroup(
+                      tournament: widget.widget.tournament,
+                      onClick: () {
+                        final TextEditingController groupNameController =
+                            TextEditingController();
+
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Create a New Group'),
+                              content: TextField(
+                                controller: groupNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Group Name',
+                                  hintText: 'Enter the name of the group',
+                                ),
                               ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final apiService = Provider.of<ApiService>(
+                                        context,
+                                        listen: false);
+                                    apiService
+                                        .make_group(
+                                            groupNameController.text,
+                                            widget.widget.tournament.key
+                                                .substring(4),
+                                            int.parse(widget
+                                                .widget.tournament.key
+                                                .substring(0, 4)))
+                                        .then((value) {
+                                      if (value?['group'] != null) {
+                                        setState(() {
+                                          groups = [value?['group']];
+                                        });
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) {
+                                          return GroupPage(
+                                              Group.fromJson(value?['group']));
+                                        }));
+                                      }
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Create'),
+                                ),
+                              ],
                             );
-                          }
-                        },
-                        child: Text("Generate QR Code"),
+                          },
+                        );
+                      },
+                    )
+                  : Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.widget.tournament.display,
+                              style: TextStyle(
+                                  color: Colors.blueAccent, fontSize: 24),
+                            ),
+                            Divider(color: Colors.blueAccent),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                                eventCodeController, 'Event Code', true),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                                matchNumberController, 'Match Number', false,
+                                onChanged: (value) {
+                              getNewMatchDetails(int.tryParse(value) ?? -1);
+                            }),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                                scoutNameController, 'Scout Name', true),
+                            SizedBox(height: 8),
+                            _buildTextField(
+                                teamNumberController, 'Team Number', false),
+                            SizedBox(height: 8),
+                            _buildDriverStationDropdown(DRIVER_STATIONS),
+                            SizedBox(height: 20),
+                            _buildSectionTitle('Auto Scoring'),
+                            SizedBox(height: 12),
+                            _buildAutoSection(),
+                            SizedBox(height: 20),
+                            _buildSectionTitle('Teleop Scoring'),
+                            SizedBox(height: 12),
+                            _buildTeleopSection(),
+                            SizedBox(height: 20),
+                            _buildSectionTitle('Endgame Scoring'),
+                            SizedBox(height: 12),
+                            _buildEndgameSection(),
+                            SizedBox(height: 20),
+                            _buildTextField(
+                                TextEditingController(text: _comments),
+                                'Comments',
+                                false),
+                            SizedBox(height: 20),
+                            Center(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  String qrData = _generateQRCodeData();
+                                  if (qrData.isNotEmpty) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text('Generated QR Code'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: Text('Close'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Text('Generate QR Code'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
     );
   }
 

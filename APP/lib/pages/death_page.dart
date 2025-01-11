@@ -21,7 +21,6 @@ class _DeathPageState extends State<DeathPage> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return [
           PolarForecastSliverBar(
-            context: context,
             extraText:
                 '- Team ${widget.number} Deaths - ${widget.tournament.key}',
           ),

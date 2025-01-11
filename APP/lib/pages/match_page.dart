@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils.dart';
 import '../widgets/field_whiteboard.dart';
 import 'package:scribble/scribble.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -420,7 +421,7 @@ class _BlueTabState extends State<_BlueTab> {
                                 ? CircularProgressIndicator(color: Colors.blue)
                                 : Column(children: [
                                     Text(
-                                        'Team ${match!.match.alliances.red.team_keys[i].substring(3)}',
+                                        'Team ${match!.match.alliances.blue.team_keys[i].substring(3)}',
                                         style: TextStyle(
                                             fontSize: kToolbarHeight - 20,
                                             color: Colors.blue)),

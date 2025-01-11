@@ -24,7 +24,11 @@ class WebAuthService implements AuthService {
   Future<String?> login(redirect_path) async {
     // Keycloak authorization endpoint and client details
     try {
-      return await getToken();
+      final token = await getToken();
+      if (token != null)
+        return token;
+      else
+        throw 'need new token';
     } catch (e) {
       print(e);
       var authorizationEndpoint =
@@ -57,20 +61,33 @@ class WebAuthService implements AuthService {
 
     // Optionally redirect to a logout page or refresh the application
     window.location.href =
-        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?redirect_uri=$APPURL';
+        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?redirect_uri=$APPURL/';
   }
 
   @override
   Future<String?> getToken() async {
     // Extract the authorization code from the URL
-    if (window.sessionStorage['pf_token'] != null) {
-      return window.sessionStorage['pf_token'];
+    try {
+      final tokenData = window.sessionStorage['pf_token'];
+      if (tokenData != null) {
+        final data = json.decode(tokenData);
+        final expirationTime = DateTime.parse(data[1]);
+        final token = data[0];
+        if (DateTime.now().isBefore(expirationTime)) {
+          return token; // Token is still valid
+        } else {
+          window.sessionStorage.remove('pf_token'); // Token expired
+        }
+      }
+    } catch (e) {
+      print(e);
     }
     final uri = Uri.parse(window.location.href);
     final authorizationCode = uri.queryParameters['code'];
     // print('Authorization code: $authorizationCode');
     if (authorizationCode == null) {
       // throw ('Authorization code: $authorizationCode');
+      return null;
     }
 
     // Keycloak token endpoint and client details
@@ -92,12 +109,18 @@ class WebAuthService implements AuthService {
 
     if (response.statusCode == 200) {
       final tokenData = jsonDecode(response.body);
-      // print(tokenData);
-      window.sessionStorage['pf_token'] = tokenData['access_token'];
+      saveToken(tokenData['access_token']);
       return tokenData['access_token'] as String?;
     } else {
       throw Exception('Failed to get token: ${response.body}');
     }
+  }
+
+  void saveToken(token) {
+    final expirationTime =
+        DateTime.now().add(Duration(minutes: 30)); // Current time + 5 minutes
+    final tokenData = [token, expirationTime.toString()];
+    window.sessionStorage['pf_token'] = json.encode(tokenData);
   }
 }
 

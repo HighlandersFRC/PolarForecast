@@ -56,7 +56,13 @@ class MainApp extends StatelessWidget {
           theme: themeNotifier.themeData,
           // initialRoute: '/home',
           onGenerateRoute: (RouteSettings settings) {
-            final pathSegments = settings.name!.split('/');
+            var query = null;
+            try {
+              query = settings.name?.split('?')[1];
+            } catch (e) {}
+            final path = settings.name!.split('?')[0];
+            print(path);
+            final pathSegments = path.split('/');
             if (pathSegments.isNotEmpty) {
               if (pathSegments[1] == 'event') {
                 if (pathSegments.length > 2) {
@@ -70,7 +76,10 @@ class MainApp extends StatelessWidget {
                 }
               }
             }
-            switch (settings.name) {
+            if (query != null) {
+              return MaterialPageRoute(builder: (context) => HomePage());
+            }
+            switch (path) {
               case '/':
                 return null;
               case '/home':

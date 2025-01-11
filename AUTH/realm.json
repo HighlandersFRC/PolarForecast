@@ -2933,6 +2933,32 @@
         ],
         "notBefore": 0,
         "groups": []
+      },
+      {
+        "id": "1f20ea0b-1d1d-438f-bc3a-fee434da6243",
+        "createdTimestamp": 1705363658618,
+        "username": "admin",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "credentials": [
+          {
+            "id": "e37d03ed-f109-452d-81e2-eaa33fc0d6b0",
+            "type": "password",
+            "createdDate": 1705363658806,
+            "secretData": "{\"value\":\"E+FF/wYlGr4B/mB/DZgy4teG+1VAU+rRM91pon4vhao=\",\"salt\":\"j5llmMYTcduaAbiHkS5xRw==\",\"additionalParameters\":{}}",
+            "credentialData": "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+          }
+        ],
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "realmRoles": [
+          "default-roles-master",
+          "manage-users",
+          "admin"
+        ],
+        "notBefore": 0,
+        "groups": []
       }
     ],
     "scopeMappings": [

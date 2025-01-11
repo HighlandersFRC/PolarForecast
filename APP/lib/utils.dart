@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 Map<String, dynamic> parseJwt(String token) {
   final parts = token.split('.');
   if (parts.length != 3) {
@@ -32,4 +34,21 @@ String _decodeBase64(String str) {
   }
 
   return utf8.decode(base64Url.decode(output));
+}
+
+bool isMobile() {
+  if (kIsWeb) {
+    return false;
+  }
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.android:
+    case TargetPlatform.iOS:
+      return true;
+    case TargetPlatform.macOS:
+    case TargetPlatform.windows:
+    case TargetPlatform.linux:
+      return false;
+    default:
+      throw UnsupportedError('This platform is not supported');
+  }
 }

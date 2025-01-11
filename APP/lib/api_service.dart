@@ -240,4 +240,47 @@ class ApiService {
   Future<void> logout() async {
     await authService.logout();
   }
+
+  Future<List<dynamic>> get_user_groups() async {
+    var token = await this.token;
+    if (token == null) {
+      throw Exception('no user token');
+    }
+    final response = await http.get(
+      Uri.parse('$APIURL/user_groups'),
+      headers: {'token': token},
+    );
+    return json.decode(response.body);
+  }
+
+  Future<Map<String, dynamic>?> make_group(
+      String name, String? event, int? year) async {
+    var token = await this.token;
+    if (token == null) {
+      throw Exception('no user token');
+    }
+    String? eventCode;
+    if (event != null && year != null) {
+      eventCode = year.toString() + event;
+    }
+
+    final response = await http.post(
+      Uri.parse('$APIURL/CreateGroup?group_name=$name&event=$eventCode'),
+      headers: {
+        'token': token,
+        'group_name': name,
+        if (eventCode != null) 'event': eventCode,
+      },
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception(
+          'Failed to create group: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<String?> get_group_code(String group_id) async {
+    return null;
+  }
 }

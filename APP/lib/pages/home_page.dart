@@ -10,7 +10,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PolarForecastAppBar(),
+      appBar: PolarForecastAppBar(
+        backButton: false,
+      ),
       body: Stack(
         children: [
           Center(
