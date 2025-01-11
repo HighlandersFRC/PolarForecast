@@ -57,11 +57,11 @@ class WebAuthService implements AuthService {
   @override
   Future<void> logout() async {
     // Remove token from localStorage
-    window.localStorage.remove(tokenKey);
+    window.sessionStorage.remove(tokenKey);
 
     // Optionally redirect to a logout page or refresh the application
     window.location.href =
-        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?redirect_uri=$APPURL/';
+        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$APPURL/&client_id=$CLIENT';
   }
 
   @override
