@@ -929,7 +929,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             });
           }
           groups = _groups;
-          print(groups);
+          // print(groups);
           loading = false;
         }).onError((e, stackTrace) {
           if (mounted) {

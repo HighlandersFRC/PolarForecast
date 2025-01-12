@@ -60,8 +60,11 @@ class WebAuthService implements AuthService {
     window.sessionStorage.remove(tokenKey);
 
     // Optionally redirect to a logout page or refresh the application
+    var redirectUri = Uri.parse(APPURL)
+        .replace(path: Uri.parse(window.location.href).path)
+        .toString();
     window.location.href =
-        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$APPURL/&client_id=$CLIENT';
+        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$redirectUri/&client_id=$CLIENT';
   }
 
   @override
@@ -93,7 +96,9 @@ class WebAuthService implements AuthService {
     // Keycloak token endpoint and client details
     var tokenEndpoint = '$AUTHURL/realms/$REALM/protocol/openid-connect/token';
     var clientId = CLIENT;
-    var redirectUri = '$APPURL/event/2024code';
+    var redirectUri = Uri.parse(APPURL)
+        .replace(path: Uri.parse(window.location.href).path)
+        .toString();
 
     // Exchange the authorization code for an access token
     final response = await post(
@@ -118,7 +123,7 @@ class WebAuthService implements AuthService {
 
   void saveToken(token) {
     final expirationTime =
-        DateTime.now().add(Duration(minutes: 30)); // Current time + 5 minutes
+        DateTime.now().add(Duration(minutes: 30)); // Current time + 30 minutes
     final tokenData = [token, expirationTime.toString()];
     window.sessionStorage['pf_token'] = json.encode(tokenData);
   }
