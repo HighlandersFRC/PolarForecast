@@ -941,7 +941,7 @@ class _MatchScoutingSource extends DataGridSource {
 }
 
 class ActivateButton extends StatefulWidget {
-  MatchScouting2024 data;
+  final MatchScouting2024 data;
 
   ActivateButton({Key? key, required this.data}) : super(key: key);
 
@@ -953,11 +953,12 @@ class _ActivateButtonState extends State<ActivateButton> {
   bool activated = false;
   String text = '';
   String password = '';
-
+  late MatchScouting2024 data;
   @override
   void initState() {
     super.initState();
-    activated = widget.data.active;
+    data = widget.data;
+    activated = data.active;
     text = activated ? 'Deactivate' : 'Activate';
   }
 
@@ -981,7 +982,7 @@ class _ActivateButtonState extends State<ActivateButton> {
       setState(() {
         text = 'Activate';
         activated = false;
-        widget.data = widget.data.copyWith(active: false);
+        data = widget.data.copyWith(active: false);
       });
     } else {
       setState(() {
@@ -998,7 +999,7 @@ class _ActivateButtonState extends State<ActivateButton> {
       setState(() {
         text = 'Deactivate';
         activated = true;
-        widget.data = widget.data.copyWith(active: true);
+        data = widget.data.copyWith(active: true);
       });
     } else {
       setState(() {

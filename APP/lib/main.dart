@@ -51,6 +51,7 @@ class MainApp extends StatelessWidget {
     return Consumer<ThemeDataProvider>(
       builder: (context, themeNotifier, child) {
         return MaterialApp(
+          title: 'Polar Forecast',
           debugShowCheckedModeBanner: false,
           home: HomePage(),
           theme: themeNotifier.themeData,
