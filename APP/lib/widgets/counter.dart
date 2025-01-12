@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Counter extends StatelessWidget {
   final String label;
@@ -20,12 +21,22 @@ class Counter extends StatelessWidget {
         Text('$label: '),
         IconButton(
           icon: Icon(Icons.remove),
-          onPressed: value > 0 ? () => onChanged(value - 1) : null,
+          onPressed: value > 0
+              ? () {
+                  onChanged(value - 1);
+                  HapticFeedback.lightImpact();
+                }
+              : null,
         ),
         Text('$value'),
         IconButton(
           icon: Icon(Icons.add),
-          onPressed: value < max ? () => onChanged(value + 1) : null,
+          onPressed: value < max
+              ? () {
+                  onChanged(value + 1);
+                  HapticFeedback.lightImpact();
+                }
+              : null,
         ),
       ],
     );
