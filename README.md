@@ -5,6 +5,7 @@ PolarForecast is a website developed by highlanders FRC for performing continuou
 
 # Development
 
+Run git config --global core.autocrlf false to ensure bash scripts are formatted properly
 ## Setup Development Environments
 
 **Install Python Package Dependencies**
