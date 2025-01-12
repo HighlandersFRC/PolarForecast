@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/tournament.dart';
@@ -9,8 +10,10 @@ class PolarForecastSliverBar extends StatefulWidget
   @override
   final Size preferredSize;
   final String? extraText;
+  final bool showBackButton;
 
-  const PolarForecastSliverBar({super.key, this.extraText})
+  const PolarForecastSliverBar(
+      {super.key, this.extraText, this.showBackButton = true})
       : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
@@ -49,7 +52,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return SliverAppBar(
-      automaticallyImplyLeading: true,
+      automaticallyImplyLeading: kIsWeb ? false : widget.showBackButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -226,7 +229,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return AppBar(
-      automaticallyImplyLeading: widget.backButton,
+      automaticallyImplyLeading: kIsWeb ? false : widget.backButton,
       title: !isMobile()
           ? Row(
               children: [

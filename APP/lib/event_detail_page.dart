@@ -242,12 +242,12 @@ class TeamDataSource extends DataGridSource {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TeamDetailPage(
-                        year: year,
-                        eventCode: eventCode,
-                        teamNumber: teamNumber,
-                      ),
-                    ),
+                        builder: (context) => TeamDetailPage(
+                              year: year,
+                              eventCode: eventCode,
+                              teamNumber: teamNumber,
+                            ),
+                        settings: RouteSettings()),
                   );
                 }
               : null,

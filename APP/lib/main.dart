@@ -51,6 +51,7 @@ class MainApp extends StatelessWidget {
     return Consumer<ThemeDataProvider>(
       builder: (context, themeNotifier, child) {
         return MaterialApp(
+          title: 'Polar Forecast',
           debugShowCheckedModeBanner: false,
           home: HomePage(),
           theme: themeNotifier.themeData,
@@ -61,23 +62,23 @@ class MainApp extends StatelessWidget {
               query = settings.name?.split('?')[1];
             } catch (e) {}
             final path = settings.name!.split('?')[0];
-            print(path);
             final pathSegments = path.split('/');
             if (pathSegments.isNotEmpty) {
               if (pathSegments[1] == 'event') {
                 if (pathSegments.length > 2) {
                   final eventKey = pathSegments[2].split('?')[0];
                   return MaterialPageRoute(
-                    builder: (context) =>
-                        EventPage.fromEventKey(context, eventKey),
-                  );
+                      builder: (context) =>
+                          EventPage.fromEventKey(context, eventKey),
+                      settings: settings);
                 } else {
                   return null;
                 }
               }
             }
             if (query != null) {
-              return MaterialPageRoute(builder: (context) => HomePage());
+              return MaterialPageRoute(
+                  builder: (context) => HomePage(), settings: settings);
             }
             switch (path) {
               case '/':
@@ -87,7 +88,8 @@ class MainApp extends StatelessWidget {
               case '':
                 return null;
               default:
-                return MaterialPageRoute(builder: (context) => NotFoundPage());
+                return MaterialPageRoute(
+                    builder: (context) => NotFoundPage(), settings: settings);
             }
           },
         );

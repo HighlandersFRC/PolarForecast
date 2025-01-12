@@ -4,16 +4,12 @@ import 'dart:math';
 import 'package:flat/flat.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/auto_pieces_2025.dart';
 import 'package:scouting_app/widgets/need_group.dart';
 import '../models/group.dart';
-import '../widgets/auto_pieces_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
 import '../widgets/bar_chart_with_weights.dart';
@@ -933,7 +929,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             });
           }
           groups = _groups;
-          print(groups);
+          // print(groups);
           loading = false;
         }).onError((e, stackTrace) {
           if (mounted) {
