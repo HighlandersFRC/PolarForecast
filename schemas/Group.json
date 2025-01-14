@@ -1,0 +1,20 @@
+{
+    "group_id": "id",
+    "owner_group_id": "id",
+    "admin_group_id": "id",
+    "member_group_id": "id",
+    "name": "9999 Cool Team",
+    "join_code": "0CODE0",
+    "events": [
+        {
+            "event_code": "2025event",
+            "settings": {
+                "crowd_sourced_match_scouting": true,
+                "crowd_sourced_pit_scouting": true
+            }
+        }
+    ],
+    "settings": {
+        "approve_new_members": true
+    }
+}

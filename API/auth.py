@@ -92,6 +92,10 @@ def make_group(token: str, group_name: str, event: str | None):
     return {
         "group": payload,
         "code": codeStr,
+        "group_id": group_id,
+        "owner_subgroup_id": subIDs[1],
+        "admin_subgroup_id": subIDs[2],
+        "member_subgroup_id": subIDs[3],
     }
 
 

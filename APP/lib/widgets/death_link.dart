@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/tournament.dart';
-import '../pages/death_page.dart';
 
 class DeathLink extends StatelessWidget {
   final int number;
@@ -12,10 +11,8 @@ class DeathLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => DeathPage(number, tournament))),
+      onPressed: () => Navigator.pushNamed(
+          context, '/event/${tournament.key}/deaths/frc$number'),
       child: Text(
         '${value}',
         textScaleFactor: 1.25,

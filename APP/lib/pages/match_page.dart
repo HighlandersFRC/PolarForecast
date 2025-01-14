@@ -14,12 +14,41 @@ import '../api_service.dart';
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../models/tournament.dart';
+import 'not_found_page.dart';
 
 class MatchPage extends StatefulWidget {
   final Tournament tournament;
   final String match_key;
   final String? display;
   MatchPage(this.match_key, this.tournament, {this.display});
+
+  static Widget fromKeys(
+      BuildContext context, String eventKey, String matchKey) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    final tournaments = apiService.fetchTournaments();
+    return FutureBuilder(
+        future: tournaments,
+        builder: (context, tournaments) {
+          Tournament? tournament = null;
+          try {
+            for (final _tournament in tournaments.requireData) {
+              if (_tournament.key == eventKey) {
+                tournament = _tournament;
+                break;
+              }
+            }
+            if (tournament == null) {
+              return NotFoundPage();
+            }
+            return MatchPage(
+              matchKey,
+              tournament,
+            );
+          } catch (error) {
+            return NotFoundPage();
+          }
+        });
+  }
 
   @override
   _MatchPageState createState() => _MatchPageState();

@@ -15,12 +15,38 @@ import '../widgets/match_link.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
 import '../models/tournament.dart';
+import 'not_found_page.dart';
 
 class TeamPage extends StatefulWidget {
   final Tournament tournament;
   final int teamNumber;
-
   const TeamPage(this.teamNumber, this.tournament);
+
+  static Widget fromKeys(
+      BuildContext context, String eventKey, String teamCode) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    final tournaments = apiService.fetchTournaments();
+    // print(eventKey);
+    return FutureBuilder(
+        future: tournaments,
+        builder: (context, tournaments) {
+          Tournament? tournament = null;
+          try {
+            for (final _tournament in tournaments.requireData) {
+              if (_tournament.key == eventKey) {
+                tournament = _tournament;
+                break;
+              }
+            }
+            if (tournament == null) {
+              return NotFoundPage();
+            }
+            return TeamPage(int.parse(teamCode.substring(3)), tournament);
+          } catch (error) {
+            return NotFoundPage();
+          }
+        });
+  }
 
   @override
   _TeamPageState createState() => _TeamPageState();

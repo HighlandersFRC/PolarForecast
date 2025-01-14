@@ -1,13 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../api_service.dart';
 import '../widgets/deaths_form.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../models/tournament.dart';
+import 'not_found_page.dart';
 
 class DeathPage extends StatefulWidget {
   final Tournament tournament;
   final int number;
 
   const DeathPage(this.number, this.tournament);
+
+  static Widget fromKeys(
+      BuildContext context, String eventKey, String teamKey) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    final tournaments = apiService.fetchTournaments();
+    return FutureBuilder(
+        future: tournaments,
+        builder: (context, tournaments) {
+          Tournament? tournament = null;
+          try {
+            for (final _tournament in tournaments.requireData) {
+              if (_tournament.key == eventKey) {
+                tournament = _tournament;
+                break;
+              }
+            }
+            if (tournament == null) {
+              return NotFoundPage();
+            }
+            return DeathPage(
+              int.parse(teamKey.substring(3)),
+              tournament,
+            );
+          } catch (error) {
+            return NotFoundPage();
+          }
+        });
+  }
 
   @override
   _DeathPageState createState() => _DeathPageState();

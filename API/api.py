@@ -16,6 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from API.models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
 from auth import check_token_active, fetch_event_groups, find_user_groups, get_token_active, get_user_info, make_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
@@ -75,7 +76,7 @@ ETagCollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
-
+GroupCollection = testDB["Groups"]
 redisClient = get_redis_client()
 
 
@@ -407,14 +408,34 @@ def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
 
 
 @app.post("/CreateGroup")
-def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None):
+def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
     if (token is not None):
-        # user_info = get_user_info(token)
-        # userID = user_info["sub"]
-        # userGroups = get_user_groups(userID)
-        return make_group(token, group_name, event)
+        groupData = make_group(token, group_name, event)
+        events = []
+        if event is not None:
+            events = [GroupEvent(
+                event_code=event,
+                settings=GroupEventSettings(
+                    crowd_sourced_match_scouting=True,
+                    crowd_sourced_pit_scouting=True,
+                ),
+            ),]
+        DBEntry = Group(
+            group_id=groupData["group_id"],
+            join_code=groupData["code"],
+            name=group_name,
+            owner_group_id=groupData["owner_subgroup_id"],
+            admin_group_id=groupData["admin_subgroup_id"],
+            member_group_id=groupData["member_subgroup_id"],
+            events=events,
+            settings=GroupSettings(
+                approve_new_members=True,
+            ),
+        )
+        GroupCollection.insert_one(DBEntry.dict())
+        return DBEntry
 
 
 @app.get("/{year}/{event}/Groups")

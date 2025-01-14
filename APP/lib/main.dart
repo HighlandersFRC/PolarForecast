@@ -3,8 +3,12 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
+import 'package:scouting_app/pages/group_page.dart';
+import 'package:scouting_app/pages/match_page.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
+import 'package:scouting_app/pages/team_page.dart';
 import '../pages/home_page.dart';
+import 'pages/death_page.dart';
 import 'theme/theme_provider.dart';
 import 'api_service.dart'; // Make sure this file contains the ApiService class
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -65,14 +69,57 @@ class MainApp extends StatelessWidget {
             final pathSegments = path.split('/');
             if (pathSegments.isNotEmpty) {
               if (pathSegments[1] == 'event') {
+                if (pathSegments.length > 4) {
+                  final eventKey = pathSegments[2];
+                  if (pathSegments[3] == 'team') {
+                    // Team Page
+                    final teamKey = pathSegments[4];
+                    return MaterialPageRoute(
+                        builder: (context) =>
+                            TeamPage.fromKeys(context, eventKey, teamKey),
+                        settings: settings);
+                  } else if (pathSegments[3] == 'match') {
+                    // Match Page
+                    final eventKey = pathSegments[2];
+                    final matchKey = pathSegments[4];
+                    return MaterialPageRoute(
+                        builder: (context) =>
+                            MatchPage.fromKeys(context, eventKey, matchKey),
+                        settings: settings);
+                  } else if (pathSegments[3] == 'deaths') {
+                    // Death Page
+                    final eventKey = pathSegments[2];
+                    final teamKey = pathSegments[4];
+                    return MaterialPageRoute(
+                        builder: (context) =>
+                            DeathPage.fromKeys(context, eventKey, teamKey),
+                        settings: settings);
+                  }
+                }
                 if (pathSegments.length > 2) {
-                  final eventKey = pathSegments[2].split('?')[0];
+                  // Event Page
+                  final eventKey = pathSegments[2];
                   return MaterialPageRoute(
                       builder: (context) =>
                           EventPage.fromEventKey(context, eventKey),
                       settings: settings);
                 } else {
                   return null;
+                }
+              }
+              if (pathSegments[1] == 'group') {
+                if (pathSegments.length > 2) {
+                  // Group Page
+                  final groupKey = pathSegments[2];
+                  String? code;
+                  if (pathSegments.length > 4) {
+                    if (pathSegments[3] == 'join') {
+                      code = pathSegments[4];
+                    }
+                  }
+                  return MaterialPageRoute(
+                      builder: (context) => GroupPage(groupKey, code),
+                      settings: settings);
                 }
               }
             }

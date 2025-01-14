@@ -111,6 +111,20 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       width: 200,
                       padding: EdgeInsets.all(16),
                       child: Text(
+                        'Groups',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openGroupsPopup(context);
+                    },
+                  ),
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
                         'Logout',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -288,6 +302,20 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       width: 200,
                       padding: EdgeInsets.all(16),
                       child: Text(
+                        'Groups',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openGroupsPopup(context);
+                    },
+                  ),
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
                         'Logout',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -357,4 +385,58 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     ];
     return suggestions;
   }
+}
+
+_openGroupsPopup(BuildContext context) async {
+  final apiService = Provider.of<ApiService>(context, listen: false);
+  final token = await apiService.token;
+  if (token == null) {
+    return;
+  }
+  final userInfo = parseJwt(token);
+  final List groups = (userInfo['groups'] as List).where((groupPath) {
+    if (groupPath.toString().split('/').length == 2) {
+      return true;
+    }
+    return false;
+  }).toList();
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        // Use Dialog instead of Card for a better look
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Ensures it takes minimal height
+            children: [
+              Text(
+                'Your Groups',
+                style: TextStyle(color: Colors.white, fontSize: 30),
+              ),
+              groups.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text('You are not part of any groups',
+                          style: TextStyle(color: Colors.white)),
+                    )
+                  : SizedBox(
+                      height: 200, // Set a fixed height for the ListView
+                      child: ListView.builder(
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            onTap: () {},
+                            title: Text(groups[index].split('/')[1]),
+                          );
+                        },
+                      ),
+                    ),
+              ElevatedButton(
+                  child: Text('Create a New Group'), onPressed: () {})
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

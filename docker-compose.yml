@@ -77,6 +77,3 @@ services:
     logging:
       options:
         max-size: '10m'
-volumes:
-  pgdb:
-    driver: local

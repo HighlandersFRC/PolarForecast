@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/need_group.dart';
-import '../models/group.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
 import '../widgets/bar_chart_with_weights.dart';
@@ -26,7 +25,6 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../models/match_details_2024.dart';
 import '../models/team_stats_2024.dart';
 import '../models/tournament.dart';
-import 'group_page.dart';
 import 'home_page.dart';
 
 class EventPage extends StatefulWidget {
@@ -1122,12 +1120,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                         setState(() {
                                           groups = [value?['group']];
                                         });
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) {
-                                          return GroupPage(
-                                              Group.fromJson(value?['group']));
-                                        }));
+                                        // Navigator.of(context).push(
+                                        //     MaterialPageRoute(
+                                        //         builder: (context) {
+                                        //   return GroupPage(
+                                        //       Group.fromJson(value?['group']));
+                                        // }));
                                       }
                                     });
                                     Navigator.of(context).pop();
