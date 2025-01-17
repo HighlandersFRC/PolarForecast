@@ -100,11 +100,9 @@ def make_group(token: str, group_name: str, event: str | None):
 
 
 def find_user_groups(user_id: str):
-    print(user_id)
     groups = keycloak_admin.get_user_groups(
         user_id, query={
         }, brief_representation=False)
-    print(groups)
     return groups
 
 
@@ -116,3 +114,24 @@ def fetch_event_groups(eventCode: str):
         if group.__contains__("attributes") and group["attributes"]["event"][0] == eventCode:
             returnGroups.append(group)
     return returnGroups
+
+
+def fetch_group_members(group_id: str):
+    return keycloak_admin.get_group_members(group_id=group_id, query={'max': 1000})
+
+
+def add_user_to_group(user_id: str, group_id: str,):
+    keycloak_admin.group_user_add(
+        user_id=user_id,
+        group_id=group_id
+    )
+    
+
+def remove_user_from_group(user_id: str, group_id: str):
+    keycloak_admin.group_user_remove(
+        user_id=user_id,
+        group_id=group_id
+    )
+
+def delete_group_kc(group_id: str):
+    keycloak_admin.delete_group(group_id)

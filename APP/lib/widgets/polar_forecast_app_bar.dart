@@ -393,12 +393,10 @@ _openGroupsPopup(BuildContext context) async {
   if (token == null) {
     return;
   }
-  final userInfo = parseJwt(token);
-  final List groups = (userInfo['groups'] as List).where((groupPath) {
-    if (groupPath.toString().split('/').length == 2) {
-      return true;
-    }
-    return false;
+  final List groups = (await apiService.get_user_groups()).where((group) {
+    // print(group);
+    // print(group['path'].runtimeType);
+    return group['path'].toString().split('/').length == 2;
   }).toList();
   showDialog(
     context: context,
@@ -425,14 +423,61 @@ _openGroupsPopup(BuildContext context) async {
                         itemCount: groups.length,
                         itemBuilder: (context, index) {
                           return ListTile(
-                            onTap: () {},
-                            title: Text(groups[index].split('/')[1]),
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pushNamed('/group/${groups[index]['name']}');
+                            },
+                            title: Text(groups[index]['name']),
                           );
                         },
                       ),
                     ),
               ElevatedButton(
-                  child: Text('Create a New Group'), onPressed: () {})
+                  child: Text('Create a New Group'),
+                  onPressed: () {
+                    final TextEditingController groupNameController =
+                        TextEditingController();
+
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Create a New Group'),
+                          content: TextField(
+                            controller: groupNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Group Name',
+                              hintText: 'Enter the name of the group',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final apiService = Provider.of<ApiService>(
+                                    context,
+                                    listen: false);
+                                apiService
+                                    .make_group(
+                                        groupNameController.text, null, null)
+                                    .then((value) {
+                                  Navigator.of(context)
+                                      .pushNamed('/group/${value.name}');
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Create'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }),
             ],
           ),
         ),

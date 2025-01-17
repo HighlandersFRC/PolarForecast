@@ -17,7 +17,7 @@ from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
 from API.models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
-from auth import check_token_active, fetch_event_groups, find_user_groups, get_token_active, get_user_info, make_group
+from auth import add_user_to_group, check_token_active, delete_group_kc, fetch_event_groups, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -343,7 +343,7 @@ def getStatus(data: dict, originalStatus: dict):
     # print(originalStatus)
     for entry in originalStatus["data"]:
         if entry["key"] == str(data["team_number"]):
-            print(entry["key"], data["team_number"])
+            # print(entry["key"], data["team_number"])
             found = True
             entry["pit_status"] = status
     if (not found):
@@ -442,6 +442,292 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
 def get_event_groups(year: int, event: str, token: str = Depends(check_token_active)):
     eventCode = f"{year}{event}"
     fetch_event_groups(eventCode)
+
+
+@app.get("/Group/{group_name}")
+def get_group(group_name: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(403, f"You are not part of group '{group_name}'")
+    retval = {}
+    for group in groups:
+        if group['id'] == DBgroup.owner_group_id:
+            retval = {'group': DBgroup.dict(), 'group_role': 'owner'}
+            break
+        if group['id'] == DBgroup.admin_group_id:
+            if (retval == {} or retval['group_role'] != 'owner'):
+                retval = {'group': DBgroup.dict(), 'group_role': 'admin'}
+        if group['id'] == DBgroup.member_group_id:
+            if (retval == {}):
+                retval = {'group': DBgroup.dict(), 'group_role': 'member'}
+    if retval != {}:
+        return retval
+    raise HTTPException(
+        400, f"You somehow broke Polar Forecast's '{group_name}' Group")
+
+
+@app.post("/Group/{group_name}/Join")
+def join_group(group_name: str, join_code: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.group_id:
+            KCgroup = group
+            break
+    if KCgroup != {}:
+        return get_group(group_name=group_name, token=token)
+    if DBgroup.join_code != join_code:
+        raise HTTPException(401, "Incorrect Join Code")
+    user_info = get_user_info(token)
+    # Add user to group
+    add_user_to_group(user_id=user_info['sub'], group_id=DBgroup.group_id)
+    add_user_to_group(user_id=user_info['sub'],
+                      group_id=DBgroup.member_group_id)
+    return get_group(group_name=group_name, token=token)
+
+
+@app.get("/Group/{group_name}/Members")
+def get_group_members(group_name: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(403, f"You are not part of group '{group_name}'")
+    owners = fetch_group_members(group_id=DBgroup.owner_group_id)
+    admins = fetch_group_members(group_id=DBgroup.admin_group_id)
+    members = fetch_group_members(group_id=DBgroup.member_group_id)
+    pop_keys = ['totp', 'createdTimestamp', 'enabled', 'emailVerified',
+                'disableableCredentialTypes', 'requiredActions', 'notBefore', ]
+    for i in range(len(owners)):
+        for pop_key in pop_keys:
+            try:
+                owners[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for i in range(len(admins)):
+        for pop_key in pop_keys:
+            try:
+                admins[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for i in range(len(members)):
+        for pop_key in pop_keys:
+            try:
+                members[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for admin in admins:
+        if members.__contains__(admin):
+            members.remove(admin)
+    for owner in owners:
+        if admins.__contains__(owner):
+            admins.remove(owner)
+    return {
+        "owners": owners,
+        "admins": admins,
+        "members": members,
+    }
+
+
+@app.put("/Group/{group_name}/Members/Demote")
+def demote_group_member(group_name: str, demote_id: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.owner_group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not an owner of group '{group_name}'")
+    demoteGroups = find_user_groups(user_id=demote_id)
+    KCgroup = {}
+    for demoteGroup in demoteGroups:
+        if demoteGroup["id"] == DBgroup.owner_group_id:
+            KCgroup = {}
+            break
+        if demoteGroup["id"] == DBgroup.admin_group_id:
+            KCgroup = demoteGroup
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"The user you tried to demote is not a admin '{group_name}'")
+    remove_user_from_group(user_id=demote_id, group_id=DBgroup.admin_group_id)
+    return get_group_members(group_name=group_name, token=token)
+
+
+@app.delete('/Group/{group_name}/Members/Kick')
+def kick_group_member(group_name: str, kick_id: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.admin_group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not an admin of group '{group_name}'")
+    kickGroups = find_user_groups(user_id=kick_id)
+    KCgroup = {}
+    for kickGroup in kickGroups:
+        if kickGroup["id"] == DBgroup.owner_group_id or kickGroup["id"] == DBgroup.admin_group_id:
+            KCgroup = {}
+            break
+        if kickGroup["id"] == DBgroup.member_group_id:
+            KCgroup = kickGroup
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"The user you tried to kick is not a member '{group_name}'")
+    remove_user_from_group(user_id=kick_id, group_id=DBgroup.member_group_id)
+    remove_user_from_group(user_id=kick_id, group_id=DBgroup.group_id)
+    return get_group_members(group_name=DBgroup.name, token=token)
+
+
+@app.put("/Group/{group_name}/Members/PromoteMember")
+def promote_group_member(group_name: str, promote_id: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.owner_group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not an owner of group '{group_name}'")
+    demoteGroups = find_user_groups(user_id=promote_id)
+    KCgroup = {}
+    for demoteGroup in demoteGroups:
+        if demoteGroup["id"] == DBgroup.owner_group_id or demoteGroup["id"] == DBgroup.admin_group_id:
+            KCgroup = {}
+            break
+        if demoteGroup["id"] == DBgroup.member_group_id:
+            KCgroup = demoteGroup
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"The user you tried to promote is not a member '{group_name}'")
+    add_user_to_group(user_id=promote_id, group_id=DBgroup.admin_group_id)
+    return get_group_members(group_name=group_name, token=token)
+
+
+@app.put("/Group/{group_name}/Members/PromoteAdmin")
+def promote_group_admin(group_name: str, promote_id: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.owner_group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not an owner of group '{group_name}'")
+    demoteGroups = find_user_groups(user_id=promote_id)
+    KCgroup = {}
+    for demoteGroup in demoteGroups:
+        if demoteGroup["id"] == DBgroup.owner_group_id:
+            KCgroup = {}
+            break
+        if demoteGroup["id"] == DBgroup.admin_group_id:
+            KCgroup = demoteGroup
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"The user you tried to promote is not a admin '{group_name}'")
+    add_user_to_group(user_id=promote_id, group_id=DBgroup.owner_group_id)
+    remove_user_from_group(user_id=get_user_info(
+        token)['sub'], group_id=DBgroup.owner_group_id)
+    return get_group_members(group_name=group_name, token=token)
+
+
+@app.delete("/Group/{group_name}/Leave")
+def leave_group(group_name: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not a member of group '{group_name}'")
+    group_members = fetch_group_members(DBgroup.group_id, token)
+    if len(group_members) != 1:
+        for group in groups:
+            if group['id'] == DBgroup.owner_group_id:
+                raise HTTPException(
+                    406, f"You must first promote an admin to owner before leaving")
+    for group in groups:
+        if group['id'] == DBgroup.admin_group_id:
+            remove_user_from_group(user_id=get_user_info(
+                token)['sub'], group_id=DBgroup.admin_group_id)
+        if group['id'] == DBgroup.owner_group_id:
+            remove_user_from_group(user_id=get_user_info(
+                token)['sub'], group_id=DBgroup.owner_group_id)
+    remove_user_from_group(user_id=get_user_info(
+        token)['sub'], group_id=DBgroup.member_group_id)
+    remove_user_from_group(user_id=get_user_info(
+        token)['sub'], group_id=DBgroup.group_id)
+    if len(group_members) == 1:
+        delete_group(group_name=group_name)
+        return {"message": "Successfully left and Successfully deleted the group"}
+    return {"message": "User successfully left the group"}
+
+
+@app.delete("/Group/{group_name}/Delete")
+def delete_group(group_name: str, token: str = Depends(check_token_active)):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Group Not Found: {str(e)}")
+    groups = get_user_groups(token)
+    KCgroup = {}
+    for group in groups:
+        if group['id'] == DBgroup.owner_group_id:
+            KCgroup = group
+            break
+    if KCgroup == {}:
+        raise HTTPException(
+            403, f"You are not an owner of group '{group_name}'")
+    GroupCollection.delete_one({"name": group_name})
+    delete_group_kc(group_id=DBgroup.group_id)
+    return {"message": "Group successfully deleted"}
 
 
 @app.put("/MatchScouting/")

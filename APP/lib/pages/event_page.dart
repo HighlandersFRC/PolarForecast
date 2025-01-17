@@ -1116,17 +1116,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                                 .widget.tournament.key
                                                 .substring(0, 4)))
                                         .then((value) {
-                                      if (value?['group'] != null) {
-                                        setState(() {
-                                          groups = [value?['group']];
-                                        });
-                                        // Navigator.of(context).push(
-                                        //     MaterialPageRoute(
-                                        //         builder: (context) {
-                                        //   return GroupPage(
-                                        //       Group.fromJson(value?['group']));
-                                        // }));
-                                      }
+                                      setState(() {
+                                        groups?.add(value);
+                                        Navigator.pushNamed(
+                                            context, '/group/${value.name}');
+                                      });
                                     });
                                     Navigator.of(context).pop();
                                   },
