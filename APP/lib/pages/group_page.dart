@@ -294,6 +294,7 @@ class _MembersTabState extends State<_MembersTab> {
                                 );
                               },
                               body: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(members?['admins'][index]['username']),
                                   if (widget.membership == 'owner')
@@ -301,9 +302,16 @@ class _MembersTabState extends State<_MembersTab> {
                                   if (widget.membership == 'owner')
                                     ElevatedButton(
                                         onPressed: () {
-                                          apiService.demote_group_member(
-                                              widget.group?.name ?? '',
-                                              members?['admins'][index]['id']);
+                                          apiService
+                                              .demote_group_member(
+                                                  widget.group?.name ?? '',
+                                                  members?['admins'][index]
+                                                      ['id'])
+                                              .then((value) {
+                                            setState(() {
+                                              members = value;
+                                            });
+                                          });
                                         },
                                         style: ButtonStyle(
                                             backgroundColor:
@@ -318,9 +326,15 @@ class _MembersTabState extends State<_MembersTab> {
                                   if (widget.membership == 'owner')
                                     ElevatedButton(
                                       onPressed: () {
-                                        apiService.promote_group_admin(
-                                            widget.group?.name ?? '',
-                                            members?['admins'][index]['id']);
+                                        apiService
+                                            .promote_group_admin(
+                                                widget.group?.name ?? '',
+                                                members?['admins'][index]['id'])
+                                            .then((value) {
+                                          setState(() {
+                                            members = value;
+                                          });
+                                        });
                                       },
                                       style: ButtonStyle(
                                           backgroundColor:
