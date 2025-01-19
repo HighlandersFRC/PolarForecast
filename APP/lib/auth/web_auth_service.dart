@@ -117,6 +117,20 @@ class WebAuthService implements AuthService {
       saveToken(tokenData['access_token']);
       return tokenData['access_token'] as String?;
     } else {
+      //Make sure another request has not already been made
+      try {
+        final tokenData = window.sessionStorage['pf_token'];
+        if (tokenData != null) {
+          final data = json.decode(tokenData);
+          final expirationTime = DateTime.parse(data[1]);
+          final token = data[0];
+          if (DateTime.now().isBefore(expirationTime)) {
+            return token; // Token is still valid
+          } else {
+            window.sessionStorage.remove('pf_token'); // Token expired
+          }
+        }
+      } catch (e) {}
       throw Exception('Failed to get token: ${response.body}');
     }
   }

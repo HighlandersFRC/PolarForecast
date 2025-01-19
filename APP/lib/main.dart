@@ -132,6 +132,8 @@ class MainApp extends StatelessWidget {
                 return null;
               case '/home':
                 return null;
+              case '/home/':
+                return null;
               case '':
                 return null;
               default:

@@ -16,7 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
-from API.models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
+from models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_event_groups, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client

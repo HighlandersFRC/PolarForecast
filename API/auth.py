@@ -33,8 +33,9 @@ def create_join_code() -> str:
 
 
 def get_token_active(token: str):
-    logging.debug(f"Middleware get_token_active introspect token {token}")
+    # logging.info(f"Middleware get_token_active introspect token {token}")
     introspect = keycloak_openid.introspect(token)
+    # logging.info(f"introspect: {introspect}")
     return introspect["active"]
 
 

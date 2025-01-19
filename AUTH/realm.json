@@ -2989,7 +2989,7 @@
         "enabled": true,
         "alwaysDisplayInConsole": false,
         "clientAuthenticatorType": "client-secret",
-        "secret": "**********",
+        "secret": "${KEYCLOAK_API_CLIENT_SECRET_KEY}",
         "redirectUris": [
           "*"
         ],
@@ -3048,10 +3048,12 @@
         "alwaysDisplayInConsole": false,
         "clientAuthenticatorType": "client-secret",
         "redirectUris": [
-          "http://localhost:3000/*"
+          "http://localhost:3000/*",
+          "${WEBAPP_ORIGIN}/*"
         ],
         "webOrigins": [
-          "http://localhost:3000"
+          "http://localhost:3000",
+          "${WEBAPP_ORIGIN}"
         ],
         "notBefore": 0,
         "bearerOnly": false,
@@ -3064,7 +3066,7 @@
         "frontchannelLogout": true,
         "protocol": "openid-connect",
         "attributes": {
-          "post.logout.redirect.uris": "http://localhost:3000/*##http://localhost:3000/*",
+          "post.logout.redirect.uris": "http://localhost:3000/*##${WEBAPP_ORIGIN}*",
           "oauth2.device.authorization.grant.enabled": "false",
           "backchannel.logout.revoke.offline.tokens": "false",
           "use.refresh.tokens": "true",
