@@ -17,7 +17,7 @@ from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
 from API.models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
-from auth import add_user_to_group, check_token_active, delete_group_kc, fetch_event_groups, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
+from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_event_groups, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -80,9 +80,9 @@ GroupCollection = testDB["Groups"]
 redisClient = get_redis_client()
 
 
-def store_in_cache(key, value):
+def store_in_cache(key, value, durationSeconds=300):
     try:
-        redisClient.set(key, json.dumps(value), ex=300)
+        redisClient.set(key, json.dumps(value), ex=durationSeconds)
     except Exception as e:
         pass
 
@@ -102,29 +102,31 @@ def get_from_cache(key):
         return None
 
 
-def cacheValue(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Convert positional arguments to strings
-        keyargs = [str(arg) for arg in args]
+def cacheValue(seconds: float = 300.0):
+    def retFunc(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Convert positional arguments to strings
+            keyargs = [str(arg) for arg in args]
 
-        # Convert keyword arguments to strings
-        keykwargs = [str(kwarg) + str(value)
-                     for kwarg, value in kwargs.items()]
+            # Convert keyword arguments to strings
+            keykwargs = [str(kwarg) + str(value)
+                         for kwarg, value in kwargs.items()]
 
-        # Create a unique cache key by combining all arguments with the function name
-        key = ''.join(keyargs + keykwargs) + func.__name__
+            # Create a unique cache key by combining all arguments with the function name
+            key = ''.join(keyargs + keykwargs) + func.__name__
 
-        # Check if the result is already in the cache
-        value = get_from_cache(key)
-        if value is not None:
-            return value
+            # Check if the result is already in the cache
+            value = get_from_cache(key)
+            if value is not None:
+                return value
 
-        # Call the original function and store the result in cache
-        result = func(*args, **kwargs)
-        store_in_cache(key, result)
-        return result
-    return wrapper
+            # Call the original function and store the result in cache
+            result = func(*args, **kwargs)
+            store_in_cache(key, result, durationSeconds=seconds)
+            return result
+        return wrapper
+    return retFunc
 
 
 def flatten_dict(dd, separator="_", prefix=""):
@@ -140,7 +142,7 @@ def flatten_dict(dd, separator="_", prefix=""):
 
 
 @app.get("/{year}/{event}/{team}/stats")
-@cacheValue
+@cacheValue()
 def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
     data = CalculatedDataCollection.find_one({
@@ -161,7 +163,7 @@ def get_event_Team_Stats(year: int, event: str, team: str):
 
 
 @app.get("/{year}/{event}/{team}/matches")
-@cacheValue
+@cacheValue()
 def get_Team_Event_Matches(year: int, event: str, team: str):
     cursor = TBACollection.find({"event_key": str(
         year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
@@ -175,7 +177,7 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 
 
 @app.get("/{year}/{event}/stats")
-@cacheValue
+@cacheValue()
 def get_Event_Stats(year: int, event: str):
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
     for i, team in enumerate(data["data"][1:]):
@@ -187,7 +189,7 @@ def get_Event_Stats(year: int, event: str):
 
 
 @app.get("/events/{year}")
-@cacheValue
+@cacheValue()
 def get_Year_Events(year: int):
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
@@ -195,7 +197,7 @@ def get_Year_Events(year: int):
 
 
 @app.get("/search_keys")
-@cacheValue
+@cacheValue()
 def get_Search_Keys():
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
@@ -212,7 +214,7 @@ def get_Search_Keys():
 
 
 @app.get("/{year}/{event}/predictions")
-@cacheValue
+@cacheValue()
 def get_Event_Predictions(year: int, event: str):
     try:
         data = PredictionCollection.find_one({"event_code": str(year)+event})
@@ -223,7 +225,7 @@ def get_Event_Predictions(year: int, event: str):
 
 
 @app.get("/{year}/{event}/{match_key}/match_details")
-@cacheValue
+@cacheValue()
 def get_match_details(year: int, event: str, match_key: str):
     try:
         event_code = str(year)+event
@@ -257,7 +259,7 @@ def get_match_details(year: int, event: str, match_key: str):
 
 
 @app.get("/{year}/{event}/{team}/predictions")
-@cacheValue
+@cacheValue()
 def get_team_match_predictions(year: int, event: str, team: str):
     event_code = str(year) + event
     data = PredictionCollection.find_one({"event_code": event_code})
@@ -270,13 +272,13 @@ def get_team_match_predictions(year: int, event: str, team: str):
 
 
 @app.get("/{year}/{event}/stat_description")
-@cacheValue
+@cacheValue()
 def get_Stat_Descriptions():
     return stat_description
 
 
 @app.get("/{year}/{event}/{team}/PitScouting")
-@cacheValue
+@cacheValue()
 def get_pit_scouting_data(year: int, event: str, team: str):
     try:
         data = PitScoutingCollection.find_one(
@@ -408,9 +410,11 @@ def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
 
 
 @app.post("/CreateGroup")
-def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
+def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None, affiliation: int | None = None) -> Group:
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
+    if affiliation == None:
+        raise HTTPException(400, "Please provide an affiliation number")
     if (token is not None):
         groupData = make_group(token, group_name, event)
         events = []
@@ -421,8 +425,10 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
                     crowd_sourced_match_scouting=True,
                     crowd_sourced_pit_scouting=True,
                 ),
+                alliance_groups=[]
             ),]
         DBEntry = Group(
+            affiliation=f"frc{affiliation}",
             group_id=groupData["group_id"],
             join_code=groupData["code"],
             name=group_name,
@@ -468,8 +474,18 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
                 retval = {'group': DBgroup.dict(), 'group_role': 'admin'}
         if group['id'] == DBgroup.member_group_id:
             if (retval == {}):
-                retval = {'group': DBgroup.dict(), 'group_role': 'member'}
+                retval = {'group': DBgroup.dict(
+                    exclude=['join_code']), 'group_role': 'member'}
     if retval != {}:
+        # Get either the current cached join code or create a new one
+        if retval['group_role'] == 'owner' or retval['group_role'] == 'admin':
+            @cacheValue(seconds=30*60)
+            def join_code(group_name):
+                new_code = create_join_code()
+                GroupCollection.find_one_and_update(
+                    {"name": group_name}, {"$set": {"join_code": new_code}})
+                return new_code
+            retval['join_code'] = join_code(group_name)
         return retval
     raise HTTPException(
         400, f"You somehow broke Polar Forecast's '{group_name}' Group")
@@ -816,7 +832,7 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int):
 
 
 @app.get("/{year}/{event}/getPictures")
-@cacheValue
+@cacheValue()
 async def get_event_pictures(year: str, event: str):
     eventCode = str(year) + event
     # Query the collection using the key
@@ -903,7 +919,7 @@ def get_pit_status(year: int, event: str):
 
 
 @app.get("/{year}/{event}/{team}/ScoutEntries")
-@cacheValue
+@cacheValue()
 def get_scout_team_entries(team: str, event: str, year: int):
     retval = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event, "team_number": team[3:]}))
@@ -913,7 +929,7 @@ def get_scout_team_entries(team: str, event: str, year: int):
 
 
 @app.get("/{year}/{event}/ScoutEntries")
-@cacheValue
+@cacheValue()
 def get_scout_event_entries(event: str, year: int):
     retval = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event}))
@@ -923,7 +939,7 @@ def get_scout_event_entries(event: str, year: int):
 
 
 @app.get("/{year}/{event}/ScoutingData")
-@cacheValue
+@cacheValue()
 def get_event_autos(year: int, event: str):
     autos = list(ScoutingData2024Collection.find(
         {"event_code": str(year)+event}))

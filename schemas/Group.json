@@ -4,6 +4,7 @@
     "admin_group_id": "id",
     "member_group_id": "id",
     "name": "9999 Cool Team",
+    "affiliation": "frc9999",
     "join_code": "0CODE0",
     "events": [
         {
@@ -11,7 +12,14 @@
             "settings": {
                 "crowd_sourced_match_scouting": true,
                 "crowd_sourced_pit_scouting": true
-            }
+            },
+            "alliance_groups": [
+                {
+                    "group_id": "id",
+                    "name": "9998 other Cool Team",
+                    "affiliation": "frc9998"
+                }
+            ]
         }
     ],
     "settings": {

@@ -7,7 +7,11 @@ part 'group.g.dart';
 class Group with _$Group {
   const factory Group({
     required String group_id,
+    required String owner_group_id,
+    required String admin_group_id,
+    required String member_group_id,
     required String name,
+    required String affiliation,
     required String join_code,
     required List<GroupEvent> events,
     required GroupSettings settings,
@@ -21,6 +25,7 @@ class GroupEvent with _$GroupEvent {
   const factory GroupEvent({
     required String event_code,
     required GroupEventSettings settings,
+    required List<AllianceGroup> alliance_groups,
   }) = _GroupEvent;
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +41,18 @@ class GroupEventSettings with _$GroupEventSettings {
 
   factory GroupEventSettings.fromJson(Map<String, dynamic> json) =>
       _$GroupEventSettingsFromJson(json);
+}
+
+@freezed
+class AllianceGroup with _$AllianceGroup {
+  const factory AllianceGroup({
+    required String group_id,
+    required String name,
+    required String affiliation,
+  }) = _AllianceGroup;
+
+  factory AllianceGroup.fromJson(Map<String, dynamic> json) =>
+      _$AllianceGroupFromJson(json);
 }
 
 @freezed

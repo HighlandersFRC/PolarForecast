@@ -22,6 +22,16 @@ keycloak_admin = KeycloakAdmin(
 )
 
 
+def create_join_code() -> str:
+    chars = list((string.ascii_uppercase + string.digits)*6)
+    random.shuffle(chars)
+    code = chars[:6]
+    codeStr = ''
+    for char in code:
+        codeStr += char
+    return codeStr
+
+
 def get_token_active(token: str):
     logging.debug(f"Middleware get_token_active introspect token {token}")
     introspect = keycloak_openid.introspect(token)
@@ -83,12 +93,7 @@ def make_group(token: str, group_name: str, event: str | None):
             user_id=user_info["sub"],
             group_id=subID
         )
-    chars = list((string.ascii_uppercase + string.digits)*6)
-    random.shuffle(chars)
-    code = chars[:6]
-    codeStr = ''
-    for char in code:
-        codeStr += char
+    codeStr = create_join_code()
     return {
         "group": payload,
         "code": codeStr,
@@ -125,13 +130,14 @@ def add_user_to_group(user_id: str, group_id: str,):
         user_id=user_id,
         group_id=group_id
     )
-    
+
 
 def remove_user_from_group(user_id: str, group_id: str):
     keycloak_admin.group_user_remove(
         user_id=user_id,
         group_id=group_id
     )
+
 
 def delete_group_kc(group_id: str):
     keycloak_admin.delete_group(group_id)

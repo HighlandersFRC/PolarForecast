@@ -21,7 +21,11 @@ Group _$GroupFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Group {
   String get group_id => throw _privateConstructorUsedError;
+  String get owner_group_id => throw _privateConstructorUsedError;
+  String get admin_group_id => throw _privateConstructorUsedError;
+  String get member_group_id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String get affiliation => throw _privateConstructorUsedError;
   String get join_code => throw _privateConstructorUsedError;
   List<GroupEvent> get events => throw _privateConstructorUsedError;
   GroupSettings get settings => throw _privateConstructorUsedError;
@@ -42,7 +46,11 @@ abstract class $GroupCopyWith<$Res> {
   @useResult
   $Res call(
       {String group_id,
+      String owner_group_id,
+      String admin_group_id,
+      String member_group_id,
       String name,
+      String affiliation,
       String join_code,
       List<GroupEvent> events,
       GroupSettings settings});
@@ -66,7 +74,11 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
   @override
   $Res call({
     Object? group_id = null,
+    Object? owner_group_id = null,
+    Object? admin_group_id = null,
+    Object? member_group_id = null,
     Object? name = null,
+    Object? affiliation = null,
     Object? join_code = null,
     Object? events = null,
     Object? settings = null,
@@ -76,9 +88,25 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
           ? _value.group_id
           : group_id // ignore: cast_nullable_to_non_nullable
               as String,
+      owner_group_id: null == owner_group_id
+          ? _value.owner_group_id
+          : owner_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      admin_group_id: null == admin_group_id
+          ? _value.admin_group_id
+          : admin_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      member_group_id: null == member_group_id
+          ? _value.member_group_id
+          : member_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      affiliation: null == affiliation
+          ? _value.affiliation
+          : affiliation // ignore: cast_nullable_to_non_nullable
               as String,
       join_code: null == join_code
           ? _value.join_code
@@ -115,7 +143,11 @@ abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
   @useResult
   $Res call(
       {String group_id,
+      String owner_group_id,
+      String admin_group_id,
+      String member_group_id,
       String name,
+      String affiliation,
       String join_code,
       List<GroupEvent> events,
       GroupSettings settings});
@@ -138,7 +170,11 @@ class __$$GroupImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? group_id = null,
+    Object? owner_group_id = null,
+    Object? admin_group_id = null,
+    Object? member_group_id = null,
     Object? name = null,
+    Object? affiliation = null,
     Object? join_code = null,
     Object? events = null,
     Object? settings = null,
@@ -148,9 +184,25 @@ class __$$GroupImplCopyWithImpl<$Res>
           ? _value.group_id
           : group_id // ignore: cast_nullable_to_non_nullable
               as String,
+      owner_group_id: null == owner_group_id
+          ? _value.owner_group_id
+          : owner_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      admin_group_id: null == admin_group_id
+          ? _value.admin_group_id
+          : admin_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      member_group_id: null == member_group_id
+          ? _value.member_group_id
+          : member_group_id // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      affiliation: null == affiliation
+          ? _value.affiliation
+          : affiliation // ignore: cast_nullable_to_non_nullable
               as String,
       join_code: null == join_code
           ? _value.join_code
@@ -173,7 +225,11 @@ class __$$GroupImplCopyWithImpl<$Res>
 class _$GroupImpl implements _Group {
   const _$GroupImpl(
       {required this.group_id,
+      required this.owner_group_id,
+      required this.admin_group_id,
+      required this.member_group_id,
       required this.name,
+      required this.affiliation,
       required this.join_code,
       required final List<GroupEvent> events,
       required this.settings})
@@ -185,7 +241,15 @@ class _$GroupImpl implements _Group {
   @override
   final String group_id;
   @override
+  final String owner_group_id;
+  @override
+  final String admin_group_id;
+  @override
+  final String member_group_id;
+  @override
   final String name;
+  @override
+  final String affiliation;
   @override
   final String join_code;
   final List<GroupEvent> _events;
@@ -201,7 +265,7 @@ class _$GroupImpl implements _Group {
 
   @override
   String toString() {
-    return 'Group(group_id: $group_id, name: $name, join_code: $join_code, events: $events, settings: $settings)';
+    return 'Group(group_id: $group_id, owner_group_id: $owner_group_id, admin_group_id: $admin_group_id, member_group_id: $member_group_id, name: $name, affiliation: $affiliation, join_code: $join_code, events: $events, settings: $settings)';
   }
 
   @override
@@ -211,7 +275,15 @@ class _$GroupImpl implements _Group {
             other is _$GroupImpl &&
             (identical(other.group_id, group_id) ||
                 other.group_id == group_id) &&
+            (identical(other.owner_group_id, owner_group_id) ||
+                other.owner_group_id == owner_group_id) &&
+            (identical(other.admin_group_id, admin_group_id) ||
+                other.admin_group_id == admin_group_id) &&
+            (identical(other.member_group_id, member_group_id) ||
+                other.member_group_id == member_group_id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.affiliation, affiliation) ||
+                other.affiliation == affiliation) &&
             (identical(other.join_code, join_code) ||
                 other.join_code == join_code) &&
             const DeepCollectionEquality().equals(other._events, _events) &&
@@ -221,8 +293,17 @@ class _$GroupImpl implements _Group {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, group_id, name, join_code,
-      const DeepCollectionEquality().hash(_events), settings);
+  int get hashCode => Object.hash(
+      runtimeType,
+      group_id,
+      owner_group_id,
+      admin_group_id,
+      member_group_id,
+      name,
+      affiliation,
+      join_code,
+      const DeepCollectionEquality().hash(_events),
+      settings);
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.
@@ -243,7 +324,11 @@ class _$GroupImpl implements _Group {
 abstract class _Group implements Group {
   const factory _Group(
       {required final String group_id,
+      required final String owner_group_id,
+      required final String admin_group_id,
+      required final String member_group_id,
       required final String name,
+      required final String affiliation,
       required final String join_code,
       required final List<GroupEvent> events,
       required final GroupSettings settings}) = _$GroupImpl;
@@ -253,7 +338,15 @@ abstract class _Group implements Group {
   @override
   String get group_id;
   @override
+  String get owner_group_id;
+  @override
+  String get admin_group_id;
+  @override
+  String get member_group_id;
+  @override
   String get name;
+  @override
+  String get affiliation;
   @override
   String get join_code;
   @override
@@ -277,6 +370,7 @@ GroupEvent _$GroupEventFromJson(Map<String, dynamic> json) {
 mixin _$GroupEvent {
   String get event_code => throw _privateConstructorUsedError;
   GroupEventSettings get settings => throw _privateConstructorUsedError;
+  List<AllianceGroup> get alliance_groups => throw _privateConstructorUsedError;
 
   /// Serializes this GroupEvent to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -294,7 +388,10 @@ abstract class $GroupEventCopyWith<$Res> {
           GroupEvent value, $Res Function(GroupEvent) then) =
       _$GroupEventCopyWithImpl<$Res, GroupEvent>;
   @useResult
-  $Res call({String event_code, GroupEventSettings settings});
+  $Res call(
+      {String event_code,
+      GroupEventSettings settings,
+      List<AllianceGroup> alliance_groups});
 
   $GroupEventSettingsCopyWith<$Res> get settings;
 }
@@ -316,6 +413,7 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
   $Res call({
     Object? event_code = null,
     Object? settings = null,
+    Object? alliance_groups = null,
   }) {
     return _then(_value.copyWith(
       event_code: null == event_code
@@ -326,6 +424,10 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
               as GroupEventSettings,
+      alliance_groups: null == alliance_groups
+          ? _value.alliance_groups
+          : alliance_groups // ignore: cast_nullable_to_non_nullable
+              as List<AllianceGroup>,
     ) as $Val);
   }
 
@@ -348,7 +450,10 @@ abstract class _$$GroupEventImplCopyWith<$Res>
       __$$GroupEventImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String event_code, GroupEventSettings settings});
+  $Res call(
+      {String event_code,
+      GroupEventSettings settings,
+      List<AllianceGroup> alliance_groups});
 
   @override
   $GroupEventSettingsCopyWith<$Res> get settings;
@@ -369,6 +474,7 @@ class __$$GroupEventImplCopyWithImpl<$Res>
   $Res call({
     Object? event_code = null,
     Object? settings = null,
+    Object? alliance_groups = null,
   }) {
     return _then(_$GroupEventImpl(
       event_code: null == event_code
@@ -379,6 +485,10 @@ class __$$GroupEventImplCopyWithImpl<$Res>
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
               as GroupEventSettings,
+      alliance_groups: null == alliance_groups
+          ? _value._alliance_groups
+          : alliance_groups // ignore: cast_nullable_to_non_nullable
+              as List<AllianceGroup>,
     ));
   }
 }
@@ -386,7 +496,11 @@ class __$$GroupEventImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$GroupEventImpl implements _GroupEvent {
-  const _$GroupEventImpl({required this.event_code, required this.settings});
+  const _$GroupEventImpl(
+      {required this.event_code,
+      required this.settings,
+      required final List<AllianceGroup> alliance_groups})
+      : _alliance_groups = alliance_groups;
 
   factory _$GroupEventImpl.fromJson(Map<String, dynamic> json) =>
       _$$GroupEventImplFromJson(json);
@@ -395,10 +509,17 @@ class _$GroupEventImpl implements _GroupEvent {
   final String event_code;
   @override
   final GroupEventSettings settings;
+  final List<AllianceGroup> _alliance_groups;
+  @override
+  List<AllianceGroup> get alliance_groups {
+    if (_alliance_groups is EqualUnmodifiableListView) return _alliance_groups;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_alliance_groups);
+  }
 
   @override
   String toString() {
-    return 'GroupEvent(event_code: $event_code, settings: $settings)';
+    return 'GroupEvent(event_code: $event_code, settings: $settings, alliance_groups: $alliance_groups)';
   }
 
   @override
@@ -409,12 +530,15 @@ class _$GroupEventImpl implements _GroupEvent {
             (identical(other.event_code, event_code) ||
                 other.event_code == event_code) &&
             (identical(other.settings, settings) ||
-                other.settings == settings));
+                other.settings == settings) &&
+            const DeepCollectionEquality()
+                .equals(other._alliance_groups, _alliance_groups));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, event_code, settings);
+  int get hashCode => Object.hash(runtimeType, event_code, settings,
+      const DeepCollectionEquality().hash(_alliance_groups));
 
   /// Create a copy of GroupEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -435,7 +559,8 @@ class _$GroupEventImpl implements _GroupEvent {
 abstract class _GroupEvent implements GroupEvent {
   const factory _GroupEvent(
       {required final String event_code,
-      required final GroupEventSettings settings}) = _$GroupEventImpl;
+      required final GroupEventSettings settings,
+      required final List<AllianceGroup> alliance_groups}) = _$GroupEventImpl;
 
   factory _GroupEvent.fromJson(Map<String, dynamic> json) =
       _$GroupEventImpl.fromJson;
@@ -444,6 +569,8 @@ abstract class _GroupEvent implements GroupEvent {
   String get event_code;
   @override
   GroupEventSettings get settings;
+  @override
+  List<AllianceGroup> get alliance_groups;
 
   /// Create a copy of GroupEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -630,6 +757,193 @@ abstract class _GroupEventSettings implements GroupEventSettings {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$GroupEventSettingsImplCopyWith<_$GroupEventSettingsImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AllianceGroup _$AllianceGroupFromJson(Map<String, dynamic> json) {
+  return _AllianceGroup.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AllianceGroup {
+  String get group_id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String get affiliation => throw _privateConstructorUsedError;
+
+  /// Serializes this AllianceGroup to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AllianceGroup
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AllianceGroupCopyWith<AllianceGroup> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AllianceGroupCopyWith<$Res> {
+  factory $AllianceGroupCopyWith(
+          AllianceGroup value, $Res Function(AllianceGroup) then) =
+      _$AllianceGroupCopyWithImpl<$Res, AllianceGroup>;
+  @useResult
+  $Res call({String group_id, String name, String affiliation});
+}
+
+/// @nodoc
+class _$AllianceGroupCopyWithImpl<$Res, $Val extends AllianceGroup>
+    implements $AllianceGroupCopyWith<$Res> {
+  _$AllianceGroupCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AllianceGroup
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? group_id = null,
+    Object? name = null,
+    Object? affiliation = null,
+  }) {
+    return _then(_value.copyWith(
+      group_id: null == group_id
+          ? _value.group_id
+          : group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      affiliation: null == affiliation
+          ? _value.affiliation
+          : affiliation // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AllianceGroupImplCopyWith<$Res>
+    implements $AllianceGroupCopyWith<$Res> {
+  factory _$$AllianceGroupImplCopyWith(
+          _$AllianceGroupImpl value, $Res Function(_$AllianceGroupImpl) then) =
+      __$$AllianceGroupImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String group_id, String name, String affiliation});
+}
+
+/// @nodoc
+class __$$AllianceGroupImplCopyWithImpl<$Res>
+    extends _$AllianceGroupCopyWithImpl<$Res, _$AllianceGroupImpl>
+    implements _$$AllianceGroupImplCopyWith<$Res> {
+  __$$AllianceGroupImplCopyWithImpl(
+      _$AllianceGroupImpl _value, $Res Function(_$AllianceGroupImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AllianceGroup
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? group_id = null,
+    Object? name = null,
+    Object? affiliation = null,
+  }) {
+    return _then(_$AllianceGroupImpl(
+      group_id: null == group_id
+          ? _value.group_id
+          : group_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      affiliation: null == affiliation
+          ? _value.affiliation
+          : affiliation // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AllianceGroupImpl implements _AllianceGroup {
+  const _$AllianceGroupImpl(
+      {required this.group_id, required this.name, required this.affiliation});
+
+  factory _$AllianceGroupImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AllianceGroupImplFromJson(json);
+
+  @override
+  final String group_id;
+  @override
+  final String name;
+  @override
+  final String affiliation;
+
+  @override
+  String toString() {
+    return 'AllianceGroup(group_id: $group_id, name: $name, affiliation: $affiliation)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AllianceGroupImpl &&
+            (identical(other.group_id, group_id) ||
+                other.group_id == group_id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.affiliation, affiliation) ||
+                other.affiliation == affiliation));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, group_id, name, affiliation);
+
+  /// Create a copy of AllianceGroup
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AllianceGroupImplCopyWith<_$AllianceGroupImpl> get copyWith =>
+      __$$AllianceGroupImplCopyWithImpl<_$AllianceGroupImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AllianceGroupImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AllianceGroup implements AllianceGroup {
+  const factory _AllianceGroup(
+      {required final String group_id,
+      required final String name,
+      required final String affiliation}) = _$AllianceGroupImpl;
+
+  factory _AllianceGroup.fromJson(Map<String, dynamic> json) =
+      _$AllianceGroupImpl.fromJson;
+
+  @override
+  String get group_id;
+  @override
+  String get name;
+  @override
+  String get affiliation;
+
+  /// Create a copy of AllianceGroup
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AllianceGroupImplCopyWith<_$AllianceGroupImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
