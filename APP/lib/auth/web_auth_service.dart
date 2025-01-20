@@ -67,9 +67,17 @@ class WebAuthService implements AuthService {
         '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$redirectUri/&client_id=$CLIENT';
   }
 
+  static Future<String?>? _runningFuture = null;
   @override
   Future<String?> getToken() async {
     // Extract the authorization code from the URL
+    if (_runningFuture != null) return _runningFuture;
+    _runningFuture = _getToken();
+    _runningFuture!.whenComplete(() => _runningFuture = null);
+    return _runningFuture;
+  }
+
+  Future<String?> _getToken() async {
     try {
       final tokenData = window.sessionStorage['pf_token'];
       if (tokenData != null) {
