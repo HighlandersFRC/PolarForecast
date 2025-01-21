@@ -2346,7 +2346,7 @@
     "verifyEmail": false,
     "loginWithEmailAllowed": false,
     "duplicateEmailsAllowed": false,
-    "resetPasswordAllowed": false,
+    "resetPasswordAllowed": true,
     "editUsernameAllowed": false,
     "bruteForceProtected": false,
     "permanentLockout": false,
@@ -4007,7 +4007,7 @@
           "subComponents": {},
           "config": {
             "kc.user.profile.config": [
-              "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"Team Number\",\"validations\":{\"integer\":{\"min\":\"1\",\"max\":\"99999\"},\"length\":{\"min\":\"1\",\"max\":\"5\",\"trim-disabled\":\"false\"}},\"annotations\":{\"inputTypePlaceholder\":\"(e.g. 9999)\",\"inputType\":\"html5-number\",\"inputTypeSize\":\"5\"},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"annotations\":{},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}"
+              "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{\"max-local-length\":64}},\"annotations\":{\"inputType\":\"html5-email\"},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"annotations\":{},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"team_number\",\"displayName\":\"Team Number\",\"validations\":{\"integer\":{\"min\":\"1\",\"max\":\"99999\"},\"length\":{\"min\":\"1\",\"max\":\"5\"}},\"annotations\":{\"inputTypePlaceholder\":\"(e.g. 9999)\",\"inputType\":\"html5-number\"},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"use_otp\",\"displayName\":\"Use OTP?\",\"validations\":{\"options\":{\"min\":\"\",\"max\":\"\",\"options\":[\"skip\",\"force\"]}},\"annotations\":{\"inputType\":\"select\",\"inputHelperTextBefore\":\"Selecting \\\"force\\\" will make you set up an otp on an authenticator app. This is what you will use for resetting password in the future. Selecting \\\"skip\\\" will not set up an OTP, but you also will not be able to reset password.\"},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}"
             ]
           }
         }
@@ -4497,6 +4497,15 @@
             "autheticatorFlow": true,
             "flowAlias": "registration form",
             "userSetupAllowed": false
+          },
+          {
+            "authenticatorConfig": "Setup OTP",
+            "authenticator": "auth-conditional-otp-form",
+            "authenticatorFlow": false,
+            "requirement": "REQUIRED",
+            "priority": 12,
+            "autheticatorFlow": false,
+            "userSetupAllowed": false
           }
         ]
       },
@@ -4506,7 +4515,7 @@
         "description": "registration form",
         "providerId": "form-flow",
         "topLevel": false,
-        "builtIn": true,
+        "builtIn": false,
         "authenticationExecutions": [
           {
             "authenticator": "registration-user-creation",
@@ -4540,7 +4549,7 @@
         "description": "Reset credentials for a user if they forgot their password or something",
         "providerId": "basic-flow",
         "topLevel": true,
-        "builtIn": true,
+        "builtIn": false,
         "authenticationExecutions": [
           {
             "authenticator": "reset-credentials-choose-user",
@@ -4551,7 +4560,7 @@
             "userSetupAllowed": false
           },
           {
-            "authenticator": "reset-credential-email",
+            "authenticator": "auth-otp-form",
             "authenticatorFlow": false,
             "requirement": "REQUIRED",
             "priority": 20,
@@ -4564,14 +4573,6 @@
             "requirement": "REQUIRED",
             "priority": 30,
             "autheticatorFlow": false,
-            "userSetupAllowed": false
-          },
-          {
-            "authenticatorFlow": true,
-            "requirement": "CONDITIONAL",
-            "priority": 40,
-            "autheticatorFlow": true,
-            "flowAlias": "Reset - Conditional OTP",
             "userSetupAllowed": false
           }
         ]
@@ -4596,6 +4597,14 @@
       }
     ],
     "authenticatorConfig": [
+      {
+        "id": "b9b0391e-22c1-4809-b673-2f16583189db",
+        "alias": "Setup OTP",
+        "config": {
+          "otpControlAttribute": "use_otp",
+          "defaultOtpOutcome": "skip"
+        }
+      },
       {
         "id": "37eb188a-60b3-42e7-8fb5-88d75697324f",
         "alias": "create unique user config",
@@ -4623,7 +4632,7 @@
         "alias": "CONFIGURE_TOTP",
         "name": "Configure OTP",
         "providerId": "CONFIGURE_TOTP",
-        "enabled": false,
+        "enabled": true,
         "defaultAction": false,
         "priority": 10,
         "config": {}
