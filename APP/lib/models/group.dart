@@ -12,7 +12,7 @@ class Group with _$Group {
     required String member_group_id,
     required String name,
     required String affiliation,
-    required String join_code,
+    required String? join_code,
     required List<GroupEvent> events,
     required GroupSettings settings,
   }) = _Group;

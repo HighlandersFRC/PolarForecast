@@ -13,7 +13,7 @@ _$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
       member_group_id: json['member_group_id'] as String,
       name: json['name'] as String,
       affiliation: json['affiliation'] as String,
-      join_code: json['join_code'] as String,
+      join_code: json['join_code'] as String?,
       events: (json['events'] as List<dynamic>)
           .map((e) => GroupEvent.fromJson(e as Map<String, dynamic>))
           .toList(),

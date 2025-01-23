@@ -255,7 +255,7 @@ class ApiService {
   }
 
   Future<Group> make_group(
-      String name, int team_affiliation, String? event, int? year) async {
+      String name, String? event, int? year) async {
     var token = await this.token;
     if (token == null) {
       throw Exception('no user token');
@@ -268,9 +268,9 @@ class ApiService {
     final response = await http.post(
       eventCode != null
           ? Uri.parse(
-              '$APIURL/CreateGroup?group_name=$name&affiliation=$team_affiliation&event=$eventCode')
+              '$APIURL/CreateGroup?group_name=$name&event=$eventCode')
           : Uri.parse(
-              '$APIURL/CreateGroup?group_name=$name&affiliation=$team_affiliation'),
+              '$APIURL/CreateGroup?group_name=$name'),
       headers: {
         'token': token,
         'group_name': name,

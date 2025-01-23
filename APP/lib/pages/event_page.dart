@@ -1082,36 +1082,19 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       tournament: widget.widget.tournament,
                       onClick: () {
                         final TextEditingController groupNameController =
-                                TextEditingController(),
-                            affiliationController = TextEditingController();
+                            TextEditingController();
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: const Text('Create a New Group'),
-                              content: IntrinsicHeight(
-                                  child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                    TextField(
-                                      controller: groupNameController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Group Name',
-                                        hintText: 'Enter the name of the group',
-                                      ),
-                                    ),
-                                    TextField(
-                                      controller: affiliationController,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Team Number',
-                                        hintText: 'Enter the team number',
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                    ),
-                                  ])),
+                              content: TextField(
+                                controller: groupNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Group Name',
+                                  hintText: 'Enter the name of the group',
+                                ),
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -1127,8 +1110,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                     apiService
                                         .make_group(
                                             groupNameController.text,
-                                            int.parse(
-                                                affiliationController.text),
                                             widget.widget.tournament.key
                                                 .substring(4),
                                             int.parse(widget

@@ -8,7 +8,10 @@ class LoginWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+        child: Padding(
+      padding: EdgeInsets.all(16.0),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text('You have to log in to view this content'),
           SizedBox(height: 10.0),
@@ -21,6 +24,6 @@ class LoginWidget extends StatelessWidget {
               child: Text('Log in or Sign up'))
         ],
       ),
-    );
+    ));
   }
 }

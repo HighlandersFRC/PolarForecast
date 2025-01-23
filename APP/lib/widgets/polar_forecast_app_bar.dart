@@ -436,30 +436,19 @@ _openGroupsPopup(BuildContext context) async {
                   child: Text('Create a New Group'),
                   onPressed: () {
                     final TextEditingController groupNameController =
-                            TextEditingController(),
-                        teamNumberController = TextEditingController();
+                        TextEditingController();
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: const Text('Create a New Group'),
-                          content: Column(children: [
-                            TextField(
-                              controller: groupNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Group Name',
-                                hintText: 'Enter the name of the group',
-                              ),
+                          content: TextField(
+                            controller: groupNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Group Name',
+                              hintText: 'Enter the name of the group',
                             ),
-                            TextField(
-                              controller: teamNumberController,
-                              decoration: const InputDecoration(
-                                labelText: 'Team Number',
-                                hintText: 'Enter the team number',
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ]),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -474,15 +463,12 @@ _openGroupsPopup(BuildContext context) async {
                                     listen: false);
                                 apiService
                                     .make_group(
-                                        groupNameController.text,
-                                        int.parse(teamNumberController.text),
-                                        null,
-                                        null)
+                                        groupNameController.text, null, null)
                                     .then((value) {
+                                  Navigator.of(context).pop();
                                   Navigator.of(context)
                                       .pushNamed('/group/${value.name}');
                                 });
-                                Navigator.of(context).pop();
                               },
                               child: const Text('Create'),
                             ),

@@ -410,12 +410,28 @@ def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
 
 
 @app.post("/CreateGroup")
-def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None, affiliation: int | None = None) -> Group:
+def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
-    if affiliation == None:
-        raise HTTPException(400, "Please provide an affiliation number")
     if (token is not None):
+        user_info = get_user_info(token)
+        try:
+            DBEntry = Group(
+                affiliation=f"frc{user_info['team_number']}",
+                group_id=groupData["group_id"],
+                join_code=groupData["code"],
+                name=group_name,
+                owner_group_id=groupData["owner_subgroup_id"],
+                admin_group_id=groupData["admin_subgroup_id"],
+                member_group_id=groupData["member_subgroup_id"],
+                events=events,
+                settings=GroupSettings(
+                    approve_new_members=True,
+                ),
+            )
+        except KeyError:
+            raise HTTPException(
+                422, "Your User is Not Affiliated with a team. Contact the developers for help.")
         groupData = make_group(token, group_name, event)
         events = []
         if event is not None:
@@ -427,19 +443,6 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
                 ),
                 alliance_groups=[]
             ),]
-        DBEntry = Group(
-            affiliation=f"frc{affiliation}",
-            group_id=groupData["group_id"],
-            join_code=groupData["code"],
-            name=group_name,
-            owner_group_id=groupData["owner_subgroup_id"],
-            admin_group_id=groupData["admin_subgroup_id"],
-            member_group_id=groupData["member_subgroup_id"],
-            events=events,
-            settings=GroupSettings(
-                approve_new_members=True,
-            ),
-        )
         GroupCollection.insert_one(DBEntry.dict())
         return DBEntry
 
@@ -470,12 +473,11 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
             retval = {'group': DBgroup.dict(), 'group_role': 'owner'}
             break
         if group['id'] == DBgroup.admin_group_id:
-            if (retval == {} or retval['group_role'] != 'owner'):
-                retval = {'group': DBgroup.dict(), 'group_role': 'admin'}
+            retval = {'group': DBgroup.dict(), 'group_role': 'admin'}
         if group['id'] == DBgroup.member_group_id:
             if (retval == {}):
                 retval = {'group': DBgroup.dict(
-                    exclude=['join_code']), 'group_role': 'member'}
+                    exclude={'join_code'}), 'group_role': 'member'}
     if retval != {}:
         # Get either the current cached join code or create a new one
         if retval['group_role'] == 'owner' or retval['group_role'] == 'admin':
@@ -485,7 +487,7 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
                 GroupCollection.find_one_and_update(
                     {"name": group_name}, {"$set": {"join_code": new_code}})
                 return new_code
-            retval['join_code'] = join_code(group_name)
+            retval['group']['join_code'] = join_code(group_name)
         return retval
     raise HTTPException(
         400, f"You somehow broke Polar Forecast's '{group_name}' Group")
@@ -497,6 +499,15 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
         raise HTTPException(404, f"Group Not Found: {str(e)}")
+    user_info = get_user_info(token)
+    try:
+        if user_info['team_number'] != DBgroup.affiliation[3:]:
+            raise HTTPException(
+                401, "You are not affiliated with the team which this group is affiliated")
+    except KeyError as e:
+        raise HTTPException(
+            422, "You either are not affiliated with a team or the group is not affiliated with a team")
+
     groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
@@ -507,7 +518,6 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
         return get_group(group_name=group_name, token=token)
     if DBgroup.join_code != join_code:
         raise HTTPException(401, "Incorrect Join Code")
-    user_info = get_user_info(token)
     # Add user to group
     add_user_to_group(user_id=user_info['sub'], group_id=DBgroup.group_id)
     add_user_to_group(user_id=user_info['sub'],

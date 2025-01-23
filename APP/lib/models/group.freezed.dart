@@ -26,7 +26,7 @@ mixin _$Group {
   String get member_group_id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get affiliation => throw _privateConstructorUsedError;
-  String get join_code => throw _privateConstructorUsedError;
+  String? get join_code => throw _privateConstructorUsedError;
   List<GroupEvent> get events => throw _privateConstructorUsedError;
   GroupSettings get settings => throw _privateConstructorUsedError;
 
@@ -51,7 +51,7 @@ abstract class $GroupCopyWith<$Res> {
       String member_group_id,
       String name,
       String affiliation,
-      String join_code,
+      String? join_code,
       List<GroupEvent> events,
       GroupSettings settings});
 
@@ -79,7 +79,7 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
     Object? member_group_id = null,
     Object? name = null,
     Object? affiliation = null,
-    Object? join_code = null,
+    Object? join_code = freezed,
     Object? events = null,
     Object? settings = null,
   }) {
@@ -108,10 +108,10 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
           ? _value.affiliation
           : affiliation // ignore: cast_nullable_to_non_nullable
               as String,
-      join_code: null == join_code
+      join_code: freezed == join_code
           ? _value.join_code
           : join_code // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       events: null == events
           ? _value.events
           : events // ignore: cast_nullable_to_non_nullable
@@ -148,7 +148,7 @@ abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
       String member_group_id,
       String name,
       String affiliation,
-      String join_code,
+      String? join_code,
       List<GroupEvent> events,
       GroupSettings settings});
 
@@ -175,7 +175,7 @@ class __$$GroupImplCopyWithImpl<$Res>
     Object? member_group_id = null,
     Object? name = null,
     Object? affiliation = null,
-    Object? join_code = null,
+    Object? join_code = freezed,
     Object? events = null,
     Object? settings = null,
   }) {
@@ -204,10 +204,10 @@ class __$$GroupImplCopyWithImpl<$Res>
           ? _value.affiliation
           : affiliation // ignore: cast_nullable_to_non_nullable
               as String,
-      join_code: null == join_code
+      join_code: freezed == join_code
           ? _value.join_code
           : join_code // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       events: null == events
           ? _value._events
           : events // ignore: cast_nullable_to_non_nullable
@@ -251,7 +251,7 @@ class _$GroupImpl implements _Group {
   @override
   final String affiliation;
   @override
-  final String join_code;
+  final String? join_code;
   final List<GroupEvent> _events;
   @override
   List<GroupEvent> get events {
@@ -329,7 +329,7 @@ abstract class _Group implements Group {
       required final String member_group_id,
       required final String name,
       required final String affiliation,
-      required final String join_code,
+      required final String? join_code,
       required final List<GroupEvent> events,
       required final GroupSettings settings}) = _$GroupImpl;
 
@@ -348,7 +348,7 @@ abstract class _Group implements Group {
   @override
   String get affiliation;
   @override
-  String get join_code;
+  String? get join_code;
   @override
   List<GroupEvent> get events;
   @override
