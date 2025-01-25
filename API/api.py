@@ -415,24 +415,6 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
         raise HTTPException(400, "Please provide a group name")
     if (token is not None):
         user_info = get_user_info(token)
-        try:
-            DBEntry = Group(
-                affiliation=f"frc{user_info['team_number']}",
-                group_id=groupData["group_id"],
-                join_code=groupData["code"],
-                name=group_name,
-                owner_group_id=groupData["owner_subgroup_id"],
-                admin_group_id=groupData["admin_subgroup_id"],
-                member_group_id=groupData["member_subgroup_id"],
-                events=events,
-                settings=GroupSettings(
-                    approve_new_members=True,
-                ),
-            )
-        except KeyError:
-            raise HTTPException(
-                422, "Your User is Not Affiliated with a team. Contact the developers for help.")
-        groupData = make_group(token, group_name, event)
         events = []
         if event is not None:
             events = [GroupEvent(
@@ -443,6 +425,26 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
                 ),
                 alliance_groups=[]
             ),]
+        try:
+            if user_info.__contains__('team_number'):
+                groupData = make_group(token, group_name, event)
+                DBEntry = Group(
+                    affiliation=f"frc{user_info['team_number']}",
+                    group_id=groupData["group_id"],
+                    join_code=groupData["code"],
+                    name=group_name,
+                    owner_group_id=groupData["owner_subgroup_id"],
+                    admin_group_id=groupData["admin_subgroup_id"],
+                    member_group_id=groupData["member_subgroup_id"],
+                    events=events,
+                    settings=GroupSettings(
+                        approve_new_members=True,
+                    ),
+                )
+        except KeyError:
+            raise HTTPException(
+                422, "Your User is Not Affiliated with a team. Contact the developers for help.")
+
         GroupCollection.insert_one(DBEntry.dict())
         return DBEntry
 

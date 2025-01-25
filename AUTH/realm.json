@@ -3065,6 +3065,25 @@
         "publicClient": true,
         "frontchannelLogout": true,
         "protocol": "openid-connect",
+        "protocolMappers": [
+          {
+            "id": "3f728465-14fc-44f5-8fcb-6a21a2ed2929",
+            "name": "Team Number Mapper",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-usermodel-attribute-mapper",
+            "consentRequired": false,
+            "config": {
+              "introspection.token.claim": "true",
+              "userinfo.token.claim": "true",
+              "user.attribute": "team_number",
+              "id.token.claim": "true",
+              "lightweight.claim": "true",
+              "access.token.claim": "true",
+              "claim.name": "team_number",
+              "jsonType.label": "String"
+            }
+          }
+        ],
         "attributes": {
           "post.logout.redirect.uris": "http://localhost:3000/*##${WEBAPP_ORIGIN}*",
           "oauth2.device.authorization.grant.enabled": "false",
@@ -4499,7 +4518,7 @@
           },
           {
             "authenticatorFlow": true,
-            "requirement": "CONDITIONAL",
+            "requirement": "DISABLED",
             "priority": 20,
             "autheticatorFlow": true,
             "flowAlias": "Browser - Conditional OTP",

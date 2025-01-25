@@ -12,14 +12,20 @@ keycloak_openid = KeycloakOpenID(
     client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
     client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
 )
-keycloak_admin = KeycloakAdmin(
-    server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-    realm_name=os.getenv("KEYCLOAK_REALM"),
-    client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-    client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-    username=os.getenv("KEYCLOAK_ADMIN"),
-    password=os.getenv("KEYCLOAK_ADMIN_PASSWORD"),
-)
+keycloak_admin = None
+while (keycloak_admin == None):
+    try:
+        keycloak_admin = KeycloakAdmin(
+            server_url=os.getenv("KEYCLOAK_ENDPOINT"),
+            realm_name=os.getenv("KEYCLOAK_REALM"),
+            client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
+            client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+            username=os.getenv("KEYCLOAK_ADMIN"),
+            password=os.getenv("KEYCLOAK_ADMIN_PASSWORD"),
+        )
+    except Exception as e:
+        logging.error(str(e))
+        keycloak_admin = None
 
 
 def create_join_code() -> str:
