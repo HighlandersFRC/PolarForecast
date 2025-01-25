@@ -4083,6 +4083,33 @@
     "supportedLocales": [],
     "authenticationFlows": [
       {
+        "id": "442c1e96-618e-450b-b09e-157596cfd604",
+        "alias": "no otp",
+        "description": "",
+        "providerId": "basic-flow",
+        "topLevel": false,
+        "builtIn": false,
+        "authenticationExecutions": [
+          {
+            "authenticatorConfig": "check-for-otp",
+            "authenticator": "conditional-user-attribute",
+            "authenticatorFlow": false,
+            "requirement": "REQUIRED",
+            "priority": 0,
+            "autheticatorFlow": false,
+            "userSetupAllowed": false
+          },
+          {
+            "authenticator": "deny-access-authenticator",
+            "authenticatorFlow": false,
+            "requirement": "DISABLED",
+            "priority": 1,
+            "autheticatorFlow": false,
+            "userSetupAllowed": false
+          }
+        ]
+      },
+      {
         "id": "20114e2c-8525-4739-b87e-939ebab61869",
         "alias": "Account verification options",
         "description": "Method with which to verity the existing account",
@@ -4560,7 +4587,7 @@
             "userSetupAllowed": false
           },
           {
-            "authenticator": "auth-otp-form",
+            "authenticator": "reset-password",
             "authenticatorFlow": false,
             "requirement": "REQUIRED",
             "priority": 20,
@@ -4568,11 +4595,19 @@
             "userSetupAllowed": false
           },
           {
-            "authenticator": "reset-password",
+            "authenticator": "auth-otp-form",
             "authenticatorFlow": false,
             "requirement": "REQUIRED",
             "priority": 30,
             "autheticatorFlow": false,
+            "userSetupAllowed": false
+          },
+          {
+            "authenticatorFlow": true,
+            "requirement": "CONDITIONAL",
+            "priority": 31,
+            "autheticatorFlow": true,
+            "flowAlias": "no otp",
             "userSetupAllowed": false
           }
         ]
@@ -4597,6 +4632,15 @@
       }
     ],
     "authenticatorConfig": [
+      {
+        "id": "1648cee6-cce9-415c-9ea8-c98c8295c82b",
+        "alias": "check-for-otp",
+        "config": {
+          "attribute_expected_value": "force",
+          "attribute_name": "use_otp",
+          "not": "true"
+        }
+      },
       {
         "id": "b9b0391e-22c1-4809-b673-2f16583189db",
         "alias": "Setup OTP",
@@ -4650,7 +4694,7 @@
         "alias": "UPDATE_PASSWORD",
         "name": "Update Password",
         "providerId": "UPDATE_PASSWORD",
-        "enabled": false,
+        "enabled": true,
         "defaultAction": false,
         "priority": 30,
         "config": {}
