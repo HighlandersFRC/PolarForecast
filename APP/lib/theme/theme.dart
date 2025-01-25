@@ -61,6 +61,8 @@ ThemeData darkTheme() {
           foregroundColor: Colors.white,
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: Colors.blue)),
       inputDecorationTheme: InputDecorationTheme(
         focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.blue, width: 3)),
@@ -69,6 +71,7 @@ ThemeData darkTheme() {
         labelStyle: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
         border: OutlineInputBorder(),
       ),
-      textSelectionTheme:
-          TextSelectionThemeData(cursorColor: Colors.blue, selectionColor: Colors.blue.withOpacity(0.2)));
+      textSelectionTheme: TextSelectionThemeData(
+          cursorColor: Colors.blue,
+          selectionColor: Colors.blue.withOpacity(0.2)));
 }

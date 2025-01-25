@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/tournament.dart';
@@ -9,8 +10,10 @@ class PolarForecastSliverBar extends StatefulWidget
   @override
   final Size preferredSize;
   final String? extraText;
+  final bool showBackButton;
 
-  const PolarForecastSliverBar({super.key, this.extraText})
+  const PolarForecastSliverBar(
+      {super.key, this.extraText, this.showBackButton = true})
       : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
@@ -49,7 +52,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return SliverAppBar(
-      automaticallyImplyLeading: true,
+      automaticallyImplyLeading: kIsWeb ? false : widget.showBackButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -102,6 +105,20 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
               context: context,
               position: position,
               items: [
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Groups',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openGroupsPopup(context);
+                    },
+                  ),
                 if (token != null)
                   PopupMenuItem(
                     child: Container(
@@ -226,7 +243,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return AppBar(
-      automaticallyImplyLeading: widget.backButton,
+      automaticallyImplyLeading: kIsWeb ? false : widget.backButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -279,6 +296,20 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
               context: context,
               position: position,
               items: [
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Groups',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openGroupsPopup(context);
+                    },
+                  ),
                 if (token != null)
                   PopupMenuItem(
                     child: Container(
@@ -354,4 +385,102 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     ];
     return suggestions;
   }
+}
+
+_openGroupsPopup(BuildContext context) async {
+  final apiService = Provider.of<ApiService>(context, listen: false);
+  final token = await apiService.token;
+  if (token == null) {
+    return;
+  }
+  final List groups = (await apiService.get_user_groups()).where((group) {
+    // print(group);
+    // print(group['path'].runtimeType);
+    return group['path'].toString().split('/').length == 2;
+  }).toList();
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        // Use Dialog instead of Card for a better look
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Ensures it takes minimal height
+            children: [
+              Text(
+                'Your Groups',
+                style: TextStyle(color: Colors.white, fontSize: 30),
+              ),
+              groups.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text('You are not part of any groups',
+                          style: TextStyle(color: Colors.white)),
+                    )
+                  : SizedBox(
+                      height: 200, // Set a fixed height for the ListView
+                      child: ListView.builder(
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pushNamed('/group/${groups[index]['name']}');
+                            },
+                            title: Text(groups[index]['name']),
+                          );
+                        },
+                      ),
+                    ),
+              ElevatedButton(
+                  child: Text('Create a New Group'),
+                  onPressed: () {
+                    final TextEditingController groupNameController =
+                        TextEditingController();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Create a New Group'),
+                          content: TextField(
+                            controller: groupNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Group Name',
+                              hintText: 'Enter the name of the group',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final apiService = Provider.of<ApiService>(
+                                    context,
+                                    listen: false);
+                                apiService
+                                    .make_group(
+                                        groupNameController.text, null, null)
+                                    .then((value) {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context)
+                                      .pushNamed('/group/${value.name}');
+                                });
+                              },
+                              child: const Text('Create'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

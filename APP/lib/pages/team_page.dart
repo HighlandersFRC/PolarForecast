@@ -15,12 +15,38 @@ import '../widgets/match_link.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
 import '../models/tournament.dart';
+import 'not_found_page.dart';
 
 class TeamPage extends StatefulWidget {
   final Tournament tournament;
   final int teamNumber;
-
   const TeamPage(this.teamNumber, this.tournament);
+
+  static Widget fromKeys(
+      BuildContext context, String eventKey, String teamCode) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    final tournaments = apiService.fetchTournaments();
+    // print(eventKey);
+    return FutureBuilder(
+        future: tournaments,
+        builder: (context, tournaments) {
+          Tournament? tournament = null;
+          try {
+            for (final _tournament in tournaments.requireData) {
+              if (_tournament.key == eventKey) {
+                tournament = _tournament;
+                break;
+              }
+            }
+            if (tournament == null) {
+              return NotFoundPage();
+            }
+            return TeamPage(int.parse(teamCode.substring(3)), tournament);
+          } catch (error) {
+            return NotFoundPage();
+          }
+        });
+  }
 
   @override
   _TeamPageState createState() => _TeamPageState();
@@ -941,7 +967,7 @@ class _MatchScoutingSource extends DataGridSource {
 }
 
 class ActivateButton extends StatefulWidget {
-  MatchScouting2024 data;
+  final MatchScouting2024 data;
 
   ActivateButton({Key? key, required this.data}) : super(key: key);
 
@@ -953,11 +979,12 @@ class _ActivateButtonState extends State<ActivateButton> {
   bool activated = false;
   String text = '';
   String password = '';
-
+  late MatchScouting2024 data;
   @override
   void initState() {
     super.initState();
-    activated = widget.data.active;
+    data = widget.data;
+    activated = data.active;
     text = activated ? 'Deactivate' : 'Activate';
   }
 
@@ -981,7 +1008,7 @@ class _ActivateButtonState extends State<ActivateButton> {
       setState(() {
         text = 'Activate';
         activated = false;
-        widget.data = widget.data.copyWith(active: false);
+        data = widget.data.copyWith(active: false);
       });
     } else {
       setState(() {
@@ -998,7 +1025,7 @@ class _ActivateButtonState extends State<ActivateButton> {
       setState(() {
         text = 'Deactivate';
         activated = true;
-        widget.data = widget.data.copyWith(active: true);
+        data = widget.data.copyWith(active: true);
       });
     } else {
       setState(() {

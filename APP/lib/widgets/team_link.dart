@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/tournament.dart';
-import '../pages/team_page.dart';
 
 class TeamLink extends StatelessWidget {
   final int number;
@@ -14,10 +13,8 @@ class TeamLink extends StatelessWidget {
     return Container(
         constraints: BoxConstraints.expand(),
         child: TextButton(
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => TeamPage(number, tournament))),
+          onPressed: () => Navigator.pushNamed(
+              context, '/event/${tournament.key}/team/frc$number'),
           child: Text(
             '${number}',
             textScaleFactor: 1.25,

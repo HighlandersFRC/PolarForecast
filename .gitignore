@@ -161,6 +161,7 @@ cython_debug/
 # Node Modules
 node_modules/
 *.env
+!sample.env
 
 # DrawIO
 *.bkp

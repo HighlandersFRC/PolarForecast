@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:scouting_app/models/group.dart';
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
@@ -253,7 +254,7 @@ class ApiService {
     return json.decode(response.body);
   }
 
-  Future<Map<String, dynamic>?> make_group(
+  Future<Group> make_group(
       String name, String? event, int? year) async {
     var token = await this.token;
     if (token == null) {
@@ -265,7 +266,11 @@ class ApiService {
     }
 
     final response = await http.post(
-      Uri.parse('$APIURL/CreateGroup?group_name=$name&event=$eventCode'),
+      eventCode != null
+          ? Uri.parse(
+              '$APIURL/CreateGroup?group_name=$name&event=$eventCode')
+          : Uri.parse(
+              '$APIURL/CreateGroup?group_name=$name'),
       headers: {
         'token': token,
         'group_name': name,
@@ -273,14 +278,130 @@ class ApiService {
       },
     );
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      return Group.fromJson(json.decode(response.body));
     } else {
       throw Exception(
           'Failed to create group: ${response.statusCode} - ${response.body}');
     }
   }
 
-  Future<String?> get_group_code(String group_id) async {
-    return null;
+  Future<(Group, String)> get_group(String name) async {
+    final response = await http.get(
+      Uri.parse('$APIURL/Group/$name'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
+  Future<Map> get_group_members(String name) async {
+    final response = await http.get(
+      Uri.parse('$APIURL/Group/$name/Members'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<(Group, String)> join_group(String name, String join_code) async {
+    final response = await http.post(
+      Uri.parse('$APIURL/Group/$name/Join?join_code=$join_code'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
+  Future<Map> demote_group_member(String group_name, String demote_id) async {
+    final response = await http.put(
+      Uri.parse(
+          '$APIURL/Group/$group_name/Members/Demote?demote_id=$demote_id'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<Map> kick_group_member(String group_name, String kick_id) async {
+    final response = await http.delete(
+      Uri.parse('$APIURL/Group/$group_name/Members/Kick?kick_id=$kick_id'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<Map> promote_group_member(String group_name, String promote_id) async {
+    final response = await http.put(
+      Uri.parse(
+          '$APIURL/Group/$group_name/Members/PromoteMember?promote_id=$promote_id'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<Map> promote_group_admin(String group_name, String promote_id) async {
+    final response = await http.put(
+      Uri.parse(
+          '$APIURL/Group/$group_name/Members/PromoteAdmin?promote_id=$promote_id'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<void> leave_group(String group_name) async {
+    final response = await http.delete(
+      Uri.parse('$APIURL/Group/$group_name/Leave'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+  }
+
+  Future<void> delete_group(String group_name) async {
+    final response = await http.delete(
+      Uri.parse('$APIURL/Group/$group_name/Delete'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
   }
 }

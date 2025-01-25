@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:flutter/foundation.dart';
 
 part 'group.freezed.dart';
 part 'group.g.dart';
@@ -7,11 +6,61 @@ part 'group.g.dart';
 @freezed
 class Group with _$Group {
   const factory Group({
+    required String group_id,
+    required String owner_group_id,
+    required String admin_group_id,
+    required String member_group_id,
     required String name,
-    required List<String> surrogate_team_keys,
-    required List<String> team_keys,
-    required int score,
+    required String affiliation,
+    required String? join_code,
+    required List<GroupEvent> events,
+    required GroupSettings settings,
   }) = _Group;
 
-  factory Group.fromJson(Map<String, Object?> json) => _$GroupFromJson(json);
+  factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
+}
+
+@freezed
+class GroupEvent with _$GroupEvent {
+  const factory GroupEvent({
+    required String event_code,
+    required GroupEventSettings settings,
+    required List<AllianceGroup> alliance_groups,
+  }) = _GroupEvent;
+
+  factory GroupEvent.fromJson(Map<String, dynamic> json) =>
+      _$GroupEventFromJson(json);
+}
+
+@freezed
+class GroupEventSettings with _$GroupEventSettings {
+  const factory GroupEventSettings({
+    required bool crowd_sourced_match_scouting,
+    required bool crowd_sourced_pit_scouting,
+  }) = _GroupEventSettings;
+
+  factory GroupEventSettings.fromJson(Map<String, dynamic> json) =>
+      _$GroupEventSettingsFromJson(json);
+}
+
+@freezed
+class AllianceGroup with _$AllianceGroup {
+  const factory AllianceGroup({
+    required String group_id,
+    required String name,
+    required String affiliation,
+  }) = _AllianceGroup;
+
+  factory AllianceGroup.fromJson(Map<String, dynamic> json) =>
+      _$AllianceGroupFromJson(json);
+}
+
+@freezed
+class GroupSettings with _$GroupSettings {
+  const factory GroupSettings({
+    required bool approve_new_members,
+  }) = _GroupSettings;
+
+  factory GroupSettings.fromJson(Map<String, dynamic> json) =>
+      _$GroupSettingsFromJson(json);
 }

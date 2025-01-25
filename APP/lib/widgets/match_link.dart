@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/tournament.dart';
-import '../pages/match_page.dart';
 
 class MatchLink extends StatelessWidget {
   final String match_key;
@@ -15,11 +14,8 @@ class MatchLink extends StatelessWidget {
     return Container(
         constraints: BoxConstraints.expand(),
         child: TextButton(
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      MatchPage(match_key, tournament, display: display))),
+          onPressed: () => Navigator.pushNamed(
+              context, '/event/${tournament.key}/match/${match_key}'),
           child: Text(
             '${display}',
             textScaleFactor: 1.25,
