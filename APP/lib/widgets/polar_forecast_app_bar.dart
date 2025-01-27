@@ -408,20 +408,20 @@ _openGroupsPopup(BuildContext context) async {
             mainAxisSize: MainAxisSize.min, // Ensures it takes minimal height
             children: [
               Text(
-                'Your Groups',
+                'Your Group',
                 style: TextStyle(color: Colors.white, fontSize: 30),
               ),
               groups.isEmpty
                   ? Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Text('You are not part of any groups',
+                      child: Text('You are not part of any group',
                           style: TextStyle(color: Colors.white)),
                     )
                   : SizedBox(
-                      height: 200, // Set a fixed height for the ListView
-                      child: ListView.builder(
-                        itemCount: groups.length,
-                        itemBuilder: (context, index) {
+                      child: Column(
+                          children: List.generate(
+                        groups.length,
+                        (index) {
                           return ListTile(
                             onTap: () {
                               Navigator.of(context)
@@ -430,53 +430,54 @@ _openGroupsPopup(BuildContext context) async {
                             title: Text(groups[index]['name']),
                           );
                         },
-                      ),
+                      )),
                     ),
-              ElevatedButton(
-                  child: Text('Create a New Group'),
-                  onPressed: () {
-                    final TextEditingController groupNameController =
-                        TextEditingController();
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Create a New Group'),
-                          content: TextField(
-                            controller: groupNameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Group Name',
-                              hintText: 'Enter the name of the group',
+              if (groups.isEmpty)
+                ElevatedButton(
+                    child: Text('Create a New Group'),
+                    onPressed: () {
+                      final TextEditingController groupNameController =
+                          TextEditingController();
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Create a New Group'),
+                            content: TextField(
+                              controller: groupNameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Group Name',
+                                hintText: 'Enter the name of the group',
+                              ),
                             ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                final apiService = Provider.of<ApiService>(
-                                    context,
-                                    listen: false);
-                                apiService
-                                    .make_group(
-                                        groupNameController.text, null, null)
-                                    .then((value) {
+                            actions: [
+                              TextButton(
+                                onPressed: () {
                                   Navigator.of(context).pop();
-                                  Navigator.of(context)
-                                      .pushNamed('/group/${value.name}');
-                                });
-                              },
-                              child: const Text('Create'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }),
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final apiService = Provider.of<ApiService>(
+                                      context,
+                                      listen: false);
+                                  apiService
+                                      .make_group(
+                                          groupNameController.text, null, null)
+                                      .then((value) {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context)
+                                        .pushNamed('/group/${value.name}');
+                                  });
+                                },
+                                child: const Text('Create'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }),
             ],
           ),
         ),

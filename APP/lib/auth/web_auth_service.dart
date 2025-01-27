@@ -70,6 +70,7 @@ class WebAuthService implements AuthService {
   static Future<String?>? _runningFuture = null;
   @override
   Future<String?> getToken() async {
+    // TODO Add logic for using a refresh token
     // Extract the authorization code from the URL
     if (_runningFuture != null) return _runningFuture;
     _runningFuture = _getToken();

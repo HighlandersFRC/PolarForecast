@@ -5,6 +5,7 @@ import 'package:scouting_app/models/group.dart';
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
+import 'models/alliance_request.dart';
 import 'models/team_stats_2024.dart';
 import 'models/tournament.dart';
 
@@ -254,8 +255,7 @@ class ApiService {
     return json.decode(response.body);
   }
 
-  Future<Group> make_group(
-      String name, String? event, int? year) async {
+  Future<Group> make_group(String name, String? event, int? year) async {
     var token = await this.token;
     if (token == null) {
       throw Exception('no user token');
@@ -267,10 +267,8 @@ class ApiService {
 
     final response = await http.post(
       eventCode != null
-          ? Uri.parse(
-              '$APIURL/CreateGroup?group_name=$name&event=$eventCode')
-          : Uri.parse(
-              '$APIURL/CreateGroup?group_name=$name'),
+          ? Uri.parse('$APIURL/CreateGroup?group_name=$name&event=$eventCode')
+          : Uri.parse('$APIURL/CreateGroup?group_name=$name'),
       headers: {
         'token': token,
         'group_name': name,
@@ -403,5 +401,127 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception(json.decode(response.body)['detail']);
     }
+  }
+
+  Future<(Group, String)> add_group_to_event(
+      String group_name, String event) async {
+    final response = await http.post(
+      Uri.parse('$APIURL/Group/$group_name/Event/$event/Add'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
+  Future<List> get_event_groups(String event, int year) async {
+    final response =
+        await http.get(Uri.parse('$APIURL/$year/$event/Groups'), headers: {
+      'token': (await token) ?? '',
+    });
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    return json.decode(response.body);
+  }
+
+  Future<List<AllianceRequest>> request_alliance(
+      String group_name, String event_key, String other_group) async {
+    final response = await http.post(
+      Uri.parse(
+          '$APIURL/Group/$group_name/Event/$event_key/Alliance/Request/?other_group=$other_group'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<AllianceRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(AllianceRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<AllianceRequest>> get_alliance_requests(String group_name) async {
+    final response = await http
+        .get(Uri.parse('$APIURL/Group/$group_name/AllianceRequests'), headers: {
+      'token': (await token) ?? '',
+    });
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<AllianceRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(AllianceRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<AllianceRequest>> accept_alliance(
+      String group_name, String event, AllianceRequest request) async {
+    final response = await http.post(
+        Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Accept'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<AllianceRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(AllianceRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<AllianceRequest>> decline_alliance(
+      String group_name, String event, AllianceRequest request) async {
+    final response = await http.delete(
+        Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Decline'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<AllianceRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(AllianceRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<AllianceRequest>> delete_alliance_request(
+      String group_name, String event, AllianceRequest request) async {
+    final response = await http.delete(
+        Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Delete'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<AllianceRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(AllianceRequest.fromJson(request));
+    }
+    return retVal;
   }
 }

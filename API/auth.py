@@ -61,10 +61,6 @@ def get_user_info(token: str):
 
 def make_group(token: str, group_name: str, event: str | None):
     user_info = get_user_info(token)
-    current_groups = fetch_event_groups(event)
-    for group in current_groups:
-        if group["name"] == group_name:
-            raise HTTPException(400, "Group Name Already Exists")
     eventAttribute = [event] if event is not None else []
     payload = {
         "name": group_name,
@@ -86,9 +82,12 @@ def make_group(token: str, group_name: str, event: str | None):
         }
     ]
     payload["subGroups"] = subgroups
-    group_id = keycloak_admin.create_group(
-        payload=payload
-    )
+    try:
+        group_id = keycloak_admin.create_group(
+            payload=payload
+        )
+    except:
+        raise HTTPException(400, "This group name is already taken.")
     subIDs = [group_id]
     for subgroup in subgroups:
         subIDs.append(keycloak_admin.create_group(
@@ -116,16 +115,6 @@ def find_user_groups(user_id: str):
         user_id, query={
         }, brief_representation=False)
     return groups
-
-
-def fetch_event_groups(eventCode: str):
-    groups = keycloak_admin.get_groups(
-    )
-    returnGroups = []
-    for group in groups:
-        if group.__contains__("attributes") and group["attributes"]["event"][0] == eventCode:
-            returnGroups.append(group)
-    return returnGroups
 
 
 def fetch_group_members(group_id: str):

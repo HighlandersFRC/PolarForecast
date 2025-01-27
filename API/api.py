@@ -16,8 +16,9 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
-from models.group import Group, GroupEvent, GroupEventSettings, GroupSettings
-from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_event_groups, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
+from models.alliance_request import AllianceRequest
+from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
+from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
 import requests
@@ -27,8 +28,34 @@ logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
 YEAR = '2024'
+tags_metadata = [
+    {
+        "name": "stats",
+        "description": "All of the stats Get endpoints.",
+    },
+    {
+        "name": "scouting",
+        "description": "All of the scouting data Get and Post endpoints.",
+    },
+    {
+        "name": "users",
+        "description": "Manage users.",
+    },
+    {
+        "name": "groups",
+        "description": "Manage groups.",
+    },
+    {
+        "name": "alliances",
+        "description": "Manage alliances.",
+    },
+    {
+        "name": "miscellaneous",
+        "description": "Other endpoints.",
+    },
+]
 
-app = FastAPI()
+app = FastAPI(openapi_tags=tags_metadata)
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,6 +104,13 @@ FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
 GroupCollection = testDB["Groups"]
+GroupCollection.create_index([("name", pymongo.ASCENDING),], unique=True)
+AllianceRequestCollection = testDB["AllianceRequests"]
+AllianceRequestCollection.create_index([
+    ("group_1", pymongo.ASCENDING),
+    ("group_2", pymongo.ASCENDING),
+    ("event", pymongo.ASCENDING),
+], unique=True)
 redisClient = get_redis_client()
 
 
@@ -141,7 +175,7 @@ def flatten_dict(dd, separator="_", prefix=""):
     )
 
 
-@app.get("/{year}/{event}/{team}/stats")
+@app.get("/{year}/{event}/{team}/stats", tags=["stats"])
 @cacheValue()
 def get_event_Team_Stats(year: int, event: str, team: str):
     foundTeam = False
@@ -162,7 +196,7 @@ def get_event_Team_Stats(year: int, event: str, team: str):
     return doc
 
 
-@app.get("/{year}/{event}/{team}/matches")
+@app.get("/{year}/{event}/{team}/matches", tags=["stats"])
 @cacheValue()
 def get_Team_Event_Matches(year: int, event: str, team: str):
     cursor = TBACollection.find({"event_key": str(
@@ -176,7 +210,7 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
     return data
 
 
-@app.get("/{year}/{event}/stats")
+@app.get("/{year}/{event}/stats", tags=["stats"])
 @cacheValue()
 def get_Event_Stats(year: int, event: str):
     data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
@@ -188,7 +222,7 @@ def get_Event_Stats(year: int, event: str):
     return data
 
 
-@app.get("/events/{year}")
+@app.get("/events/{year}", tags=["miscellaneous"])
 @cacheValue()
 def get_Year_Events(year: int):
     events = ETagCollection.find({})
@@ -196,7 +230,7 @@ def get_Year_Events(year: int):
     return events
 
 
-@app.get("/search_keys")
+@app.get("/search_keys", tags=["miscellaneous"])
 @cacheValue()
 def get_Search_Keys():
     events = ETagCollection.find({})
@@ -213,7 +247,7 @@ def get_Search_Keys():
     return {"data": retval}
 
 
-@app.get("/{year}/{event}/predictions")
+@app.get("/{year}/{event}/predictions", tags=["stats"])
 @cacheValue()
 def get_Event_Predictions(year: int, event: str):
     try:
@@ -224,7 +258,7 @@ def get_Event_Predictions(year: int, event: str):
         return {"data": []}
 
 
-@app.get("/{year}/{event}/{match_key}/match_details")
+@app.get("/{year}/{event}/{match_key}/match_details", tags=["stats"])
 @cacheValue()
 def get_match_details(year: int, event: str, match_key: str):
     try:
@@ -258,7 +292,7 @@ def get_match_details(year: int, event: str, match_key: str):
         raise HTTPException(400, str(e))
 
 
-@app.get("/{year}/{event}/{team}/predictions")
+@app.get("/{year}/{event}/{team}/predictions", tags=["stats"])
 @cacheValue()
 def get_team_match_predictions(year: int, event: str, team: str):
     event_code = str(year) + event
@@ -271,13 +305,13 @@ def get_team_match_predictions(year: int, event: str, team: str):
     return {"data": matches}
 
 
-@app.get("/{year}/{event}/stat_description")
+@app.get("/{year}/{event}/stat_description", tags=["miscellaneous"])
 @cacheValue()
 def get_Stat_Descriptions():
     return stat_description
 
 
-@app.get("/{year}/{event}/{team}/PitScouting")
+@app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"])
 @cacheValue()
 def get_pit_scouting_data(year: int, event: str, team: str):
     try:
@@ -292,13 +326,13 @@ def get_pit_scouting_data(year: int, event: str, team: str):
         raise HTTPException(404, str(e))
 
 
-@app.get("/{year}/{event}/PitScoutingStatus")
+@app.get("/{year}/{event}/PitScoutingStatus", tags=["scouting"])
 def get_pit_scouting_status(year: int, event: str):
     data = PitStatusCollection.find_one({"event_code": str(year) + event})
     return data
 
 
-@app.post("/PitScouting/")
+@app.post("/PitScouting/", tags=["scouting"])
 def post_pit_scouting_data(data: dict, token: str = Depends(check_token_active)):
     user_info = get_user_info(token)
     data['scout_info'] = user_info
@@ -357,7 +391,7 @@ def getStatus(data: dict, originalStatus: dict):
 numRuns = 0
 
 
-@app.post("/MatchScouting/")
+@app.post("/MatchScouting/", tags=["scouting"])
 def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
     data["scout_info"] = get_user_info(token)
     logging.info(str(data))
@@ -409,8 +443,344 @@ def post_match_scouting(data: dict, token: str = Depends(check_token_active)):
     return data
 
 
-@app.post("/CreateGroup")
+@app.get("/Group/{group_name}/AllianceRequests", tags=["groups", "alliances"])
+def get_group_alliance_requests(group_name: str, token: str = Depends(check_token_active)):
+    if group_name == None:
+        raise HTTPException(400, "Please provide a group name")
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "The Group You Said You Are Part Of does not exist")
+    kc_groups = get_user_groups(token=token)
+    kc_group = {}
+    for kc in kc_groups:
+        if kc["id"] == DB_group.admin_group_id:
+            kc_group = kc
+            break
+    if kc_group == {}:
+        raise HTTPException(
+            403, "You are not an admin of this group")
+    requests = [AllianceRequest(
+        **request) for request in AllianceRequestCollection.find({"group_1": group_name})]
+    requests.extend([AllianceRequest(
+        **request) for request in AllianceRequestCollection.find({"group_2": group_name})])
+    return [request.dict() for request in requests]
+
+
+@app.post("/Group/{group_name}/Event/{event}/Alliance/Request", tags=["alliances"])
+def request_alliance(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None, other_group: str | None = None):
+    if group_name == None:
+        raise HTTPException(400, "Please provide a group name")
+    if event == None:
+        raise HTTPException(400, "Please provide an event")
+    if other_group == None:
+        raise HTTPException(400, "Please provide an other group name")
+    if token == None:
+        raise HTTPException(400, "Please provide a token")
+    if group_name == other_group:
+        raise HTTPException(
+            400, "You cannot request an alliance with yourself")
+    kc_groups = get_user_groups(token)
+    try:
+        group = Group(**GroupCollection.find_one({'name': group_name}))
+    except:
+        raise HTTPException(
+            404, "The Group You said you were part of is does not exist")
+    kc_admin_group = {}
+    for kc in kc_groups:
+        if group.admin_group_id == kc['id']:
+            kc_admin_group = kc
+            break
+    print(kc_groups)
+    if kc_admin_group == {}:
+        raise HTTPException(
+            401, "You must be an admin of this group to request an alliance")
+    events = group.events
+    m_event = None
+    for _event in events:
+        if _event.event_code == event:
+            m_event = _event
+            break
+    if m_event is None:
+        raise HTTPException(
+            400, f"Your Group is not part of event '{event}'")
+    try:
+        m_other_group = Group(
+            **GroupCollection.find_one({'name': other_group}))
+    except:
+        raise HTTPException(
+            404, "The Group you requested to alliance with does not exist")
+    events = m_other_group.events
+    m_event = None
+    for _event in events:
+        if _event.event_code == event:
+            m_event = _event
+            break
+    if m_event is None:
+        raise HTTPException(
+            400, f"The Group you requested to alliance with is not part of event '{event}'")
+    request = AllianceRequest(
+        group_1=group_name,
+        group_2=other_group,
+        group_1_affiliation=group.affiliation,
+        group_2_affiliation=m_other_group.affiliation,
+        event=event,
+        request_time=int(datetime.now().timestamp()),
+        accepted=False,
+    )
+    try:
+        AllianceRequestCollection.insert_one(request.dict())
+    except pymongo.errors.DuplicateKeyError as e:
+        raise HTTPException(400, "You have already requested for an alliance")
+    return get_group_alliance_requests(group_name=group_name, token=token)
+
+
+@app.post("/Group/{group_name}/Event/{event}/Alliance/Accept", tags=["alliances"])
+def accept_alliance(group_name: str | None = None, token: str = Depends(check_token_active), alliance_request: AllianceRequest | None = None):
+    if alliance_request is None:
+        raise HTTPException(400, "Please provide an alliance request")
+    if group_name == None:
+        raise HTTPException(400, "Please provide a group name")
+    if alliance_request.group_2 != group_name:
+        raise HTTPException(
+            400, "The group name you provided cannot accept the alliance request you provided")
+    if alliance_request.accepted:
+        raise HTTPException(
+            400, "This alliance request has already been accepted")
+    try:
+        DB_entry = AllianceRequest(
+            **AllianceRequestCollection.find_one(alliance_request.dict()))
+    except:
+        raise HTTPException(
+            404, "The alliance tried to accept was never requested")
+    kc_groups = get_user_groups(token)
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    kc_admin_group = {}
+    for kc in kc_groups:
+        if DB_group.admin_group_id == kc['id']:
+            kc_admin_group = kc
+            break
+    if kc_admin_group == {}:
+        raise HTTPException(
+            401, "You must be an admin of this group to accept an alliance")
+    DB_entry.accepted = True
+    try:
+        AllianceRequestCollection.find_one_and_update(
+            {"group_1": alliance_request.group_1, "group_2": alliance_request.group_2, "event": alliance_request.event}, {'$set': {"accepted": True}})
+    except Exception as e:
+        raise HTTPException(400, "Failed to accept the alliance request")
+    try:
+        DB_other_group = Group(
+            **GroupCollection.find_one({"name": alliance_request.group_1}))
+    except:
+        raise HTTPException(
+            404, "The Group you tried to alliance with was never created")
+    other_events = DB_other_group.events
+    for _other_event in other_events:
+        if _other_event.event_code == alliance_request.event:
+            _other_event.alliance_groups.append(
+                AllianceGroup(
+                    group_id=DB_group.admin_group_id,
+                    name=DB_group.name,
+                    affiliation=DB_group.affiliation,
+                )
+            )
+            break
+    GroupCollection.find_one_and_update(
+        {"name": alliance_request.group_1}, {'$set': {"events": [__other_event.dict() for __other_event in other_events]}})
+    events = DB_group.events
+    for _event in events:
+        if _event.event_code == alliance_request.event:
+            _event.alliance_groups.append(
+                AllianceGroup(
+                    group_id=DB_other_group.admin_group_id,
+                    name=DB_other_group.name,
+                    affiliation=DB_other_group.affiliation,
+                )
+            )
+            break
+    GroupCollection.find_one_and_update(
+        {"name": alliance_request.group_2}, {'$set': {"events": [__event.dict() for __event in events]}})
+    return get_group_alliance_requests(group_name=group_name, token=token)
+
+
+@app.delete("/Group/{group_name}/Event/{event}/Alliance/{other_group}/Leave", tags=["alliances"])
+def leave_alliance(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None, other_group: str | None = None):
+    if group_name == None or event == None or other_group == None:
+        raise HTTPException(
+            400, "Please provide a group name, event code, and other group name")
+    if group_name == other_group:
+        raise HTTPException(
+            400, "You cannot leave an alliance with yourself")
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    if event not in [event.event_code for event in DB_Entry.events]:
+        raise HTTPException(
+            400, f"This group does not have an event with the code '{event}'")
+    for _event in DB_Entry.events:
+        if _event.event_code == event:
+            m_event = _event
+            break
+    if other_group not in [allianceGroup.name for allianceGroup in m_event.alliance_groups]:
+        raise HTTPException(
+            400, f"This group does not have an alliance with the group '{other_group}'")
+    try:
+        DB_other_group = Group(
+            **GroupCollection.find_one({"name": other_group}))
+    except:
+        raise HTTPException(
+            404, "The Group you tried to leave an alliance with was never created")
+    kc_events = get_user_groups(token)
+    kc_group = {}
+    for kc in kc_events:
+        if kc['id'] == DB_Entry.admin_group_id:
+            kc_group = kc
+            break
+    if kc_group == {}:
+        raise HTTPException(
+            401, "You must be an admin of this group to leave an alliance")
+    for _event in DB_Entry.events:
+        if _event.event_code == event:
+            for allianceGroup in _event.alliance_groups:
+                if allianceGroup.name == other_group:
+                    _event.alliance_groups.remove(allianceGroup)
+                    break
+            break
+    GroupCollection.find_one_and_update(
+        {"name": group_name}, {'$set': {"events": [__event.dict() for __event in DB_Entry.events]}})
+    for _event in DB_other_group.events:
+        if _event.event_code == event:
+            for allianceGroup in _event.alliance_groups:
+                if allianceGroup.name == group_name:
+                    _event.alliance_groups.remove(allianceGroup)
+                    break
+            break
+    GroupCollection.find_one_and_update(
+        {"name": other_group}, {'$set': {"events": [__event.dict() for __event in DB_other_group.events]}})
+    eventAlliances = [AllianceRequest(request) for request in AllianceRequestCollection.find(
+        {"event": event, "accepted": True})]
+    for alliance in eventAlliances:
+        if alliance.group_1 == other_group or alliance.group_2 == other_group:
+            if alliance.group_1 == group_name or alliance.group_2 == group_name:
+                AllianceRequestCollection.find_one_and_delete(alliance.dict())
+    return get_group(group_name=group_name, token=token)
+
+
+@app.delete("/Group/{group_name}/Event/{event}/Alliance/Decline", tags=["alliances"])
+def decline_alliance(group_name: str | None = None, event: str | None = None, token: str = Depends(check_token_active), alliance_request: AllianceRequest | None = None):
+    if alliance_request == None:
+        raise HTTPException(
+            400, "Please provide an alliance request")
+    if group_name == None:
+        raise HTTPException(
+            400, "Please provide a group name")
+    if event == None:
+        raise HTTPException(
+            400, "Please provide an event code")
+    if group_name != alliance_request.group_2:
+        raise HTTPException(
+            400, "Your group cannot decline this alliance request")
+    if group_name == alliance_request.group_1:
+        raise HTTPException(
+            400, "You cannot decline this alliance with yourself")
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    try:
+        DB_request = AllianceRequestCollection.find_one(
+            alliance_request.dict())
+    except:
+        raise HTTPException(
+            404, "This alliance request does not exist")
+    kc_groups = get_user_groups(token)
+    kc_group = {}
+    for kc in kc_groups:
+        if kc['id'] == DB_Entry.admin_group_id:
+            kc_group = kc
+            break
+    if kc_group == {}:
+        raise HTTPException(
+            401, "You must be an admin of this group to decline an alliance")
+    AllianceRequestCollection.find_one_and_delete(alliance_request.dict())
+    return get_group_alliance_requests(group_name=group_name, token=token)
+
+
+@app.delete("/Group/{group_name}/Event/{event}/Alliance/Delete", tags=["alliances"])
+def remove_alliance(group_name: str, event: str, token: str = Depends(check_token_active), alliance_request: AllianceRequest | None = None):
+    if alliance_request == None:
+        raise HTTPException(
+            400, "Please provide an alliance request")
+    if group_name == None:
+        raise HTTPException(
+            400, "Please provide a group name")
+    if event == None:
+        raise HTTPException(
+            400, "Please provide an event code")
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    kc_groups = get_user_groups(token)
+    kc_admin_group = {}
+    for kc in kc_groups:
+        if kc['id'] == DB_Entry.admin_group_id:
+            kc_admin_group = kc
+            break
+    if kc_admin_group == {}:
+        raise HTTPException(
+            401, "You must be an admin to delete an alliance request")
+    if (alliance_request.group_1 != DB_Entry.name):
+        raise HTTPException(
+            401, f"You are not part of the group which issued this request")
+    try:
+        AllianceRequestCollection.find_one_and_delete(alliance_request.dict())
+    except:
+        raise HTTPException(
+            400, "Failed to delete this request")
+    return get_group_alliance_requests(group_name=group_name, token=token)
+
+
+@app.post("/Group/{group_name}/Event/{event}/Add", tags=["groups"])
+def add_event_to_group(group_name: str, event: str, token: str = Depends(check_token_active)):
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    if event in [event.event_code for event in DB_Entry.events]:
+        raise HTTPException(
+            400, f"This group already has an event with the code '{event}'")
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_Entry.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            401, "You must be an admin of this group to add events")
+    new_event = GroupEvent(event_code=event, settings=GroupEventSettings(
+        crowd_sourced_match_scouting=False, crowd_sourced_pit_scouting=False), alliance_groups=[])
+    DB_Entry.events.append(new_event)
+    GroupCollection.find_one_and_update(
+        {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+    return get_group(group_name=group_name, token=token)
+
+
+@app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
+    # TODO Force at max 1 group
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
     if (token is not None):
@@ -444,18 +814,19 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
         except KeyError:
             raise HTTPException(
                 422, "Your User is Not Affiliated with a team. Contact the developers for help.")
-
         GroupCollection.insert_one(DBEntry.dict())
         return DBEntry
 
 
-@app.get("/{year}/{event}/Groups")
+@app.get("/{year}/{event}/Groups", tags=["groups"])
 def get_event_groups(year: int, event: str, token: str = Depends(check_token_active)):
     eventCode = f"{year}{event}"
-    fetch_event_groups(eventCode)
+    eventGroups = GroupCollection.find(
+        {"events.event_code": eventCode})
+    return [Group(**group).dict(exclude={"join_code", "settings", "events", "owner_group_id", "admin_group_id", "member_group_id", "group_id"}) for group in eventGroups]
 
 
-@app.get("/Group/{group_name}")
+@app.get("/Group/{group_name}", tags=["groups"])
 def get_group(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -495,8 +866,9 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
         400, f"You somehow broke Polar Forecast's '{group_name}' Group")
 
 
-@app.post("/Group/{group_name}/Join")
+@app.post("/Group/{group_name}/Join", tags=["groups"])
 def join_group(group_name: str, join_code: str, token: str = Depends(check_token_active)):
+    # TODO Check if they are already in a group
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
@@ -527,7 +899,7 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
     return get_group(group_name=group_name, token=token)
 
 
-@app.get("/Group/{group_name}/Members")
+@app.get("/Group/{group_name}/Members", tags=["groups"])
 def get_group_members(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -577,7 +949,7 @@ def get_group_members(group_name: str, token: str = Depends(check_token_active))
     }
 
 
-@app.put("/Group/{group_name}/Members/Demote")
+@app.put("/Group/{group_name}/Members/Demote", tags=["groups"])
 def demote_group_member(group_name: str, demote_id: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -607,7 +979,7 @@ def demote_group_member(group_name: str, demote_id: str, token: str = Depends(ch
     return get_group_members(group_name=group_name, token=token)
 
 
-@app.delete('/Group/{group_name}/Members/Kick')
+@app.delete('/Group/{group_name}/Members/Kick', tags=["groups"])
 def kick_group_member(group_name: str, kick_id: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -638,7 +1010,7 @@ def kick_group_member(group_name: str, kick_id: str, token: str = Depends(check_
     return get_group_members(group_name=DBgroup.name, token=token)
 
 
-@app.put("/Group/{group_name}/Members/PromoteMember")
+@app.put("/Group/{group_name}/Members/PromoteMember", tags=["groups"])
 def promote_group_member(group_name: str, promote_id: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -668,7 +1040,7 @@ def promote_group_member(group_name: str, promote_id: str, token: str = Depends(
     return get_group_members(group_name=group_name, token=token)
 
 
-@app.put("/Group/{group_name}/Members/PromoteAdmin")
+@app.put("/Group/{group_name}/Members/PromoteAdmin", tags=["groups"])
 def promote_group_admin(group_name: str, promote_id: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -700,7 +1072,7 @@ def promote_group_admin(group_name: str, promote_id: str, token: str = Depends(c
     return get_group_members(group_name=group_name, token=token)
 
 
-@app.delete("/Group/{group_name}/Leave")
+@app.delete("/Group/{group_name}/Leave", tags=["groups"])
 def leave_group(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -738,7 +1110,7 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
     return {"message": "User successfully left the group"}
 
 
-@app.delete("/Group/{group_name}/Delete")
+@app.delete("/Group/{group_name}/Delete", tags=["groups"])
 def delete_group(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
@@ -753,12 +1125,13 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
     if KCgroup == {}:
         raise HTTPException(
             403, f"You are not an owner of group '{group_name}'")
+    # TODO: leave any alliances the group was part of
     GroupCollection.delete_one({"name": group_name})
     delete_group_kc(group_id=DBgroup.group_id)
     return {"message": "Group successfully deleted"}
 
 
-@app.put("/MatchScouting/")
+@app.put("/MatchScouting/", tags=["scouting"])
 def update_match_scouting(data: dict):
     eventCode = data["event_code"]
     matchNumber = data["match_number"]
@@ -822,7 +1195,7 @@ def get_pictures(team: str, event: str, year: int):
         raise HTTPException(status_code=404, detail="Pictures not found")
 
 
-@app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse)
+@app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse, tags=["scouting"])
 async def get_pit_scouting_pictures(team: str, event: str, year: int):
     pictures = get_pictures(year=year, event=event, team=team)
     if not pictures:
@@ -843,7 +1216,7 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int):
     return image_data
 
 
-@app.get("/{year}/{event}/getPictures")
+@app.get("/{year}/{event}/getPictures", tags=["scouting"])
 @cacheValue()
 async def get_event_pictures(year: str, event: str):
     eventCode = str(year) + event
@@ -868,7 +1241,7 @@ async def get_event_pictures(year: str, event: str):
     return image_data
 
 
-@app.post("/{year}/{event}/{team}/pictures/")
+@app.post("/{year}/{event}/{team}/pictures/", tags=["scouting"])
 def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int, token: str = Depends(check_token_active)):
     status = PitStatusCollection.find_one({"event_code": str(year)+event})
     picStatus = "Done"
@@ -902,7 +1275,7 @@ class ID(BaseModel):
     id: str
 
 
-@app.delete("/{year}/{event}/{team}/{password}/DeletePictures/")
+@app.delete("/{year}/{event}/{team}/{password}/DeletePictures/", tags=["scouting"])
 def delete_pit_scouting_pictures(objectid: ID, team: str, event: str, year: int, password: str):
     if password == EDIT_PASSWORD:
         delete_result = PictureCollection.delete_many(
@@ -923,14 +1296,14 @@ def delete_pit_scouting_pictures(objectid: ID, team: str, event: str, year: int,
         raise HTTPException(400, "Incorrect Password")
 
 
-@app.get("/{year}/{event}/pitStatus")
+@app.get("/{year}/{event}/pitStatus", tags=["scouting"])
 def get_pit_status(year: int, event: str):
     retval = PitStatusCollection.find_one({"event_code": str(year)+event})
     retval.pop("_id")
     return retval
 
 
-@app.get("/{year}/{event}/{team}/ScoutEntries")
+@app.get("/{year}/{event}/{team}/ScoutEntries", tags=["scouting"])
 @cacheValue()
 def get_scout_team_entries(team: str, event: str, year: int):
     retval = list(ScoutingData2024Collection.find(
@@ -940,7 +1313,7 @@ def get_scout_team_entries(team: str, event: str, year: int):
     return retval
 
 
-@app.get("/{year}/{event}/ScoutEntries")
+@app.get("/{year}/{event}/ScoutEntries", tags=["scouting"])
 @cacheValue()
 def get_scout_event_entries(event: str, year: int):
     retval = list(ScoutingData2024Collection.find(
@@ -950,7 +1323,7 @@ def get_scout_event_entries(event: str, year: int):
     return retval
 
 
-@app.get("/{year}/{event}/ScoutingData")
+@app.get("/{year}/{event}/ScoutingData", tags=["scouting"])
 @cacheValue()
 def get_event_autos(year: int, event: str):
     autos = list(ScoutingData2024Collection.find(
@@ -960,7 +1333,7 @@ def get_event_autos(year: int, event: str):
     return autos
 
 
-@app.post("/{year}/{event}/{team}/FollowUp")
+@app.post("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
 def post_team_follow_up(data: list, year: int, event: str, team: str):
     if not len(data) == 0:
         for idx, death in enumerate(data):
@@ -1012,7 +1385,7 @@ def post_team_follow_up(data: list, year: int, event: str, team: str):
         raise HTTPException(400, "No Deaths Reported")
 
 
-@app.get("/{year}/{event}/{team}/FollowUp")
+@app.get("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
 def get_team_follow_up(team: str, event: str, year: int):
     data = FollowUpCollection.find_one(
         {"event_code": str(year)+event, "team_key": team})
@@ -1053,7 +1426,7 @@ def get_team_follow_up(team: str, event: str, year: int):
             return {"event_code": str(year)+event, "team_key": team, "team_number": team[3:], "deaths": deaths, "average": 0, "total": 0}
 
 
-@app.get('/user_groups')
+@app.get('/user_groups', tags=["users"])
 def get_user_groups(token: str = Depends(check_token_active)):
     user_data = get_user_info(token)
     userID = user_data["sub"]
@@ -1324,7 +1697,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
     return sorted_list
 
 
-@app.put("/{password}/Deactivate")
+@app.put("/{password}/Deactivate", tags=["scouting"])
 def deactivate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = False
@@ -1339,7 +1712,7 @@ def deactivate_match_data(data: dict, password: str):
         raise HTTPException(400, "Incorrect Password")
 
 
-@app.put("/{password}/Activate")
+@app.put("/{password}/Activate", tags=["scouting"])
 def activate_match_data(data: dict, password: str):
     if password == EDIT_PASSWORD:
         data["active"] = True
@@ -1354,7 +1727,7 @@ def activate_match_data(data: dict, password: str):
         raise HTTPException(400, "Incorrect Password")
 
 
-@app.get("/")
+@app.get("/", tags=["miscellaneous"])
 def read_root():
     return {"polar": "forecast"}
 
