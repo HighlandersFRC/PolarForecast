@@ -508,7 +508,8 @@ class ApiService {
   Future<List<AllianceRequest>> delete_alliance_request(
       String group_name, String event, AllianceRequest request) async {
     final response = await http.delete(
-        Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Delete'),
+        Uri.parse(
+            '$APIURL/Group/$group_name/Event/$event/Alliance/DeleteRequest'),
         headers: {
           'token': (await token) ?? '',
           'Content-Type': 'application/json',
@@ -523,5 +524,20 @@ class ApiService {
       retVal.add(AllianceRequest.fromJson(request));
     }
     return retVal;
+  }
+
+  Future<(Group, String)> leave_alliance(
+      String group_name, String event, String other_group) async {
+    final response = await http.delete(
+        Uri.parse(
+            '$APIURL/Group/$group_name/Event/$event/Alliance/Leave?other_group=$other_group'),
+        headers: {
+          'token': (await token) ?? '',
+        });
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
   }
 }

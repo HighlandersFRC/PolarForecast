@@ -23,7 +23,7 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   int _currentTab = 0;
   String? token;
-  String? membership;
+  String? membershipData;
   Group? groupData;
   String? join_link;
   bool loading = true;
@@ -34,6 +34,15 @@ class _GroupPageState extends State<GroupPage> {
     if (mounted) {
       setState(() {
         groupData = _group;
+      });
+    }
+  }
+
+  set membership(String? _membership) {
+    this.membershipData = _membership;
+    if (mounted) {
+      setState(() {
+        membershipData = _membership;
       });
     }
   }
@@ -132,17 +141,17 @@ class _GroupPageState extends State<GroupPage> {
       _EventsTab(
         this,
         group: groupData,
-        membership: membership,
+        membership: membershipData,
       ),
       _MembersTab(
         this,
         group: groupData,
-        membership: membership,
+        membership: membershipData,
       ),
       _SettingsTab(
         this,
         group: groupData,
-        membership: membership,
+        membership: membershipData,
       )
     ];
     return Scaffold(
@@ -352,17 +361,18 @@ class _EventsTabState extends State<_EventsTab> {
         dividerColor: Colors.transparent,
         children: widget.group?.events.length == 0
             ? []
-            : List.generate(widget.group!.events.length, (int index) {
+            : List.generate(widget.group!.events.length, (int event_index) {
                 final event_requests = requests.where((request) {
                   return request.event ==
-                      widget.group!.events[index].event_code;
+                      widget.group!.events[event_index].event_code;
                 }).toList();
                 return ExpansionPanelRadio(
                     canTapOnHeader: false,
-                    value: index,
+                    value: event_index,
                     headerBuilder: (context, isExpanded) => Card(
                           child: ListTile(
-                            title: Text(widget.group!.events[index].event_code,
+                            title: Text(
+                                widget.group!.events[event_index].event_code,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                     fontSize: 30, color: Colors.white)),
@@ -408,7 +418,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                   final year = int.parse(widget
                                                                       .group!
                                                                       .events[
-                                                                          index]
+                                                                          event_index]
                                                                       .event_code
                                                                       .substring(
                                                                           0,
@@ -416,7 +426,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                   final code = widget
                                                                       .group!
                                                                       .events[
-                                                                          index]
+                                                                          event_index]
                                                                       .event_code
                                                                       .substring(
                                                                           4);
@@ -440,7 +450,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                         } catch (e) {
                                                                           return AlertDialog(
                                                                             title:
-                                                                                Text('Groups at ${widget.group!.events[index].event_code}'),
+                                                                                Text('Groups at ${widget.group!.events[event_index].event_code}'),
                                                                             content:
                                                                                 CircularProgressIndicator(
                                                                               color: Colors.blue,
@@ -461,18 +471,18 @@ class _EventsTabState extends State<_EventsTab> {
                                                                         }
                                                                         return AlertDialog(
                                                                           title:
-                                                                              Text('Groups at ${widget.group!.events[index].event_code}'),
+                                                                              Text('Groups at ${widget.group!.events[event_index].event_code}'),
                                                                           content:
                                                                               SingleChildScrollView(
                                                                             child:
                                                                                 Column(
                                                                               children: [
-                                                                                if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[index].event_code}'),
+                                                                                if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}'),
                                                                                 ...List.generate(groups.length, (int group_index) {
                                                                                   return ListTile(
                                                                                       title: Text(groups[group_index]['name']),
                                                                                       onTap: () {
-                                                                                        apiService.request_alliance(widget.group!.name, widget.group!.events[index].event_code, groups[group_index]['name']).then((_requests) {
+                                                                                        apiService.request_alliance(widget.group!.name, widget.group!.events[event_index].event_code, groups[group_index]['name']).then((_requests) {
                                                                                           setState(() {
                                                                                             this.requests = _requests;
                                                                                           });
@@ -496,14 +506,16 @@ class _EventsTabState extends State<_EventsTab> {
                                                         SizedBox(height: 10),
                                                         if (widget
                                                                 .group!
-                                                                .events[index]
+                                                                .events[
+                                                                    event_index]
                                                                 .alliance_groups
                                                                 .length ==
                                                             0)
                                                           Text('No Alliances'),
                                                         if (widget
                                                                 .group!
-                                                                .events[index]
+                                                                .events[
+                                                                    event_index]
                                                                 .alliance_groups
                                                                 .length !=
                                                             0)
@@ -513,34 +525,52 @@ class _EventsTabState extends State<_EventsTab> {
                                                                       widget
                                                                           .group!
                                                                           .events[
-                                                                              index]
+                                                                              event_index]
                                                                           .alliance_groups
                                                                           .length,
                                                                       (int
                                                                           alliance_index) {
                                                             return ExpansionPanelRadio(
+                                                                canTapOnHeader:
+                                                                    true,
                                                                 value:
                                                                     alliance_index,
                                                                 headerBuilder: (context, expanded) => ListTile(
                                                                     title: Text(widget
                                                                         .group!
                                                                         .events[
-                                                                            index]
+                                                                            event_index]
                                                                         .alliance_groups[
                                                                             alliance_index]
                                                                         .name)),
                                                                 body: Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
                                                                   children: [
                                                                     ElevatedButton(
+                                                                        style: ButtonStyle(
+                                                                            foregroundColor: WidgetStatePropertyAll(Colors
+                                                                                .white),
+                                                                            backgroundColor: WidgetStatePropertyAll(Colors
+                                                                                .red)),
                                                                         onPressed:
-                                                                            () {},
+                                                                            () {
+                                                                          apiService
+                                                                              .leave_alliance(widget.group!.name, widget.group!.events[event_index].event_code, widget.group!.events[event_index].alliance_groups[alliance_index].name)
+                                                                              .then((val) {
+                                                                            var (
+                                                                              group,
+                                                                              membership
+                                                                            ) = val;
+                                                                            setState(() {
+                                                                              widget.widget.membership = membership;
+                                                                              widget.widget.group = group;
+                                                                            });
+                                                                          });
+                                                                        },
                                                                         child: Text(
                                                                             'Leave')),
-                                                                    ElevatedButton(
-                                                                        onPressed:
-                                                                            () {},
-                                                                        child: Text(
-                                                                            'Create')),
                                                                   ],
                                                                 ));
                                                           }))
@@ -608,7 +638,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                         IconButton(
                                                                             onPressed:
                                                                                 () {
-                                                                              apiService.delete_alliance_request(widget.group!.name, widget.group!.events[index].event_code, request).then((_requests) {
+                                                                              apiService.delete_alliance_request(widget.group!.name, widget.group!.events[event_index].event_code, request).then((_requests) {
                                                                                 setState(() {
                                                                                   this.requests = _requests;
                                                                                 });
@@ -638,9 +668,19 @@ class _EventsTabState extends State<_EventsTab> {
                                                                       IconButton(
                                                                           onPressed:
                                                                               () {
-                                                                            apiService.accept_alliance(widget.group!.name, widget.group!.events[index].event_code, request).then((_requests) {
+                                                                            apiService.accept_alliance(widget.group!.name, widget.group!.events[event_index].event_code, request).then((_requests) {
                                                                               setState(() {
                                                                                 this.requests = _requests;
+                                                                              });
+                                                                              apiService.get_group(widget.group!.name).then((val) {
+                                                                                setState(() {
+                                                                                  var (
+                                                                                    group,
+                                                                                    membership
+                                                                                  ) = val;
+                                                                                  widget.widget.group = group;
+                                                                                  widget.widget.membership = membership;
+                                                                                });
                                                                               });
                                                                             });
                                                                           },
@@ -650,7 +690,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                       IconButton(
                                                                           onPressed:
                                                                               () {
-                                                                            apiService.decline_alliance(widget.group!.name, widget.group!.events[index].event_code, request).then((_requests) {
+                                                                            apiService.decline_alliance(widget.group!.name, widget.group!.events[event_index].event_code, request).then((_requests) {
                                                                               setState(() {
                                                                                 this.requests = _requests;
                                                                               });

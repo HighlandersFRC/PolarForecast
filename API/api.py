@@ -492,7 +492,6 @@ def request_alliance(group_name: str | None = None, token: str = Depends(check_t
         if group.admin_group_id == kc['id']:
             kc_admin_group = kc
             break
-    print(kc_groups)
     if kc_admin_group == {}:
         raise HTTPException(
             401, "You must be an admin of this group to request an alliance")
@@ -529,6 +528,11 @@ def request_alliance(group_name: str | None = None, token: str = Depends(check_t
         request_time=int(datetime.now().timestamp()),
         accepted=False,
     )
+    duplicates = AllianceRequestCollection.find(
+        {'group_1': request.group_2, 'group_2': request.group_1})
+    if len(list(duplicates)) > 0:
+        raise HTTPException(
+            400, "There is already a request pending between these groups")
     try:
         AllianceRequestCollection.insert_one(request.dict())
     except pymongo.errors.DuplicateKeyError as e:
@@ -609,7 +613,7 @@ def accept_alliance(group_name: str | None = None, token: str = Depends(check_to
     return get_group_alliance_requests(group_name=group_name, token=token)
 
 
-@app.delete("/Group/{group_name}/Event/{event}/Alliance/{other_group}/Leave", tags=["alliances"])
+@app.delete("/Group/{group_name}/Event/{event}/Alliance/Leave", tags=["alliances"])
 def leave_alliance(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None, other_group: str | None = None):
     if group_name == None or event == None or other_group == None:
         raise HTTPException(
@@ -665,7 +669,7 @@ def leave_alliance(group_name: str | None = None, token: str = Depends(check_tok
             break
     GroupCollection.find_one_and_update(
         {"name": other_group}, {'$set': {"events": [__event.dict() for __event in DB_other_group.events]}})
-    eventAlliances = [AllianceRequest(request) for request in AllianceRequestCollection.find(
+    eventAlliances = [AllianceRequest(**request) for request in AllianceRequestCollection.find(
         {"event": event, "accepted": True})]
     for alliance in eventAlliances:
         if alliance.group_1 == other_group or alliance.group_2 == other_group:
@@ -715,7 +719,7 @@ def decline_alliance(group_name: str | None = None, event: str | None = None, to
     return get_group_alliance_requests(group_name=group_name, token=token)
 
 
-@app.delete("/Group/{group_name}/Event/{event}/Alliance/Delete", tags=["alliances"])
+@app.delete("/Group/{group_name}/Event/{event}/Alliance/DeleteRequest", tags=["alliances"])
 def remove_alliance(group_name: str, event: str, token: str = Depends(check_token_active), alliance_request: AllianceRequest | None = None):
     if alliance_request == None:
         raise HTTPException(
