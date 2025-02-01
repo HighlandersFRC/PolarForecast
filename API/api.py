@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pymongo
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
+from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
@@ -111,6 +112,12 @@ AllianceRequestCollection.create_index([
     ("group_2", pymongo.ASCENDING),
     ("event", pymongo.ASCENDING),
 ], unique=True)
+GroupJoinRequestCollection = testDB["JoinRequests"]
+GroupJoinRequestCollection.create_index([
+    ("group_id", pymongo.ASCENDING),
+    ("user_id", pymongo.ASCENDING),
+], unique=True)
+
 redisClient = get_redis_client()
 
 
@@ -858,7 +865,7 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
     if retval != {}:
         # Get either the current cached join code or create a new one
         if retval['group_role'] == 'owner' or retval['group_role'] == 'admin':
-            @cacheValue(seconds=30*60)
+            @cacheValue(seconds=60*60*24*7)  # One Week
             def join_code(group_name):
                 new_code = create_join_code()
                 GroupCollection.find_one_and_update(
@@ -885,7 +892,6 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
     except KeyError as e:
         raise HTTPException(
             422, "You either are not affiliated with a team or the group is not affiliated with a team")
-
     groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
@@ -893,14 +899,133 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
             KCgroup = group
             break
     if KCgroup != {}:
-        return get_group(group_name=group_name, token=token)
+        return get_user_join_requests(token=token)
+    if len(groups) > 0:
+        raise HTTPException(
+            400, "You already have a group")
     if DBgroup.join_code != join_code:
         raise HTTPException(401, "Incorrect Join Code")
     # Add user to group
-    add_user_to_group(user_id=user_info['sub'], group_id=DBgroup.group_id)
-    add_user_to_group(user_id=user_info['sub'],
-                      group_id=DBgroup.member_group_id)
-    return get_group(group_name=group_name, token=token)
+    newRequest = GroupJoinRequest(
+        group_name=group_name,
+        user_id=user_info['sub'],
+        username=user_info['preferred_username'],
+        request_time=datetime.now().timestamp(),
+        group_id=DBgroup.group_id,
+        accepted=False,
+    )
+    try:
+        GroupJoinRequestCollection.insert_one(newRequest.dict())
+    except Exception as e:
+        raise HTTPException(
+            400, f"You have already sent a join request")
+    return get_user_join_requests(token=token)
+
+
+@app.get("/Group/{group_name}/JoinRequests", tags=["groups"], response_model=list[GroupJoinRequest])
+def get_group_join_requests(group_name: str | None = None, token: str = Depends(check_token_active)):
+    if group_name == None:
+        raise HTTPException(400, "Please provide a group name")
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token)
+    admin_group = {}
+    for group in kc_groups:
+        if group['id'] == DB_group.admin_group_id:
+            admin_group = group
+            break
+    if admin_group == {}:
+        raise HTTPException(
+            401, f"You are not an admin of group '{group_name}'")
+    requests = [GroupJoinRequest(
+        **request) for request in GroupJoinRequestCollection.find({"group_id": DB_group.group_id})]
+    return requests
+
+
+@app.post("/Group/{group_name}/JoinRequests/Accept", tags=["groups"], response_model=list[GroupJoinRequest])
+def accept_join_request(group_name: str | None = None, request: GroupJoinRequest | None = None, token: str = Depends(check_token_active)):
+    if group_name == None or request == None:
+        raise HTTPException(
+            400, "Please provide a group name and a join request")
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token)
+    admin_group = {}
+    for group in kc_groups:
+        if group['id'] == DB_group.admin_group_id:
+            admin_group = group
+            break
+    if admin_group == {}:
+        raise HTTPException(
+            401, f"You are not an admin of group '{group_name}'")
+    try:
+        DB_request = GroupJoinRequest(
+            **GroupJoinRequestCollection.find_one(request.dict()))
+    except Exception as e:
+        raise HTTPException(404, f"Join Request Not Found: {str(e)}")
+    if DB_request.accepted:
+        raise HTTPException(
+            400, f"Join Request has already been accepted")
+    GroupJoinRequestCollection.delete_many({"user_id": request.user_id})
+    request.accepted = True
+    GroupJoinRequestCollection.insert_one(request.dict())
+    add_user_to_group(user_id=request.user_id, group_id=request.group_id)
+    add_user_to_group(user_id=request.user_id,
+                      group_id=DB_group.member_group_id)
+    return get_group_join_requests(group_name, token)
+
+
+@app.delete("/Group/{group_name}/JoinRequests/Decline", tags=["groups"], response_model=list[GroupJoinRequest])
+def decline_join_request(group_name: str | None = None, request: GroupJoinRequest | None = None, token: str = Depends(check_token_active)):
+    if group_name == None or request == None:
+        raise HTTPException(
+            400, "Please provide a group name and a join request")
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token)
+    admin_group = {}
+    for group in kc_groups:
+        if group['id'] == DB_group.admin_group_id:
+            admin_group = group
+            break
+    if admin_group == {}:
+        raise HTTPException(
+            401, f"You are not an admin of group '{group_name}'")
+    try:
+        DB_request = GroupJoinRequest(
+            **GroupJoinRequestCollection.find_one(request.dict()))
+    except Exception as e:
+        raise HTTPException(404, f"Join Request Not Found: {str(e)}")
+    if DB_request.accepted:
+        raise HTTPException(
+            400, f"Join Request has already been accepted")
+    GroupJoinRequestCollection.delete_one(request.dict())
+    return get_group_join_requests(group_name, token)
+
+
+@app.delete("/Group/{group_name}/DeleteJoinRequest", tags=["groups"], response_model=list[GroupJoinRequest])
+def delete_group_join_request(group_name: str | None = None, token: str = Depends(check_token_active)):
+    if group_name is None:
+        raise HTTPException(
+            400, "Please provide a group name")
+    user_info = get_user_info(token)
+    try:
+        DB_request = GroupJoinRequest(
+            **GroupJoinRequestCollection.find_one({"user_id": user_info["sub"], "group_name": group_name}))
+    except Exception as e:
+        raise HTTPException(404, f"Join Request Not Found")
+    if (DB_request.accepted):
+        raise HTTPException(
+            400, 'You cannot delete a request which has been accepted')
+    GroupJoinRequestCollection.delete_one(
+        DB_request.dict())
+    return get_user_join_requests(token=token)
 
 
 @app.get("/Group/{group_name}/Members", tags=["groups"])
@@ -1009,6 +1134,8 @@ def kick_group_member(group_name: str, kick_id: str, token: str = Depends(check_
     if KCgroup == {}:
         raise HTTPException(
             403, f"The user you tried to kick is not a member '{group_name}'")
+    GroupJoinRequestCollection.delete_one(
+        {"user_id": kick_id, "group_name": group_name})
     remove_user_from_group(user_id=kick_id, group_id=DBgroup.member_group_id)
     remove_user_from_group(user_id=kick_id, group_id=DBgroup.group_id)
     return get_group_members(group_name=DBgroup.name, token=token)
@@ -1430,11 +1557,20 @@ def get_team_follow_up(team: str, event: str, year: int):
             return {"event_code": str(year)+event, "team_key": team, "team_number": team[3:], "deaths": deaths, "average": 0, "total": 0}
 
 
-@app.get('/user_groups', tags=["users"])
+@app.get('/User/Groups', tags=["users"])
 def get_user_groups(token: str = Depends(check_token_active)):
     user_data = get_user_info(token)
     userID = user_data["sub"]
     return find_user_groups(user_id=userID)
+
+
+@app.get('/User/GroupJoinRequests', tags=["users"], response_model=list[GroupJoinRequest])
+def get_user_join_requests(token: str = Depends(check_token_active)):
+    user_data = get_user_info(token)
+    userID = user_data["sub"]
+    requests = [GroupJoinRequest(
+        **request).dict() for request in GroupJoinRequestCollection.find({"user_id": userID})]
+    return requests
 
 
 def convertData(calculatedData, year, event_code):

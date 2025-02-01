@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/group_join_request.dart';
 import '../models/tournament.dart';
 import '../api_service.dart';
 import '../utils.dart';
@@ -117,6 +118,20 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                     ),
                     onTap: () {
                       _openGroupsPopup(context);
+                    },
+                  ),
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Group Join Requests',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openJoinRequestsPopup(context);
                     },
                   ),
                 if (token != null)
@@ -316,6 +331,20 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       width: 200,
                       padding: EdgeInsets.all(16),
                       child: Text(
+                        'Group Join Requests',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      _openJoinRequestsPopup(context);
+                    },
+                  ),
+                if (token != null)
+                  PopupMenuItem(
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
                         'Logout',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -403,85 +432,149 @@ _openGroupsPopup(BuildContext context) async {
     builder: (context) {
       return Dialog(
         // Use Dialog instead of Card for a better look
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Ensures it takes minimal height
-            children: [
-              Text(
-                'Your Group',
-                style: TextStyle(color: Colors.white, fontSize: 30),
-              ),
-              groups.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text('You are not part of any group',
-                          style: TextStyle(color: Colors.white)),
-                    )
-                  : SizedBox(
-                      child: Column(
-                          children: List.generate(
-                        groups.length,
-                        (index) {
-                          return ListTile(
-                            onTap: () {
-                              Navigator.of(context)
-                                  .pushNamed('/group/${groups[index]['name']}');
-                            },
-                            title: Text(groups[index]['name']),
-                          );
-                        },
-                      )),
-                    ),
-              if (groups.isEmpty)
-                ElevatedButton(
-                    child: Text('Create a New Group'),
-                    onPressed: () {
-                      final TextEditingController groupNameController =
-                          TextEditingController();
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Create a New Group'),
-                            content: TextField(
-                              controller: groupNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Group Name',
-                                hintText: 'Enter the name of the group',
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Ensures it takes minimal height
+              children: [
+                Text(
+                  'Your Group',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+                groups.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text('You are not part of any group',
+                            style: TextStyle(color: Colors.white)),
+                      )
+                    : SizedBox(
+                        child: Column(
+                            children: List.generate(
+                          groups.length,
+                          (index) {
+                            return ListTile(
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                    '/group/${groups[index]['name']}');
+                              },
+                              title: Text(groups[index]['name']),
+                            );
+                          },
+                        )),
+                      ),
+                if (groups.isEmpty)
+                  ElevatedButton(
+                      child: Text('Create a New Group'),
+                      onPressed: () {
+                        final TextEditingController groupNameController =
+                            TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Create a New Group'),
+                              content: TextField(
+                                controller: groupNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Group Name',
+                                  hintText: 'Enter the name of the group',
+                                ),
                               ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final apiService = Provider.of<ApiService>(
-                                      context,
-                                      listen: false);
-                                  apiService
-                                      .make_group(
-                                          groupNameController.text, null, null)
-                                      .then((value) {
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
                                     Navigator.of(context).pop();
-                                    Navigator.of(context)
-                                        .pushNamed('/group/${value.name}');
-                                  });
-                                },
-                                child: const Text('Create'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }),
-            ],
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final apiService = Provider.of<ApiService>(
+                                        context,
+                                        listen: false);
+                                    apiService
+                                        .make_group(groupNameController.text,
+                                            null, null)
+                                        .then((value) {
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context)
+                                          .pushNamed('/group/${value.name}');
+                                    });
+                                  },
+                                  child: const Text('Create'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }),
+              ],
+            ),
           ),
         ),
       );
     },
   );
+}
+
+_openJoinRequestsPopup(BuildContext context) async {
+  final apiService = Provider.of<ApiService>(context, listen: false);
+  final token = await apiService.token;
+  if (token == null) return;
+  final List<GroupJoinRequest> requests =
+      (await apiService.get_user_join_requests())
+          .where(
+            (element) => !element.accepted,
+          )
+          .toList();
+  showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+            child: Padding(
+                padding: EdgeInsets.all(20),
+                child: SingleChildScrollView(
+                    child: Column(
+                  children: [
+                    Text(
+                      'Group Join Requests',
+                      style: TextStyle(fontSize: 30, color: Colors.white),
+                    ),
+                    if (requests.isEmpty) Text('No Pending Join Requests'),
+                    ExpansionPanelList.radio(
+                      children: [
+                        ...List.generate(requests.length, (requestIndex) {
+                          return ExpansionPanelRadio(
+                              value: requestIndex,
+                              headerBuilder: (context, open) => ListTile(
+                                    title: Text(
+                                        'Group: ${requests[requestIndex].group_name}'),
+                                  ),
+                              body: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    apiService
+                                        .delete_join_request(
+                                            requests[requestIndex])
+                                        .then((_) {})
+                                        .onError((e, _) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(e.toString())));
+                                    });
+                                  },
+                                  child: Text('Delete'),
+                                  style: ButtonStyle(
+                                    foregroundColor:
+                                        WidgetStatePropertyAll(Colors.white),
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(Colors.red),
+                                  )));
+                        })
+                      ],
+                    )
+                  ],
+                ))));
+      });
 }

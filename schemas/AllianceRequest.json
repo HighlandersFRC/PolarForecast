@@ -1,6 +1,8 @@
 {
     "group_1": "9999 cool group",
     "group_2": "9998 other cool group",
+    "group_1_affiliation": "frc9999",
+    "group_2_affiliation": "frc9998",
     "event": "2025 cool event",
     "request_time": 1737763200,
     "accepted": true

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/group.dart';
+import 'package:scouting_app/models/group_join_request.dart';
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
@@ -249,7 +250,7 @@ class ApiService {
       throw Exception('no user token');
     }
     final response = await http.get(
-      Uri.parse('$APIURL/user_groups'),
+      Uri.parse('$APIURL/User/Groups'),
       headers: {'token': token},
     );
     return json.decode(response.body);
@@ -310,7 +311,8 @@ class ApiService {
     return json.decode(response.body);
   }
 
-  Future<(Group, String)> join_group(String name, String join_code) async {
+  Future<List<GroupJoinRequest>> join_group(
+      String name, String join_code) async {
     final response = await http.post(
       Uri.parse('$APIURL/Group/$name/Join?join_code=$join_code'),
       headers: {
@@ -321,7 +323,11 @@ class ApiService {
       throw Exception(json.decode(response.body)['detail']);
     }
     final data = json.decode(response.body);
-    return (Group.fromJson(data['group']), data['group_role'].toString());
+    List<GroupJoinRequest> retVal = [];
+    for (var x in data) {
+      retVal.add(GroupJoinRequest.fromJson(x));
+    }
+    return retVal;
   }
 
   Future<Map> demote_group_member(String group_name, String demote_id) async {
@@ -539,5 +545,102 @@ class ApiService {
     }
     final data = json.decode(response.body);
     return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
+  Future<List<GroupJoinRequest>> get_user_join_requests() async {
+    final response = await http.get(
+      Uri.parse('$APIURL/User/GroupJoinRequests'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<GroupJoinRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(GroupJoinRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<GroupJoinRequest>> get_group_join_requests(
+      String group_name) async {
+    final response = await http.get(
+      Uri.parse('$APIURL/Group/$group_name/JoinRequests'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<GroupJoinRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(GroupJoinRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<GroupJoinRequest>> accept_join_request(
+      GroupJoinRequest request) async {
+    final response = await http.post(
+        Uri.parse('$APIURL/Group/${request.group_name}/JoinRequests/Accept'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<GroupJoinRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(GroupJoinRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<GroupJoinRequest>> decline_join_request(
+      GroupJoinRequest request) async {
+    final response = await http.delete(
+        Uri.parse('$APIURL/Group/${request.group_name}/JoinRequests/Decline'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<GroupJoinRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(GroupJoinRequest.fromJson(request));
+    }
+    return retVal;
+  }
+
+  Future<List<GroupJoinRequest>> delete_join_request(
+      GroupJoinRequest request) async {
+    final response = await http.delete(
+        Uri.parse('$APIURL/Group/${request.group_name}/DeleteJoinRequest'),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(request.toJson()));
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final requests = json.decode(response.body);
+    List<GroupJoinRequest> retVal = [];
+    for (final request in requests) {
+      retVal.add(GroupJoinRequest.fromJson(request));
+    }
+    return retVal;
   }
 }

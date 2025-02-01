@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
+import 'package:scouting_app/models/group_join_request.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 
 import '../models/alliance_request.dart';
 import '../models/group.dart';
 import '../models/tournament.dart';
 import '../widgets/polar_forecast_app_bar.dart';
+import 'package:intl/intl.dart';
 
 class GroupPage extends StatefulWidget {
   final String group;
@@ -49,6 +51,7 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void initState() {
+    // TODO: If can't pull group, try to pull group requests and see if a request is still pending
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.token.then((_token) {
@@ -88,31 +91,54 @@ class _GroupPageState extends State<GroupPage> {
               });
           });
         } else {
-          apiService.join_group(widget.group, widget.joinCode!).then(
-            (value) {
-              var (_groupData, _membership) = value;
-              groupData = _groupData;
-              membership = _membership;
-              join_link =
-                  '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-              loading = false;
+          apiService.join_group(widget.group, widget.joinCode!).then((value) {
+            if (value.any((element) =>
+                (element.group_name == widget.group) && !element.accepted)) {
+              errorMessage = 'Join Request Sent';
               if (mounted) {
                 setState(() {
-                  membership = _membership;
-                  groupData = _groupData;
-                  join_link =
-                      '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-                  loading = false;
+                  errorMessage = 'Join Request Sent';
                 });
               }
-            },
-          ).onError((error, stackTrace) {
-            loading = false;
+            }
+            apiService.get_group(widget.group).then(
+              (value) {
+                var (_groupData, _membership) = value;
+                groupData = _groupData;
+                membership = _membership;
+                join_link =
+                    '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
+                loading = false;
+                errorMessage = null;
+                if (mounted) {
+                  setState(() {
+                    membership = _membership;
+                    groupData = _groupData;
+                    join_link =
+                        '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
+                    loading = false;
+                    errorMessage = null;
+                  });
+                }
+              },
+            ).onError((e, _) {
+              loading = false;
+              if (mounted)
+                setState(() {
+                  loading = false;
+                });
+            });
+          }).onError((error, stackTrace) {
             errorMessage = error.toString();
+            if (mounted) {
+              setState(() {
+                errorMessage = error.toString();
+              });
+            }
+            loading = false;
             if (mounted)
               setState(() {
                 loading = false;
-                errorMessage = error.toString();
               });
           });
         }
@@ -124,10 +150,12 @@ class _GroupPageState extends State<GroupPage> {
             errorMessage = 'Please log in to access the group page.';
           });
       }
-    }).onError((_, __) {
+    }).onError((e, __) {
       loading = false;
+      errorMessage = e.toString();
       if (mounted) {
         setState(() {
+          errorMessage = e.toString();
           loading = false;
         });
       }
@@ -264,125 +292,138 @@ class _EventsTabState extends State<_EventsTab> {
     }).toList();
     requests = filtered;
     return SingleChildScrollView(
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Card(
-          child: Padding(
-              padding: EdgeInsets.all(20),
-              child: ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return FutureBuilder<List<Tournament>>(
-                          future: apiService.fetchTournaments(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            }
-                            if (snapshot.hasError) {
-                              return AlertDialog(
-                                title: Text('Error'),
-                                content: Text(
-                                    'Failed to load events. Please try again later.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Text('OK'),
-                                  ),
-                                ],
-                              );
-                            }
-                            final tournaments = snapshot.data ?? [];
-                            String? selectedEvent;
-                            return StatefulBuilder(
-                              builder: (context, setState) {
-                                return AlertDialog(
-                                  title: Text('Choose an Event'),
-                                  content: DropdownButton<String>(
-                                    isExpanded: true,
-                                    value: selectedEvent,
-                                    hint: Text('Select an event'),
-                                    items: [
-                                      DropdownMenuItem(
-                                          value: null, child: Text('None')),
-                                      ...tournaments.map((tournament) {
-                                        return DropdownMenuItem(
-                                          value: tournament.key,
-                                          child: Text(
-                                            tournament.display,
-                                            overflow: TextOverflow.ellipsis,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+          SizedBox(
+            height: 10,
+          ),
+          if (widget.membership != 'member')
+            Card(
+                child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return FutureBuilder<List<Tournament>>(
+                                future: apiService.fetchTournaments(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return AlertDialog(
+                                      title: Text('Error'),
+                                      content: Text(
+                                          'Failed to load events. Please try again later.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  final tournaments = snapshot.data ?? [];
+                                  String? selectedEvent;
+                                  return StatefulBuilder(
+                                    builder: (context, setState) {
+                                      return AlertDialog(
+                                        title: Text('Choose an Event'),
+                                        content: DropdownButton<String>(
+                                          isExpanded: true,
+                                          value: selectedEvent,
+                                          hint: Text('Select an event'),
+                                          items: [
+                                            DropdownMenuItem(
+                                                value: null,
+                                                child: Text('None')),
+                                            ...tournaments.map((tournament) {
+                                              return DropdownMenuItem(
+                                                value: tournament.key,
+                                                child: Text(
+                                                  tournament.display,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              );
+                                            }),
+                                          ],
+                                          onChanged: (newEvent) {
+                                            setState(
+                                                () => selectedEvent = newEvent);
+                                          },
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: Text('Cancel'),
                                           ),
-                                        );
-                                      }),
-                                    ],
-                                    onChanged: (newEvent) {
-                                      setState(() => selectedEvent = newEvent);
+                                          ElevatedButton(
+                                            onPressed: selectedEvent != null
+                                                ? () {
+                                                    apiService
+                                                        .add_group_to_event(
+                                                            widget.group
+                                                                    ?.name ??
+                                                                '',
+                                                            selectedEvent!)
+                                                        .then((val) {
+                                                      var (group, membership) =
+                                                          val;
+                                                      widget.widget.group =
+                                                          group;
+                                                      widget.widget.membership =
+                                                          membership;
+                                                    });
+                                                    Navigator.of(context)
+                                                        .pop(selectedEvent);
+                                                  }
+                                                : null,
+                                            child: Text('Confirm'),
+                                          ),
+                                        ],
+                                      );
                                     },
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: selectedEvent != null
-                                          ? () {
-                                              apiService
-                                                  .add_group_to_event(
-                                                      widget.group?.name ?? '',
-                                                      selectedEvent!)
-                                                  .then((val) {
-                                                var (group, membership) = val;
-                                                widget.widget.group = group;
-                                                widget.widget.membership =
-                                                    membership;
-                                              });
-                                              Navigator.of(context)
-                                                  .pop(selectedEvent);
-                                            }
-                                          : null,
-                                      child: Text('Confirm'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                  child: Text('Join An Event')))),
-      ExpansionPanelList.radio(
-        dividerColor: Colors.transparent,
-        children: widget.group?.events.length == 0
-            ? []
-            : List.generate(widget.group!.events.length, (int event_index) {
-                final event_requests = requests.where((request) {
-                  return request.event ==
-                      widget.group!.events[event_index].event_code;
-                }).toList();
-                return ExpansionPanelRadio(
-                    canTapOnHeader: false,
-                    value: event_index,
-                    headerBuilder: (context, isExpanded) => Card(
-                          child: ListTile(
-                            title: Text(
-                                widget.group!.events[event_index].event_code,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 30, color: Colors.white)),
-                          ),
-                        ),
-                    body: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: LayoutBuilder(
-                            builder:
-                                (contexts, constraints) =>
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                        child: Text('Join An Event')))),
+          ExpansionPanelList.radio(
+            dividerColor: Colors.transparent,
+            children: (widget.group?.events.length ?? 0) == 0
+                ? []
+                : List.generate(widget.group!.events.length, (int event_index) {
+                    final event_requests = requests.where((request) {
+                      return request.event ==
+                          widget.group!.events[event_index].event_code;
+                    }).toList();
+                    return ExpansionPanelRadio(
+                        canTapOnHeader: false,
+                        value: event_index,
+                        headerBuilder: (context, isExpanded) => Card(
+                              child: ListTile(
+                                title: Text(
+                                    widget
+                                        .group!.events[event_index].event_code,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        fontSize: 30, color: Colors.white)),
+                              ),
+                            ),
+                        body: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: LayoutBuilder(
+                                builder: (contexts, constraints) =>
                                     SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
@@ -403,106 +444,104 @@ class _EventsTabState extends State<_EventsTab> {
                                                                 fontSize: 20,
                                                                 color: Colors
                                                                     .white)),
-                                                        ElevatedButton(
-                                                            onPressed: () {
-                                                              showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) {
-                                                                  final apiService = Provider.of<
-                                                                          ApiService>(
+                                                        if (widget.membership !=
+                                                            'member')
+                                                          ElevatedButton(
+                                                              onPressed: () {
+                                                                showDialog(
+                                                                  context:
                                                                       context,
-                                                                      listen:
-                                                                          false);
-                                                                  final year = int.parse(widget
-                                                                      .group!
-                                                                      .events[
-                                                                          event_index]
-                                                                      .event_code
-                                                                      .substring(
-                                                                          0,
-                                                                          4));
-                                                                  final code = widget
-                                                                      .group!
-                                                                      .events[
-                                                                          event_index]
-                                                                      .event_code
-                                                                      .substring(
-                                                                          4);
-                                                                  final event_groups =
-                                                                      apiService.get_event_groups(
-                                                                          code,
-                                                                          year);
-                                                                  return FutureBuilder<
-                                                                          List>(
-                                                                      future:
-                                                                          event_groups,
-                                                                      builder:
-                                                                          (context,
-                                                                              snapshot) {
-                                                                        List
+                                                                  builder:
+                                                                      (context) {
+                                                                    final apiService = Provider.of<
+                                                                            ApiService>(
+                                                                        context,
+                                                                        listen:
+                                                                            false);
+                                                                    final year = int.parse(widget
+                                                                        .group!
+                                                                        .events[
+                                                                            event_index]
+                                                                        .event_code
+                                                                        .substring(
+                                                                            0,
+                                                                            4));
+                                                                    final code = widget
+                                                                        .group!
+                                                                        .events[
+                                                                            event_index]
+                                                                        .event_code
+                                                                        .substring(
+                                                                            4);
+                                                                    final event_groups =
+                                                                        apiService.get_event_groups(
+                                                                            code,
+                                                                            year);
+                                                                    return FutureBuilder<
+                                                                            List>(
+                                                                        future:
+                                                                            event_groups,
+                                                                        builder:
+                                                                            (context,
+                                                                                snapshot) {
+                                                                          List
+                                                                              groups =
+                                                                              [];
+                                                                          try {
                                                                             groups =
-                                                                            [];
-                                                                        try {
-                                                                          groups =
-                                                                              snapshot.requireData;
-                                                                        } catch (e) {
+                                                                                snapshot.requireData;
+                                                                          } catch (e) {
+                                                                            return AlertDialog(
+                                                                              title: Text('Groups at ${widget.group!.events[event_index].event_code}'),
+                                                                              content: CircularProgressIndicator(
+                                                                                color: Colors.blue,
+                                                                              ),
+                                                                            );
+                                                                          }
+                                                                          for (int i = 0;
+                                                                              i < groups.length;
+                                                                              i++) {
+                                                                            final group =
+                                                                                groups[i];
+                                                                            if (group['name'] ==
+                                                                                widget.group!.name) {
+                                                                              groups.removeAt(i);
+                                                                              break;
+                                                                            }
+                                                                          }
                                                                           return AlertDialog(
                                                                             title:
                                                                                 Text('Groups at ${widget.group!.events[event_index].event_code}'),
                                                                             content:
-                                                                                CircularProgressIndicator(
-                                                                              color: Colors.blue,
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                        for (int i =
-                                                                                0;
-                                                                            i < groups.length;
-                                                                            i++) {
-                                                                          final group =
-                                                                              groups[i];
-                                                                          if (group['name'] ==
-                                                                              widget.group!.name) {
-                                                                            groups.removeAt(i);
-                                                                            break;
-                                                                          }
-                                                                        }
-                                                                        return AlertDialog(
-                                                                          title:
-                                                                              Text('Groups at ${widget.group!.events[event_index].event_code}'),
-                                                                          content:
-                                                                              SingleChildScrollView(
-                                                                            child:
-                                                                                Column(
-                                                                              children: [
-                                                                                if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}'),
-                                                                                ...List.generate(groups.length, (int group_index) {
-                                                                                  return ListTile(
-                                                                                      title: Text(groups[group_index]['name']),
-                                                                                      onTap: () {
-                                                                                        apiService.request_alliance(widget.group!.name, widget.group!.events[event_index].event_code, groups[group_index]['name']).then((_requests) {
-                                                                                          setState(() {
-                                                                                            this.requests = _requests;
+                                                                                SingleChildScrollView(
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}'),
+                                                                                  ...List.generate(groups.length, (int group_index) {
+                                                                                    return ListTile(
+                                                                                        title: Text(groups[group_index]['name']),
+                                                                                        onTap: () {
+                                                                                          apiService.request_alliance(widget.group!.name, widget.group!.events[event_index].event_code, groups[group_index]['name']).then((_requests) {
+                                                                                            setState(() {
+                                                                                              this.requests = _requests;
+                                                                                            });
+                                                                                          }).onError((e, _) {
+                                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                                                                                           });
-                                                                                        }).onError((e, _) {
-                                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                                                                          Navigator.of(context).pop();
                                                                                         });
-                                                                                        Navigator.of(context).pop();
-                                                                                      });
-                                                                                })
-                                                                              ],
+                                                                                  })
+                                                                                ],
+                                                                              ),
                                                                             ),
-                                                                          ),
-                                                                          actions: [],
-                                                                        );
-                                                                      });
-                                                                },
-                                                              );
-                                                            },
-                                                            child: Text(
-                                                                'Create an Alliance')),
+                                                                            actions: [],
+                                                                          );
+                                                                        });
+                                                                  },
+                                                                );
+                                                              },
+                                                              child: Text(
+                                                                  'Create an Alliance')),
                                                         SizedBox(height: 10),
                                                         if (widget
                                                                 .group!
@@ -535,42 +574,44 @@ class _EventsTabState extends State<_EventsTab> {
                                                                     true,
                                                                 value:
                                                                     alliance_index,
-                                                                headerBuilder: (context, expanded) => ListTile(
-                                                                    title: Text(widget
-                                                                        .group!
-                                                                        .events[
-                                                                            event_index]
-                                                                        .alliance_groups[
-                                                                            alliance_index]
-                                                                        .name)),
+                                                                headerBuilder: (context,
+                                                                        expanded) =>
+                                                                    ListTile(
+                                                                        title: Text(
+                                                                            '${widget.group!.events[event_index].alliance_groups[alliance_index].name} - ${widget.group!.events[event_index].alliance_groups[alliance_index].affiliation.substring(3)}')),
                                                                 body: Row(
                                                                   mainAxisAlignment:
                                                                       MainAxisAlignment
                                                                           .center,
                                                                   children: [
-                                                                    ElevatedButton(
-                                                                        style: ButtonStyle(
-                                                                            foregroundColor: WidgetStatePropertyAll(Colors
-                                                                                .white),
-                                                                            backgroundColor: WidgetStatePropertyAll(Colors
-                                                                                .red)),
-                                                                        onPressed:
-                                                                            () {
-                                                                          apiService
-                                                                              .leave_alliance(widget.group!.name, widget.group!.events[event_index].event_code, widget.group!.events[event_index].alliance_groups[alliance_index].name)
-                                                                              .then((val) {
-                                                                            var (
-                                                                              group,
-                                                                              membership
-                                                                            ) = val;
-                                                                            setState(() {
-                                                                              widget.widget.membership = membership;
-                                                                              widget.widget.group = group;
+                                                                    if (widget
+                                                                            .membership !=
+                                                                        'member')
+                                                                      ElevatedButton(
+                                                                          style: ButtonStyle(
+                                                                              foregroundColor: WidgetStatePropertyAll(Colors
+                                                                                  .white),
+                                                                              backgroundColor: WidgetStatePropertyAll(Colors
+                                                                                  .red)),
+                                                                          onPressed:
+                                                                              () {
+                                                                            apiService.leave_alliance(widget.group!.name, widget.group!.events[event_index].event_code, widget.group!.events[event_index].alliance_groups[alliance_index].name).then(
+                                                                                (val) {
+                                                                              var (
+                                                                                group,
+                                                                                membership
+                                                                              ) = val;
+                                                                              setState(() {
+                                                                                widget.widget.membership = membership;
+                                                                                widget.widget.group = group;
+                                                                              });
+                                                                            }).onError((e,
+                                                                                _) {
+                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                                                                             });
-                                                                          });
-                                                                        },
-                                                                        child: Text(
-                                                                            'Leave')),
+                                                                          },
+                                                                          child:
+                                                                              Text('Leave')),
                                                                   ],
                                                                 ));
                                                           }))
@@ -598,9 +639,17 @@ class _EventsTabState extends State<_EventsTab> {
                                                                 fontSize: 20),
                                                           ),
                                                           SizedBox(height: 10),
+                                                          if (widget.membership !=
+                                                                  'owner' &&
+                                                              widget.membership !=
+                                                                  'admin')
+                                                            Text(
+                                                                'You must be an owner or admin to view alliance requests'),
                                                           if (event_requests
-                                                                  .length ==
-                                                              0)
+                                                                      .length ==
+                                                                  0 &&
+                                                              widget.membership !=
+                                                                  'member')
                                                             Text(
                                                                 'No Pending Requests'),
                                                           if (event_requests
@@ -642,6 +691,8 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                 setState(() {
                                                                                   this.requests = _requests;
                                                                                 });
+                                                                              }).onError((e, _) {
+                                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                                                                               });
                                                                             },
                                                                             icon:
@@ -707,9 +758,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                 ),
                                               ),
                                             ])))));
-              }),
-      )
-    ]));
+                  }),
+          )
+        ]));
   }
 }
 
@@ -729,6 +780,7 @@ class _MembersTab extends StatefulWidget {
 
 class _MembersTabState extends State<_MembersTab> {
   Map? members;
+  List<GroupJoinRequest>? requests = [];
   bool loading = true;
   @override
   void initState() {
@@ -736,13 +788,29 @@ class _MembersTabState extends State<_MembersTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.get_group_members(widget.group?.name ?? '').then((value) {
       members = value;
-      loading = false;
       if (mounted) {
         setState(() {
           members = value;
-          loading = false;
         });
       }
+      apiService
+          .get_group_join_requests(widget.group?.name ?? '')
+          .then((value) {
+        requests = value;
+        loading = false;
+        if (mounted) {
+          setState(() {
+            requests = value;
+            loading = false;
+          });
+        }
+      }).onError((e, _) {
+        loading = false;
+        if (mounted)
+          setState(() {
+            loading = false;
+          });
+      });
     });
   }
 
@@ -751,70 +819,179 @@ class _MembersTabState extends State<_MembersTab> {
     final apiService = Provider.of<ApiService>(
       context,
     );
+    final filteredRequests =
+        requests?.where((request) => !request.accepted).toList();
     return loading
         ? CircularProgressIndicator(color: Colors.blue)
         : SingleChildScrollView(
             child: Column(children: [
-              Card(
-                child: Column(children: [
-                  Text(
-                    'Owners',
-                    style: TextStyle(color: Colors.white, fontSize: 30),
-                  ),
-                  ExpansionPanelList.radio(
-                    dividerColor: Colors.blue,
-                    elevation: 0,
-                    children: List.generate(
-                        members?['owners'].length,
-                        (index) => ExpansionPanelRadio(
-                              canTapOnHeader: true,
-                              backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                              value: members?['owners'][index],
-                              headerBuilder: (context, isExpanded) {
-                                return Padding(
-                                  child: Text(
-                                      'Owner: ${members?['owners'][index]['username']}'),
-                                  padding: EdgeInsets.all(20),
-                                );
-                              },
-                              body: Text(members?['owners'][index]['id']),
-                            )),
-                  ),
-                ]),
+              SizedBox(
+                height: 10,
               ),
-              Card(
-                child: Column(children: [
-                  Text(
-                    'Admins',
-                    style: TextStyle(color: Colors.white, fontSize: 30),
-                  ),
-                  ExpansionPanelList.radio(
-                    dividerColor: Colors.blue,
-                    elevation: 0,
-                    children: List.generate(
-                        members?['admins'].length,
-                        (index) => ExpansionPanelRadio(
+              if (widget.membership != 'member')
+                Card(
+                    child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Text('Join Requests',
+                          style: TextStyle(color: Colors.white, fontSize: 30)),
+                      if ((filteredRequests?.length ?? 0) == 0)
+                        Text('No Pending Join Requests'),
+                      ExpansionPanelList.radio(elevation: 0, children: [
+                        ...List.generate(
+                          filteredRequests?.length ?? 0,
+                          (requestIndex) => ExpansionPanelRadio(
                               canTapOnHeader: true,
                               backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                              value: members?['admins'][index],
+                              value: filteredRequests![requestIndex],
                               headerBuilder: (context, isExpanded) {
-                                return Padding(
-                                  child: Text(
-                                      'Admin ${index + 1}: ${members?['admins'][index]['username']}'),
-                                  padding: EdgeInsets.all(20),
+                                return ListTile(
+                                  title: Text(
+                                      'Username: ${filteredRequests[requestIndex].username}\nTime of Request: ${DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(filteredRequests[requestIndex].request_time * 1000).toLocal())}'),
                                 );
                               },
                               body: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Text(members?['admins'][index]['username']),
-                                  if (widget.membership == 'owner')
-                                    SizedBox(width: 8),
-                                  if (widget.membership == 'owner')
-                                    ElevatedButton(
+                                  IconButton(
+                                    onPressed: () {
+                                      apiService
+                                          .accept_join_request(
+                                              filteredRequests[requestIndex])
+                                          .then((value) {
+                                        setState(() {
+                                          requests = value;
+                                        });
+                                        apiService
+                                            .get_group_members(
+                                                widget.group!.name)
+                                            .then(
+                                              (Map _members) => setState(() {
+                                                members = _members;
+                                              }),
+                                            );
+                                      });
+                                    },
+                                    style: ButtonStyle(
+                                        foregroundColor: WidgetStatePropertyAll(
+                                            Colors.green)),
+                                    icon: Icon(Icons.check_rounded),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      apiService
+                                          .decline_join_request(
+                                              filteredRequests[requestIndex])
+                                          .then((value) {
+                                        setState(() {
+                                          requests = value;
+                                        });
+                                      });
+                                    },
+                                    style: ButtonStyle(
+                                        foregroundColor:
+                                            WidgetStatePropertyAll(Colors.red)),
+                                    icon: Icon(Icons.close_rounded),
+                                  )
+                                ],
+                              )),
+                        )
+                      ]),
+                    ],
+                  ),
+                )),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(children: [
+                    Text(
+                      'Owners',
+                      style: TextStyle(color: Colors.white, fontSize: 30),
+                    ),
+                    ExpansionPanelList.radio(
+                      dividerColor: Colors.blue,
+                      elevation: 0,
+                      children: List.generate(
+                          members?['owners'].length,
+                          (index) => ExpansionPanelRadio(
+                                canTapOnHeader: true,
+                                backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                                value: members?['owners'][index],
+                                headerBuilder: (context, isExpanded) {
+                                  return Padding(
+                                    child: Text(
+                                        'Owner: ${members?['owners'][index]['username']}'),
+                                    padding: EdgeInsets.all(20),
+                                  );
+                                },
+                                body:
+                                    Text(members?['owners'][index]['username']),
+                              )),
+                    ),
+                  ]),
+                ),
+              ),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(children: [
+                    Text(
+                      'Admins',
+                      style: TextStyle(color: Colors.white, fontSize: 30),
+                    ),
+                    ExpansionPanelList.radio(
+                      dividerColor: Colors.blue,
+                      elevation: 0,
+                      children: List.generate(
+                          members?['admins'].length,
+                          (index) => ExpansionPanelRadio(
+                                canTapOnHeader: true,
+                                backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                                value: members?['admins'][index],
+                                headerBuilder: (context, isExpanded) {
+                                  return Padding(
+                                    child: Text(
+                                        'Admin ${index + 1}: ${members?['admins'][index]['username']}'),
+                                    padding: EdgeInsets.all(20),
+                                  );
+                                },
+                                body: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(members?['admins'][index]['username']),
+                                    if (widget.membership == 'owner')
+                                      SizedBox(width: 8),
+                                    if (widget.membership == 'owner')
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            apiService
+                                                .demote_group_member(
+                                                    widget.group?.name ?? '',
+                                                    members?['admins'][index]
+                                                        ['id'])
+                                                .then((value) {
+                                              setState(() {
+                                                members = value;
+                                              });
+                                            });
+                                          },
+                                          style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.red),
+                                              foregroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.white)),
+                                          child: Text('Demote to Member')),
+                                    if (widget.membership == 'owner')
+                                      SizedBox(width: 8),
+                                    if (widget.membership == 'owner')
+                                      ElevatedButton(
                                         onPressed: () {
                                           apiService
-                                              .demote_group_member(
+                                              .promote_group_admin(
                                                   widget.group?.name ?? '',
                                                   members?['admins'][index]
                                                       ['id'])
@@ -827,123 +1004,104 @@ class _MembersTabState extends State<_MembersTab> {
                                         style: ButtonStyle(
                                             backgroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.red),
+                                                    Colors.yellow),
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.white)),
-                                        child: Text('Demote to Member')),
-                                  if (widget.membership == 'owner')
-                                    SizedBox(width: 8),
-                                  if (widget.membership == 'owner')
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        apiService
-                                            .promote_group_admin(
-                                                widget.group?.name ?? '',
-                                                members?['admins'][index]['id'])
-                                            .then((value) {
-                                          setState(() {
-                                            members = value;
-                                          });
-                                        });
-                                      },
-                                      style: ButtonStyle(
-                                          backgroundColor:
-                                              WidgetStatePropertyAll(
-                                                  Colors.yellow),
-                                          foregroundColor:
-                                              WidgetStatePropertyAll(
-                                                  Colors.black)),
-                                      child: Text('Promote to Owner'),
-                                    )
-                                ],
-                              ),
-                            )),
-                  ),
-                  if (members?['admins'].length == 0)
-                    Text('There are no admins in your group')
-                ]),
+                                                    Colors.black)),
+                                        child: Text('Promote to Owner'),
+                                      )
+                                  ],
+                                ),
+                              )),
+                    ),
+                    if (members?['admins'].length == 0)
+                      Text('There are no admins in your group')
+                  ]),
+                ),
               ),
               Card(
-                child: Column(children: [
-                  Text(
-                    'Members',
-                    style: TextStyle(color: Colors.white, fontSize: 30),
-                  ),
-                  ExpansionPanelList.radio(
-                    dividerColor: Colors.blue,
-                    elevation: 0,
-                    children: List.generate(
-                        members?['members'].length,
-                        (index) => ExpansionPanelRadio(
-                              canTapOnHeader: true,
-                              backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                              value: members?['members'][index],
-                              headerBuilder: (context, isExpanded) {
-                                return Padding(
-                                  child: Text(
-                                      'Member ${index + 1}: ${members?['members'][index]['username']}'),
-                                  padding: EdgeInsets.all(20),
-                                );
-                              },
-                              body: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                        'username: ${members?['members'][index]['username']}'),
-                                    if (widget.membership == 'owner' ||
-                                        widget.membership == 'admin')
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                    if (widget.membership == 'owner' ||
-                                        widget.membership == 'admin')
-                                      ElevatedButton(
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.red),
-                                              foregroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.white)),
-                                          onPressed: () {
-                                            apiService
-                                                .kick_group_member(
-                                                    widget.group?.name ?? '',
-                                                    members?['members'][index]
-                                                        ['id'])
-                                                .then((value) {
-                                              setState(() {
-                                                members = value;
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(children: [
+                    Text(
+                      'Members',
+                      style: TextStyle(color: Colors.white, fontSize: 30),
+                    ),
+                    ExpansionPanelList.radio(
+                      dividerColor: Colors.blue,
+                      elevation: 0,
+                      children: List.generate(
+                          members?['members'].length,
+                          (index) => ExpansionPanelRadio(
+                                canTapOnHeader: true,
+                                backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                                value: members?['members'][index],
+                                headerBuilder: (context, isExpanded) {
+                                  return Padding(
+                                    child: Text(
+                                        'Member ${index + 1}: ${members?['members'][index]['username']}'),
+                                    padding: EdgeInsets.all(20),
+                                  );
+                                },
+                                body: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                          'username: ${members?['members'][index]['username']}'),
+                                      if (widget.membership == 'owner' ||
+                                          widget.membership == 'admin')
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                      if (widget.membership == 'owner' ||
+                                          widget.membership == 'admin')
+                                        ElevatedButton(
+                                            style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStatePropertyAll(
+                                                        Colors.red),
+                                                foregroundColor:
+                                                    WidgetStatePropertyAll(
+                                                        Colors.white)),
+                                            onPressed: () {
+                                              apiService
+                                                  .kick_group_member(
+                                                      widget.group?.name ?? '',
+                                                      members?['members'][index]
+                                                          ['id'])
+                                                  .then((value) {
+                                                setState(() {
+                                                  members = value;
+                                                });
                                               });
-                                            });
-                                          },
-                                          child: Text('Kick')),
-                                    if (widget.membership == 'owner')
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                    if (widget.membership == 'owner')
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            apiService
-                                                .promote_group_member(
-                                                    widget.group?.name ?? '',
-                                                    members?['members'][index]
-                                                        ['id'])
-                                                .then((value) {
-                                              setState(() {
-                                                members = value;
+                                            },
+                                            child: Text('Kick')),
+                                      if (widget.membership == 'owner')
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                      if (widget.membership == 'owner')
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              apiService
+                                                  .promote_group_member(
+                                                      widget.group?.name ?? '',
+                                                      members?['members'][index]
+                                                          ['id'])
+                                                  .then((value) {
+                                                setState(() {
+                                                  members = value;
+                                                });
                                               });
-                                            });
-                                          },
-                                          child: Text('Promote to Admin')),
-                                  ]),
-                            )),
-                  ),
-                  if (members?['members'].length == 0)
-                    Text('There are no members in your group')
-                ]),
+                                            },
+                                            child: Text('Promote to Admin')),
+                                    ]),
+                              )),
+                    ),
+                    if (members?['members'].length == 0)
+                      Text('There are no members in your group')
+                  ]),
+                ),
               ),
             ]),
           );
