@@ -15,6 +15,7 @@ class GroupEventSettings(BaseModel):
 
 class GroupEvent(BaseModel):
     event_code: str
+    up_to_date: bool
     settings: GroupEventSettings
     alliance_groups: List[AllianceGroup]
 

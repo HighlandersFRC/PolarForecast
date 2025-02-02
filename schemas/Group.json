@@ -9,6 +9,7 @@
     "events": [
         {
             "event_code": "2025event",
+            "up_to_date": true,
             "settings": {
                 "crowd_sourced_match_scouting": true,
                 "crowd_sourced_pit_scouting": true

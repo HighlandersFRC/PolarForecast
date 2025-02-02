@@ -48,7 +48,10 @@ class ApiService {
   Future<dynamic> _fetchFromAPI(String url, String cacheKey,
       {bool? useCache}) async {
     Function() getFromAPI = () async {
-      final response = await http.get(Uri.parse(url));
+      Map<String, String> headers = {};
+      final _token = await token;
+      if (_token != null) headers = {'token': _token};
+      final response = await http.get(Uri.parse(url), headers: headers);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _setInCache(cacheKey, data);
@@ -57,10 +60,8 @@ class ApiService {
         throw Exception('Failed to load data from ' + url);
       }
     };
-    if (useCache ?? true)
-      return _getFromCache(cacheKey, getFromAPI);
-    else
-      return getFromAPI();
+    if (useCache ?? true) return _getFromCache(cacheKey, getFromAPI);
+    return getFromAPI();
   }
 
   Future<List<Tournament>> fetchTournaments() async {
@@ -286,6 +287,20 @@ class ApiService {
       headers: {'token': token},
     );
     return json.decode(response.body);
+  }
+
+  Future<List<Group>> get_user_groups_detailed() async {
+    var token = await this.token;
+    if (token == null) {
+      throw Exception('no user token');
+    }
+    String url = '$APIURL/User/Groups/Detailed';
+    var data = await _fetchFromAPI(url, url, useCache: false);
+    List<Group> retVal = [];
+    for (var x in data) {
+      retVal.add(Group.fromJson(x));
+    }
+    return retVal;
   }
 
   Future<Group> make_group(String name, String? event, int? year) async {

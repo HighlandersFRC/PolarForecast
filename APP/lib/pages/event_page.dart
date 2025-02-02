@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/need_group.dart';
@@ -884,7 +885,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   String? token;
   List<String> selectedPieces = [];
   MatchDetails2024? matchDetails = null;
-  List<dynamic>? groups;
+  List<Group>? groups;
   int _autoCoralLevel1 = 0,
       _autoCoralLevel2 = 0,
       _autoCoralLevel3 = 0,
@@ -921,7 +922,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         }
         loading = false;
       } else
-        apiService.get_user_groups().then((_groups) {
+        apiService.get_user_groups_detailed().then((_groups) {
           if (mounted) {
             setState(() {
               groups = _groups;
@@ -1048,7 +1049,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 3'
     ];
     Map<String, dynamic>? decodedToken;
-    Map<String, dynamic>? group;
+    Group? group;
     if (token != null) {
       try {
         decodedToken = parseJwt(token!);
@@ -1060,8 +1061,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     if (groups != null) {
       for (var _group in groups!) {
         try {
-          if (_group['attributes']['event'][0] ==
-              widget.widget.tournament.key) {
+          if (_group.events.any((element) =>
+              element.event_code == widget.widget.tournament.key)) {
             group = _group;
             break;
           }
