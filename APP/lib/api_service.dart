@@ -115,7 +115,7 @@ class ApiService {
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
       return data;
     } catch (e) {
-      print('Error fetching follow-up data: $e');
+      print('Error fetching pit scouting data: $e');
       return {'pit_scouting': []};
     }
   }
