@@ -193,24 +193,24 @@ def flatten_dict(dd, separator="_", prefix=""):
     )
 
 
-@cacheValue
+@cacheValue()
 def getGroupCalculatedData(event_code: str, group_id: str):
     return GroupDataCollection.find_one(
         {"event_code": event_code, "group_id": group_id})
 
 
-@cacheValue
+@cacheValue()
 def getEventCalculatedData(event_code: str):
     return CalculatedDataCollection.find_one({"event_code": event_code})
 
 
-@cacheValue
+@cacheValue()
 def getGroupPredictions(event_code: str, group_id: str):
     return GroupPredictionCollection.find_one(
         {"event_code": event_code, "group_id": group_id})
 
 
-@cacheValue
+@cacheValue()
 def getEventPredictions(event_code: str):
     return PredictionCollection.find_one({"event_code": event_code})
 
@@ -316,7 +316,7 @@ def get_Search_Keys():
 def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
     try:
         if (token == None):
-            data = getEventCalculatedData(str(year)+event)
+            data = getEventPredictions(str(year)+event)
         else:
             if get_token_active(token=token):
                 groups = get_user_groups(token=token)
@@ -349,7 +349,7 @@ def get_match_details(year: int, event: str, match_key: str, token: str = Header
         redTeamStats = []
         try:
             if (token == None):
-                eventPredictions = getEventCalculatedData(str(year)+event)
+                eventPredictions = getEventPredictions(str(year)+event)
             else:
                 if get_token_active(token=token):
                     groups = get_user_groups(token=token)
