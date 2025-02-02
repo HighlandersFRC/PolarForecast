@@ -106,6 +106,38 @@ class ApiService {
     return data;
   }
 
+  Future<Map<String, dynamic>> fetchTeamPitScouting(
+      String year, String event, String team) async {
+    try {
+      final storageName = '${year}${event}_${team}_PitScouting';
+      final endpoint = '$APIURL/$year/$event/$team/PitScouting';
+      final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
+      return data;
+    } catch (e) {
+      print('Error fetching follow-up data: $e');
+      return {'pit_scouting': []};
+    }
+  }
+
+  Future<int> postPitScouting(
+      dynamic data, String year, String event, String team) async {
+    try {
+      final endpoint = '$APIURL/$year/$event/$team/PitScouting';
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+      final status = response.statusCode;
+      return status;
+    } catch (e) {
+      print('Error posting pit scouting data: $e');
+      return 0;
+    }
+  }
+
   Future<List<Image>> fetchTeamImages(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_pictures';

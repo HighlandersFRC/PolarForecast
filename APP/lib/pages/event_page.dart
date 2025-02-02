@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/need_group.dart';
+import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
 import '../widgets/bar_chart_with_weights.dart';
@@ -1622,26 +1623,33 @@ class _StatusSource extends DataGridSource {
                 cell.value,
                 tournament,
               )))
-          : cell.columnName == 'follow_up_status'
+          : cell.columnName == 'pit_status'
               ? returnCells.add(Container(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
                   alignment: Alignment.center,
                   color: color,
-                  child: DeathLink(
+                  child: PitScoutingLink(
                       row.getCells()[0].value, tournament, cell.value)))
-              : returnCells.add(Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  alignment: Alignment.center,
-                  color: color,
-                  child: Text(cell.value.toString(),
-                      textScaleFactor: 1.25,
-                      style: TextStyle(
-                          color: cell.value == 'Incomplete'
-                              ? Colors.yellow
-                              : cell.value == 'Done'
-                                  ? Colors.green
-                                  : Colors.red)),
-                ));
+              : cell.columnName == 'follow_up_status'
+                  ? returnCells.add(Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      alignment: Alignment.center,
+                      color: color,
+                      child: DeathLink(
+                          row.getCells()[0].value, tournament, cell.value)))
+                  : returnCells.add(Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      alignment: Alignment.center,
+                      color: color,
+                      child: Text(cell.value.toString(),
+                          textScaleFactor: 1.25,
+                          style: TextStyle(
+                              color: cell.value == 'Incomplete'
+                                  ? Colors.yellow
+                                  : cell.value == 'Done'
+                                      ? Colors.green
+                                      : Colors.red)),
+                    ));
     }
     return DataGridRowAdapter(
       cells: returnCells,
