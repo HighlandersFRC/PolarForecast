@@ -37,6 +37,7 @@ Map<String, dynamic> _$$GroupImplToJson(_$GroupImpl instance) =>
 _$GroupEventImpl _$$GroupEventImplFromJson(Map<String, dynamic> json) =>
     _$GroupEventImpl(
       event_code: json['event_code'] as String,
+      up_to_date: json['up_to_date'] as bool,
       settings:
           GroupEventSettings.fromJson(json['settings'] as Map<String, dynamic>),
       alliance_groups: (json['alliance_groups'] as List<dynamic>)
@@ -47,6 +48,7 @@ _$GroupEventImpl _$$GroupEventImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$GroupEventImplToJson(_$GroupEventImpl instance) =>
     <String, dynamic>{
       'event_code': instance.event_code,
+      'up_to_date': instance.up_to_date,
       'settings': instance.settings.toJson(),
       'alliance_groups':
           instance.alliance_groups.map((e) => e.toJson()).toList(),

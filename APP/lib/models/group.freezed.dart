@@ -369,6 +369,7 @@ GroupEvent _$GroupEventFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$GroupEvent {
   String get event_code => throw _privateConstructorUsedError;
+  bool get up_to_date => throw _privateConstructorUsedError;
   GroupEventSettings get settings => throw _privateConstructorUsedError;
   List<AllianceGroup> get alliance_groups => throw _privateConstructorUsedError;
 
@@ -390,6 +391,7 @@ abstract class $GroupEventCopyWith<$Res> {
   @useResult
   $Res call(
       {String event_code,
+      bool up_to_date,
       GroupEventSettings settings,
       List<AllianceGroup> alliance_groups});
 
@@ -412,6 +414,7 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
   @override
   $Res call({
     Object? event_code = null,
+    Object? up_to_date = null,
     Object? settings = null,
     Object? alliance_groups = null,
   }) {
@@ -420,6 +423,10 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
           ? _value.event_code
           : event_code // ignore: cast_nullable_to_non_nullable
               as String,
+      up_to_date: null == up_to_date
+          ? _value.up_to_date
+          : up_to_date // ignore: cast_nullable_to_non_nullable
+              as bool,
       settings: null == settings
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
@@ -452,6 +459,7 @@ abstract class _$$GroupEventImplCopyWith<$Res>
   @useResult
   $Res call(
       {String event_code,
+      bool up_to_date,
       GroupEventSettings settings,
       List<AllianceGroup> alliance_groups});
 
@@ -473,6 +481,7 @@ class __$$GroupEventImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? event_code = null,
+    Object? up_to_date = null,
     Object? settings = null,
     Object? alliance_groups = null,
   }) {
@@ -481,6 +490,10 @@ class __$$GroupEventImplCopyWithImpl<$Res>
           ? _value.event_code
           : event_code // ignore: cast_nullable_to_non_nullable
               as String,
+      up_to_date: null == up_to_date
+          ? _value.up_to_date
+          : up_to_date // ignore: cast_nullable_to_non_nullable
+              as bool,
       settings: null == settings
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
@@ -498,6 +511,7 @@ class __$$GroupEventImplCopyWithImpl<$Res>
 class _$GroupEventImpl implements _GroupEvent {
   const _$GroupEventImpl(
       {required this.event_code,
+      required this.up_to_date,
       required this.settings,
       required final List<AllianceGroup> alliance_groups})
       : _alliance_groups = alliance_groups;
@@ -507,6 +521,8 @@ class _$GroupEventImpl implements _GroupEvent {
 
   @override
   final String event_code;
+  @override
+  final bool up_to_date;
   @override
   final GroupEventSettings settings;
   final List<AllianceGroup> _alliance_groups;
@@ -519,7 +535,7 @@ class _$GroupEventImpl implements _GroupEvent {
 
   @override
   String toString() {
-    return 'GroupEvent(event_code: $event_code, settings: $settings, alliance_groups: $alliance_groups)';
+    return 'GroupEvent(event_code: $event_code, up_to_date: $up_to_date, settings: $settings, alliance_groups: $alliance_groups)';
   }
 
   @override
@@ -529,6 +545,8 @@ class _$GroupEventImpl implements _GroupEvent {
             other is _$GroupEventImpl &&
             (identical(other.event_code, event_code) ||
                 other.event_code == event_code) &&
+            (identical(other.up_to_date, up_to_date) ||
+                other.up_to_date == up_to_date) &&
             (identical(other.settings, settings) ||
                 other.settings == settings) &&
             const DeepCollectionEquality()
@@ -537,7 +555,7 @@ class _$GroupEventImpl implements _GroupEvent {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, event_code, settings,
+  int get hashCode => Object.hash(runtimeType, event_code, up_to_date, settings,
       const DeepCollectionEquality().hash(_alliance_groups));
 
   /// Create a copy of GroupEvent
@@ -559,6 +577,7 @@ class _$GroupEventImpl implements _GroupEvent {
 abstract class _GroupEvent implements GroupEvent {
   const factory _GroupEvent(
       {required final String event_code,
+      required final bool up_to_date,
       required final GroupEventSettings settings,
       required final List<AllianceGroup> alliance_groups}) = _$GroupEventImpl;
 
@@ -567,6 +586,8 @@ abstract class _GroupEvent implements GroupEvent {
 
   @override
   String get event_code;
+  @override
+  bool get up_to_date;
   @override
   GroupEventSettings get settings;
   @override

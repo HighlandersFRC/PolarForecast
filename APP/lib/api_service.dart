@@ -85,7 +85,16 @@ class ApiService {
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_team_stats';
     final url = '$APIURL/$year/$event/$team/stats';
-    return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
+    Map<String, String> headers = {};
+    final _token = await token;
+    if (_token != null) headers = {'token': _token};
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body));
+    }
+    final data = json.decode(response.body);
+    _setInCache(cacheKey, data);
+    return data;
   }
 
   Future<List<TeamStats2024>> fetchEventRankings(int year, String event) async {

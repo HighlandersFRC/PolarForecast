@@ -66,7 +66,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Set Up the Database
 client = MongoClient(MONGO_CONNECTION)
 testDB = client["Database_Test"]
 
@@ -104,19 +104,30 @@ ETagCollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
     [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
+
 GroupCollection = testDB["Groups"]
 GroupCollection.create_index([("name", pymongo.ASCENDING),], unique=True)
+
 AllianceRequestCollection = testDB["AllianceRequests"]
 AllianceRequestCollection.create_index([
     ("group_1", pymongo.ASCENDING),
     ("group_2", pymongo.ASCENDING),
     ("event", pymongo.ASCENDING),
 ], unique=True)
+
 GroupJoinRequestCollection = testDB["JoinRequests"]
 GroupJoinRequestCollection.create_index([
     ("group_id", pymongo.ASCENDING),
     ("user_id", pymongo.ASCENDING),
 ], unique=True)
+
+GroupDataCollection = testDB["GroupCalculatedData"]
+GroupDataCollection.create_index(
+    [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
+
+GroupPredictionCollection = testDB["GroupPrediction"]
+GroupPredictionCollection.create_index(
+    [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
 
 redisClient = get_redis_client()
 
@@ -182,14 +193,47 @@ def flatten_dict(dd, separator="_", prefix=""):
     )
 
 
+@cacheValue
+def getGroupCalculatedData(event_code: str, group_id: str):
+    return GroupDataCollection.find_one(
+        {"event_code": event_code, "group_id": group_id})
+
+
+@cacheValue
+def getEventCalculatedData(event_code: str):
+    return CalculatedDataCollection.find_one({"event_code": event_code})
+
+
+@cacheValue
+def getGroupPredictions(event_code: str, group_id: str):
+    return GroupPredictionCollection.find_one(
+        {"event_code": event_code, "group_id": group_id})
+
+
+@cacheValue
+def getEventPredictions(event_code: str):
+    return PredictionCollection.find_one({"event_code": event_code})
+
+
 @app.get("/{year}/{event}/{team}/stats", tags=["stats"])
-@cacheValue()
-def get_event_Team_Stats(year: int, event: str, team: str):
+def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None)):
     foundTeam = False
-    data = CalculatedDataCollection.find_one({
-        "event_code": str(year) + event,
-    })
-    data.pop('_id', None)
+    if (token == None):
+        data = getEventCalculatedData(str(year)+event)
+    else:
+        if get_token_active(token=token):
+            groups = get_user_groups(token=token)
+            foundGroup = False
+            for group in groups:
+                if len(group['path'].split("/")) == 2:
+                    data = getGroupCalculatedData(str(year)+event, group['id'])
+                    if data != None:
+                        foundGroup = True
+                    break
+            if not foundGroup:
+                data = getEventCalculatedData(str(year)+event)
+        else:
+            data = getEventCalculatedData(str(year)+event)
     i = 0
     for doc in data["data"]:
         i += 1
@@ -218,9 +262,23 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 
 
 @app.get("/{year}/{event}/stats", tags=["stats"])
-@cacheValue()
-def get_Event_Stats(year: int, event: str):
-    data = CalculatedDataCollection.find_one({"event_code": str(year) + event})
+def get_Event_Stats(year: int, event: str, token: str = Header(None)):
+    if (token == None):
+        data = getEventCalculatedData(str(year)+event)
+    else:
+        if get_token_active(token=token):
+            groups = get_user_groups(token=token)
+            foundGroup = False
+            for group in groups:
+                if len(group['path'].split("/")) == 2:
+                    data = getGroupCalculatedData(str(year)+event, group['id'])
+                    if data != None:
+                        foundGroup = True
+                    break
+            if not foundGroup:
+                data = getEventCalculatedData(str(year)+event)
+        else:
+            data = getEventCalculatedData(str(year)+event)
     for i, team in enumerate(data["data"][1:]):
         if math.isnan(team["death_rate"]):
             team["death_rate"] = 0
@@ -255,10 +313,25 @@ def get_Search_Keys():
 
 
 @app.get("/{year}/{event}/predictions", tags=["stats"])
-@cacheValue()
-def get_Event_Predictions(year: int, event: str):
+def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
     try:
-        data = PredictionCollection.find_one({"event_code": str(year)+event})
+        if (token == None):
+            data = getEventCalculatedData(str(year)+event)
+        else:
+            if get_token_active(token=token):
+                groups = get_user_groups(token=token)
+                foundGroup = False
+                for group in groups:
+                    if len(group['path'].split("/")) == 2:
+                        data = getGroupPredictions(
+                            str(year)+event, group['id'])
+                        if data != None:
+                            foundGroup = True
+                        break
+                if not foundGroup:
+                    data = getEventPredictions(str(year)+event)
+            else:
+                data = getEventPredictions(str(year)+event)
         data.pop("_id")
         return {"data": data["data"]}
     except:
@@ -266,8 +339,7 @@ def get_Event_Predictions(year: int, event: str):
 
 
 @app.get("/{year}/{event}/{match_key}/match_details", tags=["stats"])
-@cacheValue()
-def get_match_details(year: int, event: str, match_key: str):
+def get_match_details(year: int, event: str, match_key: str, token: str = Header(None)):
     try:
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
@@ -276,8 +348,23 @@ def get_match_details(year: int, event: str, match_key: str):
         blueTeamStats = []
         redTeamStats = []
         try:
-            eventPredictions = PredictionCollection.find_one(
-                {"event_code": event_code})
+            if (token == None):
+                eventPredictions = getEventCalculatedData(str(year)+event)
+            else:
+                if get_token_active(token=token):
+                    groups = get_user_groups(token=token)
+                    foundGroup = False
+                    for group in groups:
+                        if len(group['path'].split("/")) == 2:
+                            eventPredictions = getGroupPredictions(
+                                str(year)+event, group['id'])
+                            if eventPredictions != None:
+                                foundGroup = True
+                            break
+                    if not foundGroup:
+                        eventPredictions = getEventPredictions(str(year)+event)
+                else:
+                    eventPredictions = getEventPredictions(str(year)+event)
             for prediction in eventPredictions["data"]:
                 if prediction["key"] == match_key:
                     matchPrediction = prediction
@@ -300,10 +387,25 @@ def get_match_details(year: int, event: str, match_key: str):
 
 
 @app.get("/{year}/{event}/{team}/predictions", tags=["stats"])
-@cacheValue()
-def get_team_match_predictions(year: int, event: str, team: str):
+def get_team_match_predictions(year: int, event: str, team: str, token: str = Header(None)):
     event_code = str(year) + event
-    data = PredictionCollection.find_one({"event_code": event_code})
+    if (token == None):
+        data = getEventCalculatedData(str(year)+event)
+    else:
+        if get_token_active(token=token):
+            groups = get_user_groups(token=token)
+            foundGroup = False
+            for group in groups:
+                if len(group['path'].split("/")) == 2:
+                    data = getGroupPredictions(
+                        str(year)+event, group['id'])
+                    if data != None:
+                        foundGroup = True
+                    break
+            if not foundGroup:
+                data = getEventPredictions(str(year)+event)
+        else:
+            data = getEventPredictions(str(year)+event)
     matches = []
     for alliance in ["red", "blue"]:
         for match in data["data"]:
@@ -319,7 +421,6 @@ def get_Stat_Descriptions():
 
 
 @app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"])
-@cacheValue()
 def get_pit_scouting_data(year: int, event: str, team: str):
     try:
         data = PitScoutingCollection.find_one(
@@ -596,7 +697,7 @@ def accept_alliance(group_name: str | None = None, token: str = Depends(check_to
         if _other_event.event_code == alliance_request.event:
             _other_event.alliance_groups.append(
                 AllianceGroup(
-                    group_id=DB_group.admin_group_id,
+                    group_id=DB_group.group_id,
                     name=DB_group.name,
                     affiliation=DB_group.affiliation,
                 )
@@ -609,7 +710,7 @@ def accept_alliance(group_name: str | None = None, token: str = Depends(check_to
         if _event.event_code == alliance_request.event:
             _event.alliance_groups.append(
                 AllianceGroup(
-                    group_id=DB_other_group.admin_group_id,
+                    group_id=DB_other_group.group_id,
                     name=DB_other_group.name,
                     affiliation=DB_other_group.affiliation,
                 )
@@ -792,6 +893,8 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
 @app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     # TODO Force at max 1 group
+    if len(get_user_groups(token)) != 0:
+        HTTPException(400, "You are already part of a group")
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
     if (token is not None):
@@ -1598,6 +1701,49 @@ def convertData(calculatedData, year, event_code):
     return retvallist
 
 
+def _getGroupMembers(group_id: str):
+    try:
+        DBgroup = Group(**GroupCollection.find_one({'group_id': group_id}))
+    except Exception as e:
+        print(group_id)
+        print(e)
+    owners = fetch_group_members(group_id=DBgroup.owner_group_id)
+    admins = fetch_group_members(group_id=DBgroup.admin_group_id)
+    members = fetch_group_members(group_id=DBgroup.member_group_id)
+    pop_keys = ['totp', 'createdTimestamp', 'enabled', 'emailVerified',
+                'disableableCredentialTypes', 'requiredActions', 'notBefore', ]
+    for i in range(len(owners)):
+        for pop_key in pop_keys:
+            try:
+                owners[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for i in range(len(admins)):
+        for pop_key in pop_keys:
+            try:
+                admins[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for i in range(len(members)):
+        for pop_key in pop_keys:
+            try:
+                members[i].pop(pop_key)
+            except Exception as e:
+                print(e)
+    for admin in admins:
+        if members.__contains__(admin):
+            members.remove(admin)
+    for owner in owners:
+        if admins.__contains__(owner):
+            admins.remove(owner)
+    retval = {
+        "owners": owners,
+        "admins": admins,
+        "members": members,
+    }
+    return retval
+
+
 def updateData(event_code: str):
     # print(event_code)
     TBAData = list(TBACollection.find({'event_key': event_code}))
@@ -1635,7 +1781,16 @@ def updateData(event_code: str):
         data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
                       "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "pass": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
     try:
-        data = updatePredictions(TBAData, data, event_code)
+        (data, predictions) = updatePredictions(TBAData, data, event_code)
+        try:
+            PredictionCollection.insert_one(
+                {"event_code": event_code, "data": predictions})
+        except Exception as e:
+            try:
+                PredictionCollection.find_one_and_replace({"event_code": event_code}, {
+                    "event_code": event_code, "data": predictions})
+            except Exception as ex:
+                pass
     except Exception as e:
         logging.error(e)
         pass
@@ -1677,35 +1832,98 @@ def updateData(event_code: str):
             print(ex)
             pass
     # TODO make it work without TBA Data and only scouting data
-    # if TBAData == [] and (ScoutingData is not [] or ScoutingData is not None):
-    #     teams = []
-    #     calculatedData = []
-    #     for entry in ScoutingData:
-    #         if not teams.__contains__(entry["team_number"]):
-    #             teams.append(entry["team_number"])
-    #     for team in teams:
-    #         teamEntries = []
-    #         for entry in ScoutingData:
-    #             if entry["team_number"] == team:
-    #                 teamEntries.append(entry)
-    #         cumulativeData = {
-    #             "historical": False,
-    #             "key": "frc"+str(team),
-    #             "team_number": str(team),
-    #         }
-    #         for entry in teamEntries:
-    #             if entry["data"].__contains__("miscellaneous"):
-    #                 entry["data"]["died"] = entry["data"]["miscellaneous"]["died"]
-    #                 entry.pop("miscellaneous")
-    #             if entry["data"].__contains__("selecte"):
-    #                 entry["data"].pop("miscellaneous")
-    #             flattenedData = flatten_dict(entry["data"])
-    #             for key in flattenedData:
-    #                 if not cumulativeData.__contains__(key):
-    #                     cumulativeData[key] = 0
-    #                 cumulativeData[key] += flattenedData[key]
+    # Analyze data for each group at the given event
 
-    # pass
+
+def updateGroupData(group: Group, event_code: str):
+    TBAData = list(TBACollection.find({'event_key': event_code}))
+    scouts = []
+    numEntries = []
+    for event in group.events:
+        if event.event_code == event_code:
+            users = _getGroupMembers(group.group_id)
+            members = users['owners']
+            members.extend(users['members'])
+            members.extend(users['admins'])
+            for alliance in event.alliance_groups:
+                members.extend(_getGroupMembers(alliance.group_id))
+            print(members)
+            member_ids = [member["id"]
+                          for member in members if isinstance(member, dict)]
+            scoutingData = list(ScoutingData2024Collection.find(
+                {"scout_info.id": {"$in": member_ids}}))
+            try:
+                calculatedData, ratings = analyzeData(
+                    [TBAData, scoutingData])
+                data = calculatedData.to_dict("list")
+                data = convertData(data, YEAR, event_code)
+            except Exception as e:
+                logging.error(e)
+                ratings = {"scouts": [], "trustRatings": []}
+                keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
+                keyList = [keyStr+"index"]
+                etagData = ETagCollection.find_one({"key": event_code})
+                # print(etagData)
+                teams = etagData["teams"]
+                for team in teams:
+                    keyList.append(keyStr+team[3:])
+                retval0 = {"data": {"keys": keyList}}
+                data = [retval0]
+                data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
+                            "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "pass": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
+            try:
+                (data, predictions) = updatePredictions(
+                    TBAData, data, event_code)
+                try:
+                    GroupPredictionCollection.insert_one(
+                        {"event_code": event_code, "group_id": group.group_id, "data": predictions})
+                except Exception as e:
+                    try:
+                        GroupPredictionCollection.find_one_and_replace({"event_code": event_code, "group_id": group.group_id}, {
+                            "event_code": event_code, "group_id": group.group_id, "data": predictions})
+                    except Exception as ex:
+                        pass
+            except Exception as e:
+                logging.error(e)
+                pass
+            metadata = {"last_modified": datetime.utcnow().timestamp(),
+                        "etag": None, "tba": False}
+            try:
+                # print("manufacturing scout rankings")
+                ratings = {
+                    "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
+                ratings["entries"] = list(
+                    numpy.zeros(len(ratings["scouts"])))
+                for idx, scout in enumerate(ratings["scouts"]):
+                    ratings["entries"][idx] = numEntries[scouts.index(
+                        scout["name"])]
+            except Exception as e:
+                logging.error(e)
+            try:
+                prevData = GroupDataCollection.find_one(
+                    {"event_code": event_code, "group_id": group.group_id})["data"][1:]
+                for idx, team in enumerate(prevData):
+                    for newTeam in data[1:]:
+                        if team["key"] == newTeam["key"]:
+                            for key in team:
+                                if not newTeam.__contains__(key):
+                                    newTeam[key] = team[key]
+                                    # print(team[key])
+                            break
+            except Exception as e:
+                logging.error(e)
+            try:
+                # print("Inserting data")
+                GroupDataCollection.insert_one(
+                    {"event_code": event_code, "group_id": group.group_id, "data": data, "metadata": metadata, "scout_ratings": ratings})
+            except Exception as e:
+                # logging.error(e)
+                try:
+                    result = GroupDataCollection.update_one(
+                        {"event_code": event_code, "group_id": group.group_id}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
+                except Exception as ex:
+                    print(ex)
+                    pass
 
 
 def updatePredictions(TBAData, calculatedData, event_code):
@@ -1796,15 +2014,6 @@ def updatePredictions(TBAData, calculatedData, event_code):
             else:
                 matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
         matchPredictions.append(matchPrediction)
-    try:
-        PredictionCollection.insert_one(
-            {"event_code": event_code, "data": matchPredictions})
-    except Exception as e:
-        try:
-            PredictionCollection.find_one_and_replace({"event_code": event_code}, {
-                                                      "event_code": event_code, "data": matchPredictions})
-        except Exception as ex:
-            pass
     for i in range(1, len(calculatedData)):
         calculatedData[i]["simulated_rp"] = 0
         calculatedData[i]["simulated_rank"] = int(0)
@@ -1834,7 +2043,7 @@ def updatePredictions(TBAData, calculatedData, event_code):
     for i, item in enumerate(sorted_list):
         sorted_list[i]["simulated_rank"] = int(i + 1)
     sorted_list.insert(0, calculatedData[0])
-    return sorted_list
+    return (sorted_list, matchPredictions)
 
 
 @app.put("/{password}/Deactivate", tags=["scouting"])
@@ -1892,6 +2101,19 @@ def update_database():
         except:
             pass
     logging.info("Starting Polar Forecast")
+    groupsToUpdate = [
+        Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
+    for group in groupsToUpdate:
+        print(group.name)
+        for event in group.events:
+            print(event)
+            if not event.up_to_date:
+                try:
+                    updateGroupData(group, event.event_code)
+                    GroupCollection.update_one(
+                        {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
+                except Exception as e:
+                    print(e)
     try:
         global numRuns
         etags = list(ETagCollection.find({}))

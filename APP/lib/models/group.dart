@@ -24,6 +24,7 @@ class Group with _$Group {
 class GroupEvent with _$GroupEvent {
   const factory GroupEvent({
     required String event_code,
+    required bool up_to_date,
     required GroupEventSettings settings,
     required List<AllianceGroup> alliance_groups,
   }) = _GroupEvent;
