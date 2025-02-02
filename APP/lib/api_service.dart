@@ -257,6 +257,20 @@ class ApiService {
     return json.decode(response.body);
   }
 
+  Future<List<Group>> get_user_groups_detailed() async {
+    var token = await this.token;
+    if (token == null) {
+      throw Exception('no user token');
+    }
+    String url = '$APIURL/User/Groups/Detailed';
+    var data = await _fetchFromAPI(url, url, useCache: false);
+    List<Group> retVal = [];
+    for (var x in data) {
+      retVal.add(Group.fromJson(x));
+    }
+    return retVal;
+  }
+
   Future<Group> make_group(String name, String? event, int? year) async {
     var token = await this.token;
     if (token == null) {

@@ -1667,6 +1667,30 @@ def get_user_groups(token: str = Depends(check_token_active)):
     return find_user_groups(user_id=userID)
 
 
+@app.get('/User/Groups/Detailed', tags=["users"], response_model=list[Group])
+def get_user_groups_detailed(token: str = Depends(check_token_active)):
+    kc_groups = get_user_groups(token=token)
+    kc_root_groups = []
+    for _kc_group in kc_groups:
+        if len(_kc_group['path'].split('/')) == 2:
+            kc_root_groups.append(_kc_group)
+    kc_root_group_ids = [_kc_group['id'] for _kc_group in kc_root_groups]
+    DBGroups = [Group(**DBGroup)
+                for DBGroup in GroupCollection.find({"group_id": {"$in": kc_root_group_ids}})]
+    returnGroups = []
+    for DBGroup in DBGroups:
+        isAdmin = False
+        for _kc_group in kc_groups:
+            if DBGroup.admin_group_id == _kc_group['id']:
+                isAdmin = True
+                break
+        if isAdmin:
+            returnGroups.append(DBGroup.dict())
+        else:
+            returnGroups.append(DBGroup.dict(exclude={'join_code'}))
+    return returnGroups
+
+
 @app.get('/User/GroupJoinRequests', tags=["users"], response_model=list[GroupJoinRequest])
 def get_user_join_requests(token: str = Depends(check_token_active)):
     user_data = get_user_info(token)
