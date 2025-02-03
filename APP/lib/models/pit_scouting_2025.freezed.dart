@@ -22,6 +22,7 @@ PitScouting2025 _$PitScouting2025FromJson(Map<String, dynamic> json) {
 mixin _$PitScouting2025 {
   String get user_id => throw _privateConstructorUsedError;
   int get team_number => throw _privateConstructorUsedError;
+  int get time => throw _privateConstructorUsedError;
   String get event_code => throw _privateConstructorUsedError;
   PitData2025 get data => throw _privateConstructorUsedError;
 
@@ -42,7 +43,11 @@ abstract class $PitScouting2025CopyWith<$Res> {
       _$PitScouting2025CopyWithImpl<$Res, PitScouting2025>;
   @useResult
   $Res call(
-      {String user_id, int team_number, String event_code, PitData2025 data});
+      {String user_id,
+      int team_number,
+      int time,
+      String event_code,
+      PitData2025 data});
 
   $PitData2025CopyWith<$Res> get data;
 }
@@ -64,6 +69,7 @@ class _$PitScouting2025CopyWithImpl<$Res, $Val extends PitScouting2025>
   $Res call({
     Object? user_id = null,
     Object? team_number = null,
+    Object? time = null,
     Object? event_code = null,
     Object? data = null,
   }) {
@@ -75,6 +81,10 @@ class _$PitScouting2025CopyWithImpl<$Res, $Val extends PitScouting2025>
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
+              as int,
+      time: null == time
+          ? _value.time
+          : time // ignore: cast_nullable_to_non_nullable
               as int,
       event_code: null == event_code
           ? _value.event_code
@@ -107,7 +117,11 @@ abstract class _$$PitScouting2025ImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String user_id, int team_number, String event_code, PitData2025 data});
+      {String user_id,
+      int team_number,
+      int time,
+      String event_code,
+      PitData2025 data});
 
   @override
   $PitData2025CopyWith<$Res> get data;
@@ -128,6 +142,7 @@ class __$$PitScouting2025ImplCopyWithImpl<$Res>
   $Res call({
     Object? user_id = null,
     Object? team_number = null,
+    Object? time = null,
     Object? event_code = null,
     Object? data = null,
   }) {
@@ -139,6 +154,10 @@ class __$$PitScouting2025ImplCopyWithImpl<$Res>
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
+              as int,
+      time: null == time
+          ? _value.time
+          : time // ignore: cast_nullable_to_non_nullable
               as int,
       event_code: null == event_code
           ? _value.event_code
@@ -158,6 +177,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
   const _$PitScouting2025Impl(
       {required this.user_id,
       required this.team_number,
+      required this.time,
       required this.event_code,
       required this.data});
 
@@ -169,13 +189,15 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
   @override
   final int team_number;
   @override
+  final int time;
+  @override
   final String event_code;
   @override
   final PitData2025 data;
 
   @override
   String toString() {
-    return 'PitScouting2025(user_id: $user_id, team_number: $team_number, event_code: $event_code, data: $data)';
+    return 'PitScouting2025(user_id: $user_id, team_number: $team_number, time: $time, event_code: $event_code, data: $data)';
   }
 
   @override
@@ -186,6 +208,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
             (identical(other.user_id, user_id) || other.user_id == user_id) &&
             (identical(other.team_number, team_number) ||
                 other.team_number == team_number) &&
+            (identical(other.time, time) || other.time == time) &&
             (identical(other.event_code, event_code) ||
                 other.event_code == event_code) &&
             (identical(other.data, data) || other.data == data));
@@ -194,7 +217,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, user_id, team_number, event_code, data);
+      Object.hash(runtimeType, user_id, team_number, time, event_code, data);
 
   /// Create a copy of PitScouting2025
   /// with the given fields replaced by the non-null parameter values.
@@ -217,6 +240,7 @@ abstract class _PitScouting2025 implements PitScouting2025 {
   const factory _PitScouting2025(
       {required final String user_id,
       required final int team_number,
+      required final int time,
       required final String event_code,
       required final PitData2025 data}) = _$PitScouting2025Impl;
 
@@ -227,6 +251,8 @@ abstract class _PitScouting2025 implements PitScouting2025 {
   String get user_id;
   @override
   int get team_number;
+  @override
+  int get time;
   @override
   String get event_code;
   @override

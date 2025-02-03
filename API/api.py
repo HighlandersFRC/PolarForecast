@@ -16,6 +16,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from models.pit_scouting_2025 import PitScouting2025
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
 from models.group_join_request import GroupJoinRequest
@@ -84,7 +85,7 @@ PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
 
 PitScoutingCollection = testDB["PitScouting"]
 PitScoutingCollection.create_index(
-    [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING)], unique=True)
+    [("event_code", pymongo.ASCENDING), ("team_number", pymongo.ASCENDING), ("user_id", pymongo.ASCENDING)], unique=True)
 
 PitStatusCollection = testDB["PitScoutingStatus"]
 PitStatusCollection.create_index(
@@ -127,6 +128,10 @@ GroupDataCollection.create_index(
 
 GroupPredictionCollection = testDB["GroupPrediction"]
 GroupPredictionCollection.create_index(
+    [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
+
+GroupPitStatusCollection = testDB['GroupPitScoutingStatus']
+GroupPitStatusCollection.create_index(
     [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
 
 redisClient = get_redis_client()
@@ -420,18 +425,30 @@ def get_Stat_Descriptions():
     return stat_description
 
 
-@app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"])
-def get_pit_scouting_data(year: int, event: str, team: str):
-    try:
-        data = PitScoutingCollection.find_one(
-            {"event_code": str(year) + event, "team_number": int(team[3:])})
+@app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"], response_model=PitScouting2025)
+def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_token_active)):
+    user_info = get_user_info(token=token)
+    groups = [Group(**group)
+              for group in get_user_groups_detailed(token=token)]
+    if len(groups) == 0:
         try:
-            data.pop("_id")
-        except:
-            pass
-        return data
-    except Exception as e:
-        raise HTTPException(404, str(e))
+            data = PitScouting2025(**PitScoutingCollection.find_one(
+                {"event_code": str(year) + event, "team_number": int(team[3:]), "user_id": user_info['sub']}))
+            return data
+        except Exception as e:
+            raise HTTPException(404, str(e))
+    group = groups[0]
+    members = fetch_group_members(group.member_group_id)
+    member_ids = [member['id'] for member in members]
+    groupPitEntries = [PitScouting2025(**entry) for entry in PitScoutingCollection.find(
+        {"event_code": str(year) + event, "team_number": int(team[3:]), "user_id": {"$in": member_ids}})]
+    if len(groupPitEntries) == 0:
+        raise HTTPException(404, f"No entries for {team} at {event} in {year}")
+    latestEntry = groupPitEntries[0]
+    for entry in groupPitEntries:
+        if entry.time > latestEntry.time:
+            latestEntry = entry
+    return latestEntry.dict()
 
 
 @app.get("/{year}/{event}/PitScoutingStatus", tags=["scouting"])
@@ -441,53 +458,77 @@ def get_pit_scouting_status(year: int, event: str):
 
 
 @app.post("/PitScouting/", tags=["scouting"])
-def post_pit_scouting_data(data: dict, token: str = Depends(check_token_active)):
+def post_pit_scouting_data(data: PitScouting2025, token: str = Depends(check_token_active)):
     user_info = get_user_info(token)
-    data['scout_info'] = user_info
+    if (user_info['sub'] != data.user_id):
+        raise HTTPException(
+            400, 'The user id of the pit scouting entry and your user id do not match')
     status = getStatus(data, PitStatusCollection.find_one(
-        {"event_code": data["event_code"]}))
+        {"event_code": data.event_code}))
     status.pop("_id")
     PitStatusCollection.find_one_and_replace(
-        {"event_code": data["event_code"]}, status)
+        {"event_code": data.event_code}, status)
+    groups = [Group(**group)
+              for group in get_user_groups_detailed(token=token)]
+    for group in groups:
+        try:
+            groupStatus = getStatus(data, GroupPitStatusCollection.find_one(
+                {"event_code": data.event_code,
+                    "group_id": group.group_id}
+            ))
+            groupStatus.pop("_id")
+            GroupPitStatusCollection.find_one_and_replace(
+                {"event_code": data.event_code, "group_id": group.group_id}, groupStatus)
+        except:
+            pass
     eventData = CalculatedDataCollection.find_one(
-        {"event_code": data["event_code"]})
+        {"event_code": data.event_code})
     teams = ETagCollection.find_one(
-        {"key": data["event_code"]})["teams"]
+        {"key": data.event_code})["teams"]
     teams = [team[3:] for team in teams]
-    i = 0
-    team = str(data["team_number"])
+    team = str(data.team_number)
     if not teams.__contains__(team):
-        raise HTTPException(400, "No team key '"+str(data["team_number"]) +
-                            "' in "+data["event_code"])
+        raise HTTPException(400, "No team key '"+str(data.team_number) +
+                            "' in "+data.event_code)
     for doc in eventData["data"][1:]:
-        # print(doc)
-        i += 1
         if doc["key"] == f"frc{team}":
-            for key in data["data"]:
+            for key in data.data.dict():
                 if not key == "_id":
-                    doc[key] = data["data"][key]
+                    doc[key] = data.data.dict()[key]
             break
     CalculatedDataCollection.find_one_and_replace(
-        {"event_code": data["event_code"]}, eventData)
+        {"event_code": data.event_code}, eventData)
+    for group in groups:
+        try:
+            groupData = GroupDataCollection.find_one(
+                {"event_code": data.event_code, "group_id": group.group_id}
+            )
+            for doc in groupData["data"][1:]:
+                if doc["key"] == f"frc{team}":
+                    for key in data.data.dict():
+                        if not key == "_id":
+                            doc[key] = data.data.dict()[key]
+                    break
+            GroupDataCollection.find_one_and_replace(
+                {"event_code": data.event_code, "group_id": group.group_id}, groupData)
+        except:
+            pass
     try:
         PitScoutingCollection.insert_one(data)
     except Exception as e:
-        data.pop("_id")
         PitScoutingCollection.find_one_and_replace(
-            {"event_code": data["event_code"], "team_number": data["team_number"]}, data)
+            {"event_code": data.event_code, "team_number": data.team_number, "user_id": data.user_id}, data.dict())
     return {"message": "added it to the DB"}
 
 
-def getStatus(data: dict, originalStatus: dict):
+def getStatus(data: PitScouting2025, originalStatus: dict):
     status = "Incomplete"
     found = False
-    if data["data"]["drive_train"] != "":
-        if data["data"]["favorite_color"] != "":
+    if data.data.drive_train != "":
+        if data.data.drive_train != "":
             status = "Done"
-    # print(originalStatus)
     for entry in originalStatus["data"]:
-        if entry["key"] == str(data["team_number"]):
-            # print(entry["key"], data["team_number"])
+        if entry["key"] == str(data.team_number):
             found = True
             entry["pit_status"] = status
     if (not found):

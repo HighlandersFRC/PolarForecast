@@ -8,6 +8,7 @@ class PitScouting2025 with _$PitScouting2025 {
   const factory PitScouting2025({
     required String user_id,
     required int team_number,
+    required int time,
     required String event_code,
     required PitData2025 data,
   }) = _PitScouting2025;

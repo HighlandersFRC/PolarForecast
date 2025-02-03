@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 class PitAutoStep2025(BaseModel):
     name: str
-    extra_data: Dict[str, any]
+    extra_data: Dict[str, Any]
 
 
 class PitAutos2025(BaseModel):
@@ -35,5 +35,6 @@ class PitData2025(BaseModel):
 class PitScouting2025(BaseModel):
     user_id: str
     team_number: int
+    time: int
     event_code: str
     data: PitData2025

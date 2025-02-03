@@ -11,6 +11,7 @@ _$PitScouting2025Impl _$$PitScouting2025ImplFromJson(
     _$PitScouting2025Impl(
       user_id: json['user_id'] as String,
       team_number: (json['team_number'] as num).toInt(),
+      time: (json['time'] as num).toInt(),
       event_code: json['event_code'] as String,
       data: PitData2025.fromJson(json['data'] as Map<String, dynamic>),
     );
@@ -20,6 +21,7 @@ Map<String, dynamic> _$$PitScouting2025ImplToJson(
     <String, dynamic>{
       'user_id': instance.user_id,
       'team_number': instance.team_number,
+      'time': instance.time,
       'event_code': instance.event_code,
       'data': instance.data.toJson(),
     };
