@@ -6,6 +6,7 @@ import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/group_page.dart';
 import 'package:scouting_app/pages/match_page.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
+import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/team_page.dart';
 import '../pages/home_page.dart';
 import 'pages/death_page.dart';
@@ -93,6 +94,14 @@ class MainApp extends StatelessWidget {
                     return MaterialPageRoute(
                         builder: (context) =>
                             DeathPage.fromKeys(context, eventKey, teamKey),
+                        settings: settings);
+                  } else if (pathSegments[3] == 'pit_scouting') {
+                    // Death Page
+                    final eventKey = pathSegments[2];
+                    final teamKey = pathSegments[4];
+                    return MaterialPageRoute(
+                        builder: (context) => PitScoutingPage.fromKeys(
+                            context, eventKey, teamKey),
                         settings: settings);
                   }
                 }
