@@ -34,7 +34,9 @@ class WebAuthService implements AuthService {
       var authorizationEndpoint =
           '$AUTHURL/realms/$REALM/protocol/openid-connect/auth';
       var clientId = CLIENT;
-      var redirectUri = '$APPURL/$redirect_path';
+      var redirectUri = Uri.parse(APPURL)
+          .replace(path: Uri.parse(window.location.href).path)
+          .toString();
 
       final responseType = 'code'; // Use authorization code flow
       final scope = 'openid profile email'; // Adjust scopes as needed
@@ -58,8 +60,6 @@ class WebAuthService implements AuthService {
   Future<void> logout() async {
     // Remove token from localStorage
     window.sessionStorage.remove(tokenKey);
-
-    // Optionally redirect to a logout page or refresh the application
     var redirectUri = Uri.parse(APPURL)
         .replace(path: Uri.parse(window.location.href).path)
         .toString();

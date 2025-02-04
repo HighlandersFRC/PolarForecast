@@ -39,7 +39,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           climbing: [],
           spare_parts: 0,
           favorite_color: '',
-          autos: []));
+          autos: []),
+      time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
   bool formSubmitted = false;
   bool loading = true;
 
