@@ -52,7 +52,6 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void initState() {
-    // TODO: If can't pull group, try to pull group requests and see if a request is still pending
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.token.then((_token) {

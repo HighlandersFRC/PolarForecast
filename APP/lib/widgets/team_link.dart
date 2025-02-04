@@ -17,7 +17,7 @@ class TeamLink extends StatelessWidget {
               context, '/event/${tournament.key}/team/frc$number'),
           child: Text(
             '${number}',
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             style: TextStyle(
                 color: theme.primaryColor,
                 decoration: TextDecoration.underline,

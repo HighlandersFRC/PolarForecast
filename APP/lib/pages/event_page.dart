@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flat/flat.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group.dart';
@@ -1516,7 +1515,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               child: Text(
                 'Team',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'pit_status',
@@ -1526,7 +1525,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               child: Text(
                 'Pit Scouting',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'picture_status',
@@ -1536,7 +1535,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               child: Text(
                 'Pictures',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'follow_up_status',
@@ -1546,7 +1545,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               child: Text(
                 'Follow Up',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
     ];
 
@@ -1643,7 +1642,7 @@ class _StatusSource extends DataGridSource {
                       alignment: Alignment.center,
                       color: color,
                       child: Text(cell.value.toString(),
-                          textScaleFactor: 1.25,
+                          textScaler: TextScaler.linear(1.25),
                           style: TextStyle(
                               color: cell.value == 'Incomplete'
                                   ? Colors.yellow
@@ -1717,7 +1716,7 @@ class _MatchStatusSource extends DataGridSource {
                               ? color
                               : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -1739,7 +1738,7 @@ class _MatchStatusSource extends DataGridSource {
                               ? color
                               : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -1753,7 +1752,7 @@ class _MatchStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -1763,7 +1762,7 @@ class _MatchStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -1823,7 +1822,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Match',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'result_type',
@@ -1832,7 +1831,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Type',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'blue_score',
@@ -1841,7 +1840,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Blue Score',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'red_score',
@@ -1850,7 +1849,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Red Score',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'blue_rp',
@@ -1859,7 +1858,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Blue RP',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'red_rp',
@@ -1868,7 +1867,7 @@ class _QualsTabState extends State<_QualsTab> {
               child: Text(
                 'Red RP',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
     ];
 
@@ -1980,7 +1979,7 @@ class _ElimsTabState extends State<_ElimsTab> {
               child: Text(
                 'Match',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'result_type',
@@ -1989,7 +1988,7 @@ class _ElimsTabState extends State<_ElimsTab> {
               child: Text(
                 'Type',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'winner',
@@ -1998,7 +1997,7 @@ class _ElimsTabState extends State<_ElimsTab> {
               child: Text(
                 'Winner',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
     ];
 

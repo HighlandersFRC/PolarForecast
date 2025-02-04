@@ -18,7 +18,7 @@ class MatchLink extends StatelessWidget {
               context, '/event/${tournament.key}/match/${match_key}'),
           child: Text(
             '${display}',
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             style: TextStyle(
                 color: theme.primaryColor,
                 decoration: TextDecoration.underline,

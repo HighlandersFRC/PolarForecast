@@ -344,7 +344,7 @@ class _ScheduleStatusSource extends DataGridSource {
                       .withOpacity(0.6)
                   : Colors.grey.withOpacity(0.6),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -358,7 +358,7 @@ class _ScheduleStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -421,7 +421,7 @@ class _ScheduleStatusSource extends DataGridSource {
                                       : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6)
                               : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -466,7 +466,7 @@ class _ScheduleStatusSource extends DataGridSource {
                           : Color.lerp(Colors.red, Colors.green, 0.5)!
                               .withOpacity(0.6),
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -476,7 +476,7 @@ class _ScheduleStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaleFactor: 1.25,
+            textScaler: TextScaler.linear(1.25),
             cell.value.toString(),
           ),
         ));
@@ -551,7 +551,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Match',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'result_type',
@@ -560,7 +560,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Type',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'color',
@@ -569,7 +569,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Alliance',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'team_score',
@@ -578,7 +578,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Team Points',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'opponent_score',
@@ -587,7 +587,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Opponent Points',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
       GridColumn(
           columnName: 'team_rp',
@@ -596,7 +596,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
               child: Text(
                 'Ranking Points',
                 textAlign: TextAlign.center,
-                textScaleFactor: 1.25,
+                textScaler: TextScaler.linear(1.25),
               ))),
     ];
 

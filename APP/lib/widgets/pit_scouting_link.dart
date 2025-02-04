@@ -15,7 +15,7 @@ class PitScoutingLink extends StatelessWidget {
           context, '/event/${tournament.key}/pit_scouting/frc$number'),
       child: Text(
         '${value}',
-        textScaleFactor: 1.25,
+        textScaler: TextScaler.linear(1.25),
         style: TextStyle(
           color: value == 'Incomplete'
               ? Colors.yellow

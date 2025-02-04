@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:http/http.dart';
 
@@ -12,13 +11,6 @@ class WebAuthService implements AuthService {
       this.APIURL, this.AUTHURL, this.APPURL, this.REALM, this.CLIENT)
       : super();
   static const String tokenKey = 'pf_token';
-  static String _randomString(int length) {
-    var r = Random.secure();
-    var chars =
-        '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    return Iterable.generate(length, (_) => chars[r.nextInt(chars.length)])
-        .join();
-  }
 
   @override
   Future<String?> login(redirect_path) async {

@@ -933,7 +933,6 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
 
 @app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
-    # TODO Force at max 1 group
     if len(get_user_groups(token)) != 0:
         HTTPException(400, "You are already part of a group")
     if group_name == None:
@@ -1021,9 +1020,11 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
         400, f"You somehow broke Polar Forecast's '{group_name}' Group")
 
 
-@app.post("/Group/{group_name}/Join", tags=["groups"])
+@app.post("/Group/{group_name}/Join", tags=["groups"], response_model=list[GroupJoinRequest])
 def join_group(group_name: str, join_code: str, token: str = Depends(check_token_active)):
-    # TODO Check if they are already in a group
+    groups = get_user_groups(token)
+    if len(groups) != 0:
+        raise HTTPException(400, "You are already part of a group")
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
@@ -1036,7 +1037,6 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
     except KeyError as e:
         raise HTTPException(
             422, "You either are not affiliated with a team or the group is not affiliated with a team")
-    groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
         if group['id'] == DBgroup.group_id:
@@ -1400,8 +1400,18 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
     if KCgroup == {}:
         raise HTTPException(
             403, f"You are not an owner of group '{group_name}'")
-    # TODO: leave any alliances the group was part of
+    for event in DBgroup.events:
+        for alliance in event.alliance_groups:
+            leave_alliance(group_name=group_name, token=token,
+                           event=event.event_code, other_group=alliance.name)
+    join_requests = GroupJoinRequestCollection.delete_many(
+        {"group_id": DBgroup.group_id})
+    AllianceRequestCollection.delete_many(
+        {"$or": [{"group_1": group_name}, {"group_2": group_name}]})
     GroupCollection.delete_one({"name": group_name})
+    GroupDataCollection.delete_one({"group_id": DBgroup.group_id})
+    GroupPitStatusCollection.delete_one({"group_id": DBgroup.group_id})
+    GroupPredictionCollection.delete_one({"group_id": DBgroup.group_id})
     delete_group_kc(group_id=DBgroup.group_id)
     return {"message": "Group successfully deleted"}
 
@@ -1897,7 +1907,6 @@ def updateData(event_code: str):
             print(ex)
             pass
     # TODO make it work without TBA Data and only scouting data
-    # Analyze data for each group at the given event
 
 
 def updateGroupData(group: Group, event_code: str):
