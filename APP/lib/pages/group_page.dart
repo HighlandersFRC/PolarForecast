@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/group_join_request.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
@@ -230,10 +231,33 @@ class _GroupPageState extends State<GroupPage> {
           : ElevatedButton(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: join_link!));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Group join link copied to clipboard!'),
-                  ),
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Padding(
+                        padding: EdgeInsets.all(20),
+                        child: LayoutBuilder(
+                            builder: (context, constraints) =>
+                                Column(children: [
+                                  Text('Join Link Copied to Clipboard'),
+                                  SizedBox(height: 10),
+                                  QrImageView(
+                                    size: min(constraints.maxWidth,
+                                        (constraints.maxHeight - 30)),
+                                    data: join_link!,
+                                    eyeStyle: QrEyeStyle(
+                                        color: Colors.blue,
+                                        eyeShape: QrEyeShape.square),
+                                    dataModuleStyle: QrDataModuleStyle(
+                                      color: Colors.blue,
+                                      dataModuleShape: QrDataModuleShape.square,
+                                    ),
+                                    embeddedImage:
+                                        AssetImage('assets/PolarBearHead.png'),
+                                    embeddedImageStyle: QrEmbeddedImageStyle(),
+                                  ),
+                                ])));
+                  },
                 );
               },
               child: Row(mainAxisSize: MainAxisSize.min, children: [
