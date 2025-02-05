@@ -129,7 +129,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     } else {
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (context) => AlertDialog(
           title: Text('Error'),
           content: Text('Submission failed. Please try again.'),
           actions: [
