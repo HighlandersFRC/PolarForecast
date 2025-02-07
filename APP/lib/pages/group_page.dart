@@ -176,11 +176,12 @@ class _GroupPageState extends State<GroupPage> {
         group: groupData,
         membership: membershipData,
       ),
-      _SettingsTab(
-        this,
-        group: groupData,
-        membership: membershipData,
-      )
+      if (membershipData == 'owner')
+        _SettingsTab(
+          this,
+          group: groupData,
+          membership: membershipData,
+        )
     ];
     return Scaffold(
       appBar: PolarForecastAppBar(
@@ -199,10 +200,11 @@ class _GroupPageState extends State<GroupPage> {
               icon: Icon(Icons.person_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.person, color: theme.primaryColor),
               label: 'Members'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined, color: theme.primaryColor),
-              activeIcon: Icon(Icons.settings, color: theme.primaryColor),
-              label: 'Settings'),
+          if (membershipData == 'owner')
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings_outlined, color: theme.primaryColor),
+                activeIcon: Icon(Icons.settings, color: theme.primaryColor),
+                label: 'Settings'),
         ],
         type: BottomNavigationBarType.shifting,
         selectedLabelStyle: TextStyle(
@@ -225,47 +227,109 @@ class _GroupPageState extends State<GroupPage> {
               : errorMessage != null
                   ? Text(errorMessage!)
                   : tabs[_currentTab],
-      floatingActionButton: groupData?.join_code == null
-          ? null
-          : ElevatedButton(
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (groupData != null)
+            Tooltip(
+              message: 'Leave Group',
+              child: FloatingActionButton.small(
+                backgroundColor: Colors.red,
+                shape: CircleBorder(
+                  side: BorderSide(color: Colors.red),
+                ),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('Leave Group'),
+                        content:
+                            Text('Are you sure you want to leave this group?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              final apiService = Provider.of<ApiService>(
+                                  context,
+                                  listen: false);
+                              apiService
+                                  .leave_group(groupData?.name ?? '')
+                                  .then((value) {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pushNamed('/home');
+                              }).onError((e, _) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              });
+                            },
+                            child: Text('Leave'),
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  WidgetStateProperty.all(Colors.red),
+                              foregroundColor:
+                                  WidgetStateProperty.all(Colors.white),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Icon(Icons.logout),
+              ),
+            ),
+          if (groupData?.join_code != null) SizedBox(height: 5),
+          if (groupData?.join_code != null)
+            ElevatedButton(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: join_link!));
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
                     return Padding(
-                        padding: EdgeInsets.all(20),
-                        child: LayoutBuilder(
-                            builder: (context, constraints) =>
-                                Column(children: [
-                                  Text('Join Link Copied to Clipboard'),
-                                  SizedBox(height: 10),
-                                  QrImageView(
-                                    size: min(constraints.maxWidth,
-                                        (constraints.maxHeight - 30)),
-                                    data: join_link!,
-                                    eyeStyle: QrEyeStyle(
-                                        color: Colors.blue,
-                                        eyeShape: QrEyeShape.square),
-                                    dataModuleStyle: QrDataModuleStyle(
-                                      color: Colors.blue,
-                                      dataModuleShape: QrDataModuleShape.square,
-                                    ),
-                                    embeddedImage:
-                                        AssetImage('assets/PolarBearHead.png'),
-                                    embeddedImageStyle: QrEmbeddedImageStyle(),
-                                  ),
-                                ])));
+                      padding: EdgeInsets.all(20),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => Column(
+                          children: [
+                            Text('Join Link Copied to Clipboard'),
+                            SizedBox(height: 10),
+                            QrImageView(
+                              size: min(constraints.maxWidth,
+                                  (constraints.maxHeight - 30)),
+                              data: join_link!,
+                              eyeStyle: QrEyeStyle(
+                                  color: Colors.blue,
+                                  eyeShape: QrEyeShape.square),
+                              dataModuleStyle: QrDataModuleStyle(
+                                color: Colors.blue,
+                                dataModuleShape: QrDataModuleShape.square,
+                              ),
+                              embeddedImage:
+                                  AssetImage('assets/PolarBearHead.png'),
+                              embeddedImageStyle: QrEmbeddedImageStyle(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 );
               },
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Icon(Icons.copy),
-                SizedBox(
-                  width: 10,
-                ),
+                SizedBox(width: 10),
                 Text('Join Code: ${groupData!.join_code}')
-              ])),
+              ]),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -321,106 +385,110 @@ class _EventsTabState extends State<_EventsTab> {
           SizedBox(
             height: 10,
           ),
-          if (widget.membership != 'member')
-            Card(
-                child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return FutureBuilder<List<Tournament>>(
-                                future: apiService.fetchTournaments(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  if (snapshot.hasError) {
-                                    return AlertDialog(
-                                      title: Text('Error'),
-                                      content: Text(
-                                          'Failed to load events. Please try again later.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(),
-                                          child: Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                  final tournaments = snapshot.data ?? [];
-                                  String? selectedEvent;
-                                  return StatefulBuilder(
-                                    builder: (context, setState) {
+          if (widget.group != null)
+            if (widget.membership != 'member')
+              Card(
+                  child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return FutureBuilder<List<Tournament>>(
+                                  future: apiService.fetchTournaments(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return Center(
+                                          child: CircularProgressIndicator());
+                                    }
+                                    if (snapshot.hasError) {
                                       return AlertDialog(
-                                        title: Text('Choose an Event'),
-                                        content: DropdownButton<String>(
-                                          isExpanded: true,
-                                          value: selectedEvent,
-                                          hint: Text('Select an event'),
-                                          items: [
-                                            DropdownMenuItem(
-                                                value: null,
-                                                child: Text('None')),
-                                            ...tournaments.map((tournament) {
-                                              return DropdownMenuItem(
-                                                value: tournament.key,
-                                                child: Text(
-                                                  tournament.display,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              );
-                                            }),
-                                          ],
-                                          onChanged: (newEvent) {
-                                            setState(
-                                                () => selectedEvent = newEvent);
-                                          },
-                                        ),
+                                        title: Text('Error'),
+                                        content: Text(
+                                            'Failed to load events. Please try again later.'),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.of(context).pop(),
-                                            child: Text('Cancel'),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: selectedEvent != null
-                                                ? () {
-                                                    apiService
-                                                        .add_group_to_event(
-                                                            widget.group
-                                                                    ?.name ??
-                                                                '',
-                                                            selectedEvent!)
-                                                        .then((val) {
-                                                      var (group, membership) =
-                                                          val;
-                                                      widget.widget.group =
-                                                          group;
-                                                      widget.widget.membership =
-                                                          membership;
-                                                    });
-                                                    Navigator.of(context)
-                                                        .pop(selectedEvent);
-                                                  }
-                                                : null,
-                                            child: Text('Confirm'),
+                                            child: Text('OK'),
                                           ),
                                         ],
                                       );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                        child: Text('Join An Event')))),
+                                    }
+                                    final tournaments = snapshot.data ?? [];
+                                    String? selectedEvent;
+                                    return StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return AlertDialog(
+                                          title: Text('Choose an Event'),
+                                          content: DropdownButton<String>(
+                                            isExpanded: true,
+                                            value: selectedEvent,
+                                            hint: Text('Select an event'),
+                                            items: [
+                                              DropdownMenuItem(
+                                                  value: null,
+                                                  child: Text('None')),
+                                              ...tournaments.map((tournament) {
+                                                return DropdownMenuItem(
+                                                  value: tournament.key,
+                                                  child: Text(
+                                                    tournament.display,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                );
+                                              }),
+                                            ],
+                                            onChanged: (newEvent) {
+                                              setState(() =>
+                                                  selectedEvent = newEvent);
+                                            },
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: Text('Cancel'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: selectedEvent != null
+                                                  ? () {
+                                                      apiService
+                                                          .add_group_to_event(
+                                                              widget.group
+                                                                      ?.name ??
+                                                                  '',
+                                                              selectedEvent!)
+                                                          .then((val) {
+                                                        var (
+                                                          group,
+                                                          membership
+                                                        ) = val;
+                                                        widget.widget.group =
+                                                            group;
+                                                        widget.widget
+                                                                .membership =
+                                                            membership;
+                                                      });
+                                                      Navigator.of(context)
+                                                          .pop(selectedEvent);
+                                                    }
+                                                  : null,
+                                              child: Text('Confirm'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          child: Text('Join An Event')))),
           ExpansionPanelList.radio(
             dividerColor: Colors.transparent,
             children: (widget.group?.events.length ?? 0) == 0
@@ -968,53 +1036,31 @@ class _MembersTabState extends State<_MembersTab> {
                       dividerColor: Colors.blue,
                       elevation: 0,
                       children: List.generate(
-                          members?['admins'].length,
-                          (index) => ExpansionPanelRadio(
-                                canTapOnHeader: true,
-                                backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                                value: members?['admins'][index],
-                                headerBuilder: (context, isExpanded) {
-                                  return Padding(
-                                    child: Text(
-                                        'Admin ${index + 1}: ${members?['admins'][index]['username']}'),
-                                    padding: EdgeInsets.all(20),
-                                  );
-                                },
-                                body: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(members?['admins'][index]['username']),
-                                    if (widget.membership == 'owner')
-                                      SizedBox(width: 8),
-                                    if (widget.membership == 'owner')
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            apiService
-                                                .demote_group_member(
-                                                    widget.group?.name ?? '',
-                                                    members?['admins'][index]
-                                                        ['id'])
-                                                .then((value) {
-                                              setState(() {
-                                                members = value;
-                                              });
-                                            });
-                                          },
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.red),
-                                              foregroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.white)),
-                                          child: Text('Demote to Member')),
-                                    if (widget.membership == 'owner')
-                                      SizedBox(width: 8),
-                                    if (widget.membership == 'owner')
-                                      ElevatedButton(
+                        members?['admins'].length,
+                        (index) => ExpansionPanelRadio(
+                            canTapOnHeader: true,
+                            backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                            value: members?['admins'][index],
+                            headerBuilder: (context, isExpanded) {
+                              return Padding(
+                                child: Text(
+                                    'Admin ${index + 1}: ${members?['admins'][index]['username']}'),
+                                padding: EdgeInsets.all(20),
+                              );
+                            },
+                            body: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(members?['admins'][index]['username']),
+                                  if (widget.membership == 'owner')
+                                    SizedBox(width: 8),
+                                  if (widget.membership == 'owner')
+                                    ElevatedButton(
                                         onPressed: () {
                                           apiService
-                                              .promote_group_admin(
+                                              .demote_group_member(
                                                   widget.group?.name ?? '',
                                                   members?['admins'][index]
                                                       ['id'])
@@ -1027,15 +1073,39 @@ class _MembersTabState extends State<_MembersTab> {
                                         style: ButtonStyle(
                                             backgroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.yellow),
+                                                    Colors.red),
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.black)),
-                                        child: Text('Promote to Owner'),
-                                      )
-                                  ],
-                                ),
-                              )),
+                                                    Colors.white)),
+                                        child: Text('Demote to Member')),
+                                  if (widget.membership == 'owner')
+                                    SizedBox(width: 8),
+                                  if (widget.membership == 'owner')
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        apiService
+                                            .promote_group_admin(
+                                                widget.group?.name ?? '',
+                                                members?['admins'][index]['id'])
+                                            .then((value) {
+                                          setState(() {
+                                            members = value;
+                                          });
+                                        });
+                                      },
+                                      style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                  Colors.yellow),
+                                          foregroundColor:
+                                              WidgetStatePropertyAll(
+                                                  Colors.black)),
+                                      child: Text('Promote to Owner'),
+                                    )
+                                ],
+                              ),
+                            )),
+                      ),
                     ),
                     if (members?['admins'].length == 0)
                       Text('There are no admins in your group')
@@ -1054,72 +1124,77 @@ class _MembersTabState extends State<_MembersTab> {
                       dividerColor: Colors.blue,
                       elevation: 0,
                       children: List.generate(
-                          members?['members'].length,
-                          (index) => ExpansionPanelRadio(
-                                canTapOnHeader: true,
-                                backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                                value: members?['members'][index],
-                                headerBuilder: (context, isExpanded) {
-                                  return Padding(
-                                    child: Text(
-                                        'Member ${index + 1}: ${members?['members'][index]['username']}'),
-                                    padding: EdgeInsets.all(20),
-                                  );
-                                },
-                                body: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
+                        members?['members'].length,
+                        (index) => ExpansionPanelRadio(
+                            canTapOnHeader: true,
+                            backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                            value: members?['members'][index],
+                            headerBuilder: (context, isExpanded) {
+                              return Padding(
+                                child: Text(
+                                    'Member ${index + 1}: ${members?['members'][index]['username']}'),
+                                padding: EdgeInsets.all(20),
+                              );
+                            },
+                            body: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (!(widget.membership == 'owner' ||
+                                        widget.membership == 'admin'))
                                       Text(
                                           'username: ${members?['members'][index]['username']}'),
-                                      if (widget.membership == 'owner' ||
-                                          widget.membership == 'admin')
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                      if (widget.membership == 'owner' ||
-                                          widget.membership == 'admin')
-                                        ElevatedButton(
-                                            style: ButtonStyle(
-                                                backgroundColor:
-                                                    WidgetStatePropertyAll(
-                                                        Colors.red),
-                                                foregroundColor:
-                                                    WidgetStatePropertyAll(
-                                                        Colors.white)),
-                                            onPressed: () {
-                                              apiService
-                                                  .kick_group_member(
-                                                      widget.group?.name ?? '',
-                                                      members?['members'][index]
-                                                          ['id'])
-                                                  .then((value) {
-                                                setState(() {
-                                                  members = value;
-                                                });
+                                    if (widget.membership == 'owner' ||
+                                        widget.membership == 'admin')
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                    if (widget.membership == 'owner' ||
+                                        widget.membership == 'admin')
+                                      ElevatedButton(
+                                          style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.red),
+                                              foregroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.white)),
+                                          onPressed: () {
+                                            apiService
+                                                .kick_group_member(
+                                                    widget.group?.name ?? '',
+                                                    members?['members'][index]
+                                                        ['id'])
+                                                .then((value) {
+                                              setState(() {
+                                                members = value;
                                               });
-                                            },
-                                            child: Text('Kick')),
-                                      if (widget.membership == 'owner')
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                      if (widget.membership == 'owner')
-                                        ElevatedButton(
-                                            onPressed: () {
-                                              apiService
-                                                  .promote_group_member(
-                                                      widget.group?.name ?? '',
-                                                      members?['members'][index]
-                                                          ['id'])
-                                                  .then((value) {
-                                                setState(() {
-                                                  members = value;
-                                                });
+                                            });
+                                          },
+                                          child: Text('Kick')),
+                                    if (widget.membership == 'owner')
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                    if (widget.membership == 'owner')
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            apiService
+                                                .promote_group_member(
+                                                    widget.group?.name ?? '',
+                                                    members?['members'][index]
+                                                        ['id'])
+                                                .then((value) {
+                                              setState(() {
+                                                members = value;
                                               });
-                                            },
-                                            child: Text('Promote to Admin')),
-                                    ]),
-                              )),
+                                            });
+                                          },
+                                          child: Text('Promote to Admin')),
+                                  ]),
+                            )),
+                      ),
                     ),
                     if (members?['members'].length == 0)
                       Text('There are no members in your group')
@@ -1148,8 +1223,81 @@ class _SettingsTab extends StatefulWidget {
 class _SettingsTabState extends State<_SettingsTab> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Settings Tab'),
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      SizedBox(
+        height: 10,
+      ),
+      Card(
+          child: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: ElevatedButton(
+            onPressed: _openConfirmDelete,
+            child: Text('Delete Group'),
+            style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.red),
+                foregroundColor: WidgetStatePropertyAll(Colors.white))),
+      )),
+      Card(
+          child: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Text(
+          'More Settings Coming Soon...',
+          style: TextStyle(color: Colors.blue, fontSize: 30.0),
+        ),
+      ))
+    ]);
+  }
+
+  _openConfirmDelete() {
+    TextEditingController _controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Group'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Are you sure you want to delete this group?'),
+              Text('Please type "${widget.group!.name}" to confirm:'),
+              TextField(
+                controller: _controller,
+                decoration: InputDecoration(hintText: 'Group Name'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_controller.text == widget.group!.name) {
+                  final apiService =
+                      Provider.of<ApiService>(context, listen: false);
+                  apiService.delete_group(widget.group!.name).then((value) {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  }).onError((e, _) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(e.toString())));
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Group name does not match')),
+                  );
+                }
+              },
+              child: Text('Delete'),
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.red),
+                foregroundColor: WidgetStatePropertyAll(Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

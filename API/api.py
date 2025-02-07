@@ -1023,8 +1023,6 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
 @app.post("/Group/{group_name}/Join", tags=["groups"], response_model=list[GroupJoinRequest])
 def join_group(group_name: str, join_code: str, token: str = Depends(check_token_active)):
     groups = get_user_groups(token)
-    if len(groups) != 0:
-        raise HTTPException(400, "You are already part of a group")
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
@@ -1362,7 +1360,7 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
     if KCgroup == {}:
         raise HTTPException(
             403, f"You are not a member of group '{group_name}'")
-    group_members = fetch_group_members(DBgroup.group_id, token)
+    group_members = fetch_group_members(DBgroup.group_id)
     if len(group_members) != 1:
         for group in groups:
             if group['id'] == DBgroup.owner_group_id:
@@ -1382,6 +1380,8 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
     if len(group_members) == 1:
         delete_group(group_name=group_name)
         return {"message": "Successfully left and Successfully deleted the group"}
+    GroupJoinRequestCollection.delete_one(
+        {"user_id": get_user_info(token)['sub'], "group_name": group_name})
     return {"message": "User successfully left the group"}
 
 
@@ -1413,6 +1413,7 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
     GroupPitStatusCollection.delete_one({"group_id": DBgroup.group_id})
     GroupPredictionCollection.delete_one({"group_id": DBgroup.group_id})
     delete_group_kc(group_id=DBgroup.group_id)
+    redisClient.delete(f"{group_name}join_code")
     return {"message": "Group successfully deleted"}
 
 
