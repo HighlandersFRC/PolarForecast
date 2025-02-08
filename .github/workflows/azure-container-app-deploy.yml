@@ -23,15 +23,15 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build APP -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app:pf${{ github.sha }}
-            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app:pf${{ github.sha }}
+            docker build APP -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app-${{ github.sha }}
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app-${{ github.sha }}
 
         - name: 'Deploy to Azure Container Instances'
           uses: 'azure/aci-deploy@v1'
           with:
             resource-group: ${{ secrets.RESOURCE_GROUP }}
             dns-name-label: ${{ secrets.RESOURCE_GROUP }}${{ github.run_number }}
-            image: ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app:pf${{ github.sha }}
+            image: ${{ secrets.REGISTRY_LOGIN_SERVER }}/flutter-app-${{ github.sha }}
             registry-login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
