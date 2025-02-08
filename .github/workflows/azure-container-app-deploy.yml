@@ -2,17 +2,20 @@ on:
   push:
     branches:
       - prod
-
-steps:
-  - name: Log in to Azure
-    uses: azure/login@v1
-    with:
-      creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-  - name: Build and deploy Container App
-    uses: azure/container-apps-deploy-action@v1
-    with:
-      appSourcePath: ${{ github.workspace }}/PolarForecast/APP
-      acrName: HighlanderScouting
-      containerAppName: polarforecast-flutter
-      resourceGroup: HighlanderScouting_group
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}/PolarForecast/APP
+          acrName: HighlanderScouting
+          containerAppName: polarforecast-flutter
+          resourceGroup: HighlanderScouting_group
