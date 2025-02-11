@@ -953,6 +953,35 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     DB_Entry.events.append(new_event)
     GroupCollection.find_one_and_update(
         {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+    headers = {"accept": "application/json",
+               "X-TBA-Auth-Key": TBA_API_KEY}
+    req = requests.get(
+        TBA_API_URL+"event/" + event + "/teams/keys", headers=headers)
+    if req.status_code == 200:
+        teams = json.loads(req.text)
+    else:
+        print(req.status_code, event)
+        teams = []
+    teams = [{"key": x[3:], "pit_status": "Not Started",
+              "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
+    try:
+        groupExistingTeams = GroupPitStatusCollection.find_one(
+            {"event_code": event, "group_id": DB_Entry.group_id})["data"]
+    except:
+        groupExistingTeams = []
+    returnTeams = []
+    for team in teams:
+        for existingTeam in groupExistingTeams:
+            if existingTeam["key"] == team["key"]:
+                team = existingTeam
+                break
+        returnTeams.append(team)
+    try:
+        GroupPitStatusCollection.insert_one(
+            {"event_code": event, "group_id": DB_Entry.group_id, "data": returnTeams})
+    except Exception as e:
+        GroupPitStatusCollection.find_one_and_replace({"event_code": event, "group_id": DB_Entry.group_id}, {
+            "event_code": event, "group_id": DB_Entry.group_id, "data": returnTeams})
     return get_group(group_name=group_name, token=token)
 
 
@@ -1535,6 +1564,7 @@ def confirm_picture_upload(data: PictureData, token: str = Depends(check_token_a
     data.time = datetime.utcnow().timestamp()
     data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}"
     data.user_id = get_user_info(token)["sub"]
+    data.permissions = []
     try:
         PictureCollection.insert_one(data.dict())
     except Exception as e:
@@ -1549,18 +1579,33 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str
         team_number = int(team[3:])
     except:
         raise HTTPException(400, "Invalid Team")
-    groups = get_user_groups_detailed(token)
-    if (len(groups) == 0):
+    groups = [Group(**group) for group in get_user_groups_detailed(token)]
+    if (len(groups) != 0):
         users = get_group_members(groups[0].name, token)
         members = users["members"] + users["admins"] + users["owners"]
         member_ids = [member["id"] for member in members]
+        print(member_ids)
         # Query the collection using the key
-        pictures = list(PictureCollection.find(
-            {"event_code": eventCode, "user_id": {"$in": member_ids}, "team_number": team_number}))
+        pictures = [PictureData(**data) for data in list(PictureCollection.find(
+            {"event_code": eventCode, "user_id": {"$in": member_ids}, "team_number": team_number}))]
+        kc_groups = get_user_groups(token)
+        user_id = get_user_info(token)["sub"]
+        for picture in pictures:
+            if picture.user_id == user_id:
+                picture.permissions = ["admin"]
+        for kc_group in kc_groups:
+            if kc_group["id"] == groups[0].admin_group_id or kc_group["id"] == groups[0].owner_group_id:
+                for picture in pictures:
+                    picture.permissions = ["admin"]
+                break
         return pictures
     user_data = get_user_info(token)
     user_id = user_data["sub"]
-    return list(PictureCollection.find({"event_code": eventCode, "user_id": user_id, "team_number": team_number}))
+    pictures = list(PictureCollection.find(
+        {"event_code": eventCode, "user_id": user_id, "team_number": team_number}))
+    for picture in pictures:
+        picture.permissions = ["admin"]
+    return [PictureData(**data) for data in pictures]
 
 
 @app.get("/{year}/{event}/getPictures", tags=["scouting"])
@@ -1578,36 +1623,6 @@ async def get_event_pictures(year: str, event: str, token: str = Depends(check_t
     user_data = get_user_info(token)
     user_id = user_data["sub"]
     return list(PictureCollection.find({"event_code": eventCode, "user_id": user_id}))
-
-
-@app.post("/{year}/{event}/{team}/pictures/", tags=["scouting"])
-def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: int, token: str = Depends(check_token_active)):
-    status = PitStatusCollection.find_one({"event_code": str(year)+event})
-    picStatus = "Done"
-    found = False
-    for entry in status["data"]:
-        if entry["key"] == team[3:]:
-            found = True
-            entry["picture_status"] = picStatus
-    if not found:
-        raise HTTPException(400, detail="No such team")
-    PitStatusCollection.find_one_and_replace(
-        {"event_code": str(year)+event}, status)
-    file_content = data.file.read()
-    additional_fields = {
-        "key": str(year) + event + "_" + team,
-        "team": team,
-        "eventCode": str(year) + event,
-        "scout_info": get_user_info(token)
-    }
-    file_data = {
-        "filename": data.filename,
-        "content_type": data.content_type,
-        "file": file_content,
-        **additional_fields,
-    }
-    PictureCollection.insert_one(file_data)
-    return {"message": "File uploaded successfully"}
 
 
 @app.delete("/Pictures/Delete", tags=["scouting"])

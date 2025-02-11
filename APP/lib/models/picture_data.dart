@@ -12,6 +12,7 @@ class PictureData with _$PictureData {
     required String event_code,
     required String image_id,
     required String link,
+    required List<String> permissions,
   }) = _PictureData;
 
   factory PictureData.fromJson(Map<String, dynamic> json) =>

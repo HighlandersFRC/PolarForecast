@@ -8,3 +8,4 @@ class PictureData(BaseModel):
     event_code: str
     image_id: str
     link: str
+    permissions: list[str]

@@ -26,6 +26,7 @@ mixin _$PictureData {
   String get event_code => throw _privateConstructorUsedError;
   String get image_id => throw _privateConstructorUsedError;
   String get link => throw _privateConstructorUsedError;
+  List<String> get permissions => throw _privateConstructorUsedError;
 
   /// Serializes this PictureData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +50,8 @@ abstract class $PictureDataCopyWith<$Res> {
       int time,
       String event_code,
       String image_id,
-      String link});
+      String link,
+      List<String> permissions});
 }
 
 /// @nodoc
@@ -73,6 +75,7 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
     Object? event_code = null,
     Object? image_id = null,
     Object? link = null,
+    Object? permissions = null,
   }) {
     return _then(_value.copyWith(
       user_id: null == user_id
@@ -99,6 +102,10 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
           ? _value.link
           : link // ignore: cast_nullable_to_non_nullable
               as String,
+      permissions: null == permissions
+          ? _value.permissions
+          : permissions // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 }
@@ -117,7 +124,8 @@ abstract class _$$PictureDataImplCopyWith<$Res>
       int time,
       String event_code,
       String image_id,
-      String link});
+      String link,
+      List<String> permissions});
 }
 
 /// @nodoc
@@ -139,6 +147,7 @@ class __$$PictureDataImplCopyWithImpl<$Res>
     Object? event_code = null,
     Object? image_id = null,
     Object? link = null,
+    Object? permissions = null,
   }) {
     return _then(_$PictureDataImpl(
       user_id: null == user_id
@@ -165,6 +174,10 @@ class __$$PictureDataImplCopyWithImpl<$Res>
           ? _value.link
           : link // ignore: cast_nullable_to_non_nullable
               as String,
+      permissions: null == permissions
+          ? _value._permissions
+          : permissions // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -178,7 +191,9 @@ class _$PictureDataImpl implements _PictureData {
       required this.time,
       required this.event_code,
       required this.image_id,
-      required this.link});
+      required this.link,
+      required final List<String> permissions})
+      : _permissions = permissions;
 
   factory _$PictureDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$PictureDataImplFromJson(json);
@@ -195,10 +210,17 @@ class _$PictureDataImpl implements _PictureData {
   final String image_id;
   @override
   final String link;
+  final List<String> _permissions;
+  @override
+  List<String> get permissions {
+    if (_permissions is EqualUnmodifiableListView) return _permissions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_permissions);
+  }
 
   @override
   String toString() {
-    return 'PictureData(user_id: $user_id, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link)';
+    return 'PictureData(user_id: $user_id, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link, permissions: $permissions)';
   }
 
   @override
@@ -214,13 +236,22 @@ class _$PictureDataImpl implements _PictureData {
                 other.event_code == event_code) &&
             (identical(other.image_id, image_id) ||
                 other.image_id == image_id) &&
-            (identical(other.link, link) || other.link == link));
+            (identical(other.link, link) || other.link == link) &&
+            const DeepCollectionEquality()
+                .equals(other._permissions, _permissions));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, user_id, team_number, time, event_code, image_id, link);
+      runtimeType,
+      user_id,
+      team_number,
+      time,
+      event_code,
+      image_id,
+      link,
+      const DeepCollectionEquality().hash(_permissions));
 
   /// Create a copy of PictureData
   /// with the given fields replaced by the non-null parameter values.
@@ -245,7 +276,8 @@ abstract class _PictureData implements PictureData {
       required final int time,
       required final String event_code,
       required final String image_id,
-      required final String link}) = _$PictureDataImpl;
+      required final String link,
+      required final List<String> permissions}) = _$PictureDataImpl;
 
   factory _PictureData.fromJson(Map<String, dynamic> json) =
       _$PictureDataImpl.fromJson;
@@ -262,6 +294,8 @@ abstract class _PictureData implements PictureData {
   String get image_id;
   @override
   String get link;
+  @override
+  List<String> get permissions;
 
   /// Create a copy of PictureData
   /// with the given fields replaced by the non-null parameter values.
