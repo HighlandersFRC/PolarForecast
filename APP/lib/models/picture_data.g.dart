@@ -14,6 +14,9 @@ _$PictureDataImpl _$$PictureDataImplFromJson(Map<String, dynamic> json) =>
       event_code: json['event_code'] as String,
       image_id: json['image_id'] as String,
       link: json['link'] as String,
+      permissions: (json['permissions'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$$PictureDataImplToJson(_$PictureDataImpl instance) =>
@@ -24,4 +27,5 @@ Map<String, dynamic> _$$PictureDataImplToJson(_$PictureDataImpl instance) =>
       'event_code': instance.event_code,
       'image_id': instance.image_id,
       'link': instance.link,
+      'permissions': instance.permissions,
     };

@@ -147,7 +147,8 @@ class ApiService {
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
     var data = (await _fetchFromAPI(url, cacheKey));
     List<Image> returnImages = [];
-    for (PictureData imageData in data) {
+    for (Map<String, dynamic> imageMap in data) {
+      PictureData imageData = PictureData.fromJson(imageMap);
       returnImages.add(Image.network(imageData.link));
     }
     return returnImages;
@@ -722,7 +723,8 @@ class ApiService {
         time: 0,
         event_code: event_code,
         image_id: image_id,
-        link: '');
+        link: '',
+        permissions: []);
     final postItOnAPI = await http.post(
       Uri.parse('$APIURL/Pictures/ConfirmUpload'),
       headers: {
