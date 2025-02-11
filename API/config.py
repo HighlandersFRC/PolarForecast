@@ -3,6 +3,8 @@ import sys
 import logging
 from loguru import logger
 import redis
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
 
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 TBA_API_URL = "https://www.thebluealliance.com/api/v3/"
@@ -116,3 +118,17 @@ ALLOW_ORIGINS = [
 EDIT_PASSWORD = os.environ.get("PF_EDIT_PASSWORD", "")
 KEYCLOAK_ADMIN = os.environ.get("KEYCLOAK_ADMIN", "")
 KEYCLOAK_ADMIN_PASSWORD = os.environ.get("KEYCLOAK_ADMIN_PASSWORD", "")
+
+# Azure Blob Storage
+AZURE_STORAGE_CONNECTION_STRING = os.environ.get(
+    "AZURE_STORAGE_CONNECTION_STRING", "")
+
+
+def get_blob_storage_client():
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(
+            AZURE_STORAGE_CONNECTION_STRING)
+        return blob_service_client
+    except Exception as e:
+        logging.error(str(e))
+        return None

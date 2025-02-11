@@ -4,8 +4,11 @@ import io
 import json
 import logging
 import math
+import random
+import string
 from types import TracebackType
 from typing import Annotated
+import uuid
 import zipfile
 from bson import ObjectId
 from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile
@@ -13,19 +16,21 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import numpy
 from pydantic import BaseModel
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from models.picture_data import PictureData
 from models.pit_scouting_2025 import PitScouting2025
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
 from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group
 from GeneticPolar import analyzeData
-from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_redis_client
+from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_blob_storage_client, get_redis_client
 import requests
 from fastapi_utils.tasks import repeat_every
 from StatDescription import stat_description
+from azure.storage.blob import generate_blob_sas, BlobSasPermissions, PublicAccess
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
@@ -135,6 +140,18 @@ GroupPitStatusCollection.create_index(
     [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
 
 redisClient = get_redis_client()
+azureClient = get_blob_storage_client()
+try:
+    try:
+        azureClient.create_container("highlanderscouting")
+    except Exception as e:
+        print(e)
+        pass
+    RobotPicturesClient = azureClient.get_container_client(
+        container="highlanderscouting")
+except Exception as e:
+    print(e)
+    pass
 
 
 def store_in_cache(key, value, durationSeconds=300):
@@ -452,8 +469,16 @@ def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_
 
 
 @app.get("/{year}/{event}/PitScoutingStatus", tags=["scouting"])
-def get_pit_scouting_status(year: int, event: str):
-    data = PitStatusCollection.find_one({"event_code": str(year) + event})
+def get_pit_scouting_status(year: int, event: str, token: str = Depends(check_token_active)):
+    groups = [Group(**group)
+              for group in get_user_groups_detailed(token=token)]
+    if (len(groups) == 0):
+        data = PitStatusCollection.find_one({"event_code": str(year) + event})
+        return data
+    group = groups[0]
+    data = GroupPitStatusCollection.find_one(
+        {'event_code': str(year) + event, 'group_id': group.group_id})
+    data.pop("_id")
     return data
 
 
@@ -924,7 +949,7 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
         raise HTTPException(
             401, "You must be an admin of this group to add events")
     new_event = GroupEvent(event_code=event, settings=GroupEventSettings(
-        crowd_sourced_match_scouting=False, crowd_sourced_pit_scouting=False), alliance_groups=[])
+        crowd_sourced_match_scouting=False, crowd_sourced_pit_scouting=False), up_to_date=False, alliance_groups=[])
     DB_Entry.events.append(new_event)
     GroupCollection.find_one_and_update(
         {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
@@ -1481,50 +1506,78 @@ def get_pictures(team: str, event: str, year: int):
         raise HTTPException(status_code=404, detail="Pictures not found")
 
 
+@app.get("/Pictures/PutURL", tags=["scouting"])
+def get_picture_post_url(token: str = Depends(check_token_active)):
+    # Generate a unique image ID
+    image_id_string = str(uuid.uuid4())
+    while len(list(PictureCollection.find({"image_id": image_id_string}))) != 0:
+        image_id_string = str(uuid.uuid4())
+    image_id_string += ".jpg"
+    sas = generate_blob_sas(
+        account_name=RobotPicturesClient.account_name,
+        container_name=RobotPicturesClient.container_name,
+        blob_name=image_id_string,
+        account_key=RobotPicturesClient.credential.account_key,
+        permission=BlobSasPermissions(write=True),
+        expiry=datetime.utcnow()+timedelta(minutes=5),
+    )
+    blob_url = f"{RobotPicturesClient.primary_endpoint}/{image_id_string}"
+    presigned_url = f"{blob_url}?{sas}"
+    return {"presigned_url": presigned_url, "image_id": image_id_string}
+
+
+@app.post("/Pictures/ConfirmUpload", tags=["scouting"])
+def confirm_picture_upload(data: PictureData, token: str = Depends(check_token_active)):
+    pictureClient = RobotPicturesClient.get_blob_client(data.image_id)
+    if not pictureClient.exists():
+        raise HTTPException(
+            404, "Picture not found. Please make sure the upload completed")
+    data.time = datetime.utcnow().timestamp()
+    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}"
+    data.user_id = get_user_info(token)["sub"]
+    try:
+        PictureCollection.insert_one(data.dict())
+    except Exception as e:
+        PictureCollection.find_one_and_update(data.dict())
+    return {"message": "Upload Confirmed"}
+
+
 @app.get("/{year}/{event}/{team}/getPictures", response_class=JSONResponse, tags=["scouting"])
-async def get_pit_scouting_pictures(team: str, event: str, year: int):
-    pictures = get_pictures(year=year, event=event, team=team)
-    if not pictures:
-        raise HTTPException(status_code=404, detail="Pictures not found")
-
-    # Create a list of image data
-    image_data = []
-    for picture in pictures:
-        content_type = picture["content_type"]
-        file_content = picture["file"]
-        id = str(picture["_id"])
-        # Encode the binary data as base64
-        file_content_base64 = base64.b64encode(file_content).decode("utf-8")
-        image_data.append({"content_type": content_type,
-                          "file": file_content_base64, "_id": id})
-
-    # Return the list of image data as a JSON response
-    return image_data
+async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str = Depends(check_token_active)):
+    eventCode = str(year) + event
+    try:
+        team_number = int(team[3:])
+    except:
+        raise HTTPException(400, "Invalid Team")
+    groups = get_user_groups_detailed(token)
+    if (len(groups) == 0):
+        users = get_group_members(groups[0].name, token)
+        members = users["members"] + users["admins"] + users["owners"]
+        member_ids = [member["id"] for member in members]
+        # Query the collection using the key
+        pictures = list(PictureCollection.find(
+            {"event_code": eventCode, "user_id": {"$in": member_ids}, "team_number": team_number}))
+        return pictures
+    user_data = get_user_info(token)
+    user_id = user_data["sub"]
+    return list(PictureCollection.find({"event_code": eventCode, "user_id": user_id, "team_number": team_number}))
 
 
 @app.get("/{year}/{event}/getPictures", tags=["scouting"])
-@cacheValue()
-async def get_event_pictures(year: str, event: str):
+async def get_event_pictures(year: str, event: str, token: str = Depends(check_token_active)):
     eventCode = str(year) + event
-    # Query the collection using the key
-    pictures = PictureCollection.find({"eventCode": eventCode})
-    if not pictures:
-        raise HTTPException(status_code=404, detail="Pictures not found")
-
-    # Create a list of image data
-    image_data = []
-    for picture in pictures:
-        content_type = picture["content_type"]
-        file_content = picture["file"]
-        team = picture["team"][3:]
-        id = str(picture["_id"])
-        # Encode the binary data as base64
-        file_content_base64 = base64.b64encode(file_content).decode("utf-8")
-        image_data.append({"content_type": content_type,
-                          "file": file_content_base64, "_id": id, "team": team})
-
-    # Return the list of image data as a JSON response
-    return image_data
+    groups = get_user_groups_detailed(token)
+    if (len(groups) == 0):
+        users = get_group_members(groups[0].name, token)
+        members = users["members"] + users["admins"] + users["owners"]
+        member_ids = [member["id"] for member in members]
+        # Query the collection using the key
+        pictures = list(PictureCollection.find(
+            {"event_code": eventCode, "user_id": {"$in": member_ids}}))
+        return pictures
+    user_data = get_user_info(token)
+    user_id = user_data["sub"]
+    return list(PictureCollection.find({"event_code": eventCode, "user_id": user_id}))
 
 
 @app.post("/{year}/{event}/{team}/pictures/", tags=["scouting"])
@@ -1557,36 +1610,42 @@ def post_pit_scouting_pictures(data: UploadFile, team: str, event: str, year: in
     return {"message": "File uploaded successfully"}
 
 
-class ID(BaseModel):
-    id: str
-
-
-@app.delete("/{year}/{event}/{team}/{password}/DeletePictures/", tags=["scouting"])
-def delete_pit_scouting_pictures(objectid: ID, team: str, event: str, year: int, password: str):
-    if password == EDIT_PASSWORD:
-        delete_result = PictureCollection.delete_many(
-            {"_id": ObjectId(objectid.id)})
-        pictures = PictureCollection.find({
-            "key": str(year) + event + "_" + team,
-        })
-        status = get_pit_status(year, event)
-        if len(list(pictures)) == 0:
-            rows = status["data"]
-            for row in rows:
-                if row["key"] == team[3:]:
-                    row["picture_status"] = "Not Started"
-        PitStatusCollection.find_one_and_replace(
-            {"event_code": str(year)+event}, status)
-        return {"message": delete_result.raw_result}
+@app.delete("/Pictures/Delete", tags=["scouting"])
+def delete_pit_scouting_pictures(pictureData: PictureData, token: str = Depends(check_token_active)):
+    DBEntry = PictureCollection.find_one(pictureData.dict())
+    if DBEntry is None:
+        raise HTTPException(404, "Picture Not Found")
+    if (pictureData.user_id == get_user_info(token)["sub"]):
+        delete_result = PictureCollection.delete_one(pictureData.dict())
+        deleteBlob(pictureData.image_id)
+        deleted = False
     else:
-        raise HTTPException(400, "Incorrect Password")
+        kc_groups = get_user_groups(token)
+        detailed_groups = get_user_groups_detailed(token)
+        deleted = False
+        for group in detailed_groups:
+            for kc_group in kc_groups:
+                if group.admin_group_id == kc_group["id"] or group.owner_group_id == kc_group["id"]:
+                    members = get_group_members(group.name, token)
+                    memberIds = [member["id"] for member in (
+                        members["members"] + members["admins"] + members["owners"])]
+                    if pictureData.user_id in memberIds:
+                        delete_result = PictureCollection.delete_one(
+                            pictureData.dict())
+                        deleteBlob(pictureData.image_id)
+                        deleted = True
+                    break
+            if deleted:
+                break
+        if not deleted:
+            raise HTTPException(
+                403, "You do not have permission to delete this picture")
+    return {"message": delete_result.raw_result}
 
 
-@app.get("/{year}/{event}/pitStatus", tags=["scouting"])
-def get_pit_status(year: int, event: str):
-    retval = PitStatusCollection.find_one({"event_code": str(year)+event})
-    retval.pop("_id")
-    return retval
+def deleteBlob(blob_name: str):
+    blob_client = RobotPicturesClient.get_blob_client(blob_name)
+    blob_client.delete_blob()
 
 
 @app.get("/{year}/{event}/{team}/ScoutEntries", tags=["scouting"])
@@ -1607,16 +1666,6 @@ def get_scout_event_entries(event: str, year: int):
     for entry in retval:
         entry.pop("_id")
     return retval
-
-
-@app.get("/{year}/{event}/ScoutingData", tags=["scouting"])
-@cacheValue()
-def get_event_autos(year: int, event: str):
-    autos = list(ScoutingData2024Collection.find(
-        {"event_code": str(year)+event}))
-    for auto in autos:
-        auto.pop("_id")
-    return autos
 
 
 @app.post("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
@@ -1720,7 +1769,7 @@ def get_user_groups(token: str = Depends(check_token_active)):
 
 
 @app.get('/User/Groups/Detailed', tags=["users"], response_model=list[Group])
-def get_user_groups_detailed(token: str = Depends(check_token_active)):
+def get_user_groups_detailed(token: str = Depends(check_token_active)) -> list[dict]:
     kc_groups = get_user_groups(token=token)
     kc_root_groups = []
     for _kc_group in kc_groups:
@@ -2238,6 +2287,27 @@ def update_database():
                     # logging.error(e)
                     PitStatusCollection.find_one_and_replace({"event_code": event["key"]}, {
                         "event_code": event["key"], "data": returnTeams})
+                groups = GroupCollection.find(
+                    {"events.event_code": event["key"]})
+                for group in groups:
+                    try:
+                        groupExistingTeams = GroupPitStatusCollection.find_one(
+                            {"event_code": event["key"], "group_id": group["group_id"]})["data"]
+                    except:
+                        groupExistingTeams = []
+                    returnTeams = []
+                    for team in teams:
+                        for existingTeam in groupExistingTeams:
+                            if existingTeam["key"] == team["key"]:
+                                team = existingTeam
+                                break
+                        returnTeams.append(team)
+                    try:
+                        GroupPitStatusCollection.insert_one(
+                            {"event_code": event["key"], "group_id": group["group_id"], "data": returnTeams})
+                    except Exception as e:
+                        GroupPitStatusCollection.find_one_and_replace({"event_code": event["key"], "group_id": group["group_id"]}, {
+                            "event_code": event["key"], "group_id": group["group_id"], "data": returnTeams})
             except Exception as e:
                 logging.error(e)
 
@@ -2273,8 +2343,8 @@ def update_database():
                     updateData(event["key"])
                 except Exception as e:
                     print(e, event["key"])
-
                     pass
+
         numRuns += 1
     except Exception as e:
         logging.error(e)

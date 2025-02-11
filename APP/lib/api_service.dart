@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:scouting_app/models/picture_data.dart';
 import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
 import 'models/team_stats_2024.dart';
 import 'models/tournament.dart';
+import 'package:image/image.dart' as img;
 
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
@@ -101,7 +103,7 @@ class ApiService {
 
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {
     final cacheKey = '${year}_${event}_pit_status';
-    final url = '${APIURL}/${year}/${event}/pitStatus';
+    final url = '${APIURL}/${year}/${event}/PitScoutingStatus';
     var data = (await _fetchFromAPI(url, cacheKey))['data'];
     data = [...data];
     return data;
@@ -145,8 +147,8 @@ class ApiService {
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
     var data = (await _fetchFromAPI(url, cacheKey));
     List<Image> returnImages = [];
-    for (Map<String, dynamic> imageData in data) {
-      returnImages.add(Image.memory(base64Decode(imageData['file'])));
+    for (PictureData imageData in data) {
+      returnImages.add(Image.network(imageData.link));
     }
     return returnImages;
   }
@@ -689,5 +691,48 @@ class ApiService {
       retVal.add(GroupJoinRequest.fromJson(request));
     }
     return retVal;
+  }
+
+  Future<void> post_image(img.Image image, String event_code, int team) async {
+    final putURLResponse = await http.get(
+      Uri.parse('$APIURL/Pictures/PutURL'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (putURLResponse.statusCode != 200) {
+      throw Exception(json.decode(putURLResponse.body)['detail']);
+    }
+    String preSignedURL = json.decode(putURLResponse.body)['presigned_url'];
+    String image_id = json.decode(putURLResponse.body)['image_id'];
+    final response = await http.put(
+      Uri.parse(preSignedURL),
+      headers: {
+        'x-ms-blob-type': 'BlockBlob',
+        'Content-Type': 'application/jpeg',
+      },
+      body: img.encodeJpg(image),
+    );
+    if (response.statusCode ~/ 100 != 2) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    var data = PictureData(
+        user_id: '',
+        team_number: team,
+        time: 0,
+        event_code: event_code,
+        image_id: image_id,
+        link: '');
+    final postItOnAPI = await http.post(
+      Uri.parse('$APIURL/Pictures/ConfirmUpload'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(data.toJson()),
+    );
+    if (postItOnAPI.statusCode ~/ 100 != 2) {
+      throw Exception(json.decode(postItOnAPI.body)['detail']);
+    }
   }
 }

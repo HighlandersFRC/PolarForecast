@@ -18,6 +18,7 @@ import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
 import '../widgets/login_widget.dart';
 import '../widgets/match_link.dart';
+import '../widgets/pictures_link.dart';
 import '../widgets/team_link.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../widgets/polar_forecast_app_bar.dart';
@@ -1630,26 +1631,33 @@ class _StatusSource extends DataGridSource {
                   color: color,
                   child: PitScoutingLink(
                       row.getCells()[0].value, tournament, cell.value)))
-              : cell.columnName == 'follow_up_status'
+              : cell.columnName == 'picture_status'
                   ? returnCells.add(Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       alignment: Alignment.center,
                       color: color,
-                      child: DeathLink(
+                      child: PicturesLink(
                           row.getCells()[0].value, tournament, cell.value)))
-                  : returnCells.add(Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      alignment: Alignment.center,
-                      color: color,
-                      child: Text(cell.value.toString(),
-                          textScaler: TextScaler.linear(1.25),
-                          style: TextStyle(
-                              color: cell.value == 'Incomplete'
-                                  ? Colors.yellow
-                                  : cell.value == 'Done'
-                                      ? Colors.green
-                                      : Colors.red)),
-                    ));
+                  : cell.columnName == 'follow_up_status'
+                      ? returnCells.add(Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          alignment: Alignment.center,
+                          color: color,
+                          child: DeathLink(
+                              row.getCells()[0].value, tournament, cell.value)))
+                      : returnCells.add(Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          alignment: Alignment.center,
+                          color: color,
+                          child: Text(cell.value.toString(),
+                              textScaler: TextScaler.linear(1.25),
+                              style: TextStyle(
+                                  color: cell.value == 'Incomplete'
+                                      ? Colors.yellow
+                                      : cell.value == 'Done'
+                                          ? Colors.green
+                                          : Colors.red)),
+                        ));
     }
     return DataGridRowAdapter(
       cells: returnCells,
