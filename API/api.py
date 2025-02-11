@@ -1604,25 +1604,39 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str
     pictures = list(PictureCollection.find(
         {"event_code": eventCode, "user_id": user_id, "team_number": team_number}))
     for picture in pictures:
-        picture.permissions = ["admin"]
-    return [PictureData(**data) for data in pictures]
+        picture["permissions"] = ["admin"]
+    return [PictureData(**data).dict() for data in pictures]
 
 
 @app.get("/{year}/{event}/getPictures", tags=["scouting"])
 async def get_event_pictures(year: str, event: str, token: str = Depends(check_token_active)):
     eventCode = str(year) + event
-    groups = get_user_groups_detailed(token)
-    if (len(groups) == 0):
+    groups = [Group(**group) for group in get_user_groups_detailed(token)]
+    if (len(groups) != 0):
         users = get_group_members(groups[0].name, token)
         members = users["members"] + users["admins"] + users["owners"]
         member_ids = [member["id"] for member in members]
         # Query the collection using the key
         pictures = list(PictureCollection.find(
             {"event_code": eventCode, "user_id": {"$in": member_ids}}))
+        pictures = [PictureData(**data) for data in list(PictureCollection.find(
+            {"event_code": eventCode, "user_id": {"$in": member_ids}}))]
+        kc_groups = get_user_groups(token)
+        user_id = get_user_info(token)["sub"]
+        for picture in pictures:
+            if picture.user_id == user_id:
+                picture.permissions = ["admin"]
+        for kc_group in kc_groups:
+            if kc_group["id"] == groups[0].admin_group_id or kc_group["id"] == groups[0].owner_group_id:
+                for picture in pictures:
+                    picture.permissions = ["admin"]
+                break
         return pictures
-    user_data = get_user_info(token)
-    user_id = user_data["sub"]
-    return list(PictureCollection.find({"event_code": eventCode, "user_id": user_id}))
+    pictures = list(PictureCollection.find(
+        {"event_code": eventCode, "user_id": user_id}))
+    for picture in pictures:
+        picture["permissions"] = ["admin"]
+    return [PictureData(**data).dict() for data in pictures]
 
 
 @app.delete("/Pictures/Delete", tags=["scouting"])
