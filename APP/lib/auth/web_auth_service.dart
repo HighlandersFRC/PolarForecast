@@ -87,7 +87,6 @@ class WebAuthService implements AuthService {
     }
 
     final refreshToken = window.sessionStorage[refreshTokenKey];
-    print(refreshToken);
     if (refreshToken != null) {
       return await _refreshToken(refreshToken);
     }
