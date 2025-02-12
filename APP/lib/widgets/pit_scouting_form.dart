@@ -114,6 +114,40 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     });
   }
 
+  void handleAddAuto() {
+    setState(() {
+      pitScoutingData = pitScoutingData.copyWith(
+        data: pitScoutingData.data.copyWith(
+          autos: List.from(pitScoutingData.data.autos)
+            ..add(PitAuto2025(
+              starting_position_meters_from_processor: 0,
+              steps: [],
+              field_side: [],
+              exit: false,
+              preload: false,
+            )),
+        ),
+      );
+      print('Auto added');
+    });
+
+    // Show a customized SnackBar notification with animation
+    final snackBar = SnackBar(
+      content: Center(child: Text('Auto added')),
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.only(left: 1420, right: 5, bottom: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10.0),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    // Add a delay to create an exit animation effect
+    Future.delayed(Duration(seconds: 2), () {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    });
+  }
+
   void handleSubmit() async {
     final api = Provider.of<ApiService>(context, listen: false);
     final status = await api.postPitScouting(
@@ -249,6 +283,29 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                             handleChange('favorite_color', value),
                         controller: TextEditingController(
                             text: pitScoutingData.data.favorite_color),
+                      ),
+                      Padding(
+                        padding:
+                            EdgeInsets.all(8.0), // Adjust the padding as needed
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Autos',
+                              style: TextStyle(fontSize: 30),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: const Color(
+                            0xFFD8D0D0), // Set the color of the line
+                        thickness: 2.0, // Set the thickness of the line
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: handleAddAuto,
+                        child: Text('Add Auto'),
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
