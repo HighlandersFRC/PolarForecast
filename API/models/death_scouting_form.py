@@ -1,17 +1,19 @@
 from pydantic import BaseModel
 
+from models.scout_info import ScoutInfo
+
 
 class Death(BaseModel):
     match_number: int
-    severity: int
-    death_reason: str
+    severity: int = -1
+    death_reason: str = ''
 
 
 class DeathScoutingForm (BaseModel):
-    user_id: str
+    scout_info: ScoutInfo
     event_code: str
     team_key: str
-    team_number: str
-    deaths: list[Death]
+    deaths: list[Death] = []
     total: int
+    average: int
     time: int

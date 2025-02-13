@@ -1,25 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
-
-class ExtraData(BaseModel):
-    position: Union[str, int, None] = None
-    processor_side: Optional[bool] = None
-    algae: Optional[bool] = None
-    coral: Optional[bool] = None
-
-
-class Step(BaseModel):
-    name: str
-    extra_data: ExtraData
-
-
-class Auto(BaseModel):
-    starting_position_meters_from_processor: float
-    steps: List[Step]
-    field_side: List[str]
-    exit: bool
-    preload: bool
+from models.scout_info import ScoutInfo
+from models.pit_scouting_2025 import Auto2025
 
 
 class Scoring(BaseModel):
@@ -37,17 +20,10 @@ class Miscellaneous(BaseModel):
 
 
 class Data(BaseModel):
-    auto: Auto
+    auto: Auto2025
     auto_scoring: Scoring
     teleop_scoring: Scoring
     miscellaneous: Miscellaneous
-
-
-class ScoutInfo(BaseModel):
-    user_id: str
-    first_name: str
-    username: str
-    team_number: int
 
 
 class MatchScouting2025(BaseModel):
