@@ -6,21 +6,24 @@ import '../api_service.dart';
 import '../models/tournament.dart';
 
 class PitScoutingForm extends StatefulWidget {
-  final Tournament tournament;
-  final int teamNumber;
-  final bool locked;
-
   const PitScoutingForm(
     this.tournament,
     this.teamNumber,
     this.locked,
   );
 
+  final bool locked;
+  final int teamNumber;
+  final Tournament tournament;
+
   @override
   _PitScoutingFormState createState() => _PitScoutingFormState();
 }
 
 class _PitScoutingFormState extends State<PitScoutingForm> {
+  List<Widget> autoImages = [];
+  bool formSubmitted = false;
+  bool loading = true;
   late PitScouting2025 pitScoutingData = PitScouting2025(
       user_id: '',
       team_number: widget.teamNumber,
@@ -41,8 +44,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           favorite_color: '',
           autos: []),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
-  bool formSubmitted = false;
-  bool loading = true;
 
   @override
   void initState() {
@@ -129,12 +130,54 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         ),
       );
       print('Auto added');
+
+      double height = 250; // Set the desired height
+      double containerWidth = height * 5;
+      double containerHeight = height * 1.3;
+
+      Image image = Image.asset(
+        'assets/2025 REEFSCAPE Gray Background blue.png',
+        width: height * 1.09417040359, // Set the desired width
+        height: height, // Set the desired height
+        fit: BoxFit.contain,
+      );
+
+      // Add a listener to get the image dimensions
+      image.image.resolve(ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          print('Image width: ${info.image.width}');
+          print('Image height: ${info.image.height}');
+        }),
+      );
+
+      autoImages.add(
+        Center(
+          child: Container(
+            width: containerWidth, // Make the container wider than the image
+            height: containerHeight, // Make the container taller than the image
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              border: Border.all(
+                color: const Color(0xFFD8D0D0), // Set the border color
+                width: 2.0, // Set the border width
+              ),
+              borderRadius:
+                  BorderRadius.circular(15.0), // Set the border radius
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(20.0), // Add padding around the image
+              child: image,
+            ),
+          ),
+        ),
+      );
     });
 
     // Show a customized SnackBar notification with animation
     final snackBar = SnackBar(
       content: Center(child: Text('Auto added')),
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(left: 1420, right: 5, bottom: 10.0),
       padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10.0),
@@ -306,6 +349,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       ElevatedButton(
                         onPressed: handleAddAuto,
                         child: Text('Add Auto'),
+                      ),
+                      SizedBox(height: 20),
+                      // Display the list of images
+                      Column(
+                        children: autoImages,
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
