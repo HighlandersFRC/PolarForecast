@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from models.scout_info import ScoutInfo
 
 
-class ExtraData(BaseModel):
+class ExtraData2025(BaseModel):
     position: Union[str, int, None] = None
     processor_side: Optional[bool] = None
     algae: Optional[bool] = None
@@ -13,7 +13,7 @@ class ExtraData(BaseModel):
 
 class PitAutoStep2025(BaseModel):
     name: str
-    extra_data: ExtraData
+    extra_data: ExtraData2025
 
 
 class Auto2025(BaseModel):

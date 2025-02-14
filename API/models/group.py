@@ -34,3 +34,4 @@ class Group(BaseModel):
     join_code: Optional[str]
     events: List[GroupEvent]
     settings: GroupSettings
+    last_update: int = 0
