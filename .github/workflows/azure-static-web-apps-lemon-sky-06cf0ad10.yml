@@ -44,7 +44,7 @@ jobs:
   
       - name: Build web app
         working-directory: ./APP
-        run: flutter build web
+        run: flutter build web --release --dart-define PF_API_ENDPOINT=${{PF_API_ENDPOINT}} --dart-define KEYCLOAK_REALM=${{KEYCLOAK_REALM}} --dart-define KEYCLOAK_APP_CLIENT_ID=${{KEYCLOAK_APP_CLIENT_ID}} --dart-define PF_KEYCLOAK_LOGIN_IP=${{PF_KEYCLOAK_LOGIN_IP}} --dart-define APP_DOMAIN=${{APP_DOMAIN}}
 
       - name: Build And Deploy
         id: builddeploy
