@@ -42,7 +42,7 @@ jobs:
         run: flutter pub get
   
       - name: Build web app
-        run: flutter build web
+        run: cd APP; flutter build web
 
       - name: Build And Deploy
         id: builddeploy
