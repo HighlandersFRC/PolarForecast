@@ -39,9 +39,11 @@ jobs:
           channel: 'stable'
   
       - name: Get dependencies
+        working-directory: ./APP
         run: flutter pub get
   
       - name: Build web app
+        working-directory: ./APP
         run: cd APP; flutter build web
 
       - name: Build And Deploy
