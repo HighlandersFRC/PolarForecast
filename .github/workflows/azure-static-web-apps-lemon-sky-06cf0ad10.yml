@@ -44,7 +44,7 @@ jobs:
   
       - name: Build web app
         working-directory: ./APP
-        run: cd APP; flutter build web
+        run: flutter build web
 
       - name: Build And Deploy
         id: builddeploy
