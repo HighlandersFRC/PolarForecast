@@ -25,7 +25,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2025 pitScoutingData = PitScouting2025(
-    scout_info: ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
+    scout_info:
+        ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
     team_number: widget.teamNumber,
     event_code: widget.tournament.page.split('/')[4],
     data: PitData2025(
@@ -46,6 +47,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     ),
     time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
   );
+
+  List<String?> selectedDropdownValues = [];
+
+  // Define the list of options for the dropdown menu
+  final List<String> dropdownOptions = ['Option 1', 'Option 2', 'Option 3'];
 
   @override
   void initState() {
@@ -70,10 +76,12 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         loading = false;
       });
       if (token != null) {
-        pitScoutingData = pitScoutingData.copyWith(scout_info: get_scout_info(token));
+        pitScoutingData =
+            pitScoutingData.copyWith(scout_info: get_scout_info(token));
         if (mounted) {
           setState(() {
-            pitScoutingData = pitScoutingData.copyWith(scout_info: get_scout_info(token));
+            pitScoutingData =
+                pitScoutingData.copyWith(scout_info: get_scout_info(token));
           });
         }
       }
@@ -211,109 +219,152 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
+  List<double> autoPositions = [];
 
- List<double> autoPositions = [];
+  Widget buildAutoImage(int index) {
+    double fieldWidthMeters = 8.052;
+    while (autoPositions.length <= index) {
+      autoPositions.add(0.0);
+    }
+    double sliderValue = autoPositions[index];
 
-Widget buildAutoImage(int index) {
-  double fieldWidthMeters = 8.052;
-  while (autoPositions.length <= index) {
-    autoPositions.add(0.0);
-  }
-  double sliderValue = autoPositions[index];
+    // Define the list of options for the dropdown menu
+    final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
 
-  return Center(
-    child: Card(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double cardWidth = constraints.maxWidth;
-            double originalImageHeight = 250.0;
-            double originalImageWidth = originalImageHeight * 1.09417040359;
-            double scaleFactor = cardWidth / originalImageHeight;
-            double displayedImageWidth = cardWidth;
-            double displayedImageHeight = originalImageWidth * scaleFactor;
-            double pixelsPerMeter = displayedImageWidth / fieldWidthMeters;
-            double squareSize = displayedImageWidth * 0.1;
-            double squareLeft = sliderValue * pixelsPerMeter - squareSize / 2;
-            if (squareLeft < 0) squareLeft = 0;
-            if (squareLeft > displayedImageWidth - squareSize)
-              squareLeft = displayedImageWidth - squareSize;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Stack(
-                  children: [
-                    Transform.rotate(
-                      angle: 1.5708,
-                      child: Image.asset(
-                        'assets/2025 REEFSCAPE Gray Background blue.png',
-                        width: displayedImageWidth,
-                        height: displayedImageHeight,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: displayedImageHeight * 0.1,
-                      left: squareLeft,
-                      child: Container(
-                        width: squareSize,
-                        height: squareSize,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.blue, width: 8.0),
+    // Ensure there's an independent dropdown value for each auto image
+    while (selectedDropdownValues.length <= index) {
+      selectedDropdownValues.add(null);
+    }
+
+    // Determine the image to display based on the selected dropdown value
+    String imagePath;
+    double Rotation = 0;
+    switch (selectedDropdownValues[index]) {
+      case 'Red Side':
+        imagePath = 'assets/2025 REEFSCAPE Gray Background red.png';
+        Rotation = -1.5708;
+        break;
+
+      case 'Blue Side':
+        imagePath = 'assets/2025 REEFSCAPE Gray Background blue.png';
+        Rotation = 1.5708;
+        break;
+      default:
+        imagePath = 'assets/2025 REEFSCAPE Gray Background blue.png';
+        Rotation = 1.5708; // Default to blue if no selection or 'Both'
+        break;
+    }
+
+    return Center(
+      child: Card(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double cardWidth = constraints.maxWidth;
+              double originalImageHeight = 250.0;
+              double originalImageWidth = originalImageHeight * 1.09417040359;
+              double scaleFactor = cardWidth / originalImageHeight;
+              double displayedImageWidth = cardWidth;
+              double displayedImageHeight = originalImageWidth * scaleFactor;
+              double pixelsPerMeter = displayedImageWidth / fieldWidthMeters;
+              double squareSize = displayedImageWidth * 0.1;
+              double squareLeft = sliderValue * pixelsPerMeter - squareSize / 2;
+              if (squareLeft < 0) squareLeft = 0;
+              if (squareLeft > displayedImageWidth - squareSize)
+                squareLeft = displayedImageWidth - squareSize;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    children: [
+                      Transform.rotate(
+                        angle: Rotation,
+                        child: Image.asset(
+                          imagePath,
+                          width: displayedImageWidth,
+                          height: displayedImageHeight,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                SizedBox(
-                  width: displayedImageWidth,
-                  child: SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 22,
-                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 16),
-                      overlayShape: SliderComponentShape.noOverlay,
-                    ),
-                    child: Slider(
-                      value: sliderValue,
-                      min: 0,
-                      max: fieldWidthMeters,
-                      onChanged: (value) {
-                        setState(() {
-                          autoPositions[index] = value;
-                        });
-                      },
+                      Positioned(
+                        bottom: displayedImageHeight * 0.1,
+                        left: squareLeft,
+                        child: Container(
+                          width: squareSize,
+                          height: squareSize,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blue, width: 8.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    width: displayedImageWidth,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 22,
+                        thumbShape:
+                            RoundSliderThumbShape(enabledThumbRadius: 16),
+                        overlayShape: SliderComponentShape.noOverlay,
+                      ),
+                      child: Slider(
+                        value: sliderValue,
+                        min: 0,
+                        max: fieldWidthMeters,
+                        onChanged: (value) {
+                          setState(() {
+                            autoPositions[index] = value;
+                          });
+                        },
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  "${sliderValue.toStringAsFixed(2)} m",
-                  style: TextStyle(color: Colors.white),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      pitScoutingData = pitScoutingData.copyWith(
-                        data: pitScoutingData.data.copyWith(
-                          autos: List.from(pitScoutingData.data.autos)
-                            ..removeAt(index),
-                        ),
+                  Text(
+                    '${sliderValue.toStringAsFixed(2)} m',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  DropdownButton<String>(
+                    value: selectedDropdownValues[index],
+                    hint: Text('Select Option'),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedDropdownValues[index] = newValue;
+                      });
+                    },
+                    items: dropdownOptions
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
                       );
-                      autoPositions.removeAt(index);
-                    });
-                  },
-                ),
-              ],
-            );
-          },
+                    }).toList(),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        pitScoutingData = pitScoutingData.copyWith(
+                          data: pitScoutingData.data.copyWith(
+                            autos: List.from(pitScoutingData.data.autos)
+                              ..removeAt(index),
+                          ),
+                        );
+                        autoPositions.removeAt(index);
+                        selectedDropdownValues.removeAt(index);
+                      });
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -351,42 +402,50 @@ Widget buildAutoImage(int index) {
                     Text('Drive Train'),
                     TextField(
                       onChanged: (value) => handleChange('drive_train', value),
-                      controller: TextEditingController(text: pitScoutingData.data.drive_train),
+                      controller: TextEditingController(
+                          text: pitScoutingData.data.drive_train),
                     ),
                     SwitchListTile(
                       title: Text('Can Score Coral'),
                       value: pitScoutingData.data.can_score_coral,
-                      onChanged: (value) => handleChange('can_score_coral', value),
+                      onChanged: (value) =>
+                          handleChange('can_score_coral', value),
                     ),
                     SwitchListTile(
                       title: Text('Can Score Processor'),
                       value: pitScoutingData.data.can_score_processor,
-                      onChanged: (value) => handleChange('can_score_processor', value),
+                      onChanged: (value) =>
+                          handleChange('can_score_processor', value),
                     ),
                     SwitchListTile(
                       title: Text('Can Score Net'),
                       value: pitScoutingData.data.can_score_net,
-                      onChanged: (value) => handleChange('can_score_net', value),
+                      onChanged: (value) =>
+                          handleChange('can_score_net', value),
                     ),
                     SwitchListTile(
                       title: Text('Ground Coral Pickup'),
                       value: pitScoutingData.data.ground_coral_pickup,
-                      onChanged: (value) => handleChange('ground_coral_pickup', value),
+                      onChanged: (value) =>
+                          handleChange('ground_coral_pickup', value),
                     ),
                     SwitchListTile(
                       title: Text('Feeder Coral Pickup'),
                       value: pitScoutingData.data.feeder_coral_pickup,
-                      onChanged: (value) => handleChange('feeder_coral_pickup', value),
+                      onChanged: (value) =>
+                          handleChange('feeder_coral_pickup', value),
                     ),
                     SwitchListTile(
                       title: Text('Ground Algae Pickup'),
                       value: pitScoutingData.data.ground_algae_pickup,
-                      onChanged: (value) => handleChange('ground_algae_pickup', value),
+                      onChanged: (value) =>
+                          handleChange('ground_algae_pickup', value),
                     ),
                     SwitchListTile(
                       title: Text('Reef Algae Pickup'),
                       value: pitScoutingData.data.reef_algae_pickup,
-                      onChanged: (value) => handleChange('reef_algae_pickup', value),
+                      onChanged: (value) =>
+                          handleChange('reef_algae_pickup', value),
                     ),
                     Text('Spare Parts'),
                     TextField(
@@ -399,8 +458,10 @@ Widget buildAutoImage(int index) {
                     ),
                     Text('Favorite Color'),
                     TextField(
-                      onChanged: (value) => handleChange('favorite_color', value),
-                      controller: TextEditingController(text: pitScoutingData.data.favorite_color),
+                      onChanged: (value) =>
+                          handleChange('favorite_color', value),
+                      controller: TextEditingController(
+                          text: pitScoutingData.data.favorite_color),
                     ),
                     Padding(
                       padding: EdgeInsets.all(8.0),
