@@ -29,6 +29,7 @@ mixin _$Group {
   String? get join_code => throw _privateConstructorUsedError;
   List<GroupEvent> get events => throw _privateConstructorUsedError;
   GroupSettings get settings => throw _privateConstructorUsedError;
+  int get last_update => throw _privateConstructorUsedError;
 
   /// Serializes this Group to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,7 +54,8 @@ abstract class $GroupCopyWith<$Res> {
       String affiliation,
       String? join_code,
       List<GroupEvent> events,
-      GroupSettings settings});
+      GroupSettings settings,
+      int last_update});
 
   $GroupSettingsCopyWith<$Res> get settings;
 }
@@ -82,6 +84,7 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
     Object? join_code = freezed,
     Object? events = null,
     Object? settings = null,
+    Object? last_update = null,
   }) {
     return _then(_value.copyWith(
       group_id: null == group_id
@@ -120,6 +123,10 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
               as GroupSettings,
+      last_update: null == last_update
+          ? _value.last_update
+          : last_update // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 
@@ -150,7 +157,8 @@ abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
       String affiliation,
       String? join_code,
       List<GroupEvent> events,
-      GroupSettings settings});
+      GroupSettings settings,
+      int last_update});
 
   @override
   $GroupSettingsCopyWith<$Res> get settings;
@@ -178,6 +186,7 @@ class __$$GroupImplCopyWithImpl<$Res>
     Object? join_code = freezed,
     Object? events = null,
     Object? settings = null,
+    Object? last_update = null,
   }) {
     return _then(_$GroupImpl(
       group_id: null == group_id
@@ -216,6 +225,10 @@ class __$$GroupImplCopyWithImpl<$Res>
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
               as GroupSettings,
+      last_update: null == last_update
+          ? _value.last_update
+          : last_update // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -232,7 +245,8 @@ class _$GroupImpl implements _Group {
       required this.affiliation,
       required this.join_code,
       required final List<GroupEvent> events,
-      required this.settings})
+      required this.settings,
+      required this.last_update})
       : _events = events;
 
   factory _$GroupImpl.fromJson(Map<String, dynamic> json) =>
@@ -262,10 +276,12 @@ class _$GroupImpl implements _Group {
 
   @override
   final GroupSettings settings;
+  @override
+  final int last_update;
 
   @override
   String toString() {
-    return 'Group(group_id: $group_id, owner_group_id: $owner_group_id, admin_group_id: $admin_group_id, member_group_id: $member_group_id, name: $name, affiliation: $affiliation, join_code: $join_code, events: $events, settings: $settings)';
+    return 'Group(group_id: $group_id, owner_group_id: $owner_group_id, admin_group_id: $admin_group_id, member_group_id: $member_group_id, name: $name, affiliation: $affiliation, join_code: $join_code, events: $events, settings: $settings, last_update: $last_update)';
   }
 
   @override
@@ -288,7 +304,9 @@ class _$GroupImpl implements _Group {
                 other.join_code == join_code) &&
             const DeepCollectionEquality().equals(other._events, _events) &&
             (identical(other.settings, settings) ||
-                other.settings == settings));
+                other.settings == settings) &&
+            (identical(other.last_update, last_update) ||
+                other.last_update == last_update));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,7 +321,8 @@ class _$GroupImpl implements _Group {
       affiliation,
       join_code,
       const DeepCollectionEquality().hash(_events),
-      settings);
+      settings,
+      last_update);
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.
@@ -331,7 +350,8 @@ abstract class _Group implements Group {
       required final String affiliation,
       required final String? join_code,
       required final List<GroupEvent> events,
-      required final GroupSettings settings}) = _$GroupImpl;
+      required final GroupSettings settings,
+      required final int last_update}) = _$GroupImpl;
 
   factory _Group.fromJson(Map<String, dynamic> json) = _$GroupImpl.fromJson;
 
@@ -353,6 +373,8 @@ abstract class _Group implements Group {
   List<GroupEvent> get events;
   @override
   GroupSettings get settings;
+  @override
+  int get last_update;
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.

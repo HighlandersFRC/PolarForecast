@@ -20,7 +20,7 @@ PitScouting2025 _$PitScouting2025FromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PitScouting2025 {
-  String get user_id => throw _privateConstructorUsedError;
+  ScoutInfo get scout_info => throw _privateConstructorUsedError;
   int get team_number => throw _privateConstructorUsedError;
   int get time => throw _privateConstructorUsedError;
   String get event_code => throw _privateConstructorUsedError;
@@ -43,12 +43,13 @@ abstract class $PitScouting2025CopyWith<$Res> {
       _$PitScouting2025CopyWithImpl<$Res, PitScouting2025>;
   @useResult
   $Res call(
-      {String user_id,
+      {ScoutInfo scout_info,
       int team_number,
       int time,
       String event_code,
       PitData2025 data});
 
+  $ScoutInfoCopyWith<$Res> get scout_info;
   $PitData2025CopyWith<$Res> get data;
 }
 
@@ -67,17 +68,17 @@ class _$PitScouting2025CopyWithImpl<$Res, $Val extends PitScouting2025>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? user_id = null,
+    Object? scout_info = null,
     Object? team_number = null,
     Object? time = null,
     Object? event_code = null,
     Object? data = null,
   }) {
     return _then(_value.copyWith(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
+      scout_info: null == scout_info
+          ? _value.scout_info
+          : scout_info // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -101,6 +102,16 @@ class _$PitScouting2025CopyWithImpl<$Res, $Val extends PitScouting2025>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
+  $ScoutInfoCopyWith<$Res> get scout_info {
+    return $ScoutInfoCopyWith<$Res>(_value.scout_info, (value) {
+      return _then(_value.copyWith(scout_info: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PitScouting2025
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
   $PitData2025CopyWith<$Res> get data {
     return $PitData2025CopyWith<$Res>(_value.data, (value) {
       return _then(_value.copyWith(data: value) as $Val);
@@ -117,12 +128,14 @@ abstract class _$$PitScouting2025ImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String user_id,
+      {ScoutInfo scout_info,
       int team_number,
       int time,
       String event_code,
       PitData2025 data});
 
+  @override
+  $ScoutInfoCopyWith<$Res> get scout_info;
   @override
   $PitData2025CopyWith<$Res> get data;
 }
@@ -140,17 +153,17 @@ class __$$PitScouting2025ImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? user_id = null,
+    Object? scout_info = null,
     Object? team_number = null,
     Object? time = null,
     Object? event_code = null,
     Object? data = null,
   }) {
     return _then(_$PitScouting2025Impl(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
+      scout_info: null == scout_info
+          ? _value.scout_info
+          : scout_info // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -175,7 +188,7 @@ class __$$PitScouting2025ImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PitScouting2025Impl implements _PitScouting2025 {
   const _$PitScouting2025Impl(
-      {required this.user_id,
+      {required this.scout_info,
       required this.team_number,
       required this.time,
       required this.event_code,
@@ -185,7 +198,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
       _$$PitScouting2025ImplFromJson(json);
 
   @override
-  final String user_id;
+  final ScoutInfo scout_info;
   @override
   final int team_number;
   @override
@@ -197,7 +210,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
 
   @override
   String toString() {
-    return 'PitScouting2025(user_id: $user_id, team_number: $team_number, time: $time, event_code: $event_code, data: $data)';
+    return 'PitScouting2025(scout_info: $scout_info, team_number: $team_number, time: $time, event_code: $event_code, data: $data)';
   }
 
   @override
@@ -205,7 +218,8 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PitScouting2025Impl &&
-            (identical(other.user_id, user_id) || other.user_id == user_id) &&
+            (identical(other.scout_info, scout_info) ||
+                other.scout_info == scout_info) &&
             (identical(other.team_number, team_number) ||
                 other.team_number == team_number) &&
             (identical(other.time, time) || other.time == time) &&
@@ -217,7 +231,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, user_id, team_number, time, event_code, data);
+      Object.hash(runtimeType, scout_info, team_number, time, event_code, data);
 
   /// Create a copy of PitScouting2025
   /// with the given fields replaced by the non-null parameter values.
@@ -238,7 +252,7 @@ class _$PitScouting2025Impl implements _PitScouting2025 {
 
 abstract class _PitScouting2025 implements PitScouting2025 {
   const factory _PitScouting2025(
-      {required final String user_id,
+      {required final ScoutInfo scout_info,
       required final int team_number,
       required final int time,
       required final String event_code,
@@ -248,7 +262,7 @@ abstract class _PitScouting2025 implements PitScouting2025 {
       _$PitScouting2025Impl.fromJson;
 
   @override
-  String get user_id;
+  ScoutInfo get scout_info;
   @override
   int get team_number;
   @override
@@ -285,7 +299,7 @@ mixin _$PitData2025 {
   List<String> get climbing => throw _privateConstructorUsedError;
   int get spare_parts => throw _privateConstructorUsedError;
   String get favorite_color => throw _privateConstructorUsedError;
-  List<PitAuto2025> get autos => throw _privateConstructorUsedError;
+  List<Auto2025> get autos => throw _privateConstructorUsedError;
 
   /// Serializes this PitData2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -317,7 +331,7 @@ abstract class $PitData2025CopyWith<$Res> {
       List<String> climbing,
       int spare_parts,
       String favorite_color,
-      List<PitAuto2025> autos});
+      List<Auto2025> autos});
 }
 
 /// @nodoc
@@ -406,7 +420,7 @@ class _$PitData2025CopyWithImpl<$Res, $Val extends PitData2025>
       autos: null == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
-              as List<PitAuto2025>,
+              as List<Auto2025>,
     ) as $Val);
   }
 }
@@ -433,7 +447,7 @@ abstract class _$$PitData2025ImplCopyWith<$Res>
       List<String> climbing,
       int spare_parts,
       String favorite_color,
-      List<PitAuto2025> autos});
+      List<Auto2025> autos});
 }
 
 /// @nodoc
@@ -520,7 +534,7 @@ class __$$PitData2025ImplCopyWithImpl<$Res>
       autos: null == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
-              as List<PitAuto2025>,
+              as List<Auto2025>,
     ));
   }
 }
@@ -542,7 +556,7 @@ class _$PitData2025Impl implements _PitData2025 {
       required final List<String> climbing,
       required this.spare_parts,
       required this.favorite_color,
-      required final List<PitAuto2025> autos})
+      required final List<Auto2025> autos})
       : _coral_levels = coral_levels,
         _climbing = climbing,
         _autos = autos;
@@ -588,9 +602,9 @@ class _$PitData2025Impl implements _PitData2025 {
   final int spare_parts;
   @override
   final String favorite_color;
-  final List<PitAuto2025> _autos;
+  final List<Auto2025> _autos;
   @override
-  List<PitAuto2025> get autos {
+  List<Auto2025> get autos {
     if (_autos is EqualUnmodifiableListView) return _autos;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_autos);
@@ -685,7 +699,7 @@ abstract class _PitData2025 implements PitData2025 {
       required final List<String> climbing,
       required final int spare_parts,
       required final String favorite_color,
-      required final List<PitAuto2025> autos}) = _$PitData2025Impl;
+      required final List<Auto2025> autos}) = _$PitData2025Impl;
 
   factory _PitData2025.fromJson(Map<String, dynamic> json) =
       _$PitData2025Impl.fromJson;
@@ -717,7 +731,7 @@ abstract class _PitData2025 implements PitData2025 {
   @override
   String get favorite_color;
   @override
-  List<PitAuto2025> get autos;
+  List<Auto2025> get autos;
 
   /// Create a copy of PitData2025
   /// with the given fields replaced by the non-null parameter values.
@@ -727,54 +741,53 @@ abstract class _PitData2025 implements PitData2025 {
       throw _privateConstructorUsedError;
 }
 
-PitAuto2025 _$PitAuto2025FromJson(Map<String, dynamic> json) {
-  return _PitAuto2025.fromJson(json);
+Auto2025 _$Auto2025FromJson(Map<String, dynamic> json) {
+  return _Auto2025.fromJson(json);
 }
 
 /// @nodoc
-mixin _$PitAuto2025 {
+mixin _$Auto2025 {
   double get starting_position_meters_from_processor =>
       throw _privateConstructorUsedError;
-  List<PitAutoStep2025> get steps => throw _privateConstructorUsedError;
+  List<AutoStep2025> get steps => throw _privateConstructorUsedError;
   List<String> get field_side => throw _privateConstructorUsedError;
   bool get exit => throw _privateConstructorUsedError;
   bool get preload => throw _privateConstructorUsedError;
 
-  /// Serializes this PitAuto2025 to a JSON map.
+  /// Serializes this Auto2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of PitAuto2025
+  /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PitAuto2025CopyWith<PitAuto2025> get copyWith =>
+  $Auto2025CopyWith<Auto2025> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PitAuto2025CopyWith<$Res> {
-  factory $PitAuto2025CopyWith(
-          PitAuto2025 value, $Res Function(PitAuto2025) then) =
-      _$PitAuto2025CopyWithImpl<$Res, PitAuto2025>;
+abstract class $Auto2025CopyWith<$Res> {
+  factory $Auto2025CopyWith(Auto2025 value, $Res Function(Auto2025) then) =
+      _$Auto2025CopyWithImpl<$Res, Auto2025>;
   @useResult
   $Res call(
       {double starting_position_meters_from_processor,
-      List<PitAutoStep2025> steps,
+      List<AutoStep2025> steps,
       List<String> field_side,
       bool exit,
       bool preload});
 }
 
 /// @nodoc
-class _$PitAuto2025CopyWithImpl<$Res, $Val extends PitAuto2025>
-    implements $PitAuto2025CopyWith<$Res> {
-  _$PitAuto2025CopyWithImpl(this._value, this._then);
+class _$Auto2025CopyWithImpl<$Res, $Val extends Auto2025>
+    implements $Auto2025CopyWith<$Res> {
+  _$Auto2025CopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PitAuto2025
+  /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -794,7 +807,7 @@ class _$PitAuto2025CopyWithImpl<$Res, $Val extends PitAuto2025>
       steps: null == steps
           ? _value.steps
           : steps // ignore: cast_nullable_to_non_nullable
-              as List<PitAutoStep2025>,
+              as List<AutoStep2025>,
       field_side: null == field_side
           ? _value.field_side
           : field_side // ignore: cast_nullable_to_non_nullable
@@ -812,30 +825,30 @@ class _$PitAuto2025CopyWithImpl<$Res, $Val extends PitAuto2025>
 }
 
 /// @nodoc
-abstract class _$$PitAuto2025ImplCopyWith<$Res>
-    implements $PitAuto2025CopyWith<$Res> {
-  factory _$$PitAuto2025ImplCopyWith(
-          _$PitAuto2025Impl value, $Res Function(_$PitAuto2025Impl) then) =
-      __$$PitAuto2025ImplCopyWithImpl<$Res>;
+abstract class _$$Auto2025ImplCopyWith<$Res>
+    implements $Auto2025CopyWith<$Res> {
+  factory _$$Auto2025ImplCopyWith(
+          _$Auto2025Impl value, $Res Function(_$Auto2025Impl) then) =
+      __$$Auto2025ImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {double starting_position_meters_from_processor,
-      List<PitAutoStep2025> steps,
+      List<AutoStep2025> steps,
       List<String> field_side,
       bool exit,
       bool preload});
 }
 
 /// @nodoc
-class __$$PitAuto2025ImplCopyWithImpl<$Res>
-    extends _$PitAuto2025CopyWithImpl<$Res, _$PitAuto2025Impl>
-    implements _$$PitAuto2025ImplCopyWith<$Res> {
-  __$$PitAuto2025ImplCopyWithImpl(
-      _$PitAuto2025Impl _value, $Res Function(_$PitAuto2025Impl) _then)
+class __$$Auto2025ImplCopyWithImpl<$Res>
+    extends _$Auto2025CopyWithImpl<$Res, _$Auto2025Impl>
+    implements _$$Auto2025ImplCopyWith<$Res> {
+  __$$Auto2025ImplCopyWithImpl(
+      _$Auto2025Impl _value, $Res Function(_$Auto2025Impl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PitAuto2025
+  /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -846,7 +859,7 @@ class __$$PitAuto2025ImplCopyWithImpl<$Res>
     Object? exit = null,
     Object? preload = null,
   }) {
-    return _then(_$PitAuto2025Impl(
+    return _then(_$Auto2025Impl(
       starting_position_meters_from_processor: null ==
               starting_position_meters_from_processor
           ? _value.starting_position_meters_from_processor
@@ -855,7 +868,7 @@ class __$$PitAuto2025ImplCopyWithImpl<$Res>
       steps: null == steps
           ? _value._steps
           : steps // ignore: cast_nullable_to_non_nullable
-              as List<PitAutoStep2025>,
+              as List<AutoStep2025>,
       field_side: null == field_side
           ? _value._field_side
           : field_side // ignore: cast_nullable_to_non_nullable
@@ -874,24 +887,24 @@ class __$$PitAuto2025ImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PitAuto2025Impl implements _PitAuto2025 {
-  const _$PitAuto2025Impl(
+class _$Auto2025Impl implements _Auto2025 {
+  const _$Auto2025Impl(
       {required this.starting_position_meters_from_processor,
-      required final List<PitAutoStep2025> steps,
+      required final List<AutoStep2025> steps,
       required final List<String> field_side,
       required this.exit,
       required this.preload})
       : _steps = steps,
         _field_side = field_side;
 
-  factory _$PitAuto2025Impl.fromJson(Map<String, dynamic> json) =>
-      _$$PitAuto2025ImplFromJson(json);
+  factory _$Auto2025Impl.fromJson(Map<String, dynamic> json) =>
+      _$$Auto2025ImplFromJson(json);
 
   @override
   final double starting_position_meters_from_processor;
-  final List<PitAutoStep2025> _steps;
+  final List<AutoStep2025> _steps;
   @override
-  List<PitAutoStep2025> get steps {
+  List<AutoStep2025> get steps {
     if (_steps is EqualUnmodifiableListView) return _steps;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_steps);
@@ -912,14 +925,14 @@ class _$PitAuto2025Impl implements _PitAuto2025 {
 
   @override
   String toString() {
-    return 'PitAuto2025(starting_position_meters_from_processor: $starting_position_meters_from_processor, steps: $steps, field_side: $field_side, exit: $exit, preload: $preload)';
+    return 'Auto2025(starting_position_meters_from_processor: $starting_position_meters_from_processor, steps: $steps, field_side: $field_side, exit: $exit, preload: $preload)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PitAuto2025Impl &&
+            other is _$Auto2025Impl &&
             (identical(other.starting_position_meters_from_processor,
                     starting_position_meters_from_processor) ||
                 other.starting_position_meters_from_processor ==
@@ -941,37 +954,37 @@ class _$PitAuto2025Impl implements _PitAuto2025 {
       exit,
       preload);
 
-  /// Create a copy of PitAuto2025
+  /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PitAuto2025ImplCopyWith<_$PitAuto2025Impl> get copyWith =>
-      __$$PitAuto2025ImplCopyWithImpl<_$PitAuto2025Impl>(this, _$identity);
+  _$$Auto2025ImplCopyWith<_$Auto2025Impl> get copyWith =>
+      __$$Auto2025ImplCopyWithImpl<_$Auto2025Impl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PitAuto2025ImplToJson(
+    return _$$Auto2025ImplToJson(
       this,
     );
   }
 }
 
-abstract class _PitAuto2025 implements PitAuto2025 {
-  const factory _PitAuto2025(
+abstract class _Auto2025 implements Auto2025 {
+  const factory _Auto2025(
       {required final double starting_position_meters_from_processor,
-      required final List<PitAutoStep2025> steps,
+      required final List<AutoStep2025> steps,
       required final List<String> field_side,
       required final bool exit,
-      required final bool preload}) = _$PitAuto2025Impl;
+      required final bool preload}) = _$Auto2025Impl;
 
-  factory _PitAuto2025.fromJson(Map<String, dynamic> json) =
-      _$PitAuto2025Impl.fromJson;
+  factory _Auto2025.fromJson(Map<String, dynamic> json) =
+      _$Auto2025Impl.fromJson;
 
   @override
   double get starting_position_meters_from_processor;
   @override
-  List<PitAutoStep2025> get steps;
+  List<AutoStep2025> get steps;
   @override
   List<String> get field_side;
   @override
@@ -979,53 +992,53 @@ abstract class _PitAuto2025 implements PitAuto2025 {
   @override
   bool get preload;
 
-  /// Create a copy of PitAuto2025
+  /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PitAuto2025ImplCopyWith<_$PitAuto2025Impl> get copyWith =>
+  _$$Auto2025ImplCopyWith<_$Auto2025Impl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-PitAutoStep2025 _$PitAutoStep2025FromJson(Map<String, dynamic> json) {
-  return _PitAutoStep2025.fromJson(json);
+AutoStep2025 _$AutoStep2025FromJson(Map<String, dynamic> json) {
+  return _AutoStep2025.fromJson(json);
 }
 
 /// @nodoc
-mixin _$PitAutoStep2025 {
+mixin _$AutoStep2025 {
   String get name => throw _privateConstructorUsedError;
   Map<String, dynamic> get extra_data => throw _privateConstructorUsedError;
 
-  /// Serializes this PitAutoStep2025 to a JSON map.
+  /// Serializes this AutoStep2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of PitAutoStep2025
+  /// Create a copy of AutoStep2025
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PitAutoStep2025CopyWith<PitAutoStep2025> get copyWith =>
+  $AutoStep2025CopyWith<AutoStep2025> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PitAutoStep2025CopyWith<$Res> {
-  factory $PitAutoStep2025CopyWith(
-          PitAutoStep2025 value, $Res Function(PitAutoStep2025) then) =
-      _$PitAutoStep2025CopyWithImpl<$Res, PitAutoStep2025>;
+abstract class $AutoStep2025CopyWith<$Res> {
+  factory $AutoStep2025CopyWith(
+          AutoStep2025 value, $Res Function(AutoStep2025) then) =
+      _$AutoStep2025CopyWithImpl<$Res, AutoStep2025>;
   @useResult
   $Res call({String name, Map<String, dynamic> extra_data});
 }
 
 /// @nodoc
-class _$PitAutoStep2025CopyWithImpl<$Res, $Val extends PitAutoStep2025>
-    implements $PitAutoStep2025CopyWith<$Res> {
-  _$PitAutoStep2025CopyWithImpl(this._value, this._then);
+class _$AutoStep2025CopyWithImpl<$Res, $Val extends AutoStep2025>
+    implements $AutoStep2025CopyWith<$Res> {
+  _$AutoStep2025CopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PitAutoStep2025
+  /// Create a copy of AutoStep2025
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1047,25 +1060,25 @@ class _$PitAutoStep2025CopyWithImpl<$Res, $Val extends PitAutoStep2025>
 }
 
 /// @nodoc
-abstract class _$$PitAutoStep2025ImplCopyWith<$Res>
-    implements $PitAutoStep2025CopyWith<$Res> {
-  factory _$$PitAutoStep2025ImplCopyWith(_$PitAutoStep2025Impl value,
-          $Res Function(_$PitAutoStep2025Impl) then) =
-      __$$PitAutoStep2025ImplCopyWithImpl<$Res>;
+abstract class _$$AutoStep2025ImplCopyWith<$Res>
+    implements $AutoStep2025CopyWith<$Res> {
+  factory _$$AutoStep2025ImplCopyWith(
+          _$AutoStep2025Impl value, $Res Function(_$AutoStep2025Impl) then) =
+      __$$AutoStep2025ImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String name, Map<String, dynamic> extra_data});
 }
 
 /// @nodoc
-class __$$PitAutoStep2025ImplCopyWithImpl<$Res>
-    extends _$PitAutoStep2025CopyWithImpl<$Res, _$PitAutoStep2025Impl>
-    implements _$$PitAutoStep2025ImplCopyWith<$Res> {
-  __$$PitAutoStep2025ImplCopyWithImpl(
-      _$PitAutoStep2025Impl _value, $Res Function(_$PitAutoStep2025Impl) _then)
+class __$$AutoStep2025ImplCopyWithImpl<$Res>
+    extends _$AutoStep2025CopyWithImpl<$Res, _$AutoStep2025Impl>
+    implements _$$AutoStep2025ImplCopyWith<$Res> {
+  __$$AutoStep2025ImplCopyWithImpl(
+      _$AutoStep2025Impl _value, $Res Function(_$AutoStep2025Impl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PitAutoStep2025
+  /// Create a copy of AutoStep2025
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1073,7 +1086,7 @@ class __$$PitAutoStep2025ImplCopyWithImpl<$Res>
     Object? name = null,
     Object? extra_data = null,
   }) {
-    return _then(_$PitAutoStep2025Impl(
+    return _then(_$AutoStep2025Impl(
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -1088,13 +1101,13 @@ class __$$PitAutoStep2025ImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PitAutoStep2025Impl implements _PitAutoStep2025 {
-  const _$PitAutoStep2025Impl(
+class _$AutoStep2025Impl implements _AutoStep2025 {
+  const _$AutoStep2025Impl(
       {required this.name, required final Map<String, dynamic> extra_data})
       : _extra_data = extra_data;
 
-  factory _$PitAutoStep2025Impl.fromJson(Map<String, dynamic> json) =>
-      _$$PitAutoStep2025ImplFromJson(json);
+  factory _$AutoStep2025Impl.fromJson(Map<String, dynamic> json) =>
+      _$$AutoStep2025ImplFromJson(json);
 
   @override
   final String name;
@@ -1108,14 +1121,14 @@ class _$PitAutoStep2025Impl implements _PitAutoStep2025 {
 
   @override
   String toString() {
-    return 'PitAutoStep2025(name: $name, extra_data: $extra_data)';
+    return 'AutoStep2025(name: $name, extra_data: $extra_data)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PitAutoStep2025Impl &&
+            other is _$AutoStep2025Impl &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality()
                 .equals(other._extra_data, _extra_data));
@@ -1126,40 +1139,39 @@ class _$PitAutoStep2025Impl implements _PitAutoStep2025 {
   int get hashCode => Object.hash(
       runtimeType, name, const DeepCollectionEquality().hash(_extra_data));
 
-  /// Create a copy of PitAutoStep2025
+  /// Create a copy of AutoStep2025
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PitAutoStep2025ImplCopyWith<_$PitAutoStep2025Impl> get copyWith =>
-      __$$PitAutoStep2025ImplCopyWithImpl<_$PitAutoStep2025Impl>(
-          this, _$identity);
+  _$$AutoStep2025ImplCopyWith<_$AutoStep2025Impl> get copyWith =>
+      __$$AutoStep2025ImplCopyWithImpl<_$AutoStep2025Impl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PitAutoStep2025ImplToJson(
+    return _$$AutoStep2025ImplToJson(
       this,
     );
   }
 }
 
-abstract class _PitAutoStep2025 implements PitAutoStep2025 {
-  const factory _PitAutoStep2025(
+abstract class _AutoStep2025 implements AutoStep2025 {
+  const factory _AutoStep2025(
       {required final String name,
-      required final Map<String, dynamic> extra_data}) = _$PitAutoStep2025Impl;
+      required final Map<String, dynamic> extra_data}) = _$AutoStep2025Impl;
 
-  factory _PitAutoStep2025.fromJson(Map<String, dynamic> json) =
-      _$PitAutoStep2025Impl.fromJson;
+  factory _AutoStep2025.fromJson(Map<String, dynamic> json) =
+      _$AutoStep2025Impl.fromJson;
 
   @override
   String get name;
   @override
   Map<String, dynamic> get extra_data;
 
-  /// Create a copy of PitAutoStep2025
+  /// Create a copy of AutoStep2025
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PitAutoStep2025ImplCopyWith<_$PitAutoStep2025Impl> get copyWith =>
+  _$$AutoStep2025ImplCopyWith<_$AutoStep2025Impl> get copyWith =>
       throw _privateConstructorUsedError;
 }

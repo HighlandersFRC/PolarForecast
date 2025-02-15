@@ -1,12 +1,14 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'scout_info.dart';
+
 part 'pit_scouting_2025.freezed.dart';
 part 'pit_scouting_2025.g.dart';
 
 @freezed
 class PitScouting2025 with _$PitScouting2025 {
   const factory PitScouting2025({
-    required String user_id,
+    required ScoutInfo scout_info,
     required int team_number,
     required int time,
     required String event_code,
@@ -33,7 +35,7 @@ class PitData2025 with _$PitData2025 {
     required List<String> climbing,
     required int spare_parts,
     required String favorite_color,
-    required List<PitAuto2025> autos,
+    required List<Auto2025> autos,
   }) = _PitData2025;
 
   factory PitData2025.fromJson(Map<String, dynamic> json) =>
@@ -41,26 +43,26 @@ class PitData2025 with _$PitData2025 {
 }
 
 @freezed
-class PitAuto2025 with _$PitAuto2025 {
-  const factory PitAuto2025({
+class Auto2025 with _$Auto2025 {
+  const factory Auto2025({
     required double starting_position_meters_from_processor,
-    required List<PitAutoStep2025> steps,
+    required List<AutoStep2025> steps,
     required List<String> field_side,
     required bool exit,
     required bool preload,
-  }) = _PitAuto2025;
+  }) = _Auto2025;
 
-  factory PitAuto2025.fromJson(Map<String, dynamic> json) =>
-      _$PitAuto2025FromJson(json);
+  factory Auto2025.fromJson(Map<String, dynamic> json) =>
+      _$Auto2025FromJson(json);
 }
 
 @freezed
-class PitAutoStep2025 with _$PitAutoStep2025 {
-  const factory PitAutoStep2025({
+class AutoStep2025 with _$AutoStep2025 {
+  const factory AutoStep2025({
     required String name,
     required Map<String, dynamic> extra_data,
-  }) = _PitAutoStep2025;
+  }) = _AutoStep2025;
 
-  factory PitAutoStep2025.fromJson(Map<String, dynamic> json) =>
-      _$PitAutoStep2025FromJson(json);
+  factory AutoStep2025.fromJson(Map<String, dynamic> json) =>
+      _$AutoStep2025FromJson(json);
 }
