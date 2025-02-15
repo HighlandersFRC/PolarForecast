@@ -1729,7 +1729,7 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
     alliance_member_ids = [member['id'] for member in alliance_members]
     member_entries = [MatchScouting2025(
         **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScouting2025.find(
+    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
         {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
     retval = []
     retval.extend([entry.dict() for entry in member_entries])
