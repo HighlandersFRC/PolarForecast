@@ -614,10 +614,10 @@ def updateGroupStatus(group: Group, event_code: str):
             status.picture_status = "Not Started"
     try:
         GroupPitStatusCollection.insert_one(
-            {"event_code": event_code, "group_id": group.group_id, "data": statuses})
+            {"event_code": event_code, "group_id": group.group_id, "data": [status.dict() for status in statuses]})
     except:
         GroupPitStatusCollection.update_one(
-            {"event_code": event_code, "group_id": group.group_id}, {"$set": {"data": statuses}})
+            {"event_code": event_code, "group_id": group.group_id}, {"$set": {"data": [status.dict() for status in statuses]}})
 
 
 def updateGroupGridPitData(group: Group, event_code: str):
