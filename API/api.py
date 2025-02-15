@@ -614,10 +614,10 @@ def updateGroupStatus(group: Group, event_code: str):
             status.picture_status = "Not Started"
     try:
         GroupPitStatusCollection.insert_one(
-            {"event_code": event_code, "group_id": group.group_id, "data": [status.dict() for status in statuses]})
+            {"event_code": event_code, "group_id": group.group_id, "data": [x.dict() for x in statuses]})
     except:
         GroupPitStatusCollection.update_one(
-            {"event_code": event_code, "group_id": group.group_id}, {"$set": {"data": [status.dict() for status in statuses]}})
+            {"event_code": event_code, "group_id": group.group_id}, {"$set": {"data": [x.dict() for x in statuses]}})
 
 
 def updateGroupGridPitData(group: Group, event_code: str):
@@ -1633,11 +1633,9 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str
         users = get_group_members(groups[0].name, token)
         members = users["members"] + users["admins"] + users["owners"]
         member_ids = [member["id"] for member in members]
-        print(member_ids)
         # Query the collection using the key
         pictures = [PictureData(**data) for data in list(PictureCollection.find(
             {"event_code": eventCode, "scout_info.user_id": {"$in": member_ids}, "team_number": team_number}))]
-        kc_groups = get_user_groups(token)
         user_id = get_user_info(token)["sub"]
         return pictures
     user_data = get_user_info(token)
@@ -1731,7 +1729,7 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
     alliance_member_ids = [member['id'] for member in alliance_members]
     member_entries = [MatchScouting2025(
         **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScouting2025.find(
+    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
         {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
     retval = []
     retval.extend([entry.dict() for entry in member_entries])
@@ -2098,7 +2096,6 @@ def updateGroupData(group: Group, event_code: str):
             members.extend(users['admins'])
             for alliance in event.alliance_groups:
                 members.extend(_getGroupMembers(alliance.group_id))
-            print(members)
             member_ids = [member["id"]
                           for member in members if isinstance(member, dict)]
             scoutingData = list(MatchScoutingCollection.find(
@@ -2133,6 +2130,7 @@ def updateGroupData(group: Group, event_code: str):
                         GroupPredictionCollection.find_one_and_replace({"event_code": event_code, "group_id": group.group_id}, {
                             "event_code": event_code, "group_id": group.group_id, "data": predictions})
                     except Exception as ex:
+                        print(ex)
                         pass
             except Exception as e:
                 logging.error(e)
@@ -2151,27 +2149,14 @@ def updateGroupData(group: Group, event_code: str):
             except Exception as e:
                 logging.error(e)
             try:
-                prevData = GroupDataCollection.find_one(
-                    {"event_code": event_code, "group_id": group.group_id})["data"][1:]
-                for idx, team in enumerate(prevData):
-                    for newTeam in data[1:]:
-                        if team["key"] == newTeam["key"]:
-                            for key in team:
-                                if not newTeam.__contains__(key):
-                                    newTeam[key] = team[key]
-                                    # print(team[key])
-                            break
-            except Exception as e:
-                logging.error(e)
-            try:
                 # print("Inserting data")
                 GroupDataCollection.insert_one(
                     {"event_code": event_code, "group_id": group.group_id, "data": data, "metadata": metadata, "scout_ratings": ratings})
             except Exception as e:
                 # logging.error(e)
                 try:
-                    result = GroupDataCollection.update_one(
-                        {"event_code": event_code, "group_id": group.group_id}, {'$set': {"data": data, "metadata": metadata, "scout_ratings": ratings}})
+                    result = GroupDataCollection.find_one_and_replace(
+                        {"event_code": event_code, "group_id": group.group_id}, {"event_code": event_code, "group_id": group.group_id, "data": data, "metadata": metadata, "scout_ratings": ratings})
                 except Exception as ex:
                     print(ex)
                     pass
@@ -2367,16 +2352,18 @@ def update_database():
     groupsToUpdate = [
         Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
     for group in groupsToUpdate:
-        print(group.name)
+        # print(group.name)
         for event in group.events:
-            print(event)
+            # print(event)
             if not event.up_to_date:
                 try:
                     updateGroupData(group, event.event_code)
+                    # print('updated calculated data')
+                    updateGroupGridPitData(group, event.event_code)
                     GroupCollection.update_one(
                         {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
                 except Exception as e:
-                    print(e)
+                    logging.error(str(e))
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
