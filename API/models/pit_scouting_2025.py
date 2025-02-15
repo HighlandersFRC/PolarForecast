@@ -1,13 +1,22 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Optional, Union
+
+from models.scout_info import ScoutInfo
+
+
+class ExtraData2025(BaseModel):
+    position: Union[str, int, None] = None
+    processor_side: Optional[bool] = None
+    algae: Optional[bool] = None
+    coral: Optional[bool] = None
 
 
 class PitAutoStep2025(BaseModel):
     name: str
-    extra_data: Dict[str, Any]
+    extra_data: ExtraData2025
 
 
-class PitAutos2025(BaseModel):
+class Auto2025(BaseModel):
     starting_position_meters_from_processor: float
     steps: List[PitAutoStep2025]
     field_side: List[str]
@@ -29,11 +38,11 @@ class PitData2025(BaseModel):
     climbing: List[str]
     spare_parts: int
     favorite_color: str
-    autos: List[PitAutos2025]
+    autos: List[Auto2025]
 
 
 class PitScouting2025(BaseModel):
-    user_id: str
+    scout_info: ScoutInfo
     team_number: int
     time: int
     event_code: str

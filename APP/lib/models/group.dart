@@ -15,6 +15,7 @@ class Group with _$Group {
     required String? join_code,
     required List<GroupEvent> events,
     required GroupSettings settings,
+    required int last_update, // Added last_update field
   }) = _Group;
 
   factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);

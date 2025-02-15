@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2025.dart';
+import 'package:scouting_app/utils.dart';
 import '../api_service.dart';
 
+import '../models/scout_info.dart';
 import '../models/tournament.dart';
 
 class PitScoutingForm extends StatefulWidget {
@@ -25,7 +27,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2025 pitScoutingData = PitScouting2025(
-      user_id: '',
+      scout_info:
+          ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
       team_number: widget.teamNumber,
       event_code: widget.tournament.page.split('/')[4],
       data: PitData2025(
@@ -53,19 +56,31 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   void fetchPitScoutingData() async {
     final api = Provider.of<ApiService>(context, listen: false);
-    api.token.then((token) => api
-            .fetchTeamPitScouting(
-              widget.tournament.page.split('/')[3],
-              widget.tournament.page.split('/')[4],
-              'frc${widget.teamNumber}',
-            )
-            .then((fetchedData) => setState(() {
-                  pitScoutingData = fetchedData['pit_scouting'] ?? [];
-                  loading = false;
-                }))
-            .onError((e, _) {
-          loading = false;
-        }));
+    api.token.then((token) {
+      api
+          .fetchTeamPitScouting(
+            widget.tournament.page.split('/')[3],
+            widget.tournament.page.split('/')[4],
+            'frc${widget.teamNumber}',
+          )
+          .then((fetchedData) => setState(() {
+                pitScoutingData = PitScouting2025.fromJson(fetchedData);
+                loading = false;
+              }))
+          .onError((e, _) {
+        loading = false;
+      });
+      if (token != null) {
+        pitScoutingData =
+            pitScoutingData.copyWith(scout_info: get_scout_info(token));
+        if (mounted) {
+          setState(() {
+            pitScoutingData =
+                pitScoutingData.copyWith(scout_info: get_scout_info(token));
+          });
+        }
+      }
+    });
   }
 
   void handleChange(String field, dynamic value) {
@@ -120,7 +135,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       pitScoutingData = pitScoutingData.copyWith(
         data: pitScoutingData.data.copyWith(
           autos: List.from(pitScoutingData.data.autos)
-            ..add(PitAuto2025(
+            ..add(Auto2025(
               starting_position_meters_from_processor: 0,
               steps: [],
               field_side: [],
