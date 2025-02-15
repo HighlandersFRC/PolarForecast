@@ -1,0 +1,27 @@
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+        # checkout the repo
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@main
+          
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+        - name: 'Build and push Keycloak Image'
+          uses: azure/docker-login@v1
+          with:
+            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+        - run: |
+            docker build AUTH -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/keycloak:latest
+            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/keycloak:latest
