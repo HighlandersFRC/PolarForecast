@@ -23,7 +23,7 @@ class geneticAlg:
 
     def mutate_gene(self, current_value, sigma):
         mutated_value = current_value + np.random.normal(0, sigma)
-        if mutated_value<0:
+        if mutated_value < 0:
             return 0
         else:
             return mutated_value
@@ -37,7 +37,7 @@ class geneticAlg:
                     if rand < self.mutationPercent:
                         mutant.at[index, column] = self.mutate_gene(
                             value,
-                            1.0,
+                            1.5,
                         )
         return mutant
 
@@ -112,7 +112,7 @@ class geneticAlg:
                 self.generationsSinceImprovement += 1
             if self.generationsSinceImprovement >= 25:
                 foundSolution = True
-            if generationNumber > 1500:
+            if generationNumber > 10000:
                 foundSolution = True
             generationNumber += 1
             # print("generation", generationNumber)

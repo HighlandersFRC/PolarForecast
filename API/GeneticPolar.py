@@ -51,31 +51,31 @@ def getPieceScored(
     return retval
 
 
-def getLevelScoringCount(level: ReefLevel):
+def getLevelScoringCount(level: ReefLevel, autoLevel: ReefLevel = ReefLevel(nodeA=False, nodeB=False, nodeC=False, nodeD=False, nodeE=False, nodeF=False, nodeG=False, nodeH=False, nodeI=False, nodeJ=False, nodeK=False, nodeL=False)):
     count = 0
-    if level.nodeA:
+    if level.nodeA and not autoLevel.nodeA:
         count += 1
-    if level.nodeB:
+    if level.nodeB and not autoLevel.nodeB:
         count += 1
-    if level.nodeC:
+    if level.nodeC and not autoLevel.nodeC:
         count += 1
-    if level.nodeD:
+    if level.nodeD and not autoLevel.nodeD:
         count += 1
-    if level.nodeE:
+    if level.nodeE and not autoLevel.nodeE:
         count += 1
-    if level.nodeF:
+    if level.nodeF and not autoLevel.nodeF:
         count += 1
-    if level.nodeG:
+    if level.nodeG and not autoLevel.nodeG:
         count += 1
-    if level.nodeH:
+    if level.nodeH and not autoLevel.nodeH:
         count += 1
-    if level.nodeI:
+    if level.nodeI and not autoLevel.nodeI:
         count += 1
-    if level.nodeJ:
+    if level.nodeJ and not autoLevel.nodeJ:
         count += 1
-    if level.nodeK:
+    if level.nodeK and not autoLevel.nodeK:
         count += 1
-    if level.nodeL:
+    if level.nodeL and not autoLevel.nodeL:
         count += 1
     return count
 
@@ -128,13 +128,13 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                     row.score_breakdown[allianceStr].autoReef.midRow)
                 oprMatchEntry["auto_scoring_l_4"] = getLevelScoringCount(
                     row.score_breakdown[allianceStr].autoReef.topRow)
-                oprMatchEntry["teleop_scoring_l_1"] = row.score_breakdown[allianceStr].autoReef.trough
+                oprMatchEntry["teleop_scoring_l_1"] = row.score_breakdown[allianceStr].teleopReef.trough
                 oprMatchEntry["teleop_scoring_l_2"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.botRow)
+                    row.score_breakdown[allianceStr].teleopReef.botRow, autoLevel=row.score_breakdown[allianceStr].autoReef.botRow)
                 oprMatchEntry["teleop_scoring_l_3"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.midRow)
+                    row.score_breakdown[allianceStr].teleopReef.midRow, autoLevel=row.score_breakdown[allianceStr].autoReef.midRow)
                 oprMatchEntry["teleop_scoring_l_4"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.topRow)
+                    row.score_breakdown[allianceStr].teleopReef.topRow, autoLevel=row.score_breakdown[allianceStr].autoReef.topRow)
                 oprMatchEntry["processor"] = row.score_breakdown[allianceStr].wallAlgaeCount
                 oprMatchEntry["net"] = row.score_breakdown[allianceStr].netAlgaeCount
                 oprMatchEntry["coopertition"] = 1 if row.score_breakdown[allianceStr].coopertitionCriteriaMet else 0
