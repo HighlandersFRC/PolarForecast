@@ -141,7 +141,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                 oprMatchEntry['foul_points'] = row.score_breakdown[allianceStr].foulPoints
                 oprMatchList.append(copy.deepcopy(oprMatchEntry))
     oprMatchDataFrame = pd.DataFrame(oprMatchList)
-    print(oprMatchDataFrame)
+    # print(oprMatchDataFrame)
     teams = []
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
@@ -150,7 +150,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             if not exists:
                 teams.append(matchTeam)
     teams.sort()
-    print("made list of teams")
+    # print("made list of teams")
     # Initializing sets of Data
     teamMatchCount = np.zeros(len(teams))
     teamParking = np.zeros(len(teams))
@@ -171,7 +171,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     team_match_counts = oprMatchDataFrame[stations].apply(
         pd.Series.value_counts).reindex(teams, fill_value=0).sum(axis=1)
     teamMatchCount[:] = team_match_counts.values
-    print("Counted Matches per team")
+    # print("Counted Matches per team")
 
     # Analyzing data that is directly extracted from
     for index, row in oprMatchDataFrame.iterrows():
@@ -188,7 +188,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                     teamShallow[idx] += 1
             if row["station" + str(k + 1)+"_mobility"] == "Yes":
                 teamMobility[idx] += 1
-    print("found TBA only stats")
+    # print("found TBA only stats")
 
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
@@ -260,14 +260,14 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     numEntries = len(scoutingBaseData)
     j = numEntries  # set j to the max number of scout entries to analyze
-    print("setup hardcoded stuff")
+    # print("setup hardcoded stuff")
     # TBA Data
     YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
     TBAOnlyYMatrix = pd.DataFrame(None, columns=TBAOnlyKeys)
     YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
     # print("ymatrix set up")
     TBAOnlyYMatrix = pd.DataFrame(oprMatchDataFrame[TBAOnlyKeys])
-    print("tba only ymatrix set up")
+    # print("tba only ymatrix set up")
     matchTeamMatrix = oprMatchDataFrame[["station1", "station2", "station3"]]
     blankAEntry = {}
     for team in teams:
@@ -284,13 +284,13 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
     scoutingDataFunction = TeamBasedData
-    print("throwing scouting data")
+    # print("throwing scouting data")
     try:
         scoutingData, ratings = scoutingDataFunction(
             oprMatchDataFrame, scoutingData)
     except Exception as e:
         print(e)
-    print("threw away scouting data")
+    # print("threw away scouting data")
     # Make A and Y lists with scouting data
     for team in teams:
         teamMatches = []
@@ -344,7 +344,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     AMatrix = pd.DataFrame(Alist, columns=teams)
     APseudoInverse = np.linalg.pinv(AMatrix[teams])
     TBAOnlyAPseudoInverse = np.linalg.pinv(pd.DataFrame(TBAOnlyAList)[teams])
-    print("ready for regression")
+    # print("ready for regression")
     # Multivariate Regression
     XMatrix = pd.DataFrame(APseudoInverse @ YMatrix)
     TBAOnlyXMatrix = pd.DataFrame(TBAOnlyAPseudoInverse @ TBAOnlyYMatrix)
@@ -371,7 +371,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     mutation_percent_genes = 0.02
 
     # Define a function to perform the genetic algorithm operation
-    print("doing genetic algorithm")
+    # print("doing genetic algorithm")
     results = []
 
     def perform_genetic_algorithm(i):
@@ -391,7 +391,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     for i in range(len(ScoutingDataKeys)):
         perform_genetic_algorithm(i)
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
-    print("Doing TBA only genetic alg")
+    # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
             create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
@@ -408,7 +408,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         # results.append((result[0], len(ScoutingDataKeys)+i))
     dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
     dataKeys.extend(unpack_nested_list(TBAOnlyKeys))
-    print("compiling data to json")
+    # print("compiling data to json")
     print(results)
     for i, result in enumerate(results):
         # try:
@@ -424,7 +424,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             teleopCoral += array
         # except Exception as e:
         #     print(i, e)
-    print("looped through results")
+    # print("looped through results")
     teamCoopertition = XMatrix["coopertition"]
     teamParking /= teamMatchCount
     teamMobility /= teamMatchCount

@@ -2020,7 +2020,7 @@ def updateData(event_code: str):
     # if TBAData is not None:
     try:
         calculatedData, ratings = analyzeData(TBAData, ScoutingData)
-        print('analyzed data')
+        # print('analyzed data')
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
     except Exception as e:
