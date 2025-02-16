@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2025.dart';
@@ -22,6 +24,13 @@ class PitScoutingForm extends StatefulWidget {
 }
 
 class _PitScoutingFormState extends State<PitScoutingForm> {
+  List<double> autoPositions = [];
+  final TextEditingController driveTrainController = TextEditingController();
+  // Define the list of options for the dropdown menu
+  final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
+
+  List<bool> exitSwitchValues = [];
+  final TextEditingController favoriteColorController = TextEditingController();
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2025 pitScoutingData = PitScouting2025(
@@ -48,10 +57,17 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
   );
 
+  List<bool> preloadSwitchValues = [];
   List<String?> selectedDropdownValues = [];
+  final TextEditingController sparePartsController = TextEditingController();
 
-  // Define the list of options for the dropdown menu
-  final List<String> dropdownOptions = ['Option 1', 'Option 2', 'Option 3'];
+  @override
+  void dispose() {
+    driveTrainController.dispose();
+    sparePartsController.dispose();
+    favoriteColorController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -71,6 +87,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           .then((fetchedData) => setState(() {
                 pitScoutingData = PitScouting2025.fromJson(fetchedData);
                 loading = false;
+                driveTrainController.text = pitScoutingData.data.drive_train;
+                sparePartsController.text =
+                    pitScoutingData.data.spare_parts.toString();
+                favoriteColorController.text =
+                    pitScoutingData.data.favorite_color;
               }))
           .onError((e, _) {
         loading = false;
@@ -161,6 +182,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             ),
         ),
       );
+      autoPositions.add(0.0);
+      selectedDropdownValues.add(null);
+      exitSwitchValues.add(false);
+      preloadSwitchValues.add(false);
     });
 
     print('Auto added');
@@ -219,8 +244,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
-  List<double> autoPositions = [];
-
   Widget buildAutoImage(int index) {
     double fieldWidthMeters = 8.052;
     while (autoPositions.length <= index) {
@@ -228,30 +251,35 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     }
     double sliderValue = autoPositions[index];
 
-    // Define the list of options for the dropdown menu
-    final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
-
     // Ensure there's an independent dropdown value for each auto image
     while (selectedDropdownValues.length <= index) {
       selectedDropdownValues.add(null);
     }
 
+    // Ensure there's an independent switch value for each auto image
+    while (exitSwitchValues.length <= index) {
+      exitSwitchValues.add(false);
+    }
+
+    while (preloadSwitchValues.length <= index) {
+      preloadSwitchValues.add(false);
+    }
+
     // Determine the image to display based on the selected dropdown value
     String imagePath;
-    double Rotation = 0;
+    double rotation = 0;
     switch (selectedDropdownValues[index]) {
       case 'Red Side':
         imagePath = 'assets/2025 REEFSCAPE Gray Background red.png';
-        Rotation = -1.5708;
+        rotation = -1.5708;
         break;
-
       case 'Blue Side':
         imagePath = 'assets/2025 REEFSCAPE Gray Background blue.png';
-        Rotation = 1.5708;
+        rotation = 1.5708;
         break;
       default:
         imagePath = 'assets/2025 REEFSCAPE Gray Background blue.png';
-        Rotation = 1.5708; // Default to blue if no selection or 'Both'
+        rotation = 1.5708; // Default to blue if no selection or 'Both'
         break;
     }
 
@@ -279,7 +307,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                   Stack(
                     children: [
                       Transform.rotate(
-                        angle: Rotation,
+                        angle: rotation,
                         child: Image.asset(
                           imagePath,
                           width: displayedImageWidth,
@@ -342,6 +370,36 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       );
                     }).toList(),
                   ),
+                  SwitchListTile(
+                    title: Text('Exit'),
+                    value: exitSwitchValues[index],
+                    onChanged: (bool value) {
+                      setState(() {
+                        exitSwitchValues[index] = value;
+                        pitScoutingData = pitScoutingData.copyWith(
+                          data: pitScoutingData.data.copyWith(
+                              autos: List.from(pitScoutingData.data.autos)
+                                ..[index] = pitScoutingData.data.autos[index]
+                                    .copyWith(exit: value)),
+                        );
+                      });
+                    },
+                  ),
+                  SwitchListTile(
+                    title: Text('Preload'),
+                    value: preloadSwitchValues[index],
+                    onChanged: (bool value) {
+                      setState(() {
+                        preloadSwitchValues[index] = value;
+                        pitScoutingData = pitScoutingData.copyWith(
+                          data: pitScoutingData.data.copyWith(
+                              autos: List.from(pitScoutingData.data.autos)
+                                ..[index] = pitScoutingData.data.autos[index]
+                                    .copyWith(preload: value)),
+                        );
+                      });
+                    },
+                  ),
                   IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
@@ -354,6 +412,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                         );
                         autoPositions.removeAt(index);
                         selectedDropdownValues.removeAt(index);
+                        exitSwitchValues.removeAt(index);
+                        preloadSwitchValues.removeAt(index);
                       });
                     },
                   ),
@@ -402,8 +462,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     Text('Drive Train'),
                     TextField(
                       onChanged: (value) => handleChange('drive_train', value),
-                      controller: TextEditingController(
-                          text: pitScoutingData.data.drive_train),
+                      controller: driveTrainController,
                     ),
                     SwitchListTile(
                       title: Text('Can Score Coral'),
@@ -452,16 +511,13 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       keyboardType: TextInputType.number,
                       onChanged: (value) =>
                           handleChange('spare_parts', int.tryParse(value) ?? 0),
-                      controller: TextEditingController(
-                        text: pitScoutingData.data.spare_parts.toString(),
-                      ),
+                      controller: sparePartsController,
                     ),
                     Text('Favorite Color'),
                     TextField(
                       onChanged: (value) =>
                           handleChange('favorite_color', value),
-                      controller: TextEditingController(
-                          text: pitScoutingData.data.favorite_color),
+                      controller: favoriteColorController,
                     ),
                     Padding(
                       padding: EdgeInsets.all(8.0),
@@ -486,14 +542,16 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     ),
                     SizedBox(height: 20),
                     // Build a list of auto images with delete buttons:
-                    Column(
-                      children: List.generate(
-                        pitScoutingData.data.autos.length,
-                        (index) => Padding(
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: pitScoutingData.data.autos.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: buildAutoImage(index),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
