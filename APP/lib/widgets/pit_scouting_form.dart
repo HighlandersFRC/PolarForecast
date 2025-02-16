@@ -183,7 +183,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         ),
       );
       autoPositions.add(0.0);
-      selectedDropdownValues.add(null);
+      selectedDropdownValues.add('Blue Side');
       exitSwitchValues.add(false);
       preloadSwitchValues.add(false);
     });
@@ -244,14 +244,181 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
+  List<List<String>> autoSteps = [];
+  List<bool> isAnimatingProcessorList = [];
+  List<bool> isAnimatingNetList = [];
+
+  Widget buildTriangle({
+    required double size,
+    required Color color,
+    double rotation = 0.0,
+  }) {
+    return Transform.rotate(
+      angle: rotation,
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: 0,
+        height: 0,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(width: size, color: Colors.transparent),
+            right: BorderSide(width: size, color: Colors.transparent),
+            bottom: BorderSide(width: size * sqrt(3), color: color),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTriangleMenu(
+      BuildContext context, int autoIndex, int triangleIndex) {
+    String letter1 = String.fromCharCode(65 + (2 * triangleIndex));
+    String letter2 = String.fromCharCode(65 + (2 * triangleIndex) + 1);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Place Level for $letter1-$letter2'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('$letter1:'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (level) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          autoSteps[autoIndex].add(
+                              'Triangle $letter1-$letter2: Placed on $letter1 level ${level + 1}');
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.blueAccent,
+                        child: Text('${level + 1}',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: 10),
+                Text('$letter2:'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (level) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          autoSteps[autoIndex].add(
+                              'Triangle $letter1-$letter2: Placed on $letter2 level ${level + 1}');
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.redAccent,
+                        child: Text('${level + 1}',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget buildStepsUI(int index) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Steps:",
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white)),
+        ...autoSteps[index].asMap().entries.map((entry) {
+          int stepIndex = entry.key;
+          String stepLabel = entry.value;
+          return Card(
+            color: Colors.grey[800],
+            child: ListTile(
+              leading: Text("Step ${stepIndex + 1}",
+                  style: TextStyle(color: Colors.white)),
+              title: Text(stepLabel, style: TextStyle(color: Colors.white)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_upward,
+                        color: stepIndex > 0 ? Colors.white : Colors.grey),
+                    onPressed: stepIndex > 0
+                        ? () {
+                            setState(() {
+                              var temp = autoSteps[index][stepIndex - 1];
+                              autoSteps[index][stepIndex - 1] =
+                                  autoSteps[index][stepIndex];
+                              autoSteps[index][stepIndex] = temp;
+                            });
+                          }
+                        : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.arrow_downward,
+                        color: stepIndex < autoSteps[index].length - 1
+                            ? Colors.white
+                            : Colors.grey),
+                    onPressed: stepIndex < autoSteps[index].length - 1
+                        ? () {
+                            setState(() {
+                              var temp = autoSteps[index][stepIndex + 1];
+                              autoSteps[index][stepIndex + 1] =
+                                  autoSteps[index][stepIndex];
+                              autoSteps[index][stepIndex] = temp;
+                            });
+                          }
+                        : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        autoSteps[index].removeAt(stepIndex);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
   Widget buildAutoImage(int index) {
     double fieldWidthMeters = 8.052;
+    while (autoPositions.length <= index)
+      autoPositions.add(fieldWidthMeters / 2);
+    while (autoSteps.length <= index) autoSteps.add([]);
+    while (isAnimatingProcessorList.length <= index)
+      isAnimatingProcessorList.add(false);
+    while (isAnimatingNetList.length <= index) isAnimatingNetList.add(false);
+
+    double sliderValue = autoPositions[index];
     while (autoPositions.length <= index) {
       autoPositions.add(0.0);
     }
-    double sliderValue = autoPositions[index];
-
-    // Ensure there's an independent dropdown value for each auto image
     while (selectedDropdownValues.length <= index) {
       selectedDropdownValues.add(null);
     }
@@ -282,7 +449,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         rotation = 1.5708; // Default to blue if no selection or 'Both'
         break;
     }
-
     return Center(
       child: Card(
         child: Padding(
@@ -296,64 +462,245 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               double displayedImageWidth = cardWidth;
               double displayedImageHeight = originalImageWidth * scaleFactor;
               double pixelsPerMeter = displayedImageWidth / fieldWidthMeters;
+              double overlayLeft = displayedImageWidth * 0.05;
+              double overlayBottom = displayedImageHeight * 0.2;
+              double overlayWidth = displayedImageWidth * 0.2;
+              double overlayHeight = displayedImageHeight * 0.3;
               double squareSize = displayedImageWidth * 0.1;
               double squareLeft = sliderValue * pixelsPerMeter - squareSize / 2;
               if (squareLeft < 0) squareLeft = 0;
               if (squareLeft > displayedImageWidth - squareSize)
                 squareLeft = displayedImageWidth - squareSize;
+
+              List<Widget> triangleWidgets = [];
+              List<Widget> triangleLabels = [];
+              int triangleCount = 6;
+              double triangleSize = displayedImageWidth * 0.075;
+              double centerX = displayedImageWidth / 2;
+              double centerY = (displayedImageHeight + (5.5 * scaleFactor)) / 2;
+
+              for (int i = 0; i < triangleCount; i++) {
+                int shiftedIndex =
+                    (i + 4) % 6; // Clockwise shift by 2 positions
+                double angle = (2 * pi / triangleCount) * shiftedIndex;
+                Color triangleColor =
+                    (i % 2 == 0) ? Colors.green : Colors.purple;
+
+                // Add triangle
+                triangleWidgets.add(
+                  Positioned(
+                    left: centerX,
+                    top: centerY,
+                    child: buildTriangle(
+                      size: triangleSize,
+                      color: triangleColor.withOpacity(0.5),
+                      rotation: angle,
+                    ),
+                  ),
+                );
+
+                // Calculate label position
+                double centroidDist = (2 * triangleSize * sqrt(3)) / 3;
+                double offsetX = -centroidDist * sin(angle);
+                double offsetY = centroidDist * cos(angle);
+                String letter1 = String.fromCharCode(65 + (2 * i));
+                String letter2 = String.fromCharCode(65 + (2 * i) + 1);
+
+                // Add label
+                triangleLabels.add(
+                  Positioned(
+                    left: centerX + offsetX - (triangleSize * 0.5),
+                    top: centerY + offsetY - (triangleSize * 0.25),
+                    child: Text(
+                      "$letter1-$letter2",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: triangleSize * 0.5,
+                        shadows: [
+                          Shadow(
+                              blurRadius: 2,
+                              color: Colors.black54,
+                              offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Stack(
-                    children: [
-                      Transform.rotate(
-                        angle: rotation,
-                        child: Image.asset(
-                          imagePath,
-                          width: displayedImageWidth,
-                          height: displayedImageHeight,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: displayedImageHeight * 0.1,
-                        left: squareLeft,
-                        child: Container(
-                          width: squareSize,
-                          height: squareSize,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blue, width: 8.0),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (TapDownDetails details) {
+                      RenderBox box = context.findRenderObject() as RenderBox;
+                      Offset localPos =
+                          box.globalToLocal(details.globalPosition);
+                      double dx = localPos.dx - centerX;
+                      double dy = localPos.dy - centerY;
+                      double tapAngle = (atan2(dy, dx) + 2 * pi) % (2 * pi);
+                      double adjustedAngle =
+                          (tapAngle - (pi / 2) + 2 * pi) % (2 * pi);
+                      int tappedTriangle =
+                          (adjustedAngle / (2 * pi / triangleCount)).floor();
+
+                      // Convert to original index
+                      int originalIndex = (tappedTriangle - 4) % 6;
+                      if (originalIndex < 0) originalIndex += 6;
+
+                      _showTriangleMenu(context, index, originalIndex);
+                    },
+                    child: Stack(
+                      children: [
+                        Transform.rotate(
+                          angle: rotation,
+                          child: Image.asset(
+                            imagePath,
+                            width: displayedImageWidth,
+                            height: displayedImageHeight,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                      ),
-                    ],
+                        ...triangleWidgets,
+                        ...triangleLabels,
+                        Positioned(
+                          bottom: displayedImageHeight * 0.11,
+                          left: squareLeft,
+                          child: Container(
+                            width: squareSize,
+                            height: squareSize,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Colors.blue,
+                                  width: displayedImageHeight * 0.005),
+                              borderRadius: BorderRadius.circular(
+                                  displayedImageHeight * 0.02),
+                              color: Colors.black87.withOpacity(0.45),
+                            ),
+                            child:
+                                Icon(Icons.smart_toy, size: 15 * scaleFactor),
+                          ),
+                        ),
+                        Positioned(
+                          left: overlayLeft,
+                          bottom: overlayBottom,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                autoSteps[index].add(
+                                    'Processor ${autoSteps[index].length + 1}');
+                                isAnimatingProcessorList[index] = true;
+                              });
+                              Future.delayed(Duration(milliseconds: 50), () {
+                                setState(() =>
+                                    isAnimatingProcessorList[index] = false);
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 100),
+                              curve: Curves.easeInOutQuad,
+                              width: isAnimatingProcessorList[index]
+                                  ? overlayWidth * 1.1
+                                  : overlayWidth,
+                              height: isAnimatingProcessorList[index]
+                                  ? overlayHeight * 1.1
+                                  : overlayHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(
+                                    isAnimatingProcessorList[index]
+                                        ? 0.7
+                                        : 0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.build,
+                                      color: Colors.white,
+                                      size: (isAnimatingProcessorList[index]
+                                              ? 32
+                                              : 28) *
+                                          scaleFactor),
+                                  SizedBox(height: 4),
+                                  Text('Processor',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11 * (scaleFactor - 0.4))),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: overlayLeft,
+                          bottom: overlayBottom,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                autoSteps[index]
+                                    .add('Net ${autoSteps[index].length + 1}');
+                                isAnimatingNetList[index] = true;
+                              });
+                              Future.delayed(Duration(milliseconds: 50), () {
+                                setState(
+                                    () => isAnimatingNetList[index] = false);
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 100),
+                              curve: Curves.easeInOutQuad,
+                              width: isAnimatingNetList[index]
+                                  ? overlayHeight * 1.1
+                                  : overlayHeight,
+                              height: isAnimatingNetList[index]
+                                  ? overlayWidth * 1.1
+                                  : overlayWidth,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(
+                                    isAnimatingNetList[index] ? 0.7 : 0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.grid_4x4,
+                                      color: Colors.white,
+                                      size: (isAnimatingNetList[index]
+                                              ? 32
+                                              : 28) *
+                                          scaleFactor),
+                                  SizedBox(height: 4),
+                                  Text('Net',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11 * (scaleFactor - 0.4))),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 10),
                   SizedBox(
                     width: displayedImageWidth,
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 22,
-                        thumbShape:
-                            RoundSliderThumbShape(enabledThumbRadius: 16),
-                        overlayShape: SliderComponentShape.noOverlay,
-                      ),
-                      child: Slider(
-                        value: sliderValue,
-                        min: 0,
-                        max: fieldWidthMeters,
-                        onChanged: (value) {
-                          setState(() {
-                            autoPositions[index] = value;
-                          });
-                        },
-                      ),
+                    child: Slider(
+                      value: sliderValue,
+                      min: 0,
+                      max: fieldWidthMeters,
+                      onChanged: (value) {
+                        setState(() {
+                          autoPositions[index] = value;
+                        });
+                      },
                     ),
                   ),
-                  Text(
-                    '${sliderValue.toStringAsFixed(2)} m',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  Text('${sliderValue.toStringAsFixed(2)} m',
+                      style: TextStyle(color: Colors.white)),
+                  buildStepsUI(index),
                   DropdownButton<String>(
                     value: selectedDropdownValues[index],
                     hint: Text('Select Option'),
@@ -411,6 +758,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           ),
                         );
                         autoPositions.removeAt(index);
+                        autoSteps.removeAt(index);
+                        isAnimatingProcessorList.removeAt(index);
+                        isAnimatingNetList.removeAt(index);
                         selectedDropdownValues.removeAt(index);
                         exitSwitchValues.removeAt(index);
                         preloadSwitchValues.removeAt(index);
@@ -462,7 +812,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     Text('Drive Train'),
                     TextField(
                       onChanged: (value) => handleChange('drive_train', value),
-                      controller: driveTrainController,
+                      controller: TextEditingController(
+                          text: pitScoutingData.data.drive_train),
                     ),
                     SwitchListTile(
                       title: Text('Can Score Coral'),
@@ -517,7 +868,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     TextField(
                       onChanged: (value) =>
                           handleChange('favorite_color', value),
-                      controller: favoriteColorController,
+                      controller: TextEditingController(
+                          text: pitScoutingData.data.favorite_color),
                     ),
                     Padding(
                       padding: EdgeInsets.all(8.0),
