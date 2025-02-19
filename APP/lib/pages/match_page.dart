@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/match_details_2025.dart';
 import '../utils.dart';
 import '../widgets/field_whiteboard.dart';
 import 'package:scribble/scribble.dart';
@@ -11,7 +12,6 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../widgets/auto_display_2024.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
-import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import '../models/tournament.dart';
 import 'not_found_page.dart';
@@ -151,7 +151,7 @@ class _StatsTab extends StatefulWidget {
 }
 
 class _StatsTabState extends State<_StatsTab> {
-  MatchDetails2024? stats;
+  MatchDetails2025? stats;
   Map<String, dynamic> statDescription = {'scoutingData': {}};
   bool isLoading = true;
   @override
@@ -162,21 +162,21 @@ class _StatsTabState extends State<_StatsTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    try {
-      final fetchedStats = (await apiService.fetchMatchDetails(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-        widget.widget.match_key,
-      ));
-      if (mounted) {
-        setState(() {
-          stats = fetchedStats;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
+    // try {
+    final fetchedStats = (await apiService.fetchMatchDetails(
+      int.parse(widget.widget.tournament.page.split('/')[3]),
+      widget.widget.tournament.page.split('/')[4],
+      widget.widget.match_key,
+    ));
+    if (mounted) {
+      setState(() {
+        stats = fetchedStats;
+        isLoading = false;
+      });
     }
+    // } catch (e) {
+    //   print('Error fetching data: $e');
+    // }
   }
 
   updateGrid() {}
@@ -211,7 +211,7 @@ class _RedTab extends StatefulWidget {
 
 class _RedTabState extends State<_RedTab> {
   bool isLoading = true, r1Loading = true, r2Loading = true, r3Loading = true;
-  MatchDetails2024? match;
+  MatchDetails2025? match;
   List<MatchScouting2024> r1scouting = [];
   List<MatchScouting2024> r2scouting = [];
   List<MatchScouting2024> r3scouting = [];
@@ -361,7 +361,7 @@ class _BlueTab extends StatefulWidget {
 
 class _BlueTabState extends State<_BlueTab> {
   bool isLoading = true, b1Loading = true, b2Loading = true, b3Loading = true;
-  MatchDetails2024? match;
+  MatchDetails2025? match;
   List<MatchScouting2024> b1scouting = [];
   List<MatchScouting2024> b2scouting = [];
   List<MatchScouting2024> b3scouting = [];

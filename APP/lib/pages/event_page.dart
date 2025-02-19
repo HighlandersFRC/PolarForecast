@@ -12,6 +12,7 @@ import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/need_group.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
+import '../models/match_details_2025.dart';
 import '../models/match_scouting_2024.dart';
 import '../widgets/auto_display_2024.dart';
 import '../widgets/bar_chart_with_weights.dart';
@@ -26,7 +27,6 @@ import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../models/match_details_2024.dart';
 import '../models/tournament.dart';
 import 'home_page.dart';
 
@@ -990,7 +990,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   int driverStationIndex = -1;
   String? token;
   List<String> selectedPieces = [];
-  MatchDetails2024? matchDetails = null;
+  MatchDetails2025? matchDetails = null;
   List<Group>? groups;
   int _autoCoralLevel1 = 0,
       _autoCoralLevel2 = 0,

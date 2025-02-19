@@ -78,5 +78,5 @@ class TBAMatch2025(BaseModel):
     score_breakdown: Dict[Literal["blue", "red"], ScoreBreakdown2025] | None
     set_number: int
     time: int | None
-    videos: List[str] | None
+    videos: List[dict] | None
     winning_alliance: Literal["red", "blue", ""]

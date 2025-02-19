@@ -78,7 +78,7 @@ app.add_middleware(
 
 # Set Up the Database
 client = MongoClient(MONGO_CONNECTION)
-testDB = client["Database_Test"]
+testDB = client["Igloo"]
 
 testCollection = testDB["Test"]
 
@@ -2274,6 +2274,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_coral_l_2": 0,
                 "blue_coral_l_3": 0,
                 "blue_coral_l_4": 0,
+                "blue_processor": 0,
+                "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances['red'].team_keys,
                 "red_mobility": 0,
@@ -2287,6 +2289,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "red_coral_l_2": 0,
                 "red_coral_l_3": 0,
                 "red_coral_l_4": 0,
+                "red_processor": 0,
+                "red_net": 0,
                 "red_auto_coral": 0,
                 "red_actual_score": match.score_breakdown["red"].totalPoints,
                 "predicted": False,
@@ -2309,6 +2313,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_coral_l_2": 0,
                 "blue_coral_l_3": 0,
                 "blue_coral_l_4": 0,
+                "blue_processor": 0,
+                "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances["red"].team_keys,
                 "red_mobility": 0,
@@ -2322,6 +2328,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "red_coral_l_2": 0,
                 "red_coral_l_3": 0,
                 "red_coral_l_4": 0,
+                "red_processor": 0,
+                "red_net": 0,
                 "red_auto_coral": 0,
                 "predicted": True,
             }
@@ -2344,6 +2352,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                     matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
                     matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
                     matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
+                    matchPrediction[f"{alliance}_net"] += teamData["net"]
+                    matchPrediction[f"{alliance}_processor"] += teamData["processor"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
@@ -2471,21 +2481,6 @@ def update_database():
         except:
             pass
     logging.info("Starting Polar Forecast")
-    groupsToUpdate = [
-        Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
-    for group in groupsToUpdate:
-        # print(group.name)
-        for event in group.events:
-            # print(event)
-            if not event.up_to_date:
-                try:
-                    updateGroupData(group, event.event_code)
-                    # print('updated calculated data')
-                    updateGroupGridPitData(group, event.event_code)
-                    GroupCollection.update_one(
-                        {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
-                except Exception as e:
-                    logging.error(str(e))
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
@@ -2551,8 +2546,12 @@ def update_database():
                     event["rankings"] = []
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
-                responseJson = json.loads(r.text)
+                try:
+                    responseJson = json.loads(r.text)
+                except:
+                    responseJson = []
                 for x in responseJson:
+                    # print(event)
                     tbaEntry = TBAMatch2025(**x)
                     try:
                         TBACollection.insert_one(tbaEntry.dict())
@@ -2569,7 +2568,23 @@ def update_database():
                 except Exception as e:
                     print(e, event["key"])
                     pass
-
+        # print("trying to find groups")
+        groupsToUpdate = [
+            Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
+        # print("found groups")
+        for group in groupsToUpdate:
+            # print(group.name)
+            for event in group.events:
+                # print(event)
+                if not event.up_to_date:
+                    try:
+                        updateGroupData(group, event.event_code)
+                        # print('updated calculated data')
+                        updateGroupGridPitData(group, event.event_code)
+                        GroupCollection.update_one(
+                            {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
+                    except Exception as e:
+                        logging.error(str(e))
         numRuns += 1
     except Exception as e:
         logging.error(e)

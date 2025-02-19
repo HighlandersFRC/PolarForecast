@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:scouting_app/models/match_details_2025.dart';
 import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
-import '../models/match_details_2024.dart';
 import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
@@ -248,12 +248,12 @@ class ApiService {
     }
   }
 
-  Future<MatchDetails2024> fetchMatchDetails(
+  Future<MatchDetails2025> fetchMatchDetails(
       int year, String event, String match_key) async {
     final cacheKey = '${year}_${event}_${match_key}_details';
     final url = '${APIURL}/${year}/${event}/${match_key}/match_details';
     var data = (await _fetchFromAPI(url, cacheKey));
-    return MatchDetails2024.fromJson(data);
+    return MatchDetails2025.fromJson(data);
   }
 
   Future<void> login(String redirectPath) async {
