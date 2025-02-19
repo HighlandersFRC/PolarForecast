@@ -4,15 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/match_details_2025.dart';
+import 'package:scouting_app/models/match_scouting_2025.dart';
 import '../utils.dart';
+import '../widgets/auto_display_2025.dart';
 import '../widgets/field_whiteboard.dart';
 import 'package:scribble/scribble.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../widgets/auto_display_2024.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
-import '../models/match_scouting_2024.dart';
 import '../models/tournament.dart';
 import 'not_found_page.dart';
 
@@ -212,9 +212,9 @@ class _RedTab extends StatefulWidget {
 class _RedTabState extends State<_RedTab> {
   bool isLoading = true, r1Loading = true, r2Loading = true, r3Loading = true;
   MatchDetails2025? match;
-  List<MatchScouting2024> r1scouting = [];
-  List<MatchScouting2024> r2scouting = [];
-  List<MatchScouting2024> r3scouting = [];
+  List<MatchScouting2025> r1scouting = [];
+  List<MatchScouting2025> r2scouting = [];
+  List<MatchScouting2025> r3scouting = [];
   @override
   void initState() {
     super.initState();
@@ -274,7 +274,7 @@ class _RedTabState extends State<_RedTab> {
             : LayoutBuilder(
                 builder: (context, constraints) => Row(
                   children: List.generate(3, (i) {
-                    List<MatchScouting2024> scouting = [];
+                    List<MatchScouting2025> scouting = [];
                     bool _isLoading = true;
                     switch (i) {
                       case 0:
@@ -332,7 +332,7 @@ class _RedTabState extends State<_RedTab> {
                                                           colIndex;
                                                       if (index <
                                                           scouting.length) {
-                                                        return AutoDisplay2024(
+                                                        return AutoDisplay2025(
                                                           scoutingData:
                                                               scouting[index],
                                                         );
@@ -362,9 +362,9 @@ class _BlueTab extends StatefulWidget {
 class _BlueTabState extends State<_BlueTab> {
   bool isLoading = true, b1Loading = true, b2Loading = true, b3Loading = true;
   MatchDetails2025? match;
-  List<MatchScouting2024> b1scouting = [];
-  List<MatchScouting2024> b2scouting = [];
-  List<MatchScouting2024> b3scouting = [];
+  List<MatchScouting2025> b1scouting = [];
+  List<MatchScouting2025> b2scouting = [];
+  List<MatchScouting2025> b3scouting = [];
   @override
   void initState() {
     super.initState();
@@ -424,7 +424,7 @@ class _BlueTabState extends State<_BlueTab> {
             : LayoutBuilder(
                 builder: (context, constraints) => Row(
                   children: List.generate(3, (i) {
-                    List<MatchScouting2024> scouting = [];
+                    List<MatchScouting2025> scouting = [];
                     bool _isLoading = true;
                     switch (i) {
                       case 0:
@@ -482,7 +482,7 @@ class _BlueTabState extends State<_BlueTab> {
                                                           colIndex;
                                                       if (index <
                                                           scouting.length) {
-                                                        return AutoDisplay2024(
+                                                        return AutoDisplay2025(
                                                           scoutingData:
                                                               scouting[index],
                                                         );

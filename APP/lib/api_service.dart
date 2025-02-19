@@ -6,9 +6,9 @@ import 'package:scouting_app/models/group_join_request.dart';
 import 'package:scouting_app/models/match_details_2025.dart';
 import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
-import '../models/match_scouting_2024.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
+import 'models/match_scouting_2025.dart';
 import 'models/tournament.dart';
 import 'package:image/image.dart' as img;
 
@@ -163,12 +163,12 @@ class ApiService {
     return data;
   }
 
-  Future<List<MatchScouting2024>> fetchTeamMatchScouting(
+  Future<List<MatchScouting2025>> fetchTeamMatchScouting(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey));
-    var returnValue = <MatchScouting2024>[];
+    var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
       dynamic died = matchData['data']['miscellaneous']['died'];
       if (died == 1 || died == true) {
@@ -177,7 +177,7 @@ class ApiService {
         died = false;
       }
       matchData['data']['miscellaneous']['died'] = died;
-      returnValue.add(MatchScouting2024.fromJson(matchData));
+      returnValue.add(MatchScouting2025.fromJson(matchData));
     }
     return returnValue;
   }

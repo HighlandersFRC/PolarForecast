@@ -2143,7 +2143,10 @@ def updateGroupData(group: Group, event_code: str):
             members.extend(users['members'])
             members.extend(users['admins'])
             for alliance in event.alliance_groups:
-                members.extend(_getGroupMembers(alliance.group_id))
+                allianceMembers = _getGroupMembers(alliance.group_id)
+                members.extend(allianceMembers['owners'])
+                members.extend(allianceMembers['members'])
+                members.extend(allianceMembers['admins'])
             member_ids = [member["id"]
                           for member in members if isinstance(member, dict)]
             scoutingData = [MatchScouting2025(**entry) for entry in list(MatchScoutingCollection.find(
@@ -2250,6 +2253,7 @@ def updateGroupData(group: Group, event_code: str):
                 except Exception as ex:
                     print(ex)
                     pass
+            break
 
 
 def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
@@ -2335,25 +2339,25 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
             }
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
-                teamData = {}
                 for i in range(1, len(calculatedData)):
+                    teamData = {}
                     if calculatedData[i]["key"] == team:
                         teamData = calculatedData[i]
-                if teamData != {}:
-                    matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                    matchPrediction[f"{alliance}_climbing"] += teamData["climbing_points"]
-                    matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
-                    matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
-                    matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                    matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
-                    matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
-                    matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
-                    matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
-                    matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
-                    matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
-                    matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
-                    matchPrediction[f"{alliance}_net"] += teamData["net"]
-                    matchPrediction[f"{alliance}_processor"] += teamData["processor"]
+                    if teamData != {}:
+                        matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                        matchPrediction[f"{alliance}_climbing"] += teamData["climbing_points"]
+                        matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                        matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                        matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
+                        matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
+                        matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
+                        matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
+                        matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
+                        matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
+                        matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
+                        matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
+                        matchPrediction[f"{alliance}_net"] += teamData["net"]
+                        matchPrediction[f"{alliance}_processor"] += teamData["processor"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
@@ -2557,7 +2561,7 @@ def update_database():
                         TBACollection.insert_one(tbaEntry.dict())
                     except:
                         TBACollection.find_one_and_update({"key": tbaEntry.key}, {"$set": {"time": tbaEntry.time, "actual_time": tbaEntry.actual_time,
-                                                                                           "post_result_time": tbaEntry.post_result_time, "score_breakdown": {'red': tbaEntry.score_breakdown['red'].dict(), 'blue': tbaEntry.score_breakdown['red'].dict()} if tbaEntry.score_breakdown is not None else None, "alliances": {'red': tbaEntry.alliances['red'].dict(), 'blue': tbaEntry.alliances['blue'].dict()}}})
+                                                                                           "post_result_time": tbaEntry.post_result_time, "score_breakdown": {'red': tbaEntry.score_breakdown['red'].dict(), 'blue': tbaEntry.score_breakdown['blue'].dict()} if tbaEntry.score_breakdown is not None else None, "alliances": {'red': tbaEntry.alliances['red'].dict(), 'blue': tbaEntry.alliances['blue'].dict()}}})
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
                 ETagCollection.find_one_and_replace(

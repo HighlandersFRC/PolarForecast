@@ -81,7 +81,7 @@ def getLevelScoringCount(level: ReefLevel, autoLevel: ReefLevel = ReefLevel(node
 
 
 def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting2025]):
-    data = TBAdata
+    data = copy.deepcopy(TBAdata)
     scoutingBaseData = scoutingData
     oprMatchList = []
     # Isolating Data Related to OPR

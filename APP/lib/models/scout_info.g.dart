@@ -9,8 +9,8 @@ part of 'scout_info.dart';
 _$ScoutInfoImpl _$$ScoutInfoImplFromJson(Map<String, dynamic> json) =>
     _$ScoutInfoImpl(
       user_id: json['user_id'] as String,
-      first_name: json['first_name'] as String,
-      username: json['username'] as String,
+      first_name: json['first_name'] as String?,
+      username: json['username'] as String?,
       team_number: (json['team_number'] as num).toInt(),
     );
 

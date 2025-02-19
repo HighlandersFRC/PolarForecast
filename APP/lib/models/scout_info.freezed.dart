@@ -21,8 +21,8 @@ ScoutInfo _$ScoutInfoFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ScoutInfo {
   String get user_id => throw _privateConstructorUsedError;
-  String get first_name => throw _privateConstructorUsedError;
-  String get username => throw _privateConstructorUsedError;
+  String? get first_name => throw _privateConstructorUsedError;
+  String? get username => throw _privateConstructorUsedError;
   int get team_number => throw _privateConstructorUsedError;
 
   /// Serializes this ScoutInfo to a JSON map.
@@ -41,7 +41,7 @@ abstract class $ScoutInfoCopyWith<$Res> {
       _$ScoutInfoCopyWithImpl<$Res, ScoutInfo>;
   @useResult
   $Res call(
-      {String user_id, String first_name, String username, int team_number});
+      {String user_id, String? first_name, String? username, int team_number});
 }
 
 /// @nodoc
@@ -60,8 +60,8 @@ class _$ScoutInfoCopyWithImpl<$Res, $Val extends ScoutInfo>
   @override
   $Res call({
     Object? user_id = null,
-    Object? first_name = null,
-    Object? username = null,
+    Object? first_name = freezed,
+    Object? username = freezed,
     Object? team_number = null,
   }) {
     return _then(_value.copyWith(
@@ -69,14 +69,14 @@ class _$ScoutInfoCopyWithImpl<$Res, $Val extends ScoutInfo>
           ? _value.user_id
           : user_id // ignore: cast_nullable_to_non_nullable
               as String,
-      first_name: null == first_name
+      first_name: freezed == first_name
           ? _value.first_name
           : first_name // ignore: cast_nullable_to_non_nullable
-              as String,
-      username: null == username
+              as String?,
+      username: freezed == username
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -94,7 +94,7 @@ abstract class _$$ScoutInfoImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String user_id, String first_name, String username, int team_number});
+      {String user_id, String? first_name, String? username, int team_number});
 }
 
 /// @nodoc
@@ -111,8 +111,8 @@ class __$$ScoutInfoImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? user_id = null,
-    Object? first_name = null,
-    Object? username = null,
+    Object? first_name = freezed,
+    Object? username = freezed,
     Object? team_number = null,
   }) {
     return _then(_$ScoutInfoImpl(
@@ -120,14 +120,14 @@ class __$$ScoutInfoImplCopyWithImpl<$Res>
           ? _value.user_id
           : user_id // ignore: cast_nullable_to_non_nullable
               as String,
-      first_name: null == first_name
+      first_name: freezed == first_name
           ? _value.first_name
           : first_name // ignore: cast_nullable_to_non_nullable
-              as String,
-      username: null == username
+              as String?,
+      username: freezed == username
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -141,8 +141,8 @@ class __$$ScoutInfoImplCopyWithImpl<$Res>
 class _$ScoutInfoImpl implements _ScoutInfo {
   const _$ScoutInfoImpl(
       {required this.user_id,
-      required this.first_name,
-      required this.username,
+      this.first_name,
+      this.username,
       required this.team_number});
 
   factory _$ScoutInfoImpl.fromJson(Map<String, dynamic> json) =>
@@ -151,9 +151,9 @@ class _$ScoutInfoImpl implements _ScoutInfo {
   @override
   final String user_id;
   @override
-  final String first_name;
+  final String? first_name;
   @override
-  final String username;
+  final String? username;
   @override
   final int team_number;
 
@@ -200,8 +200,8 @@ class _$ScoutInfoImpl implements _ScoutInfo {
 abstract class _ScoutInfo implements ScoutInfo {
   const factory _ScoutInfo(
       {required final String user_id,
-      required final String first_name,
-      required final String username,
+      final String? first_name,
+      final String? username,
       required final int team_number}) = _$ScoutInfoImpl;
 
   factory _ScoutInfo.fromJson(Map<String, dynamic> json) =
@@ -210,9 +210,9 @@ abstract class _ScoutInfo implements ScoutInfo {
   @override
   String get user_id;
   @override
-  String get first_name;
+  String? get first_name;
   @override
-  String get username;
+  String? get username;
   @override
   int get team_number;
 
