@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-import '../models/team_stats_2024.dart';
-
 class BarChartWithWeights extends StatefulWidget {
-  final List<TeamStats2024> data;
+  final List<TeamStats2025> data;
   final int number;
   final List<Field> startingFields;
   final String title;
@@ -39,7 +38,7 @@ class Field {
 
 class _BarChartWithWeightsState extends State<BarChartWithWeights> {
   late List<Field> fields;
-  late List<TeamStats2024> originalData;
+  late List<TeamStats2025> originalData;
   late List<Map<String, dynamic>> chartData;
 
   @override
@@ -48,7 +47,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
   }
 
   List<Map<String, dynamic>> _updateData(
-      List<Field> fields, List<TeamStats2024> originalData) {
+      List<Field> fields, List<TeamStats2025> originalData) {
     List<Map<String, dynamic>> adjustedData = originalData.map((item) {
       final newItem = {...item.toJson()};
       for (var field in fields) {
@@ -134,7 +133,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
         SfCartesianChart(
           tooltipBehavior: TooltipBehavior(
             enable: true,
-            shared: true,
+            shared: false,
           ),
           primaryXAxis: CategoryAxis(
             labelRotation: isMobile() ? 90 : 0,
@@ -164,9 +163,11 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
               width: 80,
               child: TextField(
                 decoration: InputDecoration(
-                  labelText: field.name,
-                  labelStyle: TextStyle(color: palette[index % palette.length]),
-                ),
+                    labelText: field.name,
+                    labelStyle:
+                        TextStyle(color: palette[index % palette.length]),
+                    floatingLabelStyle:
+                        TextStyle(color: palette[index % palette.length])),
                 controller:
                     new TextEditingController(text: field.weight.toString()),
                 keyboardType: TextInputType.number,

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group.dart';
+import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/need_group.dart';
@@ -26,7 +27,6 @@ import '../api_service.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import '../models/match_details_2024.dart';
-import '../models/team_stats_2024.dart';
 import '../models/tournament.dart';
 import 'home_page.dart';
 
@@ -147,7 +147,6 @@ class _EventPageState extends State<EventPage> {
               ),
             ];
           },
-          // list of images for scrolling
           body: tabs[_currentTab],
         ));
   }
@@ -164,11 +163,130 @@ class _RankingsTab extends StatefulWidget {
 }
 
 class _RankingsTabState extends State<_RankingsTab> {
-  List<TeamStats2024> rankings = [];
-  Map<String, dynamic> statDescription = {'data': []};
+  List<TeamStats2025> rankings = [];
   bool isLoading = true;
-  List<GridColumn> dataColumns = [];
-  Map<String, bool> heatMapFromKey = {};
+  List<GridColumn> dataColumns = [
+    GridColumn(
+        allowSorting: true,
+        label: Text('#'),
+        columnName: 'team_number',
+        filterPopupMenuOptions: FilterPopupMenuOptions()),
+    GridColumn(allowSorting: true, label: Text('OPR'), columnName: 'OPR'),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Rank'),
+      columnName: 'rank',
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Sim RPs'),
+      columnName: 'simulated_rp',
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Auto Coral Points'),
+      columnName: 'auto_coral_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Teleop Coral Points'),
+      columnName: 'teleop_coral_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Net'),
+      columnName: 'net',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Processor'),
+      columnName: 'processor',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Climb Points'),
+      columnName: 'climbing_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Deathrate'),
+      columnName: 'death_rate',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC4'),
+      columnName: 'auto_scoring_l_4',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC3'),
+      columnName: 'auto_scoring_l_3',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC2'),
+      columnName: 'auto_scoring_l_2',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC1'),
+      columnName: 'auto_scoring_l_1',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC4'),
+      columnName: 'teleop_scoring_l_4',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC3'),
+      columnName: 'teleop_scoring_l_3',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC2'),
+      columnName: 'teleop_scoring_l_2',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC1'),
+      columnName: 'teleop_scoring_l_1',
+      allowFiltering: false,
+    ),
+  ];
+  Map<String, bool> heatMapFromKey = {
+    'team_number': false,
+    'OPR': true,
+    'rank': true,
+    'simulated_rp': true,
+    'auto_coral_points': true,
+    'teleop_coral_points': true,
+    'net': true,
+    'processor': true,
+    'climbing_points': true,
+    'death_rate': true,
+    'auto_scoring_l_4': true,
+    'auto_scoring_l_3': true,
+    'auto_scoring_l_2': true,
+    'auto_scoring_l_1': true,
+    'teleop_scoring_l_4': true,
+    'teleop_scoring_l_3': true,
+    'teleop_scoring_l_2': true,
+    'teleop_scoring_l_1': true,
+  };
   Map<String, num> minValues = {};
   Map<String, num> maxValues = {};
   List<DataGridRow> dataRows = [];
@@ -182,27 +300,6 @@ class _RankingsTabState extends State<_RankingsTab> {
   }
 
   void updateGrid() {
-    dataColumns = [
-      GridColumn(
-          allowSorting: true,
-          label: Text('#'),
-          columnName: 'team_number',
-          filterPopupMenuOptions: FilterPopupMenuOptions()),
-      GridColumn(allowSorting: true, label: Text('OPR'), columnName: 'OPR'),
-    ];
-    heatMapFromKey = {
-      'team_number': false,
-      'OPR': true,
-    };
-    for (var stat in statDescription['data']) {
-      if (stat['report_stat'] && stat['stat_key'] != 'OPR') {
-        heatMapFromKey[stat['stat_key']] = stat['stat_type'] == 'num';
-        dataColumns.add(GridColumn(
-          label: Text(stat['display_name']),
-          columnName: stat['stat_key'],
-        ));
-      }
-    }
     minValues = {};
     maxValues = {};
     for (var column in dataColumns) {
@@ -230,13 +327,19 @@ class _RankingsTabState extends State<_RankingsTab> {
             cells.add(DataGridCell(
                 columnName: column.columnName,
                 value: heatMapFromKey[column.columnName]!
-                    ? int.parse((rank.toJson()[column.columnName] as num)
-                        .toStringAsFixed(2))
-                    : int.parse(rank.toJson()[column.columnName].toString())));
+                    ? ((rank.toJson()[column.columnName] as num) * 10)
+                            .roundToDouble() /
+                        10
+                    : double.parse(
+                        rank.toJson()[column.columnName].toString())));
           } else {
             cells.add(DataGridCell(
               columnName: column.columnName,
-              value: rank.toJson()[column.columnName],
+              value: (rank.toJson()[column.columnName] is num)
+                  ? ((rank.toJson()[column.columnName] as num) * 10)
+                          .roundToDouble() /
+                      10
+                  : rank.toJson()[column.columnName],
             ));
           }
         } catch (e) {
@@ -256,14 +359,9 @@ class _RankingsTabState extends State<_RankingsTab> {
     final fetchedRankings = await apiService.fetchEventRankings(
         int.parse(widget.tournament.page.split('/')[3]),
         widget.tournament.page.split('/')[4]);
-    final fetchedStatDescription = await apiService.fetchStatDescription(
-        int.parse(widget.tournament.page.split('/')[3]),
-        widget.tournament.page.split('/')[4]);
-
     if (mounted) {
       setState(() {
         rankings = fetchedRankings;
-        statDescription = fetchedStatDescription;
         isLoading = false;
       });
     }
@@ -379,8 +477,7 @@ class _ChartsTab extends StatefulWidget {
 }
 
 class _ChartsTabState extends State<_ChartsTab> {
-  List<TeamStats2024> rankings = [];
-  Map<String, dynamic> statDescription = {'data': []};
+  List<TeamStats2025> rankings = [];
   bool isLoading = true;
   List<dynamic> scouting = [];
   List<int> teams = [];
@@ -397,16 +494,12 @@ class _ChartsTabState extends State<_ChartsTab> {
       final fetchedRankings = await apiService.fetchEventRankings(
           int.parse(widget.widget.tournament.page.split('/')[3]),
           widget.widget.tournament.page.split('/')[4]);
-      final fetchedStatDescription = await apiService.fetchStatDescription(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
       final fetchedScouting = await apiService.fetchEventScouting(
           int.parse(widget.widget.tournament.page.split('/')[3]),
           widget.widget.tournament.page.split('/')[4]);
       if (mounted) {
         setState(() {
           rankings = fetchedRankings;
-          statDescription = fetchedStatDescription;
           isLoading = false;
           scouting = fetchedScouting;
           scouting.forEach((entry) {
@@ -765,49 +858,38 @@ class _ChartsTabState extends State<_ChartsTab> {
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
-                  title: 'Notes By Game Period',
+                  title: 'Coral By Game Period',
                   data: rankings,
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Teleop Notes',
-                        key: 'teleop_notes',
+                        name: 'Teleop Coral',
+                        key: 'teleop_coral',
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Auto Notes',
-                        key: 'auto_notes',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Endgame Notes',
-                        key: 'trap',
+                        name: 'Auto Coral',
+                        key: 'auto_coral',
                         enabled: true,
                         weight: 1),
                   ])),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
-                  title: 'Notes By Placement',
+                  title: 'OPR by Game Piece',
                   data: rankings,
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Speaker',
-                        key: 'speaker_total',
+                        name: 'Coral',
+                        key: 'coral_points',
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Amp',
-                        key: 'amp_total',
+                        name: 'Algae',
+                        key: 'algae_points',
                         enabled: true,
                         weight: 1),
-                    Field(name: 'Trap', key: 'trap', enabled: true, weight: 1),
-                    Field(
-                        name: 'Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 0.5),
                   ])),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -817,45 +899,69 @@ class _ChartsTabState extends State<_ChartsTab> {
                   number: 24,
                   startingFields: [
                     new Field(
-                        name: 'AS',
-                        key: 'auto_speaker',
-                        enabled: true,
-                        weight: 5),
-                    Field(
-                        name: 'AA', key: 'auto_amp', enabled: true, weight: 2),
-                    Field(
-                        name: 'TS',
-                        key: 'teleop_speaker',
-                        enabled: true,
-                        weight: 2),
-                    Field(
-                        name: 'TAS',
-                        key: 'teleop_amped_speaker',
-                        enabled: true,
-                        weight: 5),
-                    Field(
-                        name: 'TA',
-                        key: 'teleop_amp',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 1),
-                    Field(name: 'Trap', key: 'trap', enabled: true, weight: 5),
-                    Field(
-                        name: 'Taxi',
-                        key: 'mobility',
-                        enabled: true,
-                        weight: 2),
-                    Field(
-                        name: 'Park', key: 'parking', enabled: true, weight: 1),
-                    Field(
-                        name: 'Climb',
-                        key: 'climbing',
+                        name: 'AC1',
+                        key: 'auto_scoring_l_1',
                         enabled: true,
                         weight: 3),
+                    new Field(
+                        name: 'AC2',
+                        key: 'auto_scoring_l_2',
+                        enabled: true,
+                        weight: 4),
+                    new Field(
+                        name: 'AC3',
+                        key: 'auto_scoring_l_3',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'AC4',
+                        key: 'auto_scoring_l_4',
+                        enabled: true,
+                        weight: 7),
+                    new Field(
+                        name: 'TC1',
+                        key: 'teleop_scoring_l_1',
+                        enabled: true,
+                        weight: 2),
+                    new Field(
+                        name: 'TC2',
+                        key: 'teleop_scoring_l_2',
+                        enabled: true,
+                        weight: 3),
+                    new Field(
+                        name: 'TC3',
+                        key: 'teleop_scoring_l_3',
+                        enabled: true,
+                        weight: 4),
+                    new Field(
+                        name: 'TC4',
+                        key: 'teleop_scoring_l_4',
+                        enabled: true,
+                        weight: 5),
+                    new Field(
+                        name: 'Net', key: 'net', enabled: true, weight: 4),
+                    new Field(
+                        name: 'Processor',
+                        key: 'processor',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'Mobility',
+                        key: 'mobility',
+                        enabled: true,
+                        weight: 3),
+                    new Field(
+                        name: 'Park', key: 'parking', enabled: true, weight: 2),
+                    new Field(
+                        name: 'Shallow Climb',
+                        key: 'shallow_climb_rate',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'Deep Climb',
+                        key: 'deep_climb_rate',
+                        enabled: true,
+                        weight: 12),
                     Field(
                         name: 'Deathrate',
                         key: 'death_rate',

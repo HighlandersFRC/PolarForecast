@@ -137,7 +137,6 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
-  Map<String, dynamic> statDescription = {'data': []};
   bool isLoading = true;
 
   @override
@@ -154,14 +153,9 @@ class _StatsTabState extends State<_StatsTab> {
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
       );
-      final fetchedStatDescription = await apiService.fetchStatDescription(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-      );
       if (mounted) {
         setState(() {
           stats = fetchedStats;
-          statDescription = fetchedStatDescription;
           isLoading = false;
         });
       }
@@ -838,7 +832,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   List<MatchScouting2024> scouting = [];
   List<DataGridRow> rows = [];
   List<GridColumn> columns = [];
-  Map<String, dynamic> statDescription = {'scoutingData': {}};
   late ScrollController scrollController;
 
   bool isLoading = true;
@@ -857,13 +850,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       widget.widget.tournament.page.split('/')[4],
       'frc${widget.widget.teamNumber}',
     ));
-    final fetchedDescriptions = await apiService.fetchStatDescription(
-      int.parse(widget.widget.tournament.page.split('/')[3]),
-      widget.widget.tournament.page.split('/')[4],
-    );
     if (mounted) {
       setState(() {
-        statDescription = fetchedDescriptions;
         scouting = [...fetchedStats];
         isLoading = false;
       });
@@ -876,12 +864,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   void updateGrid() {
     setState(() {
       columns = [];
-      for (var description in statDescription['scoutingData']) {
-        columns.add(GridColumn(
-          columnName: description['stat_key'],
-          label: Text(description['display_name']),
-        ));
-      }
+      // for (var description in statDescription['scoutingData']) {
+      //   columns.add(GridColumn(
+      //     columnName: description['stat_key'],
+      //     label: Text(description['display_name']),
+      //   ));
+      // }
       columns.add(GridColumn(
         columnName: 'active',
         label: Text('Active'),
@@ -895,29 +883,29 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           ...entry.data.miscellaneous.toJson(),
           'scout_name': entry.scout_info.name,
         };
-        rows.add(DataGridRow(cells: [
-          ...statDescription['scoutingData'].map((stat) {
-            if (stat['stat_key'] == 'died') {
-              return DataGridCell(
-                columnName: stat['stat_key'],
-                value: flattened[stat['stat_key']] == 0
-                    ? false
-                    : flattened[stat['stat_key']] == 1
-                        ? true
-                        : flattened[stat['stat_key']] ?? stat['stat_key'],
-              );
-            }
-            return DataGridCell(
-              columnName: stat['stat_key'],
-              value: flattened[stat['stat_key']] ??
-                  entry.toJson()[stat['stat_key']],
-            );
-          }),
-          DataGridCell(
-            columnName: 'active',
-            value: entry.toJson()['active'],
-          ),
-        ]));
+        // rows.add(DataGridRow(cells: [
+        //   ...statDescription['scoutingData'].map((stat) {
+        //     if (stat['stat_key'] == 'died') {
+        //       return DataGridCell(
+        //         columnName: stat['stat_key'],
+        //         value: flattened[stat['stat_key']] == 0
+        //             ? false
+        //             : flattened[stat['stat_key']] == 1
+        //                 ? true
+        //                 : flattened[stat['stat_key']] ?? stat['stat_key'],
+        //       );
+        //     }
+        //     return DataGridCell(
+        //       columnName: stat['stat_key'],
+        //       value: flattened[stat['stat_key']] ??
+        //           entry.toJson()[stat['stat_key']],
+        //     );
+        //   }),
+        //   DataGridCell(
+        //     columnName: 'active',
+        //     value: entry.toJson()['active'],
+        //   ),
+        // ]));
       }
     });
   }

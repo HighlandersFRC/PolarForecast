@@ -2005,8 +2005,7 @@ def updateData(event_code: str):
     # print(event_code)
     TBAData = [TBAMatch2025(**match)
                for match in TBACollection.find({'event_key': event_code})]
-    ScoutingData = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code})]
+    ScoutingData = []
     scouts = []
     numEntries = []
     try:
@@ -2048,12 +2047,18 @@ def updateData(event_code: str):
                       "deep_climb_rate": 0,
                       "shallow_climb_rate": 0,
                       "coral_total": 0,
+                      "coral_points": 0,
                       "algae_total": 0,
+                      "algae_points": 0,
                       "total_pieces": 0,
                       "auto_coral": 0,
                       "auto_coral_points": 0,
                       "teleop_coral": 0,
                       "teleop_coral_points": 0,
+                      "l_1_total": 0,
+                      "l_2_total": 0,
+                      "l_3_total": 0,
+                      "l_4_total": 0,
                       "auto_scoring_l_1": 0,
                       "auto_scoring_l_2": 0,
                       "auto_scoring_l_3": 0,
@@ -2141,11 +2146,11 @@ def updateGroupData(group: Group, event_code: str):
                 members.extend(_getGroupMembers(alliance.group_id))
             member_ids = [member["id"]
                           for member in members if isinstance(member, dict)]
-            scoutingData = list(MatchScoutingCollection.find(
-                {"scout_info.id": {"$in": member_ids}}))
+            scoutingData = [MatchScouting2025(**entry) for entry in list(MatchScoutingCollection.find(
+                {"scout_info.id": {"$in": member_ids}}))]
             try:
                 calculatedData, ratings = analyzeData(
-                    [TBAData, scoutingData])
+                    TBAData, scoutingData)
                 data = calculatedData.to_dict("list")
                 data = convertData(data, YEAR, event_code)
             except Exception as e:
@@ -2173,12 +2178,18 @@ def updateGroupData(group: Group, event_code: str):
                               "deep_climb_rate": 0,
                               "shallow_climb_rate": 0,
                               "coral_total": 0,
+                              "coral_points": 0,
                               "algae_total": 0,
+                              "algae_points": 0,
                               "total_pieces": 0,
                               "auto_coral": 0,
                               "auto_coral_points": 0,
                               "teleop_coral": 0,
                               "teleop_coral_points": 0,
+                              "l_1_total": 0,
+                              "l_2_total": 0,
+                              "l_3_total": 0,
+                              "l_4_total": 0,
                               "auto_scoring_l_1": 0,
                               "auto_scoring_l_2": 0,
                               "auto_scoring_l_3": 0,
@@ -2326,10 +2337,10 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                     matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
                     matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
                     matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                    matchPrediction[f"{alliance}_l_1"] += teamData["l_1_total"]
-                    matchPrediction[f"{alliance}_l_2"] += teamData["l_2_total"]
-                    matchPrediction[f"{alliance}_l_3"] += teamData["l_3_total"]
-                    matchPrediction[f"{alliance}_l_4"] += teamData["l_4_total"]
+                    matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
+                    matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
+                    matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
+                    matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
                     matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
                     matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
                     matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
@@ -2340,18 +2351,22 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 opponent = "red"
             matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            matchPrediction[f"{alliance}_auto_rp"] = 1 if matchPrediction[f"{alliance}_auto_coral"] > 1 and round(
+            # print('auto_coral', matchPrediction[f"{alliance}_auto_coral"], 'mobility', round(
+            #     matchPrediction[f"{alliance}_mobility"]))
+            matchPrediction[f"{alliance}_auto_rp"] = 1 if round(matchPrediction[f"{alliance}_auto_coral"]) >= 1 and round(
                 matchPrediction[f"{alliance}_mobility"]) == 3 else 0
+            # print(matchPrediction[f"{alliance}_auto_rp"])
             levels_with_5_coral = 0
             for i in range(1, 5):
-                if (matchPrediction[f"{alliance}_l_{i}"]) >= 5:
+                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= 4.5:
                     levels_with_5_coral += 1
             matchPrediction[f"{alliance}_coral_rp"] = 1 if levels_with_5_coral >= 4 or (
                 matchPrediction[f"{alliance}_coopertition"] > 0.5 and levels_with_5_coral >= 3) else 0
-            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= 14 else 0
+            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= 13.5 else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
                 matchPrediction[f"{alliance}_coral_rp"] + \
-                matchPrediction[f"{alliance}_barge_rp"]
+                matchPrediction[f"{alliance}_barge_rp"] + \
+                matchPrediction[f"{alliance}_auto_rp"]
             if not matchPrediction["predicted"]:
                 matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
@@ -2375,7 +2390,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                         dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
                     else:
                         for match in TBAData:
-                            if match.key == matchPrediction["key"]:
+                            if match.key == matchPrediction["key"] and matchPrediction["comp_level"] == "qm":
                                 dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
                     calculatedData[idx] = dataTeam
                 except Exception as e:

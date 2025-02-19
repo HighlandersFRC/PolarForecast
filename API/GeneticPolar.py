@@ -409,11 +409,11 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
     dataKeys.extend(unpack_nested_list(TBAOnlyKeys))
     # print("compiling data to json")
-    print(results)
+    # print(results)
     for i, result in enumerate(results):
         # try:
-        print(dataKeys[i], i)
-        print(result)
+        # print(dataKeys[i], i)
+        # print(result)
         array = np.array(result).ravel()
         XMatrix[dataKeys[i]] = result
         if i < 4:
@@ -436,6 +436,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             teamDeaths[i] = 0
     autoPoints += teamMobility * 3
     algaeTotal = XMatrix["net"] + XMatrix["processor"]
+    algaePoints = XMatrix["net"] * 4 + XMatrix["processor"]*6
     coralTotal = autoCoral + teleopCoral
     teleopCoralPoints = np.zeros(len(teams))
     for i, x in enumerate([XMatrix[f'teleop_scoring_l_{i}'] for i in range(1, 5)]):
@@ -443,6 +444,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     autoCoralPoints = np.zeros(len(teams))
     for i, x in enumerate([XMatrix[f'auto_scoring_l_{i}'] for i in range(1, 5)]):
         autoCoralPoints += (x * OPRWeights[i])
+    coralPoints = autoCoralPoints+teleopCoralPoints
     l_1 = XMatrix['auto_scoring_l_1'] + XMatrix['teleop_scoring_l_1']
     l_2 = XMatrix['auto_scoring_l_2'] + XMatrix['teleop_scoring_l_2']
     l_3 = XMatrix['auto_scoring_l_3'] + XMatrix['teleop_scoring_l_3']
@@ -464,7 +466,9 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     XMatrix.insert(0, 'teleop_coral', pd.Series(teleopCoral))
     XMatrix.insert(0, 'teleop_coral_points', pd.Series(teleopCoralPoints))
     XMatrix.insert(0, 'coral_total', pd.Series(coralTotal))
+    XMatrix.insert(0, 'coral_points', pd.Series(coralPoints))
     XMatrix.insert(0, 'algae_total', pd.Series(algaeTotal))
+    XMatrix.insert(0, 'algae_points', pd.Series(algaePoints))
     XMatrix.insert(0, 'total_pieces', pd.Series(piecesScored))
     XMatrix.insert(0, 'l_1_total', pd.Series(l_1))
     XMatrix.insert(0, 'l_2_total', pd.Series(l_2))
