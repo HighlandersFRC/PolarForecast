@@ -189,40 +189,6 @@ class ApiService {
     return returnValue;
   }
 
-  Future<void> deactivateMatchData(Map<String, dynamic> data, String password,
-      Function(int) callback) async {
-    try {
-      final String endpoint = '$APIURL/$password/Deactivate';
-      final response = await http.put(
-        Uri.parse(endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-
-      callback(response.statusCode);
-    } catch (e) {
-      print('Error in deactivateMatchData: $e');
-      callback(0); // Return 0 for failure
-    }
-  }
-
-  Future<void> activateMatchData(Map<String, dynamic> data, String password,
-      Function(int) callback) async {
-    try {
-      final String endpoint = '$APIURL/$password/Activate';
-      final response = await http.put(
-        Uri.parse(endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-
-      callback(response.statusCode);
-    } catch (e) {
-      print('Error in activateMatchData: $e');
-      callback(0); // Return 0 for failure
-    }
-  }
-
   Future<Deaths> fetchFollowUp(String year, String event, String team) async {
     await token;
     try {
@@ -764,6 +730,19 @@ class ApiService {
   Future<void> update_match_scouting(MatchScouting2025 data) async {
     final url = '$APIURL/MatchScouting/';
     final request = await http.put(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
+
+  Future<void> delete_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/Delete';
+    final request = await http.delete(Uri.parse(url),
         headers: {
           'token': (await token) ?? '',
           'Content-Type': 'application/json',

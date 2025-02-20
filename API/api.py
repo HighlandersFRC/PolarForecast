@@ -2442,13 +2442,15 @@ def primeGroupForAnalysis(group: Group, event_code: str):
             )
 
 
-@app.put("/MatchScouting/Delete", tags=["scouting"])
+@app.delete("/MatchScouting/Delete", tags=["scouting"])
 def delete_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
-    DBEntry = MatchScoutingCollection.find_one(data.dict())
+    DBEntry = MatchScoutingCollection.find_one({'scout_info.user_id': data.scout_info.user_id,
+                                               'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
     if DBEntry is None:
-        raise HTTPException(404, "Picture Not Found")
+        raise HTTPException(404, "Entry Not Found")
     if (data.scout_info.user_id == get_user_info(token)["sub"]):
-        delete_result = MatchScoutingCollection.delete_one(data.dict())
+        delete_result = MatchScoutingCollection.delete_one({'scout_info.user_id': data.scout_info.user_id,
+                                                            'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
         deleted = True
     else:
         kc_groups = get_user_groups(token)
@@ -2463,7 +2465,8 @@ def delete_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
                         members["members"] + members["admins"] + members["owners"])]
                     if data.scout_info.user_id in memberIds:
                         delete_result = MatchScoutingCollection.delete_one(
-                            data.dict())
+                            {'scout_info.user_id': data.scout_info.user_id,
+                             'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
                         deleted = True
                     break
             if deleted:
