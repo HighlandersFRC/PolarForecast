@@ -2474,6 +2474,18 @@ def delete_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
     if not deleted:
         raise HTTPException(
             403, "You do not have permission to delete this picture")
+    groups = [Group(**group)
+              for group in get_user_groups_detailed(token=token)]
+    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
+        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
+    if (data.data.miscellaneous.died):
+        for group in groupsNeedingUpdate:
+            try:
+                updateGroupStatus(group, data.event_code)
+            except:
+                pass
+    for group in groupsNeedingUpdate:
+        primeGroupForAnalysis(group=group, event_code=data.event_code)
     return {"message": delete_result.raw_result}
 
 
