@@ -7,8 +7,8 @@ part 'scout_info.g.dart';
 class ScoutInfo with _$ScoutInfo {
   const factory ScoutInfo({
     required String user_id,
-    required String first_name,
-    required String username,
+    String? first_name,
+    String? username,
     required int team_number,
   }) = _ScoutInfo;
 

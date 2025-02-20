@@ -7,10 +7,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/widgets/auto_display_2025.dart';
+import '../models/match_scouting_2025.dart';
 import '../widgets/deaths_form.dart';
 import '../models/match_scouting_2024.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import '../widgets/auto_display_2024.dart';
 import '../widgets/match_link.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
@@ -137,7 +138,6 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
-  Map<String, dynamic> statDescription = {'data': []};
   bool isLoading = true;
 
   @override
@@ -154,14 +154,9 @@ class _StatsTabState extends State<_StatsTab> {
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
       );
-      final fetchedStatDescription = await apiService.fetchStatDescription(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-      );
       if (mounted) {
         setState(() {
           stats = fetchedStats;
-          statDescription = fetchedStatDescription;
           isLoading = false;
         });
       }
@@ -835,10 +830,9 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
-  List<MatchScouting2024> scouting = [];
+  List<MatchScouting2025> scouting = [];
   List<DataGridRow> rows = [];
   List<GridColumn> columns = [];
-  Map<String, dynamic> statDescription = {'scoutingData': {}};
   late ScrollController scrollController;
 
   bool isLoading = true;
@@ -857,13 +851,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       widget.widget.tournament.page.split('/')[4],
       'frc${widget.widget.teamNumber}',
     ));
-    final fetchedDescriptions = await apiService.fetchStatDescription(
-      int.parse(widget.widget.tournament.page.split('/')[3]),
-      widget.widget.tournament.page.split('/')[4],
-    );
     if (mounted) {
       setState(() {
-        statDescription = fetchedDescriptions;
         scouting = [...fetchedStats];
         isLoading = false;
       });
@@ -876,12 +865,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   void updateGrid() {
     setState(() {
       columns = [];
-      for (var description in statDescription['scoutingData']) {
-        columns.add(GridColumn(
-          columnName: description['stat_key'],
-          label: Text(description['display_name']),
-        ));
-      }
+      // for (var description in statDescription['scoutingData']) {
+      //   columns.add(GridColumn(
+      //     columnName: description['stat_key'],
+      //     label: Text(description['display_name']),
+      //   ));
+      // }
       columns.add(GridColumn(
         columnName: 'active',
         label: Text('Active'),
@@ -893,31 +882,32 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         flattened = {
           ...flattened,
           ...entry.data.miscellaneous.toJson(),
-          'scout_name': entry.scout_info.name,
+          'scout_name': entry.scout_info.first_name ??
+              'From Team ${entry.scout_info.team_number}',
         };
-        rows.add(DataGridRow(cells: [
-          ...statDescription['scoutingData'].map((stat) {
-            if (stat['stat_key'] == 'died') {
-              return DataGridCell(
-                columnName: stat['stat_key'],
-                value: flattened[stat['stat_key']] == 0
-                    ? false
-                    : flattened[stat['stat_key']] == 1
-                        ? true
-                        : flattened[stat['stat_key']] ?? stat['stat_key'],
-              );
-            }
-            return DataGridCell(
-              columnName: stat['stat_key'],
-              value: flattened[stat['stat_key']] ??
-                  entry.toJson()[stat['stat_key']],
-            );
-          }),
-          DataGridCell(
-            columnName: 'active',
-            value: entry.toJson()['active'],
-          ),
-        ]));
+        // rows.add(DataGridRow(cells: [
+        //   ...statDescription['scoutingData'].map((stat) {
+        //     if (stat['stat_key'] == 'died') {
+        //       return DataGridCell(
+        //         columnName: stat['stat_key'],
+        //         value: flattened[stat['stat_key']] == 0
+        //             ? false
+        //             : flattened[stat['stat_key']] == 1
+        //                 ? true
+        //                 : flattened[stat['stat_key']] ?? stat['stat_key'],
+        //       );
+        //     }
+        //     return DataGridCell(
+        //       columnName: stat['stat_key'],
+        //       value: flattened[stat['stat_key']] ??
+        //           entry.toJson()[stat['stat_key']],
+        //     );
+        //   }),
+        //   DataGridCell(
+        //     columnName: 'active',
+        //     value: entry.toJson()['active'],
+        //   ),
+        // ]));
       }
     });
   }
@@ -1113,7 +1103,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2024> scouting = [];
+  List<MatchScouting2025> scouting = [];
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
@@ -1148,7 +1138,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2024> pageData = scouting.sublist(
+    List<MatchScouting2025> pageData = scouting.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -1178,7 +1168,7 @@ class _AutosTabState extends State<_AutosTab> {
                                     List.generate(numRows, (int rowIndex) {
                                   int index = rowIndex * numColumns + colIndex;
                                   if (index < pageData.length) {
-                                    return AutoDisplay2024(
+                                    return AutoDisplay2025(
                                       scoutingData: pageData[index],
                                     );
                                   }

@@ -19,6 +19,7 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from models.tba_match_2025 import TBAMatch2025
 from models.match_scouting_2025 import MatchScouting2025
 from models.death_scouting_form import Death, DeathScoutingForm
 from models.pit_scouting_status import PitScoutingStatus
@@ -37,7 +38,7 @@ from azure.storage.blob import generate_blob_sas, BlobSasPermissions, PublicAcce
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
-YEAR = '2024'
+YEAR = '2025'
 tags_metadata = [
     {
         "name": "stats",
@@ -77,7 +78,7 @@ app.add_middleware(
 
 # Set Up the Database
 client = MongoClient(MONGO_CONNECTION)
-testDB = client["Database_Test"]
+testDB = client["Igloo"]
 
 testCollection = testDB["Test"]
 
@@ -239,6 +240,11 @@ def getEventPredictions(event_code: str):
 @cacheValue()
 def getEventTeams(event_code: str):
     return ETagCollection.find_one({"key": event_code})["teams"]
+
+
+@cacheValue()
+def getEventRankings(event_code: str):
+    return ETagCollection.find_one({"key": event_code})["rankings"]
 
 
 @app.get("/{year}/{event}/{team}/stats", tags=["stats"])
@@ -1931,7 +1937,7 @@ def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
     try:
-        rankings = ETagCollection.find_one({"key": event_code})["rankings"]
+        rankings = getEventRankings(event_code)
     except:
         rankings = [{"team_key": "frc"+str(team), "rank": 0}
                     for team in calculatedData["team_number"]]
@@ -1997,24 +2003,23 @@ def _getGroupMembers(group_id: str):
 
 def updateData(event_code: str):
     # print(event_code)
-    TBAData = list(TBACollection.find({'event_key': event_code}))
-    ScoutingData = list(MatchScoutingCollection.find(
-        {'event_code': event_code}))
+    TBAData = [TBAMatch2025(**match)
+               for match in TBACollection.find({'event_key': event_code})]
+    ScoutingData = []
     scouts = []
     numEntries = []
     try:
         for entry in ScoutingData:
-            entry["scout_info"]["name"] = entry["scout_info"]["name"].replace(
-                " ", "")
-            if not scouts.__contains__(entry["scout_info"]["name"]):
-                scouts.append(entry["scout_info"]["name"])
+            if not scouts.__contains__(entry.scout_info.user_id):
+                scouts.append(entry.scout_info.user_id)
                 numEntries.append(0)
-            numEntries[scouts.index(entry["scout_info"]["name"])] += 1
+            numEntries[scouts.index(entry.scout_info.user_id)] += 1
     except Exception as e:
         logging.error(e)
     # if TBAData is not None:
     try:
-        calculatedData, ratings = analyzeData([TBAData, ScoutingData])
+        calculatedData, ratings = analyzeData(TBAData, ScoutingData)
+        # print('analyzed data')
         data = calculatedData.to_dict("list")
         data = convertData(data, YEAR, event_code)
     except Exception as e:
@@ -2029,8 +2034,50 @@ def updateData(event_code: str):
             keyList.append(keyStr+team[3:])
         retval0 = {"data": {"keys": keyList}}
         data = [retval0]
-        data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
-                      "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "pass": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
+        data.extend([{"historical": False,
+                      "key": team,
+                      "rank": 0,
+                      "team_number": team[3:],
+                      "match_count": 0,
+                      "OPR": 0,
+                      "endgame_points": 0,
+                      "teleop_points": 0,
+                      "auto_points": 0,
+                      "climbing_points": 0,
+                      "deep_climb_rate": 0,
+                      "shallow_climb_rate": 0,
+                      "coral_total": 0,
+                      "coral_points": 0,
+                      "algae_total": 0,
+                      "algae_points": 0,
+                      "total_pieces": 0,
+                      "auto_coral": 0,
+                      "auto_coral_points": 0,
+                      "teleop_coral": 0,
+                      "teleop_coral_points": 0,
+                      "l_1_total": 0,
+                      "l_2_total": 0,
+                      "l_3_total": 0,
+                      "l_4_total": 0,
+                      "auto_scoring_l_1": 0,
+                      "auto_scoring_l_2": 0,
+                      "auto_scoring_l_3": 0,
+                      "auto_scoring_l_4": 0,
+                      "teleop_scoring_l_1": 0,
+                      "teleop_scoring_l_2": 0,
+                      "teleop_scoring_l_3": 0,
+                      "teleop_scoring_l_4": 0,
+                      "net": 0,
+                      "processor": 0,
+                      "foul_points": 0,
+                      "mobility": 0,
+                      "death_rate": 0,
+                      "parking": 0,
+                      "coopertition": 0,
+                      "simulated_rp": 0,
+                      "simulated_rank": 0
+                      }
+                     for team in teams])
     try:
         (data, predictions) = updatePredictions(TBAData, data)
         try:
@@ -2085,7 +2132,8 @@ def updateData(event_code: str):
 
 
 def updateGroupData(group: Group, event_code: str):
-    TBAData = list(TBACollection.find({'event_key': event_code}))
+    TBAData = [TBAMatch2025(**x)
+               for x in TBACollection.find({'event_key': event_code})]
     scouts = []
     numEntries = []
     for event in group.events:
@@ -2095,14 +2143,17 @@ def updateGroupData(group: Group, event_code: str):
             members.extend(users['members'])
             members.extend(users['admins'])
             for alliance in event.alliance_groups:
-                members.extend(_getGroupMembers(alliance.group_id))
+                allianceMembers = _getGroupMembers(alliance.group_id)
+                members.extend(allianceMembers['owners'])
+                members.extend(allianceMembers['members'])
+                members.extend(allianceMembers['admins'])
             member_ids = [member["id"]
                           for member in members if isinstance(member, dict)]
-            scoutingData = list(MatchScoutingCollection.find(
-                {"scout_info.id": {"$in": member_ids}}))
+            scoutingData = [MatchScouting2025(**entry) for entry in list(MatchScoutingCollection.find(
+                {"scout_info.id": {"$in": member_ids}}))]
             try:
                 calculatedData, ratings = analyzeData(
-                    [TBAData, scoutingData])
+                    TBAData, scoutingData)
                 data = calculatedData.to_dict("list")
                 data = convertData(data, YEAR, event_code)
             except Exception as e:
@@ -2117,8 +2168,50 @@ def updateGroupData(group: Group, event_code: str):
                     keyList.append(keyStr+team[3:])
                 retval0 = {"data": {"keys": keyList}}
                 data = [retval0]
-                data.extend([{"historical": False, "key": team, "rank": 0, "team_number": team[3:], "match_count": 0, "OPR": 0, "endgame_points": 0, "teleop_points": 0, "auto_points": 0, "notes": 0, "teleop_notes": 0, "harmony_points": 0, "speaker_total": 0, "amp_total": 0, "trap_points": 0,
-                            "trap": 0, "auto_notes": 0, "climbing_points": 0, "climbing": 0, "mobility": 0, "death_rate": 0, "parking": 0, "auto_speaker": 0, "auto_amp": 0, "pass": 0, "teleop_speaker": 0, "teleop_amped_speaker": 0, "teleop_amp": 0, "harmony": 0, "mic": 0, "coopertition": 0, "simulated_rp": 0, "simulated_rank": 0} for team in teams])
+                data.extend([{"historical": False,
+                              "key": team,
+                              "rank": 0,
+                              "team_number": team[3:],
+                              "match_count": 0,
+                              "OPR": 0,
+                              "endgame_points": 0,
+                              "teleop_points": 0,
+                              "auto_points": 0,
+                              "climbing_points": 0,
+                              "deep_climb_rate": 0,
+                              "shallow_climb_rate": 0,
+                              "coral_total": 0,
+                              "coral_points": 0,
+                              "algae_total": 0,
+                              "algae_points": 0,
+                              "total_pieces": 0,
+                              "auto_coral": 0,
+                              "auto_coral_points": 0,
+                              "teleop_coral": 0,
+                              "teleop_coral_points": 0,
+                              "l_1_total": 0,
+                              "l_2_total": 0,
+                              "l_3_total": 0,
+                              "l_4_total": 0,
+                              "auto_scoring_l_1": 0,
+                              "auto_scoring_l_2": 0,
+                              "auto_scoring_l_3": 0,
+                              "auto_scoring_l_4": 0,
+                              "teleop_scoring_l_1": 0,
+                              "teleop_scoring_l_2": 0,
+                              "teleop_scoring_l_3": 0,
+                              "teleop_scoring_l_4": 0,
+                              "net": 0,
+                              "processor": 0,
+                              "foul_points": 0,
+                              "mobility": 0,
+                              "death_rate": 0,
+                              "parking": 0,
+                              "coopertition": 0,
+                              "simulated_rp": 0,
+                              "simulated_rank": 0
+                              }
+                             for team in teams])
             try:
                 (data, predictions) = updatePredictions(
                     TBAData, data)
@@ -2160,93 +2253,136 @@ def updateGroupData(group: Group, event_code: str):
                 except Exception as ex:
                     print(ex)
                     pass
+            break
 
 
-def updatePredictions(TBAData, calculatedData):
+def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
     matchPredictions = []
     for match in TBAData:
-        if match["score_breakdown"] is not None:
+        if match.score_breakdown is not None:
             matchPrediction = {
-                "comp_level": match["comp_level"],
-                "key": match["key"],
-                "match_number": match["match_number"],
-                "set_number": match["set_number"],
-                "blue_teams": match["alliances"]["blue"]["team_keys"],
+                "comp_level": match.comp_level,
+                "key": match.key,
+                "match_number": match.match_number,
+                "set_number": match.set_number,
+                "blue_teams": match.alliances['blue'].team_keys,
+                "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
                 "blue_coopertition": 0,
-                "blue_actual_score": match["score_breakdown"]["blue"]["totalPoints"],
-                "blue_notes": 0,
-                "red_teams": match["alliances"]["red"]["team_keys"],
+                "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                "blue_coral_l_1": 0,
+                "blue_coral_l_2": 0,
+                "blue_coral_l_3": 0,
+                "blue_coral_l_4": 0,
+                "blue_processor": 0,
+                "blue_net": 0,
+                "blue_auto_coral": 0,
+                "red_teams": match.alliances['red'].team_keys,
+                "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
                 "red_auto_points": 0,
                 "red_teleop_points": 0,
                 "red_endgame_points": 0,
                 "red_coopertition": 0,
-                "red_notes": 0,
-                "red_actual_score": match["score_breakdown"]["red"]["totalPoints"],
+                "red_coral_l_1": 0,
+                "red_coral_l_2": 0,
+                "red_coral_l_3": 0,
+                "red_coral_l_4": 0,
+                "red_processor": 0,
+                "red_net": 0,
+                "red_auto_coral": 0,
+                "red_actual_score": match.score_breakdown["red"].totalPoints,
                 "predicted": False,
             }
         else:
             matchPrediction = {
-                "comp_level": match["comp_level"],
-                "key": match["key"],
-                "match_number": match["match_number"],
-                "set_number": match["set_number"],
-                "blue_teams": match["alliances"]["blue"]["team_keys"],
+                "comp_level": match.comp_level,
+                "key": match.key,
+                "match_number": match.match_number,
+                "set_number": match.set_number,
+                "blue_teams": match.alliances["blue"].team_keys,
+                "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
                 "blue_coopertition": 0,
-                "blue_notes": 0,
-                "red_teams": match["alliances"]["red"]["team_keys"],
+                "blue_coral_l_1": 0,
+                "blue_coral_l_2": 0,
+                "blue_coral_l_3": 0,
+                "blue_coral_l_4": 0,
+                "blue_processor": 0,
+                "blue_net": 0,
+                "blue_auto_coral": 0,
+                "red_teams": match.alliances["red"].team_keys,
+                "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
                 "red_auto_points": 0,
                 "red_teleop_points": 0,
                 "red_endgame_points": 0,
                 "red_coopertition": 0,
-                "red_notes": 0,
+                "red_coral_l_1": 0,
+                "red_coral_l_2": 0,
+                "red_coral_l_3": 0,
+                "red_coral_l_4": 0,
+                "red_processor": 0,
+                "red_net": 0,
+                "red_auto_coral": 0,
                 "predicted": True,
             }
-        for alliance in match["alliances"]:
-            for team in match["alliances"][alliance]["team_keys"]:
-                teamData = {}
+        for alliance in match.alliances:
+            for team in match.alliances[alliance].team_keys:
                 for i in range(1, len(calculatedData)):
+                    teamData = {}
                     if calculatedData[i]["key"] == team:
                         teamData = calculatedData[i]
-                if teamData != {}:
-                    matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                    matchPrediction[f"{alliance}_climbing"] += teamData["climbing"]
-                    matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
-                    matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
-                    matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"] + \
-                        teamData["harmony"]
-                    matchPrediction[f"{alliance}_notes"] += teamData["notes"]
-                    matchPrediction[f"{alliance}_coopertition"] += (
-                        teamData["coopertition"]/3)
-
-        for alliance in match["alliances"]:
+                    if teamData != {}:
+                        matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                        matchPrediction[f"{alliance}_climbing"] += teamData["climbing_points"]
+                        matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                        matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                        matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
+                        matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
+                        matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
+                        matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
+                        matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
+                        matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
+                        matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
+                        matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
+                        matchPrediction[f"{alliance}_net"] += teamData["net"]
+                        matchPrediction[f"{alliance}_processor"] += teamData["processor"]
+        for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
             else:
                 opponent = "red"
-            matchPrediction[f"{alliance}_win_rp"] = 2 if matchPrediction[f"{opponent}_score"] < matchPrediction[
+            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            matchPrediction[f"{alliance}_ensemble_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] > 10 else 0
-            matchPrediction[f"{alliance}_melody_rp"] = 1 if matchPrediction[f"{alliance}_notes"] >= 18 or (
-                matchPrediction[f"{alliance}_notes"] >= 15 and matchPrediction[f"{alliance}_coopertition"] > 0.5) else 0
+            # print('auto_coral', matchPrediction[f"{alliance}_auto_coral"], 'mobility', round(
+            #     matchPrediction[f"{alliance}_mobility"]))
+            matchPrediction[f"{alliance}_auto_rp"] = 1 if round(matchPrediction[f"{alliance}_auto_coral"]) >= 1 and round(
+                matchPrediction[f"{alliance}_mobility"]) == 3 else 0
+            # print(matchPrediction[f"{alliance}_auto_rp"])
+            levels_with_5_coral = 0
+            for i in range(1, 5):
+                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= 4.5:
+                    levels_with_5_coral += 1
+            matchPrediction[f"{alliance}_coral_rp"] = 1 if levels_with_5_coral >= 4 or (
+                matchPrediction[f"{alliance}_coopertition"] > 0.5 and levels_with_5_coral >= 3) else 0
+            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= 13.5 else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
-                matchPrediction[f"{alliance}_ensemble_rp"] + \
-                matchPrediction[f"{alliance}_melody_rp"]
+                matchPrediction[f"{alliance}_coral_rp"] + \
+                matchPrediction[f"{alliance}_barge_rp"] + \
+                matchPrediction[f"{alliance}_auto_rp"]
             if not matchPrediction["predicted"]:
-                matchPrediction[f"{alliance}_display_rp"] = match["score_breakdown"][alliance]["rp"]
+                matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
                 matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
         matchPredictions.append(matchPrediction)
@@ -2268,8 +2404,8 @@ def updatePredictions(TBAData, calculatedData):
                         dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
                     else:
                         for match in TBAData:
-                            if match["key"] == matchPrediction["key"]:
-                                dataTeam["simulated_rp"] += match["score_breakdown"][alliance]["rp"]
+                            if match.key == matchPrediction["key"] and matchPrediction["comp_level"] == "qm":
+                                dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
                     calculatedData[idx] = dataTeam
                 except Exception as e:
                     # logging.error(e)
@@ -2349,21 +2485,6 @@ def update_database():
         except:
             pass
     logging.info("Starting Polar Forecast")
-    groupsToUpdate = [
-        Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
-    for group in groupsToUpdate:
-        # print(group.name)
-        for event in group.events:
-            # print(event)
-            if not event.up_to_date:
-                try:
-                    updateGroupData(group, event.event_code)
-                    # print('updated calculated data')
-                    updateGroupGridPitData(group, event.event_code)
-                    GroupCollection.update_one(
-                        {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
-                except Exception as e:
-                    logging.error(str(e))
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
@@ -2380,6 +2501,8 @@ def update_database():
                     teams = json.loads(req.text)
                     event["teamEtag"] = req.headers["Etag"]
                 else:
+                    if req.status_code != 304:
+                        continue
                     print(req.status_code, event["key"])
                     teams = event["teams"]
                 # print("got Teams")
@@ -2427,17 +2550,18 @@ def update_database():
                     event["rankings"] = []
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
-                responseJson = json.loads(r.text)
+                try:
+                    responseJson = json.loads(r.text)
+                except:
+                    responseJson = []
                 for x in responseJson:
+                    # print(event)
+                    tbaEntry = TBAMatch2025(**x)
                     try:
-                        x.pop("_id")
-                    except Exception as e:
-                        pass
-                    try:
-                        TBACollection.insert_one(x)
+                        TBACollection.insert_one(tbaEntry.dict())
                     except:
-                        TBACollection.find_one_and_update({"key": x["key"]}, {"$set": {"time": x["time"], "actual_time": x["actual_time"],
-                                                                                       "post_result_time": x["post_result_time"], "score_breakdown": x["score_breakdown"], "alliances": x["alliances"]}})
+                        TBACollection.find_one_and_update({"key": tbaEntry.key}, {"$set": {"time": tbaEntry.time, "actual_time": tbaEntry.actual_time,
+                                                                                           "post_result_time": tbaEntry.post_result_time, "score_breakdown": {'red': tbaEntry.score_breakdown['red'].dict(), 'blue': tbaEntry.score_breakdown['blue'].dict()} if tbaEntry.score_breakdown is not None else None, "alliances": {'red': tbaEntry.alliances['red'].dict(), 'blue': tbaEntry.alliances['blue'].dict()}}})
                 event["etag"] = r.headers["ETag"]
                 event["up_to_date"] = True
                 ETagCollection.find_one_and_replace(
@@ -2448,7 +2572,23 @@ def update_database():
                 except Exception as e:
                     print(e, event["key"])
                     pass
-
+        # print("trying to find groups")
+        groupsToUpdate = [
+            Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
+        # print("found groups")
+        for group in groupsToUpdate:
+            # print(group.name)
+            for event in group.events:
+                # print(event)
+                if not event.up_to_date:
+                    try:
+                        updateGroupData(group, event.event_code)
+                        # print('updated calculated data')
+                        updateGroupGridPitData(group, event.event_code)
+                        GroupCollection.update_one(
+                            {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
+                    except Exception as e:
+                        logging.error(str(e))
         numRuns += 1
     except Exception as e:
         logging.error(e)

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:scouting_app/models/match_details_2025.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import '../models/match_details_2024.dart';
-import '../models/match_scouting_2024.dart';
+import 'package:scouting_app/models/team_stats_2025.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
-import 'models/team_stats_2024.dart';
+import 'models/match_scouting_2025.dart';
 import 'models/tournament.dart';
 import 'package:image/image.dart' as img;
 
@@ -77,13 +77,6 @@ class ApiService {
     return tournaments;
   }
 
-  Future<Map<String, dynamic>> fetchStatDescription(
-      int year, String event) async {
-    final cacheKey = '${year}_${event}_stat_description';
-    final url = '$APIURL/$year/$event/stat_description';
-    return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
-  }
-
   Future<Map<String, dynamic>> fetchTeamStats(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_team_stats';
@@ -91,14 +84,14 @@ class ApiService {
     return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
   }
 
-  Future<List<TeamStats2024>> fetchEventRankings(int year, String event) async {
+  Future<List<TeamStats2025>> fetchEventRankings(int year, String event) async {
     final cacheKey = '${year}_${event}_rankings';
     final url = '${APIURL}/${year}/${event}/stats';
     var data = (await _fetchFromAPI(url, cacheKey))['data'];
     data = [...data];
     data.removeAt(0);
     data = data.where((x) => x != null);
-    return [for (var x in data) TeamStats2024.fromJson(x)];
+    return [for (var x in data) TeamStats2025.fromJson(x)];
   }
 
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {
@@ -170,12 +163,12 @@ class ApiService {
     return data;
   }
 
-  Future<List<MatchScouting2024>> fetchTeamMatchScouting(
+  Future<List<MatchScouting2025>> fetchTeamMatchScouting(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey));
-    var returnValue = <MatchScouting2024>[];
+    var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
       dynamic died = matchData['data']['miscellaneous']['died'];
       if (died == 1 || died == true) {
@@ -184,7 +177,7 @@ class ApiService {
         died = false;
       }
       matchData['data']['miscellaneous']['died'] = died;
-      returnValue.add(MatchScouting2024.fromJson(matchData));
+      returnValue.add(MatchScouting2025.fromJson(matchData));
     }
     return returnValue;
   }
@@ -255,12 +248,12 @@ class ApiService {
     }
   }
 
-  Future<MatchDetails2024> fetchMatchDetails(
+  Future<MatchDetails2025> fetchMatchDetails(
       int year, String event, String match_key) async {
     final cacheKey = '${year}_${event}_${match_key}_details';
     final url = '${APIURL}/${year}/${event}/${match_key}/match_details';
     var data = (await _fetchFromAPI(url, cacheKey));
-    return MatchDetails2024.fromJson(data);
+    return MatchDetails2025.fromJson(data);
   }
 
   Future<void> login(String redirectPath) async {
