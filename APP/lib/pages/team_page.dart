@@ -1128,6 +1128,8 @@ class _AutosTabState extends State<_AutosTab> {
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
+  String? token;
+
   @override
   initState() {
     super.initState();
@@ -1136,6 +1138,16 @@ class _AutosTabState extends State<_AutosTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
+    this.token = await apiService.token;
+    if (token == null) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      isLoading = false;
+      return;
+    }
     final fetchedStats = (await apiService.fetchTeamMatchScouting(
       int.parse(widget.widget.tournament.page.split('/')[3]),
       widget.widget.tournament.page.split('/')[4],
@@ -1168,55 +1180,63 @@ class _AutosTabState extends State<_AutosTab> {
     return Center(
       child: isLoading
           ? CircularProgressIndicator(color: Colors.blue)
-          : Column(
-              children: [
-                if (scouting.length == 0)
-                  Text(
-                    'No data for this event',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                  return SingleChildScrollView(
-                      child: Column(children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(numColumns, (int colIndex) {
-                          return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxWidth: constraints.maxWidth / numColumns),
-                              child: Column(
-                                children:
-                                    List.generate(numRows, (int rowIndex) {
-                                  int index = rowIndex * numColumns + colIndex;
-                                  if (index < pageData.length) {
-                                    return AutoDisplay2025(
-                                      scoutingData: pageData[index],
-                                    );
-                                  }
-                                  return SizedBox.shrink();
-                                }),
-                              ));
-                        }))
-                  ]));
-                })),
-                if (numPages > 1)
-                  NumberPaginator(
-                    initialPage: currentPage,
-                    numberPages: numPages,
-                    onPageChange: (page) {
-                      setState(() => currentPage = page);
-                    },
-                    config: NumberPaginatorUIConfig(
-                      buttonSelectedBackgroundColor: Colors.blue,
-                      buttonUnselectedForegroundColor: Colors.blue,
-                    ),
-                    prevButtonContent:
-                        Icon(Icons.chevron_left, color: Colors.blue),
-                    nextButtonContent:
-                        Icon(Icons.chevron_right, color: Colors.blue),
-                  ),
-              ],
-            ),
+          : token == null
+              ? LoginWidget(
+                  redirect_path:
+                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+                )
+              : Column(
+                  children: [
+                    if (scouting.length == 0)
+                      Text(
+                        'No data for this event',
+                        style: TextStyle(fontSize: 30),
+                      ),
+                    Expanded(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                      return SingleChildScrollView(
+                          child: Column(children: [
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: List.generate(numColumns, (int colIndex) {
+                              return ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth:
+                                          constraints.maxWidth / numColumns),
+                                  child: Column(
+                                    children:
+                                        List.generate(numRows, (int rowIndex) {
+                                      int index =
+                                          rowIndex * numColumns + colIndex;
+                                      if (index < pageData.length) {
+                                        return AutoDisplay2025(
+                                          scoutingData: pageData[index],
+                                        );
+                                      }
+                                      return SizedBox.shrink();
+                                    }),
+                                  ));
+                            }))
+                      ]));
+                    })),
+                    if (numPages > 1)
+                      NumberPaginator(
+                        initialPage: currentPage,
+                        numberPages: numPages,
+                        onPageChange: (page) {
+                          setState(() => currentPage = page);
+                        },
+                        config: NumberPaginatorUIConfig(
+                          buttonSelectedBackgroundColor: Colors.blue,
+                          buttonUnselectedForegroundColor: Colors.blue,
+                        ),
+                        prevButtonContent:
+                            Icon(Icons.chevron_left, color: Colors.blue),
+                        nextButtonContent:
+                            Icon(Icons.chevron_right, color: Colors.blue),
+                      ),
+                  ],
+                ),
     );
   }
 }
@@ -1231,11 +1251,40 @@ class _DeathsTab extends StatefulWidget {
 }
 
 class _DeathsTabState extends State<_DeathsTab> {
+  bool loading = true;
+  String? token;
+  @override
+  initState() {
+    super.initState();
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+    api.token.then((_token) {
+      setState(() {
+        this.token = _token;
+        loading = false;
+      });
+      this.token = _token;
+      loading = false;
+    }).onError((_, __) {
+      loading = false;
+      if (mounted)
+        setState(() {
+          loading = false;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
-      child:
-          DeathsForm(widget.widget.tournament, widget.widget.teamNumber, true),
+      child: loading
+          ? CircularProgressIndicator(color: Colors.blue)
+          : token == null
+              ? LoginWidget(
+                  redirect_path:
+                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+                )
+              : DeathsForm(
+                  widget.widget.tournament, widget.widget.teamNumber, true),
     );
   }
 }
