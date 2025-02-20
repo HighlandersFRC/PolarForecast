@@ -49,47 +49,47 @@ Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
 
 _$AutoScoringImpl _$$AutoScoringImplFromJson(Map<String, dynamic> json) =>
     _$AutoScoringImpl(
-      l1: (json['l1'] as num).toInt(),
-      l2: (json['l2'] as num).toInt(),
-      l3: (json['l3'] as num).toInt(),
-      l4: (json['l4'] as num).toInt(),
+      l_1: (json['l_1'] as num).toInt(),
+      l_2: (json['l_2'] as num).toInt(),
+      l_3: (json['l_3'] as num).toInt(),
+      l_4: (json['l_4'] as num).toInt(),
       net: (json['net'] as num).toInt(),
       processor: (json['processor'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
     <String, dynamic>{
-      'l1': instance.l1,
-      'l2': instance.l2,
-      'l3': instance.l3,
-      'l4': instance.l4,
+      'l_1': instance.l_1,
+      'l_2': instance.l_2,
+      'l_3': instance.l_3,
+      'l_4': instance.l_4,
       'net': instance.net,
       'processor': instance.processor,
     };
 
 _$TeleopScoringImpl _$$TeleopScoringImplFromJson(Map<String, dynamic> json) =>
     _$TeleopScoringImpl(
-      l1: (json['l1'] as num).toInt(),
-      l2: (json['l2'] as num).toInt(),
-      l3: (json['l3'] as num).toInt(),
-      l4: (json['l4'] as num).toInt(),
+      l_1: (json['l_1'] as num).toInt(),
+      l_2: (json['l_2'] as num).toInt(),
+      l_3: (json['l_3'] as num).toInt(),
+      l_4: (json['l_4'] as num).toInt(),
       net: (json['net'] as num).toInt(),
       processor: (json['processor'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$TeleopScoringImplToJson(_$TeleopScoringImpl instance) =>
     <String, dynamic>{
-      'l1': instance.l1,
-      'l2': instance.l2,
-      'l3': instance.l3,
-      'l4': instance.l4,
+      'l_1': instance.l_1,
+      'l_2': instance.l_2,
+      'l_3': instance.l_3,
+      'l_4': instance.l_4,
       'net': instance.net,
       'processor': instance.processor,
     };
 
 _$MiscellaneousImpl _$$MiscellaneousImplFromJson(Map<String, dynamic> json) =>
     _$MiscellaneousImpl(
-      died: (json['died'] as num).toInt(),
+      died: json['died'] as bool,
       comments: json['comments'] as String,
     );
 

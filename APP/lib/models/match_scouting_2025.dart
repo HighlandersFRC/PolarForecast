@@ -36,10 +36,10 @@ class Data with _$Data {
 @freezed
 class AutoScoring with _$AutoScoring {
   factory AutoScoring({
-    required int l1,
-    required int l2,
-    required int l3,
-    required int l4,
+    required int l_1,
+    required int l_2,
+    required int l_3,
+    required int l_4,
     required int net,
     required int processor,
   }) = _AutoScoring;
@@ -51,10 +51,10 @@ class AutoScoring with _$AutoScoring {
 @freezed
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
-    required int l1,
-    required int l2,
-    required int l3,
-    required int l4,
+    required int l_1,
+    required int l_2,
+    required int l_3,
+    required int l_4,
     required int net,
     required int processor,
   }) = _TeleopScoring;
@@ -66,7 +66,7 @@ class TeleopScoring with _$TeleopScoring {
 @freezed
 class Miscellaneous with _$Miscellaneous {
   factory Miscellaneous({
-    required int died,
+    required bool died,
     required String comments,
   }) = _Miscellaneous;
 

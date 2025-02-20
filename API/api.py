@@ -1570,7 +1570,7 @@ def update_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
         else:
             raise HTTPException(400, "Check Your Team Number")
     MatchScoutingCollection.find_one_and_replace(
-        {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id}, data)
+        {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id}, data.dict())
     groups = [Group(**group)
               for group in get_user_groups_detailed(token=token)]
     groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(

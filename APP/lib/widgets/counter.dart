@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,8 +20,36 @@ class Counter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text('$label: '),
-        IconButton(
+        Expanded(
+          child: TextField(
+            decoration: InputDecoration(
+              labelText: label,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textAlign: TextAlign.center,
+            controller: TextEditingController(text: '$value'),
+            onSubmitted: (newValue) {
+              int? newIntValue = int.tryParse(newValue);
+              if (newIntValue != null) {
+                onChanged(math.max(math.min(newIntValue, max), 0));
+              }
+            },
+          ),
+        ),
+        SizedBox(width: 8),
+        IconButton.filled(
+          style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.blue,
+              fixedSize: Size(50, 50)),
           icon: Icon(Icons.remove),
           onPressed: value > 0
               ? () {
@@ -28,8 +58,16 @@ class Counter extends StatelessWidget {
                 }
               : null,
         ),
-        Text('$value'),
-        IconButton(
+        SizedBox(width: 8),
+        IconButton.filled(
+          style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.blue,
+              fixedSize: Size(50, 50)),
           icon: Icon(Icons.add),
           onPressed: value < max
               ? () {

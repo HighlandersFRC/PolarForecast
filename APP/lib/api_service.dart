@@ -730,4 +730,32 @@ class ApiService {
       throw Exception(json.decode(postItOnAPI.body)['detail']);
     }
   }
+
+  Future<void> post_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/';
+    final request = await http.post(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode == 307) {
+      throw Exception('update');
+    } else if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
+
+  Future<void> update_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/';
+    final request = await http.put(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
 }

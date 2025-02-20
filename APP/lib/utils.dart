@@ -55,10 +55,16 @@ bool isMobile() {
 }
 
 ScoutInfo get_scout_info(String token) {
-  Map<String, dynamic> jwt = parseJwt(token);
-  return ScoutInfo(
-      user_id: jwt['sub'],
-      first_name: jwt['name'],
-      username: jwt['preferred_username'],
-      team_number: jwt['team_number']);
+  try {
+    Map<String, dynamic> jwt = parseJwt(token);
+    return ScoutInfo(
+        user_id: jwt['sub'],
+        first_name: jwt['name'],
+        username: jwt['preferred_username'],
+        team_number: int.parse(jwt['team_number']));
+  } catch (e) {
+    print(e);
+    return ScoutInfo(
+        user_id: '', first_name: '', username: '', team_number: -1);
+  }
 }

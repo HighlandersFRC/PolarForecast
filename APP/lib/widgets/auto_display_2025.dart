@@ -127,7 +127,7 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                                   (widget.showScoutDetails ?? true
                                       ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
                                       : '') +
-                                  'Coral: ${scoutingData.data.auto_scoring.l1 + scoutingData.data.auto_scoring.l2 + scoutingData.data.auto_scoring.l3 + scoutingData.data.auto_scoring.l4}' +
+                                  'Coral: ${scoutingData.data.auto_scoring.l_1 + scoutingData.data.auto_scoring.l_2 + scoutingData.data.auto_scoring.l_3 + scoutingData.data.auto_scoring.l_4}' +
                                   'Net: ${scoutingData.data.auto_scoring.net}' +
                                   'Processor: ${scoutingData.data.auto_scoring.processor}',
                               triggerMode: TooltipTriggerMode.tap,
@@ -145,7 +145,7 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                               (widget.showScoutDetails ?? true
                                   ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
                                   : '') +
-                              'Coral: ${scoutingData.data.auto_scoring.l1 + scoutingData.data.auto_scoring.l2 + scoutingData.data.auto_scoring.l3 + scoutingData.data.auto_scoring.l4}' +
+                              'Coral: ${scoutingData.data.auto_scoring.l_1 + scoutingData.data.auto_scoring.l_2 + scoutingData.data.auto_scoring.l_3 + scoutingData.data.auto_scoring.l_4}' +
                               'Net: ${scoutingData.data.auto_scoring.net}' +
                               'Processor: ${scoutingData.data.auto_scoring.processor}',
                           style: const TextStyle(fontSize: 16),

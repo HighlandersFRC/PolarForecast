@@ -573,10 +573,10 @@ AutoScoring _$AutoScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AutoScoring {
-  int get l1 => throw _privateConstructorUsedError;
-  int get l2 => throw _privateConstructorUsedError;
-  int get l3 => throw _privateConstructorUsedError;
-  int get l4 => throw _privateConstructorUsedError;
+  int get l_1 => throw _privateConstructorUsedError;
+  int get l_2 => throw _privateConstructorUsedError;
+  int get l_3 => throw _privateConstructorUsedError;
+  int get l_4 => throw _privateConstructorUsedError;
   int get net => throw _privateConstructorUsedError;
   int get processor => throw _privateConstructorUsedError;
 
@@ -596,7 +596,7 @@ abstract class $AutoScoringCopyWith<$Res> {
           AutoScoring value, $Res Function(AutoScoring) then) =
       _$AutoScoringCopyWithImpl<$Res, AutoScoring>;
   @useResult
-  $Res call({int l1, int l2, int l3, int l4, int net, int processor});
+  $Res call({int l_1, int l_2, int l_3, int l_4, int net, int processor});
 }
 
 /// @nodoc
@@ -614,29 +614,29 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? l1 = null,
-    Object? l2 = null,
-    Object? l3 = null,
-    Object? l4 = null,
+    Object? l_1 = null,
+    Object? l_2 = null,
+    Object? l_3 = null,
+    Object? l_4 = null,
     Object? net = null,
     Object? processor = null,
   }) {
     return _then(_value.copyWith(
-      l1: null == l1
-          ? _value.l1
-          : l1 // ignore: cast_nullable_to_non_nullable
+      l_1: null == l_1
+          ? _value.l_1
+          : l_1 // ignore: cast_nullable_to_non_nullable
               as int,
-      l2: null == l2
-          ? _value.l2
-          : l2 // ignore: cast_nullable_to_non_nullable
+      l_2: null == l_2
+          ? _value.l_2
+          : l_2 // ignore: cast_nullable_to_non_nullable
               as int,
-      l3: null == l3
-          ? _value.l3
-          : l3 // ignore: cast_nullable_to_non_nullable
+      l_3: null == l_3
+          ? _value.l_3
+          : l_3 // ignore: cast_nullable_to_non_nullable
               as int,
-      l4: null == l4
-          ? _value.l4
-          : l4 // ignore: cast_nullable_to_non_nullable
+      l_4: null == l_4
+          ? _value.l_4
+          : l_4 // ignore: cast_nullable_to_non_nullable
               as int,
       net: null == net
           ? _value.net
@@ -658,7 +658,7 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
       __$$AutoScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int l1, int l2, int l3, int l4, int net, int processor});
+  $Res call({int l_1, int l_2, int l_3, int l_4, int net, int processor});
 }
 
 /// @nodoc
@@ -674,29 +674,29 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? l1 = null,
-    Object? l2 = null,
-    Object? l3 = null,
-    Object? l4 = null,
+    Object? l_1 = null,
+    Object? l_2 = null,
+    Object? l_3 = null,
+    Object? l_4 = null,
     Object? net = null,
     Object? processor = null,
   }) {
     return _then(_$AutoScoringImpl(
-      l1: null == l1
-          ? _value.l1
-          : l1 // ignore: cast_nullable_to_non_nullable
+      l_1: null == l_1
+          ? _value.l_1
+          : l_1 // ignore: cast_nullable_to_non_nullable
               as int,
-      l2: null == l2
-          ? _value.l2
-          : l2 // ignore: cast_nullable_to_non_nullable
+      l_2: null == l_2
+          ? _value.l_2
+          : l_2 // ignore: cast_nullable_to_non_nullable
               as int,
-      l3: null == l3
-          ? _value.l3
-          : l3 // ignore: cast_nullable_to_non_nullable
+      l_3: null == l_3
+          ? _value.l_3
+          : l_3 // ignore: cast_nullable_to_non_nullable
               as int,
-      l4: null == l4
-          ? _value.l4
-          : l4 // ignore: cast_nullable_to_non_nullable
+      l_4: null == l_4
+          ? _value.l_4
+          : l_4 // ignore: cast_nullable_to_non_nullable
               as int,
       net: null == net
           ? _value.net
@@ -714,10 +714,10 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
-      {required this.l1,
-      required this.l2,
-      required this.l3,
-      required this.l4,
+      {required this.l_1,
+      required this.l_2,
+      required this.l_3,
+      required this.l_4,
       required this.net,
       required this.processor});
 
@@ -725,13 +725,13 @@ class _$AutoScoringImpl implements _AutoScoring {
       _$$AutoScoringImplFromJson(json);
 
   @override
-  final int l1;
+  final int l_1;
   @override
-  final int l2;
+  final int l_2;
   @override
-  final int l3;
+  final int l_3;
   @override
-  final int l4;
+  final int l_4;
   @override
   final int net;
   @override
@@ -739,7 +739,7 @@ class _$AutoScoringImpl implements _AutoScoring {
 
   @override
   String toString() {
-    return 'AutoScoring(l1: $l1, l2: $l2, l3: $l3, l4: $l4, net: $net, processor: $processor)';
+    return 'AutoScoring(l_1: $l_1, l_2: $l_2, l_3: $l_3, l_4: $l_4, net: $net, processor: $processor)';
   }
 
   @override
@@ -747,10 +747,10 @@ class _$AutoScoringImpl implements _AutoScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AutoScoringImpl &&
-            (identical(other.l1, l1) || other.l1 == l1) &&
-            (identical(other.l2, l2) || other.l2 == l2) &&
-            (identical(other.l3, l3) || other.l3 == l3) &&
-            (identical(other.l4, l4) || other.l4 == l4) &&
+            (identical(other.l_1, l_1) || other.l_1 == l_1) &&
+            (identical(other.l_2, l_2) || other.l_2 == l_2) &&
+            (identical(other.l_3, l_3) || other.l_3 == l_3) &&
+            (identical(other.l_4, l_4) || other.l_4 == l_4) &&
             (identical(other.net, net) || other.net == net) &&
             (identical(other.processor, processor) ||
                 other.processor == processor));
@@ -758,7 +758,8 @@ class _$AutoScoringImpl implements _AutoScoring {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, l1, l2, l3, l4, net, processor);
+  int get hashCode =>
+      Object.hash(runtimeType, l_1, l_2, l_3, l_4, net, processor);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -778,10 +779,10 @@ class _$AutoScoringImpl implements _AutoScoring {
 
 abstract class _AutoScoring implements AutoScoring {
   factory _AutoScoring(
-      {required final int l1,
-      required final int l2,
-      required final int l3,
-      required final int l4,
+      {required final int l_1,
+      required final int l_2,
+      required final int l_3,
+      required final int l_4,
       required final int net,
       required final int processor}) = _$AutoScoringImpl;
 
@@ -789,13 +790,13 @@ abstract class _AutoScoring implements AutoScoring {
       _$AutoScoringImpl.fromJson;
 
   @override
-  int get l1;
+  int get l_1;
   @override
-  int get l2;
+  int get l_2;
   @override
-  int get l3;
+  int get l_3;
   @override
-  int get l4;
+  int get l_4;
   @override
   int get net;
   @override
@@ -815,10 +816,10 @@ TeleopScoring _$TeleopScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TeleopScoring {
-  int get l1 => throw _privateConstructorUsedError;
-  int get l2 => throw _privateConstructorUsedError;
-  int get l3 => throw _privateConstructorUsedError;
-  int get l4 => throw _privateConstructorUsedError;
+  int get l_1 => throw _privateConstructorUsedError;
+  int get l_2 => throw _privateConstructorUsedError;
+  int get l_3 => throw _privateConstructorUsedError;
+  int get l_4 => throw _privateConstructorUsedError;
   int get net => throw _privateConstructorUsedError;
   int get processor => throw _privateConstructorUsedError;
 
@@ -838,7 +839,7 @@ abstract class $TeleopScoringCopyWith<$Res> {
           TeleopScoring value, $Res Function(TeleopScoring) then) =
       _$TeleopScoringCopyWithImpl<$Res, TeleopScoring>;
   @useResult
-  $Res call({int l1, int l2, int l3, int l4, int net, int processor});
+  $Res call({int l_1, int l_2, int l_3, int l_4, int net, int processor});
 }
 
 /// @nodoc
@@ -856,29 +857,29 @@ class _$TeleopScoringCopyWithImpl<$Res, $Val extends TeleopScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? l1 = null,
-    Object? l2 = null,
-    Object? l3 = null,
-    Object? l4 = null,
+    Object? l_1 = null,
+    Object? l_2 = null,
+    Object? l_3 = null,
+    Object? l_4 = null,
     Object? net = null,
     Object? processor = null,
   }) {
     return _then(_value.copyWith(
-      l1: null == l1
-          ? _value.l1
-          : l1 // ignore: cast_nullable_to_non_nullable
+      l_1: null == l_1
+          ? _value.l_1
+          : l_1 // ignore: cast_nullable_to_non_nullable
               as int,
-      l2: null == l2
-          ? _value.l2
-          : l2 // ignore: cast_nullable_to_non_nullable
+      l_2: null == l_2
+          ? _value.l_2
+          : l_2 // ignore: cast_nullable_to_non_nullable
               as int,
-      l3: null == l3
-          ? _value.l3
-          : l3 // ignore: cast_nullable_to_non_nullable
+      l_3: null == l_3
+          ? _value.l_3
+          : l_3 // ignore: cast_nullable_to_non_nullable
               as int,
-      l4: null == l4
-          ? _value.l4
-          : l4 // ignore: cast_nullable_to_non_nullable
+      l_4: null == l_4
+          ? _value.l_4
+          : l_4 // ignore: cast_nullable_to_non_nullable
               as int,
       net: null == net
           ? _value.net
@@ -900,7 +901,7 @@ abstract class _$$TeleopScoringImplCopyWith<$Res>
       __$$TeleopScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int l1, int l2, int l3, int l4, int net, int processor});
+  $Res call({int l_1, int l_2, int l_3, int l_4, int net, int processor});
 }
 
 /// @nodoc
@@ -916,29 +917,29 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? l1 = null,
-    Object? l2 = null,
-    Object? l3 = null,
-    Object? l4 = null,
+    Object? l_1 = null,
+    Object? l_2 = null,
+    Object? l_3 = null,
+    Object? l_4 = null,
     Object? net = null,
     Object? processor = null,
   }) {
     return _then(_$TeleopScoringImpl(
-      l1: null == l1
-          ? _value.l1
-          : l1 // ignore: cast_nullable_to_non_nullable
+      l_1: null == l_1
+          ? _value.l_1
+          : l_1 // ignore: cast_nullable_to_non_nullable
               as int,
-      l2: null == l2
-          ? _value.l2
-          : l2 // ignore: cast_nullable_to_non_nullable
+      l_2: null == l_2
+          ? _value.l_2
+          : l_2 // ignore: cast_nullable_to_non_nullable
               as int,
-      l3: null == l3
-          ? _value.l3
-          : l3 // ignore: cast_nullable_to_non_nullable
+      l_3: null == l_3
+          ? _value.l_3
+          : l_3 // ignore: cast_nullable_to_non_nullable
               as int,
-      l4: null == l4
-          ? _value.l4
-          : l4 // ignore: cast_nullable_to_non_nullable
+      l_4: null == l_4
+          ? _value.l_4
+          : l_4 // ignore: cast_nullable_to_non_nullable
               as int,
       net: null == net
           ? _value.net
@@ -956,10 +957,10 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
-      {required this.l1,
-      required this.l2,
-      required this.l3,
-      required this.l4,
+      {required this.l_1,
+      required this.l_2,
+      required this.l_3,
+      required this.l_4,
       required this.net,
       required this.processor});
 
@@ -967,13 +968,13 @@ class _$TeleopScoringImpl implements _TeleopScoring {
       _$$TeleopScoringImplFromJson(json);
 
   @override
-  final int l1;
+  final int l_1;
   @override
-  final int l2;
+  final int l_2;
   @override
-  final int l3;
+  final int l_3;
   @override
-  final int l4;
+  final int l_4;
   @override
   final int net;
   @override
@@ -981,7 +982,7 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
   @override
   String toString() {
-    return 'TeleopScoring(l1: $l1, l2: $l2, l3: $l3, l4: $l4, net: $net, processor: $processor)';
+    return 'TeleopScoring(l_1: $l_1, l_2: $l_2, l_3: $l_3, l_4: $l_4, net: $net, processor: $processor)';
   }
 
   @override
@@ -989,10 +990,10 @@ class _$TeleopScoringImpl implements _TeleopScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$TeleopScoringImpl &&
-            (identical(other.l1, l1) || other.l1 == l1) &&
-            (identical(other.l2, l2) || other.l2 == l2) &&
-            (identical(other.l3, l3) || other.l3 == l3) &&
-            (identical(other.l4, l4) || other.l4 == l4) &&
+            (identical(other.l_1, l_1) || other.l_1 == l_1) &&
+            (identical(other.l_2, l_2) || other.l_2 == l_2) &&
+            (identical(other.l_3, l_3) || other.l_3 == l_3) &&
+            (identical(other.l_4, l_4) || other.l_4 == l_4) &&
             (identical(other.net, net) || other.net == net) &&
             (identical(other.processor, processor) ||
                 other.processor == processor));
@@ -1000,7 +1001,8 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, l1, l2, l3, l4, net, processor);
+  int get hashCode =>
+      Object.hash(runtimeType, l_1, l_2, l_3, l_4, net, processor);
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1020,10 +1022,10 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
-      {required final int l1,
-      required final int l2,
-      required final int l3,
-      required final int l4,
+      {required final int l_1,
+      required final int l_2,
+      required final int l_3,
+      required final int l_4,
       required final int net,
       required final int processor}) = _$TeleopScoringImpl;
 
@@ -1031,13 +1033,13 @@ abstract class _TeleopScoring implements TeleopScoring {
       _$TeleopScoringImpl.fromJson;
 
   @override
-  int get l1;
+  int get l_1;
   @override
-  int get l2;
+  int get l_2;
   @override
-  int get l3;
+  int get l_3;
   @override
-  int get l4;
+  int get l_4;
   @override
   int get net;
   @override
@@ -1057,7 +1059,7 @@ Miscellaneous _$MiscellaneousFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Miscellaneous {
-  int get died => throw _privateConstructorUsedError;
+  bool get died => throw _privateConstructorUsedError;
   String get comments => throw _privateConstructorUsedError;
 
   /// Serializes this Miscellaneous to a JSON map.
@@ -1076,7 +1078,7 @@ abstract class $MiscellaneousCopyWith<$Res> {
           Miscellaneous value, $Res Function(Miscellaneous) then) =
       _$MiscellaneousCopyWithImpl<$Res, Miscellaneous>;
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, String comments});
 }
 
 /// @nodoc
@@ -1101,7 +1103,7 @@ class _$MiscellaneousCopyWithImpl<$Res, $Val extends Miscellaneous>
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1118,7 +1120,7 @@ abstract class _$$MiscellaneousImplCopyWith<$Res>
       __$$MiscellaneousImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, String comments});
 }
 
 /// @nodoc
@@ -1141,7 +1143,7 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1159,7 +1161,7 @@ class _$MiscellaneousImpl implements _Miscellaneous {
       _$$MiscellaneousImplFromJson(json);
 
   @override
-  final int died;
+  final bool died;
   @override
   final String comments;
 
@@ -1200,14 +1202,14 @@ class _$MiscellaneousImpl implements _Miscellaneous {
 
 abstract class _Miscellaneous implements Miscellaneous {
   factory _Miscellaneous(
-      {required final int died,
+      {required final bool died,
       required final String comments}) = _$MiscellaneousImpl;
 
   factory _Miscellaneous.fromJson(Map<String, dynamic> json) =
       _$MiscellaneousImpl.fromJson;
 
   @override
-  int get died;
+  bool get died;
   @override
   String get comments;
 
