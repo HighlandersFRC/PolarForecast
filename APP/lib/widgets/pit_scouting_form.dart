@@ -244,169 +244,232 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
-  List<List<String>> autoSteps = [];
-  List<bool> isAnimatingProcessorList = [];
-  List<bool> isAnimatingNetList = [];
 
-  Widget buildTriangle({
-    required double size,
-    required Color color,
-    double rotation = 0.0,
-  }) {
-    return Transform.rotate(
-      angle: rotation,
-      alignment: Alignment.topCenter,
-      child: Container(
-        width: 0,
-        height: 0,
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(width: size, color: Colors.transparent),
-            right: BorderSide(width: size, color: Colors.transparent),
-            bottom: BorderSide(width: size * sqrt(3), color: color),
-          ),
+List<List<String>> autoSteps = [];
+List<bool> isAnimatingProcessorList = [];
+List<bool> isAnimatingNetList = [];
+
+Widget buildTriangle({
+  required double size,
+  required Color color,
+  double rotation = 0.0,
+}) {
+  return Transform.rotate(
+    angle: rotation,
+    alignment: Alignment.topCenter,
+    child: Container(
+      width: 0,
+      height: 0,
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(width: size, color: Colors.transparent),
+          right: BorderSide(width: size, color: Colors.transparent),
+          bottom: BorderSide(width: size * sqrt(3), color: color),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  void _showTriangleMenu(
-      BuildContext context, int autoIndex, int triangleIndex) {
-    String letter1 = String.fromCharCode(65 + (2 * triangleIndex));
-    String letter2 = String.fromCharCode(65 + (2 * triangleIndex) + 1);
+void _showTriangleMenu(
+    BuildContext context,
+    int autoIndex,
+    int triangleIndex,
+  ) {
+    int letterIndex = (triangleIndex + 1 + 6) % 6; // shift one triangle back
+    String letter1 = String.fromCharCode(65 + (2 * letterIndex));
+    String letter2 = String.fromCharCode(65 + (2 * letterIndex) + 1);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Select Place Level for $letter1-$letter2'),
-          content: SingleChildScrollView(
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.all(12),
+            // For consistent look, you can adjust or even calculate the width dynamically
+            width: 340,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('$letter1:'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(4, (level) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          autoSteps[autoIndex].add(
-                              'Triangle $letter1-$letter2: Placed on $letter1 level ${level + 1}');
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Text('${level + 1}',
-                            style: TextStyle(color: Colors.white)),
-                      ),
-                    );
-                  }),
+                // Title text
+                Text(
+                  'Place $letter1-$letter2',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 10),
-                Text('$letter2:'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(4, (level) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          autoSteps[autoIndex].add(
-                              'Triangle $letter1-$letter2: Placed on $letter2 level ${level + 1}');
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.redAccent,
-                        child: Text('${level + 1}',
-                            style: TextStyle(color: Colors.white)),
+                SizedBox(height: 8),
+                // Row with left buttons, algae button, and right buttons
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left column of placement buttons
+                      Column(
+                        children: List.generate(4, (level) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 6, horizontal: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  autoSteps[autoIndex].add(
+                                      'Triangle $letter1-$letter2: Placed on $letter1${4 - level}');
+                                });
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                '$letter1${4 - level}',
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.black),
+                              ),
+                            ),
+                          );
+                        }),
                       ),
-                    );
-                  }),
+                      SizedBox(width: 12),
+                      // Middle column for algae button:
+                      // Instead of translating the widget, we use a fixed-height container.
+                      // The Align widget positions the button either at the top or bottom.
+                      Column(
+                        children: [
+                          Text(
+                            'Removed Algae?',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            height:
+                                150, // Fixed height ensures enough room for both positions
+                            width: 60, // Width matches the button size
+                            child: Align(
+                              // If letter1 is A, E, or I, position the button at the top;
+                              // otherwise, position it at the bottom.
+                              alignment: (letter1 == 'A' ||
+                                      letter1 == 'E' ||
+                                      letter1 == 'I')
+                                  ? Alignment.topCenter
+                                  : Alignment.bottomCenter,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    autoSteps[autoIndex].add(
+                                        'Removed Algae at $letter1-$letter2');
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Color.fromARGB(255, 58, 185, 164),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 12),
+                      // Right column of placement buttons
+                      Column(
+                        children: List.generate(4, (level) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 6, horizontal: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  autoSteps[autoIndex].add(
+                                      'Triangle $letter1-$letter2: Placed on $letter2${4 - level}');
+                                });
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                '$letter2${4 - level}',
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.black),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
+                SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                  ),
+                  child: Text('Cancel'),
+                )
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-          ],
         );
       },
     );
   }
 
-  Widget buildStepsUI(int index) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Steps:",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.white)),
-        ...autoSteps[index].asMap().entries.map((entry) {
-          int stepIndex = entry.key;
-          String stepLabel = entry.value;
-          return Card(
-            color: Colors.grey[800],
-            child: ListTile(
-              leading: Text("Step ${stepIndex + 1}",
-                  style: TextStyle(color: Colors.white)),
-              title: Text(stepLabel, style: TextStyle(color: Colors.white)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_upward,
-                        color: stepIndex > 0 ? Colors.white : Colors.grey),
-                    onPressed: stepIndex > 0
-                        ? () {
-                            setState(() {
-                              var temp = autoSteps[index][stepIndex - 1];
-                              autoSteps[index][stepIndex - 1] =
-                                  autoSteps[index][stepIndex];
-                              autoSteps[index][stepIndex] = temp;
-                            });
-                          }
-                        : null,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.arrow_downward,
-                        color: stepIndex < autoSteps[index].length - 1
-                            ? Colors.white
-                            : Colors.grey),
-                    onPressed: stepIndex < autoSteps[index].length - 1
-                        ? () {
-                            setState(() {
-                              var temp = autoSteps[index][stepIndex + 1];
-                              autoSteps[index][stepIndex + 1] =
-                                  autoSteps[index][stepIndex];
-                              autoSteps[index][stepIndex] = temp;
-                            });
-                          }
-                        : null,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      setState(() {
-                        autoSteps[index].removeAt(stepIndex);
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ],
-    );
-  }
 
-  Widget buildAutoImage(int index) {
+
+Widget buildStepsUI(int index) {
+  List<Widget> items = autoSteps[index].asMap().entries.map((entry) {
+    int stepIndex = entry.key;
+    String stepLabel = entry.value;
+    return Card(
+      key: ValueKey(stepIndex),
+      color: Colors.grey[800],
+      child: ListTile(
+        title: Text("Step ${stepIndex + 1}: $stepLabel",
+            style: TextStyle(color: Colors.white)),
+        trailing: IconButton(
+          icon: Icon(Icons.delete, color: Colors.red),
+          onPressed: () {
+            setState(() {
+              autoSteps[index].removeAt(stepIndex);
+            });
+          },
+        ),
+      ),
+    );
+  }).toList();
+  return ReorderableListView(
+    shrinkWrap: true,
+    physics: NeverScrollableScrollPhysics(),
+    onReorder: (oldIndex, newIndex) {
+      setState(() {
+        if (newIndex > oldIndex) newIndex -= 1;
+        final item = autoSteps[index].removeAt(oldIndex);
+        autoSteps[index].insert(newIndex, item);
+      });
+    },
+    children: items,
+  );
+}
+
+Widget buildAutoImage(int index) {
     double fieldWidthMeters = 8.052;
     while (autoPositions.length <= index)
       autoPositions.add(fieldWidthMeters / 2);
@@ -414,25 +477,13 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     while (isAnimatingProcessorList.length <= index)
       isAnimatingProcessorList.add(false);
     while (isAnimatingNetList.length <= index) isAnimatingNetList.add(false);
+    while (selectedDropdownValues.length <= index)
+      selectedDropdownValues.add(null);
+    while (exitSwitchValues.length <= index) exitSwitchValues.add(false);
+    while (preloadSwitchValues.length <= index) preloadSwitchValues.add(false);
 
     double sliderValue = autoPositions[index];
-    while (autoPositions.length <= index) {
-      autoPositions.add(0.0);
-    }
-    while (selectedDropdownValues.length <= index) {
-      selectedDropdownValues.add(null);
-    }
 
-    // Ensure there's an independent switch value for each auto image
-    while (exitSwitchValues.length <= index) {
-      exitSwitchValues.add(false);
-    }
-
-    while (preloadSwitchValues.length <= index) {
-      preloadSwitchValues.add(false);
-    }
-
-    // Determine the image to display based on the selected dropdown value
     String imagePath;
     double rotation = 0;
     switch (selectedDropdownValues[index]) {
@@ -446,7 +497,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         break;
       default:
         imagePath = 'assets/2025 REEFSCAPE Gray Background blue.png';
-        rotation = 1.5708; // Default to blue if no selection or 'Both'
+        rotation = 1.5708;
         break;
     }
     return Center(
@@ -480,54 +531,52 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               double centerY = (displayedImageHeight + (5.5 * scaleFactor)) / 2;
 
               for (int i = 0; i < triangleCount; i++) {
-                int shiftedIndex =
-                    (i + 4) % 6; // Clockwise shift by 2 positions
-                double angle = (2 * pi / triangleCount) * shiftedIndex;
+                int shiftedIndex = (i + 4) % triangleCount;
+                double angle = (-2 * pi / triangleCount) * shiftedIndex;
                 Color triangleColor =
                     (i % 2 == 0) ? Colors.green : Colors.purple;
 
-                // Add triangle
-                triangleWidgets.add(
-                  Positioned(
-                    left: centerX,
-                    top: centerY,
-                    child: buildTriangle(
-                      size: triangleSize,
-                      color: triangleColor.withOpacity(0.5),
-                      rotation: angle,
-                    ),
+                triangleWidgets.add(Positioned(
+                  left: centerX,
+                  top: centerY,
+                  child: buildTriangle(
+                    size: triangleSize,
+                    color: triangleColor.withOpacity(0.5),
+                    rotation: angle,
                   ),
-                );
+                ));
 
-                // Calculate label position
+                int labelIndex = (i + 1 + triangleCount) % triangleCount;
                 double centroidDist = (2 * triangleSize * sqrt(3)) / 3;
                 double offsetX = -centroidDist * sin(angle);
                 double offsetY = centroidDist * cos(angle);
-                String letter1 = String.fromCharCode(65 + (2 * i));
-                String letter2 = String.fromCharCode(65 + (2 * i) + 1);
+                String letter1 = String.fromCharCode(65 + (2 * labelIndex));
+                String letter2 = String.fromCharCode(65 + (2 * labelIndex) + 1);
 
-                // Add label
-                triangleLabels.add(
-                  Positioned(
-                    left: centerX + offsetX - (triangleSize * 0.5),
-                    top: centerY + offsetY - (triangleSize * 0.25),
-                    child: Text(
-                      "$letter1-$letter2",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: triangleSize * 0.5,
-                        shadows: [
-                          Shadow(
-                              blurRadius: 2,
-                              color: Colors.black54,
-                              offset: Offset(1, 1))
-                        ],
-                      ),
+                triangleLabels.add(Positioned(
+                  left: centerX + offsetX - (triangleSize * 0.5),
+                  top: centerY + offsetY - (triangleSize * 0.25),
+                  child: Text(
+                    "$letter1-$letter2",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: triangleSize * 0.5,
+                      shadows: [
+                        Shadow(
+                            blurRadius: 2,
+                            color: Colors.black54,
+                            offset: Offset(1, 1))
+                      ],
                     ),
                   ),
-                );
+                ));
               }
+
+              // Determine side for processor (and thus feeder) positioning.
+              bool isRedSide = selectedDropdownValues[index] == 'Red Side';
+              // Define feeder button size relative to image width.
+              double feederButtonSize = displayedImageWidth * 0.1;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -538,19 +587,26 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       RenderBox box = context.findRenderObject() as RenderBox;
                       Offset localPos =
                           box.globalToLocal(details.globalPosition);
-                      double dx = localPos.dx - centerX;
-                      double dy = localPos.dy - centerY;
-                      double tapAngle = (atan2(dy, dx) + 2 * pi) % (2 * pi);
-                      double adjustedAngle =
-                          (tapAngle - (pi / 2) + 2 * pi) % (2 * pi);
-                      int tappedTriangle =
-                          (adjustedAngle / (2 * pi / triangleCount)).floor();
-
-                      // Convert to original index
-                      int originalIndex = (tappedTriangle - 4) % 6;
-                      if (originalIndex < 0) originalIndex += 6;
-
-                      _showTriangleMenu(context, index, originalIndex);
+                      int selectedTriangle = -1;
+                      double minDistance = double.infinity;
+                      double triangleSizeLocal = displayedImageWidth * 0.075;
+                      double centroidDist =
+                          (2 * triangleSizeLocal * sqrt(3)) / 3;
+                      for (int i = 0; i < triangleCount; i++) {
+                        int shiftedIndex = (i + 4) % triangleCount;
+                        double angle = (-2 * pi / triangleCount) * shiftedIndex;
+                        double triCenterX = centerX - centroidDist * sin(angle);
+                        double triCenterY = centerY + centroidDist * cos(angle);
+                        double distance = sqrt(
+                            pow(localPos.dx - triCenterX, 2) +
+                                pow(localPos.dy - triCenterY, 2));
+                        if (distance < minDistance) {
+                          minDistance = distance;
+                          selectedTriangle = i;
+                        }
+                      }
+                      if (minDistance > triangleSizeLocal) return;
+                      _showTriangleMenu(context, index, selectedTriangle);
                     },
                     child: Stack(
                       children: [
@@ -577,114 +633,164 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   width: displayedImageHeight * 0.005),
                               borderRadius: BorderRadius.circular(
                                   displayedImageHeight * 0.02),
-                              color: Colors.black87.withOpacity(0.45),
+                              color: Colors.black87.withOpacity(0.2),
                             ),
-                            child:
-                                Icon(Icons.smart_toy, size: 15 * scaleFactor),
+                            child: Icon(Icons.smart_toy,
+                                size: 15 * scaleFactor, color: Colors.white),
                           ),
                         ),
+                        // Processor and Net buttons (bottom corners)
+                        ...() {
+                          return [
+                            Positioned(
+                              left: isRedSide ? null : overlayLeft,
+                              right: isRedSide ? overlayLeft : null,
+                              bottom: overlayBottom,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    autoSteps[index].add(
+                                        'Processor ${autoSteps[index].length + 1}');
+                                    isAnimatingProcessorList[index] = true;
+                                  });
+                                  Future.delayed(Duration(milliseconds: 50),
+                                      () {
+                                    setState(() =>
+                                        isAnimatingProcessorList[index] =
+                                            false);
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: Duration(milliseconds: 100),
+                                  curve: Curves.easeInOutQuad,
+                                  width: isAnimatingProcessorList[index]
+                                      ? overlayWidth * 1.1
+                                      : overlayWidth,
+                                  height: isAnimatingProcessorList[index]
+                                      ? overlayHeight * 1.1
+                                      : overlayHeight,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(
+                                        isAnimatingProcessorList[index]
+                                            ? 0.7
+                                            : 0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.build,
+                                          color: Colors.white,
+                                          size: (isAnimatingProcessorList[index]
+                                                  ? 32
+                                                  : 28) *
+                                              scaleFactor),
+                                      SizedBox(height: 4),
+                                      Text('Processor',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize:
+                                                  11 * (scaleFactor - 0.4))),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: isRedSide ? overlayLeft : null,
+                              right: isRedSide ? null : overlayLeft,
+                              bottom: overlayBottom,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    autoSteps[index].add(
+                                        'Net ${autoSteps[index].length + 1}');
+                                    isAnimatingNetList[index] = true;
+                                  });
+                                  Future.delayed(Duration(milliseconds: 50),
+                                      () {
+                                    setState(() =>
+                                        isAnimatingNetList[index] = false);
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: Duration(milliseconds: 100),
+                                  curve: Curves.easeInOutQuad,
+                                  width: isAnimatingNetList[index]
+                                      ? overlayHeight * 1.1
+                                      : overlayHeight,
+                                  height: isAnimatingNetList[index]
+                                      ? overlayWidth * 1.1
+                                      : overlayWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(
+                                        isAnimatingNetList[index] ? 0.7 : 0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.grid_4x4,
+                                          color: Colors.white,
+                                          size: (isAnimatingNetList[index]
+                                                  ? 32
+                                                  : 28) *
+                                              scaleFactor),
+                                      SizedBox(height: 4),
+                                      Text('Net',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize:
+                                                  11 * (scaleFactor - 0.4))),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ];
+                        }(),
+                        // Feeder buttons in the top corners
                         Positioned(
-                          left: overlayLeft,
-                          bottom: overlayBottom,
-                          child: GestureDetector(
+                          top: displayedImageHeight * 0.05,
+                          left: displayedImageWidth * 0.05,
+                          child: FeederButton(
+                            size: feederButtonSize,
+                            scaleFactor: scaleFactor,
                             onTap: () {
+                              bool feederNear = isRedSide ? false : true;
                               setState(() {
                                 autoSteps[index].add(
-                                    'Processor ${autoSteps[index].length + 1}');
-                                isAnimatingProcessorList[index] = true;
-                              });
-                              Future.delayed(Duration(milliseconds: 50), () {
-                                setState(() =>
-                                    isAnimatingProcessorList[index] = false);
+                                    'Feeder: Picked from feeder-station ' +
+                                        (feederNear
+                                            ? 'near Processor'
+                                            : 'away from Processor'));
                               });
                             },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 100),
-                              curve: Curves.easeInOutQuad,
-                              width: isAnimatingProcessorList[index]
-                                  ? overlayWidth * 1.1
-                                  : overlayWidth,
-                              height: isAnimatingProcessorList[index]
-                                  ? overlayHeight * 1.1
-                                  : overlayHeight,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(
-                                    isAnimatingProcessorList[index]
-                                        ? 0.7
-                                        : 0.3),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.build,
-                                      color: Colors.white,
-                                      size: (isAnimatingProcessorList[index]
-                                              ? 32
-                                              : 28) *
-                                          scaleFactor),
-                                  SizedBox(height: 4),
-                                  Text('Processor',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11 * (scaleFactor - 0.4))),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                         Positioned(
-                          right: overlayLeft,
-                          bottom: overlayBottom,
-                          child: GestureDetector(
+                          top: displayedImageHeight * 0.05,
+                          right: displayedImageWidth * 0.05,
+                          child: FeederButton(
+                            size: feederButtonSize,
+                            scaleFactor: scaleFactor,
                             onTap: () {
+                              bool feederNear = isRedSide ? true : false;
                               setState(() {
-                                autoSteps[index]
-                                    .add('Net ${autoSteps[index].length + 1}');
-                                isAnimatingNetList[index] = true;
-                              });
-                              Future.delayed(Duration(milliseconds: 50), () {
-                                setState(
-                                    () => isAnimatingNetList[index] = false);
+                                autoSteps[index].add(
+                                    'Feeder: Picked from feeder-station ' +
+                                        (feederNear
+                                            ? 'near Processor'
+                                            : 'away from Processor'));
                               });
                             },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 100),
-                              curve: Curves.easeInOutQuad,
-                              width: isAnimatingNetList[index]
-                                  ? overlayHeight * 1.1
-                                  : overlayHeight,
-                              height: isAnimatingNetList[index]
-                                  ? overlayWidth * 1.1
-                                  : overlayWidth,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(
-                                    isAnimatingNetList[index] ? 0.7 : 0.3),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.grid_4x4,
-                                      color: Colors.white,
-                                      size: (isAnimatingNetList[index]
-                                              ? 32
-                                              : 28) *
-                                          scaleFactor),
-                                  SizedBox(height: 4),
-                                  Text('Net',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11 * (scaleFactor - 0.4))),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: 10),
+                  // Slider exactly the same width as the image.
                   SizedBox(
                     width: displayedImageWidth,
                     child: Slider(
@@ -725,9 +831,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                         exitSwitchValues[index] = value;
                         pitScoutingData = pitScoutingData.copyWith(
                           data: pitScoutingData.data.copyWith(
-                              autos: List.from(pitScoutingData.data.autos)
-                                ..[index] = pitScoutingData.data.autos[index]
-                                    .copyWith(exit: value)),
+                            autos: List.from(pitScoutingData.data.autos)
+                              ..[index] = pitScoutingData.data.autos[index]
+                                  .copyWith(exit: value),
+                          ),
                         );
                       });
                     },
@@ -740,9 +847,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                         preloadSwitchValues[index] = value;
                         pitScoutingData = pitScoutingData.copyWith(
                           data: pitScoutingData.data.copyWith(
-                              autos: List.from(pitScoutingData.data.autos)
-                                ..[index] = pitScoutingData.data.autos[index]
-                                    .copyWith(preload: value)),
+                            autos: List.from(pitScoutingData.data.autos)
+                              ..[index] = pitScoutingData.data.autos[index]
+                                  .copyWith(preload: value),
+                          ),
                         );
                       });
                     },
@@ -915,5 +1023,110 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               ),
             ),
     );
+  }
+}
+class FeederButton extends StatelessWidget {
+  final double size;
+  final double scaleFactor; // Add scaleFactor
+  final VoidCallback onTap;
+
+  const FeederButton({
+    Key? key,
+    required this.size,
+    required this.onTap,
+    this.scaleFactor = 1.0, 
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipPath(
+
+        clipper: RoundedRectangleClipper(
+            cornerRadius: 20.0, scaleFactor: scaleFactor),
+        child: Container(
+          width: size,
+          height: size,
+          color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.2),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.ac_unit, 
+                  color: Colors.white,
+                  size: size * 0.3, 
+                ),
+                SizedBox(height: size * 0.05), 
+                Text(
+                  'Feeder',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: size * 0.2),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class RoundedTriangleClipper extends CustomClipper<Path> {
+  final double cornerRadius;
+
+  RoundedTriangleClipper({this.cornerRadius = 20.0}); // Default corner radius
+
+  @override
+  Path getClip(Size size) {
+    final Path path = Path();
+    double width = size.width;
+    double height = size.height;
+
+    // Create the triangle with rounded corners
+    path.moveTo(width / 2, 0); // Top point
+    path.arcToPoint(Offset(0, height), radius: Radius.circular(cornerRadius)); // Left corner
+    path.arcToPoint(Offset(width, height), radius: Radius.circular(cornerRadius)); // Right corner
+    path.arcToPoint(Offset(width / 2, 0), radius: Radius.circular(cornerRadius)); // Closing the loop back to top
+
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return oldClipper is RoundedRectangleClipper && oldClipper.cornerRadius != cornerRadius;
+  }
+}
+
+
+
+
+class RoundedRectangleClipper extends CustomClipper<Path> {
+  final double cornerRadius;
+  final double scaleFactor;
+
+  RoundedRectangleClipper({this.cornerRadius = 20.0, this.scaleFactor = 1.0});
+
+  @override
+  Path getClip(Size size) {
+    final Path path = Path();
+    double width = size.width;
+    double height = size.height;
+
+    double scaledRadius = cornerRadius * scaleFactor;
+
+    path.addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, width, height), Radius.circular(scaledRadius)));
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return oldClipper is RoundedRectangleClipper &&
+        (oldClipper.cornerRadius != cornerRadius ||
+            oldClipper.scaleFactor != scaleFactor);
   }
 }
