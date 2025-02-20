@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flat/flat.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
@@ -11,11 +9,10 @@ import 'package:scouting_app/models/match_scouting_2025.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
+import 'package:scouting_app/widgets/auto_display_2025.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2025.dart';
-import '../models/match_scouting_2024.dart';
 import '../models/pit_scouting_2025.dart';
-import '../widgets/auto_display_2024.dart';
 import '../widgets/bar_chart_with_weights.dart';
 import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
@@ -68,12 +65,6 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   int _currentTab = 0;
-  bool isMobile() {
-    if (kIsWeb) {
-      return false;
-    }
-    return Platform.isAndroid || Platform.isIOS;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -2195,7 +2186,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2024> scoutingData = [];
+  List<MatchScouting2025> scoutingData = [];
   bool isLoading = true, farSide = false, closeSide = false;
   int currentPage = 0, scores = 0, pickups = 0;
   static const AUTOS_PER_PAGE = 15;
@@ -2215,18 +2206,7 @@ class _AutosTabState extends State<_AutosTab> {
       );
       if (mounted) {
         setState(() {
-          List<MatchScouting2024> newScoutingData = [];
-          for (var matchData in fetchedData) {
-            dynamic died = matchData['data']['miscellaneous']['died'];
-            if (died == 1 || died == true) {
-              died = true;
-            } else {
-              died = false;
-            }
-            matchData['data']['miscellaneous']['died'] = died;
-            newScoutingData.add(MatchScouting2024.fromJson(matchData));
-          }
-          scoutingData = newScoutingData;
+          scoutingData = fetchedData;
           isLoading = false;
         });
       }
@@ -2238,42 +2218,44 @@ class _AutosTabState extends State<_AutosTab> {
   @override
   Widget build(BuildContext context) {
     // Filter out all of the Data which doesn't follow the form's filters
-    List<MatchScouting2024> filteredData = scoutingData.where((entry) {
-      if ((entry.data.selectedPieces?.length ?? 0) == 0 &&
-          (farSide || closeSide || pickups > 0)) {
-        return false;
-      }
-      if (closeSide) {
-        const closeNotes = [
-          'spike_left',
-          'spike_middle',
-          'spike_right',
-          'halfway_far_left',
-          'halfway_middle_left',
-          'halfway_middle',
-        ];
-        if (!(entry.data.selectedPieces
-                ?.any((element) => closeNotes.any((note) => note == element)) ??
-            false)) return false;
-      }
-      if (farSide) {
-        const farNotes = [
-          'halfway_middle_right',
-          'halfway_far_right',
-        ];
-        if (!(entry.data.selectedPieces
-                ?.any((element) => farNotes.any((note) => note == element)) ??
-            false)) return false;
-      }
-      if (entry.data.selectedPieces!.length < pickups) {
-        return false;
-      }
-      int numScores = entry.data.auto.amp + entry.data.auto.speaker;
-      if (numScores < scores) {
-        return false;
-      }
-      return true;
-    }).toList();
+    List<MatchScouting2025> filteredData = scoutingData;
+    // TODO add auto filtration
+    // .where((entry) {
+    //   if ((entry.data.selectedPieces?.length ?? 0) == 0 &&
+    //       (farSide || closeSide || pickups > 0)) {
+    //     return false;
+    //   }
+    //   if (closeSide) {
+    //     const closeNotes = [
+    //       'spike_left',
+    //       'spike_middle',
+    //       'spike_right',
+    //       'halfway_far_left',
+    //       'halfway_middle_left',
+    //       'halfway_middle',
+    //     ];
+    //     if (!(entry.data.selectedPieces
+    //             ?.any((element) => closeNotes.any((note) => note == element)) ??
+    //         false)) return false;
+    //   }
+    //   if (farSide) {
+    //     const farNotes = [
+    //       'halfway_middle_right',
+    //       'halfway_far_right',
+    //     ];
+    //     if (!(entry.data.selectedPieces
+    //             ?.any((element) => farNotes.any((note) => note == element)) ??
+    //         false)) return false;
+    //   }
+    //   if (entry.data.selectedPieces!.length < pickups) {
+    //     return false;
+    //   }
+    //   int numScores = entry.data.auto.amp + entry.data.auto.speaker;
+    //   if (numScores < scores) {
+    //     return false;
+    //   }
+    //   return true;
+    // }).toList();
     int numPages = (filteredData.length / AUTOS_PER_PAGE).ceil();
     // make sure we don't map it to a non-existent page
     if (currentPage >= numPages) {
@@ -2282,7 +2264,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2024> pageData = filteredData.sublist(
+    List<MatchScouting2025> pageData = filteredData.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(filteredData.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -2359,7 +2341,7 @@ class _AutosTabState extends State<_AutosTab> {
                                     List.generate(numRows, (int rowIndex) {
                                   int index = rowIndex * numColumns + colIndex;
                                   if (index < pageData.length) {
-                                    return AutoDisplay2024(
+                                    return AutoDisplay2025(
                                       scoutingData: pageData[index],
                                     );
                                   }

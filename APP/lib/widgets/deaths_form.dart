@@ -1,5 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/deaths_form.dart';
+import 'package:scouting_app/models/scout_info.dart';
 import '../api_service.dart';
 
 import '../models/tournament.dart';
@@ -20,7 +24,14 @@ class DeathsForm extends StatefulWidget {
 }
 
 class _DeathsFormState extends State<DeathsForm> {
-  List<dynamic> deaths = [];
+  late Deaths deaths = Deaths(
+      average: 0,
+      scout_info: ScoutInfo(user_id: '', team_number: 0),
+      event_code: widget.tournament.key,
+      team_key: widget.teamNumber.toString(),
+      total: 0,
+      time: 0);
+  List<TextEditingController> controllers = [];
   bool formSubmitted = false;
   bool loading = true;
 
@@ -39,15 +50,13 @@ class _DeathsFormState extends State<DeathsForm> {
           'frc${widget.teamNumber}',
         )
         .then((fetchedData) => setState(() {
-              deaths = fetchedData['deaths'] ?? [];
+              deaths = fetchedData;
+              for (var death in deaths.deaths) {
+                controllers
+                    .add(TextEditingController(text: death.death_reason));
+              }
               loading = false;
             }));
-  }
-
-  void handleChange(String field, int index, dynamic value) {
-    setState(() {
-      deaths[index][field] = value;
-    });
   }
 
   void handleSubmit() async {
@@ -119,138 +128,179 @@ class _DeathsFormState extends State<DeathsForm> {
                     ),
                   )
                 : SingleChildScrollView(
-                    child: (deaths.isEmpty)
+                    child: (deaths.deaths.isEmpty)
                         ? Text('No Deaths Found',
                             style: TextStyle(fontSize: 24))
                         : Column(children: [
-                            ...deaths.map((death) => Card(
-                                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Death #${deaths.indexOf(death) + 1}',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                            ...deaths.deaths.map((death) {
+                              TextEditingController _controller =
+                                  controllers[deaths.deaths.indexOf(death)];
+                              return Card(
+                                margin: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Death #${deaths.deaths.indexOf(death) + 1}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        SizedBox(height: 10),
-                                        TextField(
-                                          readOnly: true,
-                                          decoration: InputDecoration(
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.blue,
-                                                    width: 3)),
-                                            floatingLabelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            labelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            labelText: 'Match Number',
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          style: TextStyle(color: Colors.grey),
-                                          keyboardType: TextInputType.number,
-                                          onChanged: (value) => handleChange(
-                                              'match_number',
-                                              deaths.indexOf(death),
-                                              int.tryParse(value) ?? 0),
-                                          controller: TextEditingController(
-                                            text: death['match_number']
-                                                .toString(),
-                                          ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      TextField(
+                                        readOnly: true,
+                                        decoration: InputDecoration(
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.blue,
+                                                  width: 3)),
+                                          floatingLabelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          labelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          labelText: 'Match Number',
+                                          border: OutlineInputBorder(),
                                         ),
-                                        SizedBox(height: 10),
-                                        TextField(
-                                          style: widget.locked
-                                              ? TextStyle(color: Colors.grey)
-                                              : null,
-                                          readOnly: widget.locked,
-                                          cursorColor: Colors.blue,
-                                          decoration: InputDecoration(
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.blue,
-                                                    width: 3)),
-                                            floatingLabelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            labelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            labelText: 'Reason for Team Death',
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          onChanged: (value) => handleChange(
-                                              'death_reason',
-                                              deaths.indexOf(death),
-                                              value),
-                                          controller: TextEditingController(
-                                            text: death['death_reason'],
-                                          ),
-                                        ),
-                                        SizedBox(height: 10),
-                                        DropdownButtonFormField<int>(
-                                          decoration: InputDecoration(
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.blue,
-                                                    width: 3)),
-                                            floatingLabelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            labelStyle: TextStyle(
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold),
-                                            focusColor: Colors.blue,
-                                            labelText: 'Severity',
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          value: int.tryParse(
-                                              death['severity'].toString()),
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'severity',
-                                                  deaths.indexOf(death),
-                                                  value),
-                                          items: [
-                                            DropdownMenuItem(
-                                              value: 1,
-                                              child: Text(
-                                                '1 (One-time error)',
-                                                style: TextStyle(
-                                                    color: Colors.green),
-                                              ),
+                                        style: TextStyle(color: Colors.grey),
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) => setState(() {
+                                          int index =
+                                              deaths.deaths.indexOf(death);
+                                          int val = int.tryParse(value) ?? 0;
+                                          deaths = deaths.copyWith(deaths: [
+                                            ...deaths.deaths.sublist(
+                                              0,
+                                              min(deaths.deaths.length, index),
                                             ),
-                                            DropdownMenuItem(
-                                              value: 2,
-                                              child: Text(
-                                                '2 (Fixable before elims)',
-                                                style: TextStyle(
-                                                    color: Colors.yellow),
-                                              ),
-                                            ),
-                                            DropdownMenuItem(
-                                              value: 3,
-                                              child: Text(
-                                                '3 (Permanently broken)',
-                                                style: TextStyle(
-                                                    color: Colors.red),
-                                              ),
-                                            ),
-                                          ],
+                                            death.copyWith(match_number: val),
+                                            if (index + 1 !=
+                                                deaths.deaths.length)
+                                              ...deaths.deaths
+                                                  .sublist(index + 1)
+                                          ]);
+                                        }),
+                                        controller: TextEditingController(
+                                          text: death.match_number.toString(),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      TextField(
+                                        style: widget.locked
+                                            ? TextStyle(color: Colors.grey)
+                                            : null,
+                                        readOnly: widget.locked,
+                                        cursorColor: Colors.blue,
+                                        decoration: InputDecoration(
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.blue,
+                                                  width: 3)),
+                                          floatingLabelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          labelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          labelText: 'Reason for Team Death',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        onChanged: (value) => setState(() {
+                                          int index =
+                                              deaths.deaths.indexOf(death);
+                                          deaths = deaths.copyWith(deaths: [
+                                            ...deaths.deaths.sublist(
+                                              0,
+                                              min(deaths.deaths.length, index),
+                                            ),
+                                            death.copyWith(death_reason: value),
+                                            if (index + 1 !=
+                                                deaths.deaths.length)
+                                              ...deaths.deaths
+                                                  .sublist(index + 1)
+                                          ]);
+                                        }),
+                                        controller: _controller,
+                                      ),
+                                      SizedBox(height: 10),
+                                      DropdownButtonFormField<int>(
+                                        decoration: InputDecoration(
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.blue,
+                                                  width: 3)),
+                                          floatingLabelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          labelStyle: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold),
+                                          focusColor: Colors.blue,
+                                          labelText: 'Severity',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        value: death.severity,
+                                        onChanged: widget.locked
+                                            ? null
+                                            : (value) => setState(() {
+                                                  int index = deaths.deaths
+                                                      .indexOf(death);
+                                                  deaths =
+                                                      deaths.copyWith(deaths: [
+                                                    ...deaths.deaths.sublist(
+                                                      0,
+                                                      min(deaths.deaths.length,
+                                                          index),
+                                                    ),
+                                                    death.copyWith(
+                                                        severity: value ?? -1),
+                                                    if (index + 1 !=
+                                                        deaths.deaths.length)
+                                                      ...deaths.deaths
+                                                          .sublist(index + 1)
+                                                  ]);
+                                                }),
+                                        items: [
+                                          DropdownMenuItem(
+                                            child: Text('Choose...'),
+                                            value: -1,
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                              '1 (One-time error)',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                              '2 (Fixable before elims)',
+                                              style: TextStyle(
+                                                  color: Colors.yellow),
+                                            ),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 3,
+                                            child: Text(
+                                              '3 (Permanently broken)',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                )),
+                                ),
+                              );
+                            }),
                             if (!widget.locked)
                               Card(
                                   margin: EdgeInsets.symmetric(vertical: 8.0),

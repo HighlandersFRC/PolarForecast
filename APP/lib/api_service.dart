@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
 import 'package:scouting_app/models/match_details_2025.dart';
 import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
+import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
 import 'models/match_scouting_2025.dart';
@@ -155,12 +157,17 @@ class ApiService {
     return data;
   }
 
-  Future<List<dynamic>> fetchEventScouting(int year, String event) async {
+  Future<List<MatchScouting2025>> fetchEventScouting(
+      int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey));
     data = [...data];
-    return data;
+    List<MatchScouting2025> retval = [];
+    for (var x in data) {
+      retval.add(MatchScouting2025.fromJson(x));
+    }
+    return retval;
   }
 
   Future<List<MatchScouting2025>> fetchTeamMatchScouting(
@@ -216,26 +223,34 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchFollowUp(
-      String year, String event, String team) async {
+  Future<Deaths> fetchFollowUp(String year, String event, String team) async {
+    await token;
     try {
       final storageName = '${year}${event}_${team}_deaths';
       final endpoint = '$APIURL/$year/$event/$team/FollowUp';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return data;
+      return Deaths.fromJson(data);
     } catch (e) {
       print('Error fetching follow-up data: $e');
-      return {'deaths': []};
+      return Deaths(
+          scout_info: get_scout_info((await token) ?? ''),
+          event_code: year + event,
+          team_key: team,
+          deaths: [],
+          total: 0,
+          average: 0,
+          time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
     }
   }
 
   Future<int> postFollowUp(
       dynamic data, String year, String event, String team) async {
     try {
-      final endpoint = '$APIURL/$year/$event/$team/FollowUp';
+      final endpoint = '$APIURL/FollowUp';
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
+          'token': await token ?? '',
           'Content-Type': 'application/json',
         },
         body: jsonEncode(data),

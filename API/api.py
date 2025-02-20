@@ -109,7 +109,7 @@ ETagCollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 
 FollowUpCollection = testDB["FollowUp"]
 FollowUpCollection.create_index(
-    [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING)], unique=True)
+    [("event_code", pymongo.ASCENDING), ("team_key", pymongo.ASCENDING), ("scout_info.user_id", pymongo.ASCENDING)], unique=True)
 
 GroupCollection = testDB["Groups"]
 GroupCollection.create_index([("name", pymongo.ASCENDING),], unique=True)
@@ -605,13 +605,18 @@ def updateGroupStatus(group: Group, event_code: str):
                 if entry.time > latestEntry.time:
                     latestEntry = entry
             deathMatches = [
-                x for x in matchScoutingEntries if x.data.miscellaneous.died]
+                x for x in matchScoutingEntries if x.data.miscellaneous.died and int(status.key) == x.team_number]
             for match in deathMatches:
                 if not match.match_number in [death.match_number for death in latestEntry.deaths]:
                     status.follow_up_status = "Incomplete"
                     break
         else:
-            status.follow_up_status = "Not Started"
+            deathMatches = [
+                x for x in matchScoutingEntries if x.data.miscellaneous.died and int(status.key) == x.team_number]
+            if len(deathMatches) == 0:
+                status.follow_up_status = "Done"
+            else:
+                status.follow_up_status = "Incomplete"
         teamPictures = [
             x for x in pictures if x.team_number == int(status.key)]
         if len(teamPictures) > 0:
@@ -1811,9 +1816,18 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
             FollowUpCollection.insert_one(DBEntry)
         except:
             FollowUpCollection.find_one_and_delete(
-                {"event_code": str(year)+event, "team_key": team})
+                {"event_code": str(year)+event, "team_key": team, "scout_info.user_id": data.scout_info.user_id})
             FollowUpCollection.insert_one(DBEntry)
-        return DBEntry
+        groups = [Group(**group)
+                  for group in get_user_groups_detailed(token=token)]
+        groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
+            {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
+        for group in groupsNeedingUpdate:
+            try:
+                updateGroupStatus(group, event_code)
+            except Exception as e:
+                print(e)
+        return data.dict()
     else:
         raise HTTPException(400, "No Deaths Reported")
 
@@ -1854,7 +1868,7 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
                 latestEntry = entry
         formData = latestEntry
         scoutEntries = [x for x in [MatchScouting2025(
-            **entry) for entry in get_scout_team_entries(team, event, year, token)] if x.active]
+            **entry) for entry in get_scout_team_entries(team, event, year, token)]]
         deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
         for entry in deathEntries:
             notRecorded = True
@@ -1872,7 +1886,7 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
             return retVal
     else:
         scoutEntries = [x for x in [MatchScouting2025(
-            **entry) for entry in get_scout_team_entries(team, event, year, token)] if x.active]
+            **entry) for entry in get_scout_team_entries(team, event, year, token)]]
         deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
         for entry in scoutEntries:
             if entry.data.miscellaneous.died:
