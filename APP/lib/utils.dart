@@ -63,7 +63,7 @@ ScoutInfo get_scout_info(String token) {
         username: jwt['preferred_username'],
         team_number: int.parse(jwt['team_number']));
   } catch (e) {
-    print(e);
+    // print(e);
     return ScoutInfo(
         user_id: '', first_name: '', username: '', team_number: -1);
   }
