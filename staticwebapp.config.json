@@ -1,7 +1,7 @@
 {
   "routes": [
     {
-      "route": "/",
+      "route": "/*",
       "methods": [
         "get",
         "head",
@@ -13,7 +13,7 @@
         "trace",
         "patch"
       ],
-      "redirect": "student.polarforecastfrc.com "
+      "redirect": "https://student.polarforecastfrc.com/"
     }
   ]
 }
