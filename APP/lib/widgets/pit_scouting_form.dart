@@ -26,7 +26,6 @@ class PitScoutingForm extends StatefulWidget {
 class _PitScoutingFormState extends State<PitScoutingForm> {
   List<double> autoPositions = [];
   final TextEditingController driveTrainController = TextEditingController();
-  // Define the list of options for the dropdown menu
   final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
 
   List<bool> exitSwitchValues = [];
@@ -190,7 +189,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
     print('Auto added');
 
-    // Show a SnackBar notification
+
     final snackBar = SnackBar(
       content: Center(child: Text('Auto added')),
       duration: Duration(seconds: 2),
@@ -244,42 +243,42 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
+  final Color algaeButtonColor = Color.fromARGB(255, 58, 185, 164);
+  final Color coralButtonColor = Colors.white;
+  final Color bothButtonColor = const Color.fromARGB(255, 139, 61, 175);
 
-List<List<String>> autoSteps = [];
-List<bool> isAnimatingProcessorList = [];
-List<bool> isAnimatingNetList = [];
+  List<List<Map<String, dynamic>>> autoSteps = [];
+  List<bool> isAnimatingProcessorList = [];
+  List<bool> isAnimatingNetList = [];
+  List<List<double>> pickupBallScales = [];
 
-Widget buildTriangle({
-  required double size,
-  required Color color,
-  double rotation = 0.0,
-}) {
-  return Transform.rotate(
-    angle: rotation,
-    alignment: Alignment.topCenter,
-    child: Container(
-      width: 0,
-      height: 0,
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(width: size, color: Colors.transparent),
-          right: BorderSide(width: size, color: Colors.transparent),
-          bottom: BorderSide(width: size * sqrt(3), color: color),
+  Widget buildTriangle({
+    required double size,
+    required Color color,
+    double rotation = 0.0,
+  }) {
+    return Transform.rotate(
+      angle: rotation,
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: 0,
+        height: 0,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(width: size, color: Colors.transparent),
+            right: BorderSide(width: size, color: Colors.transparent),
+            bottom: BorderSide(width: size * sqrt(3), color: color),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-void _showTriangleMenu(
-    BuildContext context,
-    int autoIndex,
-    int triangleIndex,
-  ) {
-    int letterIndex = (triangleIndex + 1 + 6) % 6; // shift one triangle back
+  void _showTriangleMenu(
+      BuildContext context, int autoIndex, int triangleIndex) {
+    int letterIndex = (triangleIndex + 1 + 6) % 6;
     String letter1 = String.fromCharCode(65 + (2 * letterIndex));
     String letter2 = String.fromCharCode(65 + (2 * letterIndex) + 1);
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -290,25 +289,21 @@ void _showTriangleMenu(
             duration: Duration(milliseconds: 150),
             curve: Curves.easeOut,
             padding: EdgeInsets.all(12),
-            // For consistent look, you can adjust or even calculate the width dynamically
             width: 340,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Title text
                 Text(
                   'Place $letter1-$letter2',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
-                // Row with left buttons, algae button, and right buttons
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Left column of placement buttons
                       Column(
                         children: List.generate(4, (level) {
                           return Padding(
@@ -324,8 +319,12 @@ void _showTriangleMenu(
                               ),
                               onPressed: () {
                                 setState(() {
-                                  autoSteps[autoIndex].add(
-                                      'Triangle $letter1-$letter2: Placed on $letter1${4 - level}');
+                                  autoSteps[autoIndex].add({
+                                    "name": "place_coral",
+                                    "extra_data": {
+                                      "position": "$letter1${4 - level}"
+                                    }
+                                  });
                                 });
                                 Navigator.pop(context);
                               },
@@ -339,9 +338,6 @@ void _showTriangleMenu(
                         }),
                       ),
                       SizedBox(width: 12),
-                      // Middle column for algae button:
-                      // Instead of translating the widget, we use a fixed-height container.
-                      // The Align widget positions the button either at the top or bottom.
                       Column(
                         children: [
                           Text(
@@ -351,12 +347,9 @@ void _showTriangleMenu(
                           ),
                           SizedBox(height: 12),
                           Container(
-                            height:
-                                150, // Fixed height ensures enough room for both positions
-                            width: 60, // Width matches the button size
+                            height: 150,
+                            width: 60,
                             child: Align(
-                              // If letter1 is A, E, or I, position the button at the top;
-                              // otherwise, position it at the bottom.
                               alignment: (letter1 == 'A' ||
                                       letter1 == 'E' ||
                                       letter1 == 'I')
@@ -365,8 +358,12 @@ void _showTriangleMenu(
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    autoSteps[autoIndex].add(
-                                        'Removed Algae at $letter1-$letter2');
+                                    autoSteps[autoIndex].add({
+                                      "name": "reef_algae",
+                                      "extra_data": {
+                                        "position": "$letter1-$letter2"
+                                      }
+                                    });
                                   });
                                   Navigator.pop(context);
                                 },
@@ -384,7 +381,6 @@ void _showTriangleMenu(
                         ],
                       ),
                       SizedBox(width: 12),
-                      // Right column of placement buttons
                       Column(
                         children: List.generate(4, (level) {
                           return Padding(
@@ -400,8 +396,12 @@ void _showTriangleMenu(
                               ),
                               onPressed: () {
                                 setState(() {
-                                  autoSteps[autoIndex].add(
-                                      'Triangle $letter1-$letter2: Placed on $letter2${4 - level}');
+                                  autoSteps[autoIndex].add({
+                                    "name": "place_coral",
+                                    "extra_data": {
+                                      "position": "$letter2${4 - level}"
+                                    }
+                                  });
                                 });
                                 Navigator.pop(context);
                               },
@@ -420,8 +420,7 @@ void _showTriangleMenu(
                 SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                  ),
+                  style: TextButton.styleFrom(),
                   child: Text('Cancel'),
                 )
               ],
@@ -432,44 +431,44 @@ void _showTriangleMenu(
     );
   }
 
-
-
-Widget buildStepsUI(int index) {
-  List<Widget> items = autoSteps[index].asMap().entries.map((entry) {
-    int stepIndex = entry.key;
-    String stepLabel = entry.value;
-    return Card(
-      key: ValueKey(stepIndex),
-      color: Colors.grey[800],
-      child: ListTile(
-        title: Text("Step ${stepIndex + 1}: $stepLabel",
-            style: TextStyle(color: Colors.white)),
-        trailing: IconButton(
-          icon: Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            setState(() {
-              autoSteps[index].removeAt(stepIndex);
-            });
-          },
+  Widget buildStepsUI(int index) {
+    List<Widget> items = autoSteps[index].asMap().entries.map((entry) {
+      int stepIndex = entry.key;
+      Map<String, dynamic> step = entry.value;
+      return Card(
+        key: ValueKey(stepIndex),
+        color: Colors.grey[800],
+        child: ListTile(
+          title: Text(
+            "Step ${stepIndex + 1}: ${step["name"]} ${step["extra_data"]}",
+            style: TextStyle(color: Colors.white),
+          ),
+          trailing: IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                autoSteps[index].removeAt(stepIndex);
+              });
+            },
+          ),
         ),
-      ),
+      );
+    }).toList();
+    return ReorderableListView(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      onReorder: (oldIndex, newIndex) {
+        setState(() {
+          if (newIndex > oldIndex) newIndex -= 1;
+          final item = autoSteps[index].removeAt(oldIndex);
+          autoSteps[index].insert(newIndex, item);
+        });
+      },
+      children: items,
     );
-  }).toList();
-  return ReorderableListView(
-    shrinkWrap: true,
-    physics: NeverScrollableScrollPhysics(),
-    onReorder: (oldIndex, newIndex) {
-      setState(() {
-        if (newIndex > oldIndex) newIndex -= 1;
-        final item = autoSteps[index].removeAt(oldIndex);
-        autoSteps[index].insert(newIndex, item);
-      });
-    },
-    children: items,
-  );
-}
+  }
 
-Widget buildAutoImage(int index) {
+  Widget buildAutoImage(int index) {
     double fieldWidthMeters = 8.052;
     while (autoPositions.length <= index)
       autoPositions.add(fieldWidthMeters / 2);
@@ -481,6 +480,8 @@ Widget buildAutoImage(int index) {
       selectedDropdownValues.add(null);
     while (exitSwitchValues.length <= index) exitSwitchValues.add(false);
     while (preloadSwitchValues.length <= index) preloadSwitchValues.add(false);
+    while (pickupBallScales.length <= index)
+      pickupBallScales.add([1.0, 1.0, 1.0]);
 
     double sliderValue = autoPositions[index];
 
@@ -564,19 +565,19 @@ Widget buildAutoImage(int index) {
                       fontSize: triangleSize * 0.5,
                       shadows: [
                         Shadow(
-                            blurRadius: 2,
-                            color: Colors.black54,
-                            offset: Offset(1, 1))
+                          blurRadius: 2,
+                          color: Colors.black54,
+                          offset: Offset(1, 1),
+                        )
                       ],
                     ),
                   ),
                 ));
               }
 
-              // Determine side for processor (and thus feeder) positioning.
               bool isRedSide = selectedDropdownValues[index] == 'Red Side';
-              // Define feeder button size relative to image width.
               double feederButtonSize = displayedImageWidth * 0.1;
+              double ballSize = displayedImageWidth * 0.08;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -639,7 +640,6 @@ Widget buildAutoImage(int index) {
                                 size: 15 * scaleFactor, color: Colors.white),
                           ),
                         ),
-                        // Processor and Net buttons (bottom corners)
                         ...() {
                           return [
                             Positioned(
@@ -649,8 +649,10 @@ Widget buildAutoImage(int index) {
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    autoSteps[index].add(
-                                        'Processor ${autoSteps[index].length + 1}');
+                                    autoSteps[index].add({
+                                      "name": "processor",
+                                      "extra_data": {}
+                                    });
                                     isAnimatingProcessorList[index] = true;
                                   });
                                   Future.delayed(Duration(milliseconds: 50),
@@ -703,8 +705,10 @@ Widget buildAutoImage(int index) {
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    autoSteps[index].add(
-                                        'Net ${autoSteps[index].length + 1}');
+                                    autoSteps[index].add({
+                                      "name": "net_algae",
+                                      "extra_data": {"position": "center"}
+                                    });
                                     isAnimatingNetList[index] = true;
                                   });
                                   Future.delayed(Duration(milliseconds: 50),
@@ -749,7 +753,6 @@ Widget buildAutoImage(int index) {
                             ),
                           ];
                         }(),
-                        // Feeder buttons in the top corners
                         Positioned(
                           top: displayedImageHeight * 0.05,
                           left: displayedImageWidth * 0.05,
@@ -759,11 +762,13 @@ Widget buildAutoImage(int index) {
                             onTap: () {
                               bool feederNear = isRedSide ? false : true;
                               setState(() {
-                                autoSteps[index].add(
-                                    'Feeder: Picked from feeder-station ' +
-                                        (feederNear
-                                            ? 'near Processor'
-                                            : 'away from Processor'));
+                                autoSteps[index].add({
+                                  "name": "feeder_pickup",
+                                  "extra_data": {
+                                    "processor_side": feederNear,
+                                    "position": "left"
+                                  }
+                                });
                               });
                             },
                           ),
@@ -777,34 +782,413 @@ Widget buildAutoImage(int index) {
                             onTap: () {
                               bool feederNear = isRedSide ? true : false;
                               setState(() {
-                                autoSteps[index].add(
-                                    'Feeder: Picked from feeder-station ' +
-                                        (feederNear
-                                            ? 'near Processor'
-                                            : 'away from Processor'));
+                                autoSteps[index].add({
+                                  "name": "feeder_pickup",
+                                  "extra_data": {
+                                    "processor_side": feederNear,
+                                    "position": "right"
+                                  }
+                                });
                               });
                             },
+                          ),
+                        ),
+                      
+                        Positioned(
+                          left: displayedImageWidth * 0.285 - ballSize / 2,
+                          top: displayedImageHeight * 0.125,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                pickupBallScales[index][0] = 1.2;
+                              });
+                              Future.delayed(Duration(milliseconds: 100), () {
+                                setState(() {
+                                  pickupBallScales[index][0] = 1.0;
+                                });
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      title:
+                                          Text('Select Option for processor'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: algaeButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "processor",
+                                                    "algae": true,
+                                                    "coral": false
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Algae",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: coralButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "processor",
+                                                    "algae": false,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Coral",
+                                                style: TextStyle(
+                                                    color: Colors.black)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: bothButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "processor",
+                                                    "algae": true,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Both",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              });
+                            },
+                            child: AnimatedScale(
+                              scale: pickupBallScales[index][0],
+                              duration: Duration(milliseconds: 100),
+                              child: Container(
+                                width: ballSize,
+                                height: ballSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.fromARGB(255, 58, 185, 164),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: displayedImageWidth * 0.5 - ballSize / 2,
+                          top: displayedImageHeight * 0.125,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                pickupBallScales[index][1] = 1.2;
+                              });
+                              Future.delayed(Duration(milliseconds: 100), () {
+                                setState(() {
+                                  pickupBallScales[index][1] = 1.0;
+                                });
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      title: Text('Select Option for middle'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: algaeButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "middle",
+                                                    "algae": true,
+                                                    "coral": false
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Algae",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: coralButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "middle",
+                                                    "algae": false,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Coral",
+                                                style: TextStyle(
+                                                    color: Colors.black)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: bothButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "middle",
+                                                    "algae": true,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Both",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              });
+                            },
+                            child: AnimatedScale(
+                              scale: pickupBallScales[index][1],
+                              duration: Duration(milliseconds: 100),
+                              child: Container(
+                                width: ballSize,
+                                height: ballSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.fromARGB(255, 58, 185, 164),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: displayedImageWidth * 0.715 - ballSize / 2,
+                          top: displayedImageHeight * 0.125,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                pickupBallScales[index][2] = 1.2;
+                              });
+                              Future.delayed(Duration(milliseconds: 100), () {
+                                setState(() {
+                                  pickupBallScales[index][2] = 1.0;
+                                });
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      title: Text('Select Option for other'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: algaeButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "other",
+                                                    "algae": true,
+                                                    "coral": false
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Algae",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: coralButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "other",
+                                                    "algae": false,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Coral",
+                                                style: TextStyle(
+                                                    color: Colors.black)),
+                                          ),
+                                          SizedBox(height: 8),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: bothButtonColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                autoSteps[index].add({
+                                                  "name": "coral_mark_pickup",
+                                                  "extra_data": {
+                                                    "position": "other",
+                                                    "algae": true,
+                                                    "coral": true
+                                                  }
+                                                });
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Both",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              });
+                            },
+                            child: AnimatedScale(
+                              scale: pickupBallScales[index][2],
+                              duration: Duration(milliseconds: 100),
+                              child: Container(
+                                width: ballSize,
+                                height: ballSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.fromARGB(255, 58, 185, 164),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: 10),
-                  // Slider exactly the same width as the image.
                   SizedBox(
                     width: displayedImageWidth,
-                    child: Slider(
-                      value: sliderValue,
-                      min: 0,
-                      max: fieldWidthMeters,
-                      onChanged: (value) {
-                        setState(() {
-                          autoPositions[index] = value;
-                        });
-                      },
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 8,
+                        thumbShape:
+                            RoundSliderThumbShape(enabledThumbRadius: 10.0),
+                      ),
+                      child: Slider(
+                        value: sliderValue,
+                        inactiveColor: Colors.lightBlue,
+                        activeColor: Colors.lightBlue,
+                        thumbColor: Colors.white,
+                        min: 0,
+                        max: fieldWidthMeters,
+                        onChanged: (value) {
+                          setState(() {
+                            autoPositions[index] = value;
+                          });
+                        },
+                      ),
                     ),
                   ),
-                  Text('${sliderValue.toStringAsFixed(2)} m',
+                  Text('${sliderValue.toStringAsFixed(2)} meters',
                       style: TextStyle(color: Colors.white)),
                   buildStepsUI(index),
                   DropdownButton<String>(
@@ -883,6 +1267,9 @@ Widget buildAutoImage(int index) {
       ),
     );
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1001,7 +1388,6 @@ Widget buildAutoImage(int index) {
                       child: Text('Add Auto'),
                     ),
                     SizedBox(height: 20),
-                    // Build a list of auto images with delete buttons:
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
@@ -1027,14 +1413,14 @@ Widget buildAutoImage(int index) {
 }
 class FeederButton extends StatelessWidget {
   final double size;
-  final double scaleFactor; // Add scaleFactor
+  final double scaleFactor; 
   final VoidCallback onTap;
 
   const FeederButton({
     Key? key,
     required this.size,
     required this.onTap,
-    this.scaleFactor = 1.0, 
+    this.scaleFactor = 4.0, 
   }) : super(key: key);
 
   @override
@@ -1044,11 +1430,11 @@ class FeederButton extends StatelessWidget {
       child: ClipPath(
 
         clipper: RoundedRectangleClipper(
-            cornerRadius: 20.0, scaleFactor: scaleFactor),
+            cornerRadius: 3.0, scaleFactor: 8),
         child: Container(
           width: size,
           height: size,
-          color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.2),
+          color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.5),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1075,8 +1461,7 @@ class FeederButton extends StatelessWidget {
 
 class RoundedTriangleClipper extends CustomClipper<Path> {
   final double cornerRadius;
-
-  RoundedTriangleClipper({this.cornerRadius = 20.0}); // Default corner radius
+  RoundedTriangleClipper({this.cornerRadius = 3.0});  
 
   @override
   Path getClip(Size size) {
@@ -1084,11 +1469,10 @@ class RoundedTriangleClipper extends CustomClipper<Path> {
     double width = size.width;
     double height = size.height;
 
-    // Create the triangle with rounded corners
-    path.moveTo(width / 2, 0); // Top point
-    path.arcToPoint(Offset(0, height), radius: Radius.circular(cornerRadius)); // Left corner
-    path.arcToPoint(Offset(width, height), radius: Radius.circular(cornerRadius)); // Right corner
-    path.arcToPoint(Offset(width / 2, 0), radius: Radius.circular(cornerRadius)); // Closing the loop back to top
+    path.moveTo(width / 2, 0);
+    path.arcToPoint(Offset(0, height), radius: Radius.circular(cornerRadius));
+    path.arcToPoint(Offset(width, height), radius: Radius.circular(cornerRadius)); 
+    path.arcToPoint(Offset(width / 2, 0), radius: Radius.circular(cornerRadius)); 
 
     path.close();
     return path;
@@ -1107,7 +1491,7 @@ class RoundedRectangleClipper extends CustomClipper<Path> {
   final double cornerRadius;
   final double scaleFactor;
 
-  RoundedRectangleClipper({this.cornerRadius = 20.0, this.scaleFactor = 1.0});
+  RoundedRectangleClipper({this.cornerRadius = 1.0, this.scaleFactor = 4.0});
 
   @override
   Path getClip(Size size) {
