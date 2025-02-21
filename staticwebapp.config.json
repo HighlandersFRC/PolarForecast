@@ -1,19 +1,13 @@
 {
   "routes": [
     {
-      "route": "/*",
-      "methods": [
-        "get",
-        "head",
-        "post",
-        "put",
-        "delete",
-        "connect",
-        "options",
-        "trace",
-        "patch"
-      ],
-      "redirect": "https://student.polarforecastfrc.com/"
+      "routes": [
+        {
+          "route": "/*",
+          "serve": "/index.html",
+          "statusCode": 200
+        }
+      ]
     }
   ]
 }
