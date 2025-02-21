@@ -1,31 +1,30 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flat/flat.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group.dart';
+import 'package:scouting_app/models/match_scouting_2025.dart';
+import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/need_group.dart';
+import 'package:scouting_app/widgets/auto_display_2025.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
-import '../models/match_scouting_2024.dart';
-import '../widgets/auto_display_2024.dart';
+import '../models/match_details_2025.dart';
+import '../models/pit_scouting_2025.dart';
 import '../widgets/bar_chart_with_weights.dart';
 import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
 import '../widgets/login_widget.dart';
 import '../widgets/match_link.dart';
+import '../widgets/pictures_link.dart';
 import '../widgets/team_link.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../models/match_details_2024.dart';
-import '../models/team_stats_2024.dart';
 import '../models/tournament.dart';
 import 'home_page.dart';
 
@@ -66,12 +65,6 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   int _currentTab = 0;
-  bool isMobile() {
-    if (kIsWeb) {
-      return false;
-    }
-    return Platform.isAndroid || Platform.isIOS;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +139,6 @@ class _EventPageState extends State<EventPage> {
               ),
             ];
           },
-          // list of images for scrolling
           body: tabs[_currentTab],
         ));
   }
@@ -163,11 +155,130 @@ class _RankingsTab extends StatefulWidget {
 }
 
 class _RankingsTabState extends State<_RankingsTab> {
-  List<TeamStats2024> rankings = [];
-  Map<String, dynamic> statDescription = {'data': []};
+  List<TeamStats2025> rankings = [];
   bool isLoading = true;
-  List<GridColumn> dataColumns = [];
-  Map<String, bool> heatMapFromKey = {};
+  List<GridColumn> dataColumns = [
+    GridColumn(
+        allowSorting: true,
+        label: Text('#'),
+        columnName: 'team_number',
+        filterPopupMenuOptions: FilterPopupMenuOptions()),
+    GridColumn(allowSorting: true, label: Text('OPR'), columnName: 'OPR'),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Rank'),
+      columnName: 'rank',
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Sim RPs'),
+      columnName: 'simulated_rp',
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Auto Coral Points'),
+      columnName: 'auto_coral_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Teleop Coral Points'),
+      columnName: 'teleop_coral_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Net'),
+      columnName: 'net',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Processor'),
+      columnName: 'processor',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Climb Points'),
+      columnName: 'climbing_points',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Deathrate'),
+      columnName: 'death_rate',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC4'),
+      columnName: 'auto_scoring_l_4',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC3'),
+      columnName: 'auto_scoring_l_3',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC2'),
+      columnName: 'auto_scoring_l_2',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('AC1'),
+      columnName: 'auto_scoring_l_1',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC4'),
+      columnName: 'teleop_scoring_l_4',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC3'),
+      columnName: 'teleop_scoring_l_3',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC2'),
+      columnName: 'teleop_scoring_l_2',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('TC1'),
+      columnName: 'teleop_scoring_l_1',
+      allowFiltering: false,
+    ),
+  ];
+  Map<String, bool> heatMapFromKey = {
+    'team_number': false,
+    'OPR': true,
+    'rank': true,
+    'simulated_rp': true,
+    'auto_coral_points': true,
+    'teleop_coral_points': true,
+    'net': true,
+    'processor': true,
+    'climbing_points': true,
+    'death_rate': true,
+    'auto_scoring_l_4': true,
+    'auto_scoring_l_3': true,
+    'auto_scoring_l_2': true,
+    'auto_scoring_l_1': true,
+    'teleop_scoring_l_4': true,
+    'teleop_scoring_l_3': true,
+    'teleop_scoring_l_2': true,
+    'teleop_scoring_l_1': true,
+  };
   Map<String, num> minValues = {};
   Map<String, num> maxValues = {};
   List<DataGridRow> dataRows = [];
@@ -181,27 +292,6 @@ class _RankingsTabState extends State<_RankingsTab> {
   }
 
   void updateGrid() {
-    dataColumns = [
-      GridColumn(
-          allowSorting: true,
-          label: Text('#'),
-          columnName: 'team_number',
-          filterPopupMenuOptions: FilterPopupMenuOptions()),
-      GridColumn(allowSorting: true, label: Text('OPR'), columnName: 'OPR'),
-    ];
-    heatMapFromKey = {
-      'team_number': false,
-      'OPR': true,
-    };
-    for (var stat in statDescription['data']) {
-      if (stat['report_stat'] && stat['stat_key'] != 'OPR') {
-        heatMapFromKey[stat['stat_key']] = stat['stat_type'] == 'num';
-        dataColumns.add(GridColumn(
-          label: Text(stat['display_name']),
-          columnName: stat['stat_key'],
-        ));
-      }
-    }
     minValues = {};
     maxValues = {};
     for (var column in dataColumns) {
@@ -229,13 +319,19 @@ class _RankingsTabState extends State<_RankingsTab> {
             cells.add(DataGridCell(
                 columnName: column.columnName,
                 value: heatMapFromKey[column.columnName]!
-                    ? int.parse((rank.toJson()[column.columnName] as num)
-                        .toStringAsFixed(2))
-                    : int.parse(rank.toJson()[column.columnName].toString())));
+                    ? ((rank.toJson()[column.columnName] as num) * 10)
+                            .roundToDouble() /
+                        10
+                    : double.parse(
+                        rank.toJson()[column.columnName].toString())));
           } else {
             cells.add(DataGridCell(
               columnName: column.columnName,
-              value: rank.toJson()[column.columnName],
+              value: (rank.toJson()[column.columnName] is num)
+                  ? ((rank.toJson()[column.columnName] as num) * 10)
+                          .roundToDouble() /
+                      10
+                  : rank.toJson()[column.columnName],
             ));
           }
         } catch (e) {
@@ -255,14 +351,9 @@ class _RankingsTabState extends State<_RankingsTab> {
     final fetchedRankings = await apiService.fetchEventRankings(
         int.parse(widget.tournament.page.split('/')[3]),
         widget.tournament.page.split('/')[4]);
-    final fetchedStatDescription = await apiService.fetchStatDescription(
-        int.parse(widget.tournament.page.split('/')[3]),
-        widget.tournament.page.split('/')[4]);
-
     if (mounted) {
       setState(() {
         rankings = fetchedRankings;
-        statDescription = fetchedStatDescription;
         isLoading = false;
       });
     }
@@ -378,8 +469,7 @@ class _ChartsTab extends StatefulWidget {
 }
 
 class _ChartsTabState extends State<_ChartsTab> {
-  List<TeamStats2024> rankings = [];
-  Map<String, dynamic> statDescription = {'data': []};
+  List<TeamStats2025> rankings = [];
   bool isLoading = true;
   List<dynamic> scouting = [];
   List<int> teams = [];
@@ -396,16 +486,12 @@ class _ChartsTabState extends State<_ChartsTab> {
       final fetchedRankings = await apiService.fetchEventRankings(
           int.parse(widget.widget.tournament.page.split('/')[3]),
           widget.widget.tournament.page.split('/')[4]);
-      final fetchedStatDescription = await apiService.fetchStatDescription(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
       final fetchedScouting = await apiService.fetchEventScouting(
           int.parse(widget.widget.tournament.page.split('/')[3]),
           widget.widget.tournament.page.split('/')[4]);
       if (mounted) {
         setState(() {
           rankings = fetchedRankings;
-          statDescription = fetchedStatDescription;
           isLoading = false;
           scouting = fetchedScouting;
           scouting.forEach((entry) {
@@ -764,49 +850,38 @@ class _ChartsTabState extends State<_ChartsTab> {
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
-                  title: 'Notes By Game Period',
+                  title: 'Coral By Game Period',
                   data: rankings,
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Teleop Notes',
-                        key: 'teleop_notes',
+                        name: 'Teleop Coral',
+                        key: 'teleop_coral',
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Auto Notes',
-                        key: 'auto_notes',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Endgame Notes',
-                        key: 'trap',
+                        name: 'Auto Coral',
+                        key: 'auto_coral',
                         enabled: true,
                         weight: 1),
                   ])),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
-                  title: 'Notes By Placement',
+                  title: 'OPR by Game Piece',
                   data: rankings,
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Speaker',
-                        key: 'speaker_total',
+                        name: 'Coral',
+                        key: 'coral_points',
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Amp',
-                        key: 'amp_total',
+                        name: 'Algae',
+                        key: 'algae_points',
                         enabled: true,
                         weight: 1),
-                    Field(name: 'Trap', key: 'trap', enabled: true, weight: 1),
-                    Field(
-                        name: 'Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 0.5),
                   ])),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -816,45 +891,69 @@ class _ChartsTabState extends State<_ChartsTab> {
                   number: 24,
                   startingFields: [
                     new Field(
-                        name: 'AS',
-                        key: 'auto_speaker',
-                        enabled: true,
-                        weight: 5),
-                    Field(
-                        name: 'AA', key: 'auto_amp', enabled: true, weight: 2),
-                    Field(
-                        name: 'TS',
-                        key: 'teleop_speaker',
-                        enabled: true,
-                        weight: 2),
-                    Field(
-                        name: 'TAS',
-                        key: 'teleop_amped_speaker',
-                        enabled: true,
-                        weight: 5),
-                    Field(
-                        name: 'TA',
-                        key: 'teleop_amp',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 1),
-                    Field(name: 'Trap', key: 'trap', enabled: true, weight: 5),
-                    Field(
-                        name: 'Taxi',
-                        key: 'mobility',
-                        enabled: true,
-                        weight: 2),
-                    Field(
-                        name: 'Park', key: 'parking', enabled: true, weight: 1),
-                    Field(
-                        name: 'Climb',
-                        key: 'climbing',
+                        name: 'AC1',
+                        key: 'auto_scoring_l_1',
                         enabled: true,
                         weight: 3),
+                    new Field(
+                        name: 'AC2',
+                        key: 'auto_scoring_l_2',
+                        enabled: true,
+                        weight: 4),
+                    new Field(
+                        name: 'AC3',
+                        key: 'auto_scoring_l_3',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'AC4',
+                        key: 'auto_scoring_l_4',
+                        enabled: true,
+                        weight: 7),
+                    new Field(
+                        name: 'TC1',
+                        key: 'teleop_scoring_l_1',
+                        enabled: true,
+                        weight: 2),
+                    new Field(
+                        name: 'TC2',
+                        key: 'teleop_scoring_l_2',
+                        enabled: true,
+                        weight: 3),
+                    new Field(
+                        name: 'TC3',
+                        key: 'teleop_scoring_l_3',
+                        enabled: true,
+                        weight: 4),
+                    new Field(
+                        name: 'TC4',
+                        key: 'teleop_scoring_l_4',
+                        enabled: true,
+                        weight: 5),
+                    new Field(
+                        name: 'Net', key: 'net', enabled: true, weight: 4),
+                    new Field(
+                        name: 'Processor',
+                        key: 'processor',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'Mobility',
+                        key: 'mobility',
+                        enabled: true,
+                        weight: 3),
+                    new Field(
+                        name: 'Park', key: 'parking', enabled: true, weight: 2),
+                    new Field(
+                        name: 'Shallow Climb',
+                        key: 'shallow_climb_rate',
+                        enabled: true,
+                        weight: 6),
+                    new Field(
+                        name: 'Deep Climb',
+                        key: 'deep_climb_rate',
+                        enabled: true,
+                        weight: 12),
                     Field(
                         name: 'Deathrate',
                         key: 'death_rate',
@@ -879,38 +978,49 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   late final TextEditingController eventCodeController,
       teamNumberController,
       matchNumberController,
-      scoutNameController;
+      scoutNameController,
+      commentsController;
+  late final ScrollController scrollController;
   int driverStationIndex = -1;
   String? token;
   List<String> selectedPieces = [];
-  MatchDetails2024? matchDetails = null;
+  MatchDetails2025? matchDetails = null;
   List<Group>? groups;
-  int _autoCoralLevel1 = 0,
-      _autoCoralLevel2 = 0,
-      _autoCoralLevel3 = 0,
-      _autoCoralLevel4 = 0,
-      _autoNet = 0,
-      _autoProcessor = 0;
-  int _teleopCoralL1 = 0,
-      _teleopCoralL2 = 0,
-      _teleopCoralL3 = 0,
-      _teleopCoralL4 = 0;
-  int _teleopNet = 0, _teleopProcessor = 0;
-  bool _isParked = false,
-      _shallowClimb = false,
-      _deepClimb = false,
-      _isDied = false;
-  String _comments = '';
-  bool loading = true;
+  bool loading = true, submitted = false;
+  late MatchScouting2025 data = MatchScouting2025(
+      event_code: widget.widget.tournament.key,
+      team_number: 0,
+      match_number: 0,
+      scout_info: get_scout_info(token ?? ''),
+      data: Data(
+          auto: Auto2025(
+            starting_position_meters_from_processor: 0,
+            steps: [],
+            field_side: ['red', 'blue'],
+            exit: false,
+            preload: false,
+          ),
+          auto_scoring:
+              AutoScoring(l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+          teleop_scoring: TeleopScoring(
+              l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+          miscellaneous: Miscellaneous(died: false, comments: '')),
+      time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
 
   @override
   initState() {
     super.initState();
     eventCodeController =
         TextEditingController(text: widget.widget.tournament.key);
-    teamNumberController = TextEditingController();
-    matchNumberController = TextEditingController();
-    scoutNameController = TextEditingController();
+    teamNumberController =
+        TextEditingController(text: data.team_number.toString());
+    matchNumberController =
+        TextEditingController(text: data.match_number.toString());
+    scoutNameController =
+        TextEditingController(text: data.scout_info.first_name.toString());
+    commentsController = TextEditingController(
+        text: data.data.miscellaneous.comments.toString());
+    scrollController = ScrollController();
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService.token.then((_token) {
       if (_token == null) {
@@ -920,7 +1030,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           });
         }
         loading = false;
-      } else
+      } else {
+        if (mounted) {
+          setState(() {
+            data = data.copyWith(scout_info: get_scout_info(_token));
+            scoutNameController.text = data.scout_info.first_name ?? '';
+          });
+        }
+        data = data.copyWith(scout_info: get_scout_info(_token));
+        scoutNameController.text = data.scout_info.first_name ?? '';
         apiService.get_user_groups_detailed().then((_groups) {
           if (mounted) {
             setState(() {
@@ -939,6 +1057,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           }
           loading = false;
         });
+      }
       if (mounted) {
         setState(() {
           token = _token;
@@ -981,65 +1100,100 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       ...matchDetails!.match.alliances.blue.team_keys,
     ];
     String team = '';
-    if (driverStationIndex != -1) {
-      team = teams[driverStationIndex];
+    int index = driverStationIndex - 1;
+    if (driverStationIndex - 1 > -1) {
+      team = teams[driverStationIndex - 1];
     } else {
-      int index = Random().nextInt(6);
+      index = Random().nextInt(6);
       team = teams[index];
     }
     teamNumberController.text = team.substring(3);
+    data = data.copyWith(
+        team_number: int.parse(team.substring(3)),
+        data: data.data.copyWith(
+            auto: data.data.auto
+                .copyWith(field_side: [index < 3 ? 'red' : 'blue'])));
+  }
+  // TODO: When adding offline use this for qr generation
+  // String _generateQRCodeData() {
+  //   try {
+  //     return jsonEncode(data.toJson());
+  //   } catch (e) {
+  //     print('Error generating QR code data: $e');
+  //     return '';
+  //   }
+  // }
+
+  void _submit() {
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+    api.post_match_scouting(data).then((_) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Submitted Successfully')));
+      setState(() {
+        submitted = true;
+      });
+    }).onError((error, trace) {
+      if (error.toString() == 'Exception: update') {
+        setState(() {
+          submitted = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'You have already submitted this match. Do you want to update?')));
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.toString())));
+      }
+    });
   }
 
-  String _generateQRCodeData() {
-    try {
-      return jsonEncode({
-        'event_code': eventCodeController.text,
-        'team_number': int.tryParse(teamNumberController.text) ?? 0,
-        'match_number': int.tryParse(matchNumberController.text) ?? 0,
-        'scout_info': {
-          'name': scoutNameController.text,
-        },
-        'data': {
-          'driver_station': DRIVER_STATIONS[driverStationIndex],
-          'scoring': {
-            'auto': {
-              'coral_level1': _autoCoralLevel1,
-              'coral_level2': _autoCoralLevel2,
-              'coral_level3': _autoCoralLevel3,
-              'coral_level4': _autoCoralLevel4,
-              'autoNet': _autoNet,
-              'autoProcessor': _autoProcessor,
-            },
-            'teleop': {
-              'coral': {
-                'L1': _teleopCoralL1,
-                'L2': _teleopCoralL2,
-                'L3': _teleopCoralL3,
-                'L4': _teleopCoralL4,
-              },
-              'net': _teleopNet,
-              'processor': _teleopProcessor,
-            },
-          },
-          'endgame': {
-            'parked': _isParked,
-            'shallow_climb': _shallowClimb,
-            'deep_climb': _deepClimb,
-            'died': _isDied,
-          },
-          'comments': _comments,
-        },
+  void _update() {
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+    api.update_match_scouting(data).then((_) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Submitted Successfully')));
+      setState(() {
+        submitted = true;
       });
-    } catch (e) {
-      print('Error generating QR code data: $e');
-      return '';
-    }
+    }).onError((error, trace) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    });
+  }
+
+  void _reset() {
+    MatchScouting2025 reset = data.copyWith(
+        match_number: data.match_number + 1,
+        data: Data(
+            auto: Auto2025(
+              starting_position_meters_from_processor: 0,
+              steps: [],
+              field_side: ['red', 'blue'],
+              exit: false,
+              preload: false,
+            ),
+            auto_scoring: AutoScoring(
+                l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+            teleop_scoring: TeleopScoring(
+                l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+            miscellaneous: Miscellaneous(died: false, comments: '')),
+        time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
+    setState(() {
+      data = reset;
+      submitted = false;
+    });
+    commentsController.text = data.data.miscellaneous.comments;
+    matchNumberController.text = data.match_number.toString();
+    getNewMatchDetails(data.match_number);
+    scrollController.animateTo(-scrollController.offset,
+        duration: Duration(seconds: 3), curve: Curves.easeOut);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     const List<String> DRIVER_STATIONS = [
+      'None',
       'Red 1',
       'Red 2',
       'Red 3',
@@ -1047,412 +1201,342 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 2',
       'Blue 3'
     ];
-    Map<String, dynamic>? decodedToken;
-    Group? group;
-    if (token != null) {
-      try {
-        decodedToken = parseJwt(token!);
-        scoutNameController.text = decodedToken['preferred_username'];
-      } catch (e) {
-        decodedToken = null;
-      }
-    }
-    if (groups != null) {
-      for (var _group in groups!) {
-        try {
-          if (_group.events.any((element) =>
-              element.event_code == widget.widget.tournament.key)) {
-            group = _group;
-            break;
-          }
-        } catch (e) {}
-      }
-    }
-
+    scoutNameController.text = data.scout_info.first_name ?? '';
     return SingleChildScrollView(
+      controller: scrollController,
       child: loading
           ? Center(
               child: CircularProgressIndicator(
               color: theme.primaryColor,
             ))
-          : decodedToken == null
+          : token == null
               ? LoginWidget(
                   redirect_path: 'event/${widget.widget.tournament.key}')
-              : (group == null)
-                  ? NeedGroup(
-                      tournament: widget.widget.tournament,
-                      onClick: () {
-                        final TextEditingController groupNameController =
-                            TextEditingController();
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Create a New Group'),
-                              content: TextField(
-                                controller: groupNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Group Name',
-                                  hintText: 'Enter the name of the group',
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Cancel'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    final apiService = Provider.of<ApiService>(
-                                        context,
-                                        listen: false);
-                                    apiService
-                                        .make_group(
-                                            groupNameController.text,
-                                            widget.widget.tournament.key
-                                                .substring(4),
-                                            int.parse(widget
-                                                .widget.tournament.key
-                                                .substring(0, 4)))
-                                        .then((value) {
-                                      setState(() {
-                                        groups?.add(value);
-                                        Navigator.pushNamed(
-                                            context, '/group/${value.name}');
-                                      });
-                                    });
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Create'),
-                                ),
-                              ],
-                            );
+              : Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.widget.tournament.display,
+                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                        ),
+                        Divider(color: Colors.blue),
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: eventCodeController,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            labelText: 'Event Code',
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: scoutNameController,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            labelText: 'Scout Name',
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: matchNumberController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            labelText: 'Match Number',
+                          ),
+                          onChanged: (value) {
+                            int matchNumber = int.tryParse(value) ?? -1;
+                            if (matchNumber >= 0 && matchNumber < 500) {
+                              setState(() => data =
+                                  data.copyWith(match_number: matchNumber));
+                              getNewMatchDetails(matchNumber);
+                            } else {
+                              if (matchNumber < 0) {
+                                teamNumberController.text = '0';
+                              } else {
+                                teamNumberController.text = '499';
+                              }
+                            }
                           },
-                        );
-                      },
-                    )
-                  : Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.widget.tournament.display,
-                              style: TextStyle(
-                                  color: Colors.blueAccent, fontSize: 24),
-                            ),
-                            Divider(color: Colors.blueAccent),
-                            SizedBox(height: 8),
-                            _buildTextField(
-                                eventCodeController, 'Event Code', true),
-                            SizedBox(height: 8),
-                            _buildTextField(
-                                matchNumberController, 'Match Number', false,
-                                onChanged: (value) {
-                              getNewMatchDetails(int.tryParse(value) ?? -1);
-                            }),
-                            SizedBox(height: 8),
-                            _buildTextField(
-                                scoutNameController, 'Scout Name', true),
-                            SizedBox(height: 8),
-                            _buildTextField(
-                                teamNumberController, 'Team Number', false),
-                            SizedBox(height: 8),
-                            _buildDriverStationDropdown(DRIVER_STATIONS),
-                            SizedBox(height: 20),
-                            _buildSectionTitle('Auto Scoring'),
-                            SizedBox(height: 12),
-                            _buildAutoSection(),
-                            SizedBox(height: 20),
-                            _buildSectionTitle('Teleop Scoring'),
-                            SizedBox(height: 12),
-                            _buildTeleopSection(),
-                            SizedBox(height: 20),
-                            _buildSectionTitle('Endgame Scoring'),
-                            SizedBox(height: 12),
-                            _buildEndgameSection(),
-                            SizedBox(height: 20),
-                            _buildTextField(
-                                TextEditingController(text: _comments),
-                                'Comments',
-                                false),
-                            SizedBox(height: 20),
-                            Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  String qrData = _generateQRCodeData();
-                                  if (qrData.isNotEmpty) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text('Generated QR Code'),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            child: Text('Close'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                },
-                                child: Text('Generate QR Code'),
-                              ),
-                            ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
                           ],
                         ),
-                      ),
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: teamNumberController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            labelText: 'Team Number',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onChanged: (value) {
+                            int teamNumber = int.tryParse(value) ?? -1;
+                            if (teamNumber >= 0 && teamNumber < 20000) {
+                              setState(() => data =
+                                  data.copyWith(team_number: teamNumber));
+                            } else {
+                              if (teamNumber < 0) {
+                                teamNumberController.text = '0';
+                              } else {
+                                teamNumberController.text = '19999';
+                              }
+                            }
+                          },
+                        ),
+                        SizedBox(height: 8),
+                        DropdownButton<int>(
+                          value: driverStationIndex == -1
+                              ? null
+                              : driverStationIndex,
+                          hint: Text('Select Driver Station',
+                              style: TextStyle(color: Colors.white)),
+                          onChanged: (int? value) {
+                            setState(() {
+                              driverStationIndex = value!;
+                            });
+                            getNewMatchDetails(data.match_number);
+                          },
+                          items: List.generate(
+                            DRIVER_STATIONS.length,
+                            (index) => DropdownMenuItem<int>(
+                              value: index,
+                              child: Text(DRIVER_STATIONS[index],
+                                  style: TextStyle(
+                                      color: index == 0
+                                          ? Colors.white
+                                          : index < 4
+                                              ? Colors.red
+                                              : Colors.blue)),
+                            ),
+                          ),
+                          isExpanded: true,
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          'Auto',
+                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                        ),
+                        Divider(color: Colors.blue),
+                        SizedBox(height: 20),
+                        Text(
+                          'Auto Scoring',
+                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                        ),
+                        Divider(color: Colors.blue),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L4',
+                          value: data.data.auto_scoring.l_4,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(l_4: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L3',
+                          value: data.data.auto_scoring.l_3,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(l_3: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L2',
+                          value: data.data.auto_scoring.l_2,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(l_2: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L1',
+                          value: data.data.auto_scoring.l_1,
+                          max: 60,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(l_1: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'Net',
+                          value: data.data.auto_scoring.net,
+                          max: 18,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(net: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'Processor',
+                          value: data.data.auto_scoring.processor,
+                          max: 60,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(processor: value)));
+                          }),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          'Teleop Scoring',
+                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                        ),
+                        Divider(color: Colors.blue),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L4',
+                          value: data.data.teleop_scoring.l_4,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(l_4: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L3',
+                          value: data.data.teleop_scoring.l_3,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(l_3: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L2',
+                          value: data.data.teleop_scoring.l_2,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(l_2: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'L1',
+                          value: data.data.teleop_scoring.l_1,
+                          max: 60,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(l_1: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'Net',
+                          value: data.data.teleop_scoring.net,
+                          max: 18,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(net: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'Processor',
+                          value: data.data.teleop_scoring.processor,
+                          max: 60,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(processor: value)));
+                          }),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          'Miscellaneous',
+                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                        ),
+                        Divider(color: Colors.blue),
+                        SizedBox(height: 8),
+                        Text('Died?'),
+                        Switch(
+                          value: data.data.miscellaneous.died,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    miscellaneous: data.data.miscellaneous
+                                        .copyWith(died: value)));
+                          }),
+                          activeColor: Colors.blue,
+                        ),
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: commentsController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                              labelText: 'Comments',
+                              helperText:
+                                  'Do not type anything which could upset someone.',
+                              helperMaxLines: 2),
+                          onChanged: (val) {
+                            setState(() {
+                              data = data.copyWith(
+                                  data: data.data.copyWith(
+                                      miscellaneous: data.data.miscellaneous
+                                          .copyWith(comments: val)));
+                            });
+                          },
+                        ),
+                        SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: submitted ? _update : _submit,
+                            child: Text(submitted ? 'Update' : 'Submit'),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        if (submitted)
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: _reset,
+                              child: Text('Reset'),
+                            ),
+                          ),
+                      ],
                     ),
-    );
-  }
-
-  Widget _buildDriverStationDropdown(List<String> driverStations) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey[800],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButton<int>(
-        value: driverStationIndex == -1 ? null : driverStationIndex,
-        hint: Text('Select Driver Station',
-            style: TextStyle(color: Colors.white)),
-        onChanged: (int? value) {
-          setState(() {
-            driverStationIndex = value!;
-          });
-        },
-        items: List.generate(
-          driverStations.length,
-          (index) => DropdownMenuItem<int>(
-            value: index,
-            child: Text(driverStations[index],
-                style: TextStyle(color: Colors.white)),
-          ),
-        ),
-        dropdownColor: Colors.blueGrey[900],
-        isExpanded: true,
-      ),
-    );
-  }
-
-  Widget _buildAutoSection() {
-    return Column(
-      children: [
-        _buildScoringRow('Coral Level 1:', _autoCoralLevel1, (value) {
-          setState(() {
-            _autoCoralLevel1 = value;
-          });
-        }, max: 12 - _teleopCoralL1),
-        _buildScoringRow('Coral Level 2:', _autoCoralLevel2, (value) {
-          setState(() {
-            _autoCoralLevel2 = value;
-          });
-        }, max: 12 - _teleopCoralL2),
-        _buildScoringRow('Coral Level 3:', _autoCoralLevel3, (value) {
-          setState(() {
-            _autoCoralLevel3 = value;
-          });
-        }, max: 12 - _teleopCoralL3),
-        _buildScoringRow('Coral Level 4:', _autoCoralLevel4, (value) {
-          setState(() {
-            _autoCoralLevel4 = value;
-          });
-        }, max: 12 - _teleopCoralL4),
-        _buildScoringRow('Algae in Net:', _autoNet, (value) {
-          setState(() {
-            _autoNet = value;
-          });
-        }, max: 18 - _teleopNet),
-        _buildScoringRow('Algae in Processor:', _autoProcessor, (value) {
-          setState(() {
-            _autoProcessor = value;
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _buildTeleopSection() {
-    return Column(
-      children: [
-        _buildScoringRow('Coral Level 1:', _teleopCoralL1, (value) {
-          setState(() {
-            _teleopCoralL1 = value;
-          });
-        }, max: 12 - _autoCoralLevel1),
-        _buildScoringRow('Coral Level 2:', _teleopCoralL2, (value) {
-          setState(() {
-            _teleopCoralL2 = value;
-          });
-        }, max: 12 - _autoCoralLevel2),
-        _buildScoringRow('Coral Level 3:', _teleopCoralL3, (value) {
-          setState(() {
-            _teleopCoralL3 = value;
-          });
-        }, max: 12 - _autoCoralLevel3),
-        _buildScoringRow('Coral Level 4:', _teleopCoralL4, (value) {
-          setState(() {
-            _teleopCoralL4 = value;
-          });
-        }, max: 12 - _autoCoralLevel4),
-        _buildScoringRow('Net:', _teleopNet, (value) {
-          setState(() {
-            _teleopNet = value;
-          });
-        }, max: 18 - _autoNet),
-        _buildScoringRow('Processor:', _teleopProcessor, (value) {
-          setState(() {
-            _teleopProcessor = value;
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _buildEndgameSection() {
-    return Column(
-      children: [
-        _buildSwitchRow('Parked:', _isParked, (value) {
-          setState(() {
-            _isParked = value;
-          });
-        }, isEnabled: !_deepClimb && !_shallowClimb),
-        _buildSwitchRow(
-          'Shallow Climb:',
-          _shallowClimb,
-          (value) {
-            setState(() {
-              _shallowClimb = value;
-            });
-          },
-          isEnabled: !_deepClimb && !_isParked,
-        ),
-        _buildSwitchRow(
-          'Deep Climb:',
-          _deepClimb,
-          (value) {
-            setState(() {
-              _deepClimb = value;
-            });
-          },
-          isEnabled: !_shallowClimb && !_isParked,
-        ),
-        _buildSwitchRow('Died:', _isDied, (value) {
-          setState(() {
-            _isDied = value;
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildScoringRow(String label, int value, Function(int) onChanged,
-      {int min = 0, int max = 12}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 6),
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey[800],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: Colors.white)),
-          Row(
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.all(8),
                 ),
-                onPressed: value > min
-                    ? () {
-                        onChanged(value - 1);
-                      }
-                    : null, // Disable button if value is at min
-                child: Icon(Icons.remove, color: Colors.white),
-              ),
-              SizedBox(width: 8),
-              Text('$value', style: TextStyle(color: Colors.white)),
-              SizedBox(width: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: EdgeInsets.all(8),
-                ),
-                onPressed: value < max
-                    ? () {
-                        onChanged(value + 1);
-                      }
-                    : null, // Disable button if value is at max
-                child: Icon(Icons.add, color: Colors.white),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged,
-      {bool isEnabled = true}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(color: Colors.white)),
-        Switch(
-          value: value,
-          onChanged: isEnabled ? onChanged : null,
-          activeColor: isEnabled ? Colors.blueAccent : Colors.grey,
-          inactiveThumbColor: isEnabled ? null : Colors.grey[400],
-          inactiveTrackColor: isEnabled ? Colors.grey[400] : Colors.grey,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField(
-      TextEditingController controller, String label, bool isReadOnly,
-      {Function(String)? onChanged}) {
-    return TextField(
-      controller: controller,
-      readOnly: isReadOnly,
-      onChanged: onChanged,
-      style: TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white),
-        filled: true,
-        fillColor: Colors.blueGrey[800],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
     );
   }
 }
@@ -1630,26 +1714,33 @@ class _StatusSource extends DataGridSource {
                   color: color,
                   child: PitScoutingLink(
                       row.getCells()[0].value, tournament, cell.value)))
-              : cell.columnName == 'follow_up_status'
+              : cell.columnName == 'picture_status'
                   ? returnCells.add(Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       alignment: Alignment.center,
                       color: color,
-                      child: DeathLink(
+                      child: PicturesLink(
                           row.getCells()[0].value, tournament, cell.value)))
-                  : returnCells.add(Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      alignment: Alignment.center,
-                      color: color,
-                      child: Text(cell.value.toString(),
-                          textScaler: TextScaler.linear(1.25),
-                          style: TextStyle(
-                              color: cell.value == 'Incomplete'
-                                  ? Colors.yellow
-                                  : cell.value == 'Done'
-                                      ? Colors.green
-                                      : Colors.red)),
-                    ));
+                  : cell.columnName == 'follow_up_status'
+                      ? returnCells.add(Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          alignment: Alignment.center,
+                          color: color,
+                          child: DeathLink(
+                              row.getCells()[0].value, tournament, cell.value)))
+                      : returnCells.add(Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          alignment: Alignment.center,
+                          color: color,
+                          child: Text(cell.value.toString(),
+                              textScaler: TextScaler.linear(1.25),
+                              style: TextStyle(
+                                  color: cell.value == 'Incomplete'
+                                      ? Colors.yellow
+                                      : cell.value == 'Done'
+                                          ? Colors.green
+                                          : Colors.red)),
+                        ));
     }
     return DataGridRowAdapter(
       cells: returnCells,
@@ -2095,7 +2186,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2024> scoutingData = [];
+  List<MatchScouting2025> scoutingData = [];
   bool isLoading = true, farSide = false, closeSide = false;
   int currentPage = 0, scores = 0, pickups = 0;
   static const AUTOS_PER_PAGE = 15;
@@ -2115,18 +2206,7 @@ class _AutosTabState extends State<_AutosTab> {
       );
       if (mounted) {
         setState(() {
-          List<MatchScouting2024> newScoutingData = [];
-          for (var matchData in fetchedData) {
-            dynamic died = matchData['data']['miscellaneous']['died'];
-            if (died == 1 || died == true) {
-              died = true;
-            } else {
-              died = false;
-            }
-            matchData['data']['miscellaneous']['died'] = died;
-            newScoutingData.add(MatchScouting2024.fromJson(matchData));
-          }
-          scoutingData = newScoutingData;
+          scoutingData = fetchedData;
           isLoading = false;
         });
       }
@@ -2138,42 +2218,44 @@ class _AutosTabState extends State<_AutosTab> {
   @override
   Widget build(BuildContext context) {
     // Filter out all of the Data which doesn't follow the form's filters
-    List<MatchScouting2024> filteredData = scoutingData.where((entry) {
-      if ((entry.data.selectedPieces?.length ?? 0) == 0 &&
-          (farSide || closeSide || pickups > 0)) {
-        return false;
-      }
-      if (closeSide) {
-        const closeNotes = [
-          'spike_left',
-          'spike_middle',
-          'spike_right',
-          'halfway_far_left',
-          'halfway_middle_left',
-          'halfway_middle',
-        ];
-        if (!(entry.data.selectedPieces
-                ?.any((element) => closeNotes.any((note) => note == element)) ??
-            false)) return false;
-      }
-      if (farSide) {
-        const farNotes = [
-          'halfway_middle_right',
-          'halfway_far_right',
-        ];
-        if (!(entry.data.selectedPieces
-                ?.any((element) => farNotes.any((note) => note == element)) ??
-            false)) return false;
-      }
-      if (entry.data.selectedPieces!.length < pickups) {
-        return false;
-      }
-      int numScores = entry.data.auto.amp + entry.data.auto.speaker;
-      if (numScores < scores) {
-        return false;
-      }
-      return true;
-    }).toList();
+    List<MatchScouting2025> filteredData = scoutingData;
+    // TODO add auto filtration
+    // .where((entry) {
+    //   if ((entry.data.selectedPieces?.length ?? 0) == 0 &&
+    //       (farSide || closeSide || pickups > 0)) {
+    //     return false;
+    //   }
+    //   if (closeSide) {
+    //     const closeNotes = [
+    //       'spike_left',
+    //       'spike_middle',
+    //       'spike_right',
+    //       'halfway_far_left',
+    //       'halfway_middle_left',
+    //       'halfway_middle',
+    //     ];
+    //     if (!(entry.data.selectedPieces
+    //             ?.any((element) => closeNotes.any((note) => note == element)) ??
+    //         false)) return false;
+    //   }
+    //   if (farSide) {
+    //     const farNotes = [
+    //       'halfway_middle_right',
+    //       'halfway_far_right',
+    //     ];
+    //     if (!(entry.data.selectedPieces
+    //             ?.any((element) => farNotes.any((note) => note == element)) ??
+    //         false)) return false;
+    //   }
+    //   if (entry.data.selectedPieces!.length < pickups) {
+    //     return false;
+    //   }
+    //   int numScores = entry.data.auto.amp + entry.data.auto.speaker;
+    //   if (numScores < scores) {
+    //     return false;
+    //   }
+    //   return true;
+    // }).toList();
     int numPages = (filteredData.length / AUTOS_PER_PAGE).ceil();
     // make sure we don't map it to a non-existent page
     if (currentPage >= numPages) {
@@ -2182,7 +2264,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2024> pageData = filteredData.sublist(
+    List<MatchScouting2025> pageData = filteredData.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(filteredData.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -2259,7 +2341,7 @@ class _AutosTabState extends State<_AutosTab> {
                                     List.generate(numRows, (int rowIndex) {
                                   int index = rowIndex * numColumns + colIndex;
                                   if (index < pageData.length) {
-                                    return AutoDisplay2024(
+                                    return AutoDisplay2025(
                                       scoutingData: pageData[index],
                                     );
                                   }

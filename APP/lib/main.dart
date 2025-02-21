@@ -10,6 +10,7 @@ import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/team_page.dart';
 import '../pages/home_page.dart';
 import 'pages/death_page.dart';
+import 'pages/picture_scouting_page.dart';
 import 'theme/theme_provider.dart';
 import 'api_service.dart'; // Make sure this file contains the ApiService class
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -101,6 +102,13 @@ class MainApp extends StatelessWidget {
                     final teamKey = pathSegments[4];
                     return MaterialPageRoute(
                         builder: (context) => PitScoutingPage.fromKeys(
+                            context, eventKey, teamKey),
+                        settings: settings);
+                  } else if (pathSegments[3] == 'pictures') {
+                    final eventKey = pathSegments[2];
+                    final teamKey = pathSegments[4];
+                    return MaterialPageRoute(
+                        builder: (context) => PictureScoutingPage.fromKeys(
                             context, eventKey, teamKey),
                         settings: settings);
                   }

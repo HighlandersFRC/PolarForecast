@@ -36,6 +36,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_appauth: ^8.0.3
   url_launcher: ^6.3.1
+  image_picker_for_web: ^3.0.6
 
 
 dev_dependencies:
@@ -53,3 +54,5 @@ flutter:
     - assets/2024BlankAutoField.png
     - assets/Note.png
     - assets/AutosGameField.png
+    - assets/2025 REEFSCAPE Gray Background blue.png
+    - assets/2025 REEFSCAPE Gray Background red.png

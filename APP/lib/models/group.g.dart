@@ -19,6 +19,7 @@ _$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
           .toList(),
       settings:
           GroupSettings.fromJson(json['settings'] as Map<String, dynamic>),
+      last_update: (json['last_update'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$GroupImplToJson(_$GroupImpl instance) =>
@@ -32,6 +33,7 @@ Map<String, dynamic> _$$GroupImplToJson(_$GroupImpl instance) =>
       'join_code': instance.join_code,
       'events': instance.events.map((e) => e.toJson()).toList(),
       'settings': instance.settings.toJson(),
+      'last_update': instance.last_update,
     };
 
 _$GroupEventImpl _$$GroupEventImplFromJson(Map<String, dynamic> json) =>

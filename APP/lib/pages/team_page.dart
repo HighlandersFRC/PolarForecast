@@ -7,10 +7,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/widgets/auto_display_2025.dart';
+import '../models/match_scouting_2025.dart';
 import '../widgets/deaths_form.dart';
-import '../models/match_scouting_2024.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import '../widgets/auto_display_2024.dart';
+import '../widgets/login_widget.dart';
 import '../widgets/match_link.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import '../api_service.dart';
@@ -137,7 +138,6 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
-  Map<String, dynamic> statDescription = {'data': []};
   bool isLoading = true;
 
   @override
@@ -154,14 +154,9 @@ class _StatsTabState extends State<_StatsTab> {
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
       );
-      final fetchedStatDescription = await apiService.fetchStatDescription(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-      );
       if (mounted) {
         setState(() {
           stats = fetchedStats;
-          statDescription = fetchedStatDescription;
           isLoading = false;
         });
       }
@@ -736,23 +731,36 @@ class _PicturesTab extends StatefulWidget {
 class _PicturesTabState extends State<_PicturesTab> {
   List<Image> images = [];
   bool isLoading = true;
-
+  String? token;
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    try {
-      final fetchedStats = await apiService.fetchTeamImages(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-        'frc${widget.widget.teamNumber}',
-      );
+    this.token = await apiService.token;
+    if (token != null)
+      try {
+        final fetchedStats = await apiService.fetchTeamImages(
+          int.parse(widget.widget.tournament.page.split('/')[3]),
+          widget.widget.tournament.page.split('/')[4],
+          'frc${widget.widget.teamNumber}',
+        );
+        if (mounted) {
+          setState(() {
+            images = fetchedStats;
+            isLoading = false;
+          });
+        } else {
+          images = fetchedStats;
+          isLoading = false;
+        }
+      } catch (e) {
+        print('Error fetching data: $e');
+      }
+    else {
       if (mounted) {
         setState(() {
-          images = fetchedStats;
           isLoading = false;
         });
       }
-    } catch (e) {
-      print('Error fetching data: $e');
+      isLoading = false;
     }
   }
 
@@ -767,60 +775,67 @@ class _PicturesTabState extends State<_PicturesTab> {
     return Center(
       child: isLoading
           ? CircularProgressIndicator(color: Colors.blue)
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return GridView.builder(
-                  padding: EdgeInsets.all(8),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: images.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                              insetPadding: EdgeInsets.all(10),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image(
-                                  image: images[index].image,
-                                  fit: BoxFit.contain,
+          : token == null
+              ? LoginWidget(
+                  redirect_path:
+                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
+              : images.isEmpty
+                  ? Text('No Images')
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        return GridView.builder(
+                          padding: EdgeInsets.all(8),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          itemCount: images.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Dialog(
+                                      insetPadding: EdgeInsets.all(10),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image(
+                                          image: images[index].image,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 300),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image(
+                                    image: images[index].image,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             );
                           },
                         );
                       },
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image(
-                            image: images[index].image,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ),
     );
   }
 }
@@ -835,12 +850,11 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
-  List<MatchScouting2024> scouting = [];
+  List<MatchScouting2025> scouting = [];
   List<DataGridRow> rows = [];
   List<GridColumn> columns = [];
-  Map<String, dynamic> statDescription = {'scoutingData': {}};
   late ScrollController scrollController;
-
+  String? role, token;
   bool isLoading = true;
   @override
   void initState() {
@@ -852,22 +866,31 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     // try {
-    final fetchedStats = (await apiService.fetchTeamMatchScouting(
-      int.parse(widget.widget.tournament.page.split('/')[3]),
-      widget.widget.tournament.page.split('/')[4],
-      'frc${widget.widget.teamNumber}',
-    ));
-    final fetchedDescriptions = await apiService.fetchStatDescription(
-      int.parse(widget.widget.tournament.page.split('/')[3]),
-      widget.widget.tournament.page.split('/')[4],
-    );
+    this.token = await apiService.token;
+    if (token != null) {
+      final fetchedStats = (await apiService.fetchTeamMatchScouting(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      ));
+      final groups = (await apiService.get_user_groups_detailed());
+      if (groups.isNotEmpty) {
+        final (_group, _role) = (await apiService.get_group(groups[0].name));
+        if (mounted)
+          setState(() {
+            role = _role;
+            scouting = [...fetchedStats];
+          });
+        role = _role;
+        scouting = [...fetchedStats];
+      }
+    }
     if (mounted) {
       setState(() {
-        statDescription = fetchedDescriptions;
-        scouting = [...fetchedStats];
         isLoading = false;
       });
     }
+    isLoading = false;
     // } catch (e) {
     //   print('Error fetching data: $e');
     // }
@@ -875,47 +898,88 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void updateGrid() {
     setState(() {
-      columns = [];
-      for (var description in statDescription['scoutingData']) {
-        columns.add(GridColumn(
-          columnName: description['stat_key'],
-          label: Text(description['display_name']),
-        ));
-      }
-      columns.add(GridColumn(
-        columnName: 'active',
-        label: Text('Active'),
-      ));
-
+      columns = [
+        GridColumn(columnName: 'scout_name', label: Text('Scout Name')),
+        GridColumn(columnName: 'match_number', label: Text('Match')),
+        GridColumn(columnName: 'auto_scoring_l_1', label: Text('Auto L1')),
+        GridColumn(columnName: 'auto_scoring_l_2', label: Text('Auto L2')),
+        GridColumn(columnName: 'auto_scoring_l_3', label: Text('Auto L3')),
+        GridColumn(columnName: 'auto_scoring_l_4', label: Text('Auto L4')),
+        GridColumn(columnName: 'auto_scoring_net', label: Text('Auto Net')),
+        GridColumn(
+            columnName: 'auto_scoring_processor',
+            label: Text('Auto Processor')),
+        GridColumn(columnName: 'teleop_scoring_l_1', label: Text('Teleop L1')),
+        GridColumn(columnName: 'teleop_scoring_l_2', label: Text('Teleop L2')),
+        GridColumn(columnName: 'teleop_scoring_l_3', label: Text('Teleop L3')),
+        GridColumn(columnName: 'teleop_scoring_l_4', label: Text('Teleop L4')),
+        GridColumn(columnName: 'teleop_scoring_net', label: Text('Teleop Net')),
+        GridColumn(
+            columnName: 'teleop_scoring_processor',
+            label: Text('Teleop Processor')),
+        GridColumn(columnName: 'died', label: Text('Died')),
+        GridColumn(columnName: 'comments', label: Text('Comments')),
+        GridColumn(columnName: 'delete', label: Text('Delete'))
+      ];
       rows = [];
       for (var entry in scouting) {
         var flattened = flatten(entry.toJson()['data'], delimiter: '_');
         flattened = {
           ...flattened,
           ...entry.data.miscellaneous.toJson(),
-          'scout_name': entry.scout_info.name,
+          'scout_name': entry.scout_info.first_name ??
+              'From Team ${entry.scout_info.team_number}',
         };
         rows.add(DataGridRow(cells: [
-          ...statDescription['scoutingData'].map((stat) {
-            if (stat['stat_key'] == 'died') {
-              return DataGridCell(
-                columnName: stat['stat_key'],
-                value: flattened[stat['stat_key']] == 0
-                    ? false
-                    : flattened[stat['stat_key']] == 1
-                        ? true
-                        : flattened[stat['stat_key']] ?? stat['stat_key'],
-              );
-            }
-            return DataGridCell(
-              columnName: stat['stat_key'],
-              value: flattened[stat['stat_key']] ??
-                  entry.toJson()[stat['stat_key']],
-            );
-          }),
           DataGridCell(
-            columnName: 'active',
-            value: entry.toJson()['active'],
+              columnName: 'scout_name',
+              value: entry.scout_info.first_name ??
+                  'Scout from ${entry.scout_info.team_number}'),
+          DataGridCell(columnName: 'match_number', value: entry.match_number),
+          DataGridCell(
+              columnName: 'auto_scoring_l_1',
+              value: entry.data.auto_scoring.l_1),
+          DataGridCell(
+              columnName: 'auto_scoring_l_2',
+              value: entry.data.auto_scoring.l_2),
+          DataGridCell(
+              columnName: 'auto_scoring_l_3',
+              value: entry.data.auto_scoring.l_3),
+          DataGridCell(
+              columnName: 'auto_scoring_l_4',
+              value: entry.data.auto_scoring.l_4),
+          DataGridCell(
+              columnName: 'auto_scoring_net',
+              value: entry.data.auto_scoring.net),
+          DataGridCell(
+              columnName: 'auto_scoring_processor',
+              value: entry.data.auto_scoring.processor),
+          DataGridCell(
+              columnName: 'teleop_scoring_l_1',
+              value: entry.data.teleop_scoring.l_1),
+          DataGridCell(
+              columnName: 'teleop_scoring_l_2',
+              value: entry.data.teleop_scoring.l_2),
+          DataGridCell(
+              columnName: 'teleop_scoring_l_3',
+              value: entry.data.teleop_scoring.l_3),
+          DataGridCell(
+              columnName: 'teleop_scoring_l_4',
+              value: entry.data.teleop_scoring.l_4),
+          DataGridCell(
+              columnName: 'teleop_scoring_net',
+              value: entry.data.teleop_scoring.net),
+          DataGridCell(
+              columnName: 'teleop_scoring_processor',
+              value: entry.data.teleop_scoring.processor),
+          DataGridCell(
+              columnName: 'died', value: entry.data.miscellaneous.died),
+          DataGridCell(
+              columnName: 'comments', value: entry.data.miscellaneous.comments),
+          DataGridCell(
+            columnName: 'delete',
+            value: entry.scout_info.first_name != null &&
+                (role == 'admin' || role == 'owner'),
           ),
         ]));
       }
@@ -927,27 +991,42 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     return Center(
         child: isLoading
             ? CircularProgressIndicator(color: Colors.blue)
-            : LayoutBuilder(
-                builder: (context, constraints) => Container(
-                    height: constraints.maxHeight,
-                    width: constraints.maxWidth,
-                    child: InteractiveViewer(
-                      child: SfDataGrid(
-                        allowFiltering: true,
-                        allowSorting: true,
-                        columns: columns,
-                        frozenColumnsCount: 2,
-                        columnWidthMode: ColumnWidthMode.auto,
-                        source: _MatchScoutingSource(rows, scouting),
-                      ),
-                    ))));
+            : token == null
+                ? LoginWidget(
+                    redirect_path:
+                        '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+                  )
+                : scouting.isEmpty
+                    ? Text('No Entries')
+                    : LayoutBuilder(
+                        builder: (context, constraints) => Container(
+                            height: constraints.maxHeight,
+                            width: constraints.maxWidth,
+                            child: InteractiveViewer(
+                              child: SfDataGrid(
+                                allowFiltering: true,
+                                allowSorting: true,
+                                columns: columns,
+                                frozenColumnsCount: 2,
+                                columnWidthMode: ColumnWidthMode.auto,
+                                source: _MatchScoutingSource(rows, scouting,
+                                    (delete_index) {
+                                  setState(() {
+                                    scouting.removeAt(delete_index);
+                                    updateGrid();
+                                  });
+                                }),
+                              ),
+                            ))));
   }
 }
 
 class _MatchScoutingSource extends DataGridSource {
   final List<DataGridRow> rows;
-  final List<dynamic> scoutingData;
-  _MatchScoutingSource(List<DataGridRow> this.rows, this.scoutingData);
+  final List<MatchScouting2025> scoutingData;
+  final void Function(int) onDelete;
+  _MatchScoutingSource(
+      List<DataGridRow> this.rows, this.scoutingData, this.onDelete);
   @override
   DataGridRowAdapter? buildRow(
     DataGridRow row,
@@ -955,8 +1034,16 @@ class _MatchScoutingSource extends DataGridSource {
     int index = rows.indexOf(row);
     List<Widget> cells = [];
     for (var cell in row.getCells()) {
-      if (cell.columnName == 'active') {
-        cells.add(ActivateButton(data: scoutingData[index]));
+      if (cell.columnName == 'delete') {
+        if (cell.value)
+          cells.add(DeleteButton(
+            data: scoutingData[index],
+            onDelete: () {
+              onDelete(index);
+            },
+          ));
+        else
+          cells.add(SizedBox.shrink());
       } else
         cells.add(Text(
           cell.value.toString(),
@@ -966,119 +1053,43 @@ class _MatchScoutingSource extends DataGridSource {
   }
 }
 
-class ActivateButton extends StatefulWidget {
-  final MatchScouting2024 data;
-
-  ActivateButton({Key? key, required this.data}) : super(key: key);
+class DeleteButton extends StatefulWidget {
+  final MatchScouting2025 data;
+  final void Function() onDelete;
+  DeleteButton({Key? key, required this.data, required this.onDelete})
+      : super(key: key);
 
   @override
-  _ActivateButtonState createState() => _ActivateButtonState();
+  _DeleteButtonState createState() => _DeleteButtonState();
 }
 
-class _ActivateButtonState extends State<ActivateButton> {
+class _DeleteButtonState extends State<DeleteButton> {
   bool activated = false;
   String text = '';
   String password = '';
-  late MatchScouting2024 data;
   @override
   void initState() {
     super.initState();
-    data = widget.data;
-    activated = data.active;
-    text = activated ? 'Deactivate' : 'Activate';
-  }
-
-  void handleActivate() async {
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    setState(() {
-      text = activated ? 'Deactivating...' : 'Activating...';
-    });
-
-    if (activated) {
-      await apiService.deactivateMatchData(
-          widget.data.toJson(), password, deactivateCallback);
-    } else {
-      await apiService.activateMatchData(
-          widget.data.toJson(), password, activateCallback);
-    }
-  }
-
-  void deactivateCallback(int status) {
-    if (status == 200) {
-      setState(() {
-        text = 'Activate';
-        activated = false;
-        data = widget.data.copyWith(active: false);
-      });
-    } else {
-      setState(() {
-        text = 'Deactivate';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Deactivation Failed')),
-      );
-    }
-  }
-
-  void activateCallback(int status) {
-    if (status == 200) {
-      setState(() {
-        text = 'Deactivate';
-        activated = true;
-        data = widget.data.copyWith(active: true);
-      });
-    } else {
-      setState(() {
-        text = 'Activate';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Activation Failed')),
-      );
-    }
-  }
-
-  void showPasswordDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Enter Password'),
-          content: TextField(
-            obscureText: true,
-            decoration: InputDecoration(labelText: 'Password'),
-            onChanged: (value) {
-              setState(() {
-                password = value;
-              });
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                handleActivate();
-              },
-              child: Text(text),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return IconButton(
       onPressed: () {
-        showPasswordDialog(context);
+        ApiService api = Provider.of<ApiService>(context, listen: false);
+        api.delete_match_scouting(widget.data).then(
+          (_) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('Successfully Deleted')));
+            widget.onDelete();
+          },
+        ).onError((e, trace) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(e.toString())));
+        });
       },
-      child: Text(text),
+      icon: Icon(Icons.delete_forever),
+      color: Colors.red,
     );
   }
 }
@@ -1113,10 +1124,12 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2024> scouting = [];
+  List<MatchScouting2025> scouting = [];
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
+  String? token;
+
   @override
   initState() {
     super.initState();
@@ -1125,6 +1138,16 @@ class _AutosTabState extends State<_AutosTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
+    this.token = await apiService.token;
+    if (token == null) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      isLoading = false;
+      return;
+    }
     final fetchedStats = (await apiService.fetchTeamMatchScouting(
       int.parse(widget.widget.tournament.page.split('/')[3]),
       widget.widget.tournament.page.split('/')[4],
@@ -1148,7 +1171,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2024> pageData = scouting.sublist(
+    List<MatchScouting2025> pageData = scouting.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -1157,55 +1180,63 @@ class _AutosTabState extends State<_AutosTab> {
     return Center(
       child: isLoading
           ? CircularProgressIndicator(color: Colors.blue)
-          : Column(
-              children: [
-                if (scouting.length == 0)
-                  Text(
-                    'No data for this event',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                  return SingleChildScrollView(
-                      child: Column(children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(numColumns, (int colIndex) {
-                          return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxWidth: constraints.maxWidth / numColumns),
-                              child: Column(
-                                children:
-                                    List.generate(numRows, (int rowIndex) {
-                                  int index = rowIndex * numColumns + colIndex;
-                                  if (index < pageData.length) {
-                                    return AutoDisplay2024(
-                                      scoutingData: pageData[index],
-                                    );
-                                  }
-                                  return SizedBox.shrink();
-                                }),
-                              ));
-                        }))
-                  ]));
-                })),
-                if (numPages > 1)
-                  NumberPaginator(
-                    initialPage: currentPage,
-                    numberPages: numPages,
-                    onPageChange: (page) {
-                      setState(() => currentPage = page);
-                    },
-                    config: NumberPaginatorUIConfig(
-                      buttonSelectedBackgroundColor: Colors.blue,
-                      buttonUnselectedForegroundColor: Colors.blue,
-                    ),
-                    prevButtonContent:
-                        Icon(Icons.chevron_left, color: Colors.blue),
-                    nextButtonContent:
-                        Icon(Icons.chevron_right, color: Colors.blue),
-                  ),
-              ],
-            ),
+          : token == null
+              ? LoginWidget(
+                  redirect_path:
+                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+                )
+              : Column(
+                  children: [
+                    if (scouting.length == 0)
+                      Text(
+                        'No data for this event',
+                        style: TextStyle(fontSize: 30),
+                      ),
+                    Expanded(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                      return SingleChildScrollView(
+                          child: Column(children: [
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: List.generate(numColumns, (int colIndex) {
+                              return ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth:
+                                          constraints.maxWidth / numColumns),
+                                  child: Column(
+                                    children:
+                                        List.generate(numRows, (int rowIndex) {
+                                      int index =
+                                          rowIndex * numColumns + colIndex;
+                                      if (index < pageData.length) {
+                                        return AutoDisplay2025(
+                                          scoutingData: pageData[index],
+                                        );
+                                      }
+                                      return SizedBox.shrink();
+                                    }),
+                                  ));
+                            }))
+                      ]));
+                    })),
+                    if (numPages > 1)
+                      NumberPaginator(
+                        initialPage: currentPage,
+                        numberPages: numPages,
+                        onPageChange: (page) {
+                          setState(() => currentPage = page);
+                        },
+                        config: NumberPaginatorUIConfig(
+                          buttonSelectedBackgroundColor: Colors.blue,
+                          buttonUnselectedForegroundColor: Colors.blue,
+                        ),
+                        prevButtonContent:
+                            Icon(Icons.chevron_left, color: Colors.blue),
+                        nextButtonContent:
+                            Icon(Icons.chevron_right, color: Colors.blue),
+                      ),
+                  ],
+                ),
     );
   }
 }
@@ -1220,11 +1251,40 @@ class _DeathsTab extends StatefulWidget {
 }
 
 class _DeathsTabState extends State<_DeathsTab> {
+  bool loading = true;
+  String? token;
+  @override
+  initState() {
+    super.initState();
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+    api.token.then((_token) {
+      setState(() {
+        this.token = _token;
+        loading = false;
+      });
+      this.token = _token;
+      loading = false;
+    }).onError((_, __) {
+      loading = false;
+      if (mounted)
+        setState(() {
+          loading = false;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
-      child:
-          DeathsForm(widget.widget.tournament, widget.widget.teamNumber, true),
+      child: loading
+          ? CircularProgressIndicator(color: Colors.blue)
+          : token == null
+              ? LoginWidget(
+                  redirect_path:
+                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+                )
+              : DeathsForm(
+                  widget.widget.tournament, widget.widget.teamNumber, true),
     );
   }
 }

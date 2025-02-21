@@ -1,0 +1,11 @@
+{
+    "user_id": "id",
+    "team_number": 9999,
+    "time": 0,
+    "event_code": "2025event",
+    "image_id": "id",
+    "link": "https://somewhere.on.azure.net",
+    "permissions": [
+        "admin"
+    ]
+}

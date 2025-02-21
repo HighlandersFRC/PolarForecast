@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:http/http.dart';
-
 import 'auth_service.dart';
 import 'dart:html';
 
@@ -11,6 +9,7 @@ class WebAuthService implements AuthService {
       this.APIURL, this.AUTHURL, this.APPURL, this.REALM, this.CLIENT)
       : super();
   static const String tokenKey = 'pf_token';
+  static const String refreshTokenKey = 'pf_refresh_token';
 
   @override
   Future<String?> login(redirect_path) async {
@@ -31,7 +30,8 @@ class WebAuthService implements AuthService {
           .toString();
 
       final responseType = 'code'; // Use authorization code flow
-      final scope = 'openid profile email'; // Adjust scopes as needed
+      final scope =
+          'openid profile email offline_access'; // Adjust scopes as needed
 
       // Build the redirect URI with an optional redirect path
       final loginUrl =
@@ -50,8 +50,9 @@ class WebAuthService implements AuthService {
 
   @override
   Future<void> logout() async {
-    // Remove token from localStorage
+    // Remove token and refresh token from localStorage
     window.sessionStorage.remove(tokenKey);
+    window.sessionStorage.remove(refreshTokenKey);
     var redirectUri = Uri.parse(APPURL)
         .replace(path: Uri.parse(window.location.href).path)
         .toString();
@@ -62,8 +63,6 @@ class WebAuthService implements AuthService {
   static Future<String?>? _runningFuture = null;
   @override
   Future<String?> getToken() async {
-    // TODO Add logic for using a refresh token
-    // Extract the authorization code from the URL
     if (_runningFuture != null) return _runningFuture;
     _runningFuture = _getToken();
     _runningFuture!.whenComplete(() => _runningFuture = null);
@@ -72,7 +71,7 @@ class WebAuthService implements AuthService {
 
   Future<String?> _getToken() async {
     try {
-      final tokenData = window.sessionStorage['pf_token'];
+      final tokenData = window.sessionStorage[tokenKey];
       if (tokenData != null) {
         final data = json.decode(tokenData);
         final expirationTime = DateTime.parse(data[1]);
@@ -80,17 +79,21 @@ class WebAuthService implements AuthService {
         if (DateTime.now().isBefore(expirationTime)) {
           return token; // Token is still valid
         } else {
-          window.sessionStorage.remove('pf_token'); // Token expired
+          window.sessionStorage.remove(tokenKey); // Token expired
         }
       }
     } catch (e) {
       print(e);
     }
+
+    final refreshToken = window.sessionStorage[refreshTokenKey];
+    if (refreshToken != null) {
+      return await _refreshToken(refreshToken);
+    }
+
     final uri = Uri.parse(window.location.href);
     final authorizationCode = uri.queryParameters['code'];
-    // print('Authorization code: $authorizationCode');
     if (authorizationCode == null) {
-      // throw ('Authorization code: $authorizationCode');
       return null;
     }
 
@@ -115,32 +118,44 @@ class WebAuthService implements AuthService {
 
     if (response.statusCode == 200) {
       final tokenData = jsonDecode(response.body);
-      saveToken(tokenData['access_token']);
+      saveToken(tokenData['access_token'], tokenData['refresh_token']);
       return tokenData['access_token'] as String?;
     } else {
-      //Make sure another request has not already been made
-      try {
-        final tokenData = window.sessionStorage['pf_token'];
-        if (tokenData != null) {
-          final data = json.decode(tokenData);
-          final expirationTime = DateTime.parse(data[1]);
-          final token = data[0];
-          if (DateTime.now().isBefore(expirationTime)) {
-            return token; // Token is still valid
-          } else {
-            window.sessionStorage.remove('pf_token'); // Token expired
-          }
-        }
-      } catch (e) {}
       throw Exception('Failed to get token: ${response.body}');
     }
   }
 
-  void saveToken(token) {
+  Future<String?> _refreshToken(String refreshToken) async {
+    var tokenEndpoint = '$AUTHURL/realms/$REALM/protocol/openid-connect/token';
+    var clientId = CLIENT;
+
+    final response = await post(
+      Uri.parse(tokenEndpoint),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'grant_type': 'refresh_token',
+        'refresh_token': refreshToken,
+        'client_id': clientId,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final tokenData = jsonDecode(response.body);
+      saveToken(tokenData['access_token'], tokenData['refresh_token']);
+      return tokenData['access_token'] as String?;
+    } else {
+      window.sessionStorage
+          .remove(refreshTokenKey); // Refresh token expired or invalid
+      throw Exception('Failed to refresh token: ${response.body}');
+    }
+  }
+
+  void saveToken(String token, String refreshToken) {
     final expirationTime =
         DateTime.now().add(Duration(minutes: 30)); // Current time + 30 minutes
     final tokenData = [token, expirationTime.toString()];
-    window.sessionStorage['pf_token'] = json.encode(tokenData);
+    window.sessionStorage[tokenKey] = json.encode(tokenData);
+    window.sessionStorage[refreshTokenKey] = refreshToken;
   }
 }
 

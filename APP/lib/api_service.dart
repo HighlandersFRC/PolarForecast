@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
-import '../models/match_details_2024.dart';
-import '../models/match_scouting_2024.dart';
+import 'package:scouting_app/models/match_details_2025.dart';
+import 'package:scouting_app/models/picture_data.dart';
+import 'package:scouting_app/models/team_stats_2025.dart';
+import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
-import 'models/team_stats_2024.dart';
+import 'models/match_scouting_2025.dart';
 import 'models/tournament.dart';
+import 'package:image/image.dart' as img;
 
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
@@ -75,13 +79,6 @@ class ApiService {
     return tournaments;
   }
 
-  Future<Map<String, dynamic>> fetchStatDescription(
-      int year, String event) async {
-    final cacheKey = '${year}_${event}_stat_description';
-    final url = '$APIURL/$year/$event/stat_description';
-    return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
-  }
-
   Future<Map<String, dynamic>> fetchTeamStats(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_team_stats';
@@ -89,19 +86,19 @@ class ApiService {
     return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
   }
 
-  Future<List<TeamStats2024>> fetchEventRankings(int year, String event) async {
+  Future<List<TeamStats2025>> fetchEventRankings(int year, String event) async {
     final cacheKey = '${year}_${event}_rankings';
     final url = '${APIURL}/${year}/${event}/stats';
     var data = (await _fetchFromAPI(url, cacheKey))['data'];
     data = [...data];
     data.removeAt(0);
     data = data.where((x) => x != null);
-    return [for (var x in data) TeamStats2024.fromJson(x)];
+    return [for (var x in data) TeamStats2025.fromJson(x)];
   }
 
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {
     final cacheKey = '${year}_${event}_pit_status';
-    final url = '${APIURL}/${year}/${event}/pitStatus';
+    final url = '${APIURL}/${year}/${event}/PitScoutingStatus';
     var data = (await _fetchFromAPI(url, cacheKey))['data'];
     data = [...data];
     return data;
@@ -145,8 +142,9 @@ class ApiService {
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
     var data = (await _fetchFromAPI(url, cacheKey));
     List<Image> returnImages = [];
-    for (Map<String, dynamic> imageData in data) {
-      returnImages.add(Image.memory(base64Decode(imageData['file'])));
+    for (Map<String, dynamic> imageMap in data) {
+      PictureData imageData = PictureData.fromJson(imageMap);
+      returnImages.add(Image.network(imageData.link));
     }
     return returnImages;
   }
@@ -159,20 +157,25 @@ class ApiService {
     return data;
   }
 
-  Future<List<dynamic>> fetchEventScouting(int year, String event) async {
+  Future<List<MatchScouting2025>> fetchEventScouting(
+      int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey));
     data = [...data];
-    return data;
+    List<MatchScouting2025> retval = [];
+    for (var x in data) {
+      retval.add(MatchScouting2025.fromJson(x));
+    }
+    return retval;
   }
 
-  Future<List<MatchScouting2024>> fetchTeamMatchScouting(
+  Future<List<MatchScouting2025>> fetchTeamMatchScouting(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey));
-    var returnValue = <MatchScouting2024>[];
+    var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
       dynamic died = matchData['data']['miscellaneous']['died'];
       if (died == 1 || died == true) {
@@ -181,65 +184,39 @@ class ApiService {
         died = false;
       }
       matchData['data']['miscellaneous']['died'] = died;
-      returnValue.add(MatchScouting2024.fromJson(matchData));
+      returnValue.add(MatchScouting2025.fromJson(matchData));
     }
     return returnValue;
   }
 
-  Future<void> deactivateMatchData(Map<String, dynamic> data, String password,
-      Function(int) callback) async {
-    try {
-      final String endpoint = '$APIURL/$password/Deactivate';
-      final response = await http.put(
-        Uri.parse(endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-
-      callback(response.statusCode);
-    } catch (e) {
-      print('Error in deactivateMatchData: $e');
-      callback(0); // Return 0 for failure
-    }
-  }
-
-  Future<void> activateMatchData(Map<String, dynamic> data, String password,
-      Function(int) callback) async {
-    try {
-      final String endpoint = '$APIURL/$password/Activate';
-      final response = await http.put(
-        Uri.parse(endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-
-      callback(response.statusCode);
-    } catch (e) {
-      print('Error in activateMatchData: $e');
-      callback(0); // Return 0 for failure
-    }
-  }
-
-  Future<Map<String, dynamic>> fetchFollowUp(
-      String year, String event, String team) async {
+  Future<Deaths> fetchFollowUp(String year, String event, String team) async {
+    await token;
     try {
       final storageName = '${year}${event}_${team}_deaths';
       final endpoint = '$APIURL/$year/$event/$team/FollowUp';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return data;
+      return Deaths.fromJson(data);
     } catch (e) {
       print('Error fetching follow-up data: $e');
-      return {'deaths': []};
+      return Deaths(
+          scout_info: get_scout_info((await token) ?? ''),
+          event_code: year + event,
+          team_key: team,
+          deaths: [],
+          total: 0,
+          average: 0,
+          time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
     }
   }
 
   Future<int> postFollowUp(
       dynamic data, String year, String event, String team) async {
     try {
-      final endpoint = '$APIURL/$year/$event/$team/FollowUp';
+      final endpoint = '$APIURL/FollowUp';
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
+          'token': await token ?? '',
           'Content-Type': 'application/json',
         },
         body: jsonEncode(data),
@@ -252,12 +229,12 @@ class ApiService {
     }
   }
 
-  Future<MatchDetails2024> fetchMatchDetails(
+  Future<MatchDetails2025> fetchMatchDetails(
       int year, String event, String match_key) async {
     final cacheKey = '${year}_${event}_${match_key}_details';
     final url = '${APIURL}/${year}/${event}/${match_key}/match_details';
     var data = (await _fetchFromAPI(url, cacheKey));
-    return MatchDetails2024.fromJson(data);
+    return MatchDetails2025.fromJson(data);
   }
 
   Future<void> login(String redirectPath) async {
@@ -689,5 +666,90 @@ class ApiService {
       retVal.add(GroupJoinRequest.fromJson(request));
     }
     return retVal;
+  }
+
+  Future<void> post_image(img.Image image, String event_code, int team) async {
+    final putURLResponse = await http.get(
+      Uri.parse('$APIURL/Pictures/PutURL'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (putURLResponse.statusCode != 200) {
+      throw Exception(json.decode(putURLResponse.body)['detail']);
+    }
+    String preSignedURL = json.decode(putURLResponse.body)['presigned_url'];
+    String image_id = json.decode(putURLResponse.body)['image_id'];
+    final response = await http.put(
+      Uri.parse(preSignedURL),
+      headers: {
+        'x-ms-blob-type': 'BlockBlob',
+        'Content-Type': 'application/jpeg',
+      },
+      body: img.encodeJpg(image),
+    );
+    if (response.statusCode ~/ 100 != 2) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    var data = PictureData(
+        user_id: '',
+        team_number: team,
+        time: 0,
+        event_code: event_code,
+        image_id: image_id,
+        link: '',
+        permissions: []);
+    final postItOnAPI = await http.post(
+      Uri.parse('$APIURL/Pictures/ConfirmUpload'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(data.toJson()),
+    );
+    if (postItOnAPI.statusCode ~/ 100 != 2) {
+      throw Exception(json.decode(postItOnAPI.body)['detail']);
+    }
+  }
+
+  Future<void> post_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/';
+    final request = await http.post(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode == 307) {
+      throw Exception('update');
+    } else if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
+
+  Future<void> update_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/';
+    final request = await http.put(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
+
+  Future<void> delete_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/Delete';
+    final request = await http.delete(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
   }
 }

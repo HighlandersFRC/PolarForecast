@@ -6,6 +6,8 @@ from fastapi import HTTPException, Header
 from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakOpenIDConnection
 import requests
 
+from models.scout_info import ScoutInfo
+
 keycloak_openid = KeycloakOpenID(
     server_url=os.getenv("KEYCLOAK_ENDPOINT"),
     realm_name=os.getenv("KEYCLOAK_REALM"),
@@ -137,3 +139,10 @@ def remove_user_from_group(user_id: str, group_id: str):
 
 def delete_group_kc(group_id: str):
     keycloak_admin.delete_group(group_id)
+
+
+def scout_info_from_token(token: str) -> ScoutInfo:
+    user_info = get_user_info(token)
+    return ScoutInfo(
+        user_id=user_info['sub'],
+        first_name=user_info['name'], username=user_info['preferred_username'], team_number=user_info['team_number'])

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/match_scouting_2024.dart';
+import 'package:scouting_app/models/match_scouting_2025.dart';
 import '../utils.dart';
 
 class AutoDisplay2025 extends StatefulWidget {
-  final MatchScouting2024 scoutingData;
+  final MatchScouting2025 scoutingData;
   final bool? showTeamNumber, showScoutDetails;
   const AutoDisplay2025(
       {required this.scoutingData,
@@ -69,13 +69,13 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
             Image.asset('assets/2024BlankAutoField.png', fit: BoxFit.fitWidth),
             ...pieces.asMap().entries.map((entry) {
               final idx = entry.key;
-              final piece = entry.value;
+              // final piece = entry.value;
               final position = _calculatePosition(pieceX[idx], pieceY[idx]);
-              final isSelected =
-                  (scoutingData.data.selectedPieces ?? []).contains(piece);
-              final pieceIndex = isSelected
-                  ? (scoutingData.data.selectedPieces ?? []).indexOf(piece)
-                  : -1;
+              // final isSelected =
+              //     (scoutingData.data.selectedPieces ?? []).contains(piece);
+              // final pieceIndex = isSelected
+              //     ? (scoutingData.data.selectedPieces ?? []).indexOf(piece)
+              //     : -1;
 
               return Positioned(
                   left: position.dx,
@@ -86,20 +86,20 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                         height: NOTE_SIZE * imageScaleFactor,
                         child:
                             Image.asset('assets/Note.png', fit: BoxFit.fill)),
-                    if (pieceIndex >= 0)
-                      Container(
-                        width: NOTE_SIZE * imageScaleFactor,
-                        height: NOTE_SIZE * imageScaleFactor,
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${pieceIndex + 1}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 100 * imageScaleFactor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
+                    // if (pieceIndex >= 0)
+                    //   Container(
+                    //     width: NOTE_SIZE * imageScaleFactor,
+                    //     height: NOTE_SIZE * imageScaleFactor,
+                    //     alignment: Alignment.center,
+                    //     child: Text(
+                    //       '${pieceIndex + 1}',
+                    //       style: TextStyle(
+                    //         color: Colors.white,
+                    //         fontSize: 100 * imageScaleFactor,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //     ),
+                    //   )
                   ]));
             }).toList(),
           ],
@@ -125,9 +125,11 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                                       : '') +
                                   'Match: ${scoutingData.match_number} | ' +
                                   (widget.showScoutDetails ?? true
-                                      ? 'Scout: ${scoutingData.scout_info.name} | '
+                                      ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
                                       : '') +
-                                  'Scored: ${scoutingData.data.auto.amp + scoutingData.data.auto.speaker}',
+                                  'Coral: ${scoutingData.data.auto_scoring.l_1 + scoutingData.data.auto_scoring.l_2 + scoutingData.data.auto_scoring.l_3 + scoutingData.data.auto_scoring.l_4}' +
+                                  'Net: ${scoutingData.data.auto_scoring.net}' +
+                                  'Processor: ${scoutingData.data.auto_scoring.processor}',
                               triggerMode: TooltipTriggerMode.tap,
                               child: display,
                             )
@@ -141,9 +143,11 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                                   : '') +
                               'Match: ${scoutingData.match_number} | ' +
                               (widget.showScoutDetails ?? true
-                                  ? 'Scout: ${scoutingData.scout_info.name} | '
+                                  ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
                                   : '') +
-                              'Scored: ${scoutingData.data.auto.amp + scoutingData.data.auto.speaker}',
+                              'Coral: ${scoutingData.data.auto_scoring.l_1 + scoutingData.data.auto_scoring.l_2 + scoutingData.data.auto_scoring.l_3 + scoutingData.data.auto_scoring.l_4}' +
+                              'Net: ${scoutingData.data.auto_scoring.net}' +
+                              'Processor: ${scoutingData.data.auto_scoring.processor}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
