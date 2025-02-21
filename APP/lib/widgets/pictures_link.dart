@@ -15,6 +15,7 @@ class PicturesLink extends StatelessWidget {
           context, '/event/${tournament.key}/pictures/frc$number'),
       child: Text(
         '${value}',
+        textScaler: TextScaler.linear(1.25),
         style: TextStyle(
           color: value == 'Incomplete'
               ? Colors.yellow

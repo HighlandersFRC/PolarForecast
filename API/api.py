@@ -405,9 +405,11 @@ def get_match_details(year: int, event: str, match_key: str, token: str = Header
                     matchPrediction = prediction
                     break
             for team in matchPrediction["blue_teams"]:
-                blueTeamStats.append(get_event_Team_Stats(year, event, team))
+                blueTeamStats.append(
+                    get_event_Team_Stats(year, event, team, token))
             for team in matchPrediction["red_teams"]:
-                redTeamStats.append(get_event_Team_Stats(year, event, team))
+                redTeamStats.append(
+                    get_event_Team_Stats(year, event, team, token))
         except:
             pass
         retval = {
