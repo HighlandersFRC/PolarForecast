@@ -244,34 +244,33 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pop(context);
   }
 
+  List<List<String>> autoSteps = [];
+  List<bool> isAnimatingProcessorList = [];
+  List<bool> isAnimatingNetList = [];
 
-List<List<String>> autoSteps = [];
-List<bool> isAnimatingProcessorList = [];
-List<bool> isAnimatingNetList = [];
-
-Widget buildTriangle({
-  required double size,
-  required Color color,
-  double rotation = 0.0,
-}) {
-  return Transform.rotate(
-    angle: rotation,
-    alignment: Alignment.topCenter,
-    child: Container(
-      width: 0,
-      height: 0,
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(width: size, color: Colors.transparent),
-          right: BorderSide(width: size, color: Colors.transparent),
-          bottom: BorderSide(width: size * sqrt(3), color: color),
+  Widget buildTriangle({
+    required double size,
+    required Color color,
+    double rotation = 0.0,
+  }) {
+    return Transform.rotate(
+      angle: rotation,
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: 0,
+        height: 0,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(width: size, color: Colors.transparent),
+            right: BorderSide(width: size, color: Colors.transparent),
+            bottom: BorderSide(width: size * sqrt(3), color: color),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-void _showTriangleMenu(
+  void _showTriangleMenu(
     BuildContext context,
     int autoIndex,
     int triangleIndex,
@@ -420,8 +419,7 @@ void _showTriangleMenu(
                 SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                  ),
+                  style: TextButton.styleFrom(),
                   child: Text('Cancel'),
                 )
               ],
@@ -432,44 +430,42 @@ void _showTriangleMenu(
     );
   }
 
-
-
-Widget buildStepsUI(int index) {
-  List<Widget> items = autoSteps[index].asMap().entries.map((entry) {
-    int stepIndex = entry.key;
-    String stepLabel = entry.value;
-    return Card(
-      key: ValueKey(stepIndex),
-      color: Colors.grey[800],
-      child: ListTile(
-        title: Text("Step ${stepIndex + 1}: $stepLabel",
-            style: TextStyle(color: Colors.white)),
-        trailing: IconButton(
-          icon: Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            setState(() {
-              autoSteps[index].removeAt(stepIndex);
-            });
-          },
+  Widget buildStepsUI(int index) {
+    List<Widget> items = autoSteps[index].asMap().entries.map((entry) {
+      int stepIndex = entry.key;
+      String stepLabel = entry.value;
+      return Card(
+        key: ValueKey(stepIndex),
+        color: Colors.grey[800],
+        child: ListTile(
+          title: Text("Step ${stepIndex + 1}: $stepLabel",
+              style: TextStyle(color: Colors.white)),
+          trailing: IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                autoSteps[index].removeAt(stepIndex);
+              });
+            },
+          ),
         ),
-      ),
+      );
+    }).toList();
+    return ReorderableListView(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      onReorder: (oldIndex, newIndex) {
+        setState(() {
+          if (newIndex > oldIndex) newIndex -= 1;
+          final item = autoSteps[index].removeAt(oldIndex);
+          autoSteps[index].insert(newIndex, item);
+        });
+      },
+      children: items,
     );
-  }).toList();
-  return ReorderableListView(
-    shrinkWrap: true,
-    physics: NeverScrollableScrollPhysics(),
-    onReorder: (oldIndex, newIndex) {
-      setState(() {
-        if (newIndex > oldIndex) newIndex -= 1;
-        final item = autoSteps[index].removeAt(oldIndex);
-        autoSteps[index].insert(newIndex, item);
-      });
-    },
-    children: items,
-  );
-}
+  }
 
-Widget buildAutoImage(int index) {
+  Widget buildAutoImage(int index) {
     double fieldWidthMeters = 8.052;
     while (autoPositions.length <= index)
       autoPositions.add(fieldWidthMeters / 2);
@@ -917,60 +913,279 @@ Widget buildAutoImage(int index) {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Questions',
+                            style: TextStyle(fontSize: 30, color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(
+                      color: Colors.blue,
+                      thickness: 2.0,
+                    ),
                     Text('Drive Train'),
-                    TextField(
-                      onChanged: (value) => handleChange('drive_train', value),
-                      controller: TextEditingController(
-                          text: pitScoutingData.data.drive_train),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      items: [
+                        DropdownMenuItem(
+                            value: '',
+                            child: Text(
+                              'Choose...',
+                            )),
+                        DropdownMenuItem(
+                            value: 'Tank',
+                            child: Text(
+                              'Tank',
+                            )),
+                        DropdownMenuItem(
+                            value: 'Swerve',
+                            child: Text(
+                              'Swerve',
+                            )),
+                        DropdownMenuItem(
+                            value: 'Mecanum',
+                            child: Text(
+                              'Mecanum',
+                            )),
+                      ],
+                      value: pitScoutingData.data.drive_train,
+                      onChanged: (value) {
+                        if (value != null) handleChange('drive_train', value);
+                      },
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Can Score Coral'),
                       value: pitScoutingData.data.can_score_coral,
                       onChanged: (value) =>
                           handleChange('can_score_coral', value),
                     ),
+                    AnimatedSwitcher(
+                        duration: Duration(milliseconds: 250),
+                        child: !pitScoutingData.data.can_score_coral
+                            ? SizedBox.shrink()
+                            : Row(key: ValueKey('coral_levels_row'), children: [
+                                Column(children: [
+                                  Text('L1'),
+                                  Switch(
+                                    activeColor: Colors.blue,
+                                    value: pitScoutingData.data.coral_levels
+                                        .contains(1),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        List<int> updatedCoralLevels =
+                                            List.from(pitScoutingData
+                                                .data.coral_levels);
+                                        if (updatedCoralLevels.contains(1)) {
+                                          updatedCoralLevels.remove(1);
+                                        } else {
+                                          updatedCoralLevels.add(1);
+                                        }
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                            coral_levels: updatedCoralLevels,
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ]),
+                                Column(children: [
+                                  Text('L2'),
+                                  Switch(
+                                    activeColor: Colors.blue,
+                                    value: pitScoutingData.data.coral_levels
+                                        .contains(2),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        List<int> updatedCoralLevels =
+                                            List.from(pitScoutingData
+                                                .data.coral_levels);
+                                        if (updatedCoralLevels.contains(2)) {
+                                          updatedCoralLevels.remove(2);
+                                        } else {
+                                          updatedCoralLevels.add(2);
+                                        }
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                            coral_levels: updatedCoralLevels,
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ]),
+                                Column(children: [
+                                  Text('L3'),
+                                  Switch(
+                                    activeColor: Colors.blue,
+                                    value: pitScoutingData.data.coral_levels
+                                        .contains(3),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        List<int> updatedCoralLevels =
+                                            List.from(pitScoutingData
+                                                .data.coral_levels);
+                                        if (updatedCoralLevels.contains(3)) {
+                                          updatedCoralLevels.remove(3);
+                                        } else {
+                                          updatedCoralLevels.add(3);
+                                        }
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                            coral_levels: updatedCoralLevels,
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ]),
+                                Column(children: [
+                                  Text('L4'),
+                                  Switch(
+                                    activeColor: Colors.blue,
+                                    value: pitScoutingData.data.coral_levels
+                                        .contains(4),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        List<int> updatedCoralLevels =
+                                            List.from(pitScoutingData
+                                                .data.coral_levels);
+                                        if (updatedCoralLevels.contains(4)) {
+                                          updatedCoralLevels.remove(4);
+                                        } else {
+                                          updatedCoralLevels.add(4);
+                                        }
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                            coral_levels: updatedCoralLevels,
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  )
+                                ]),
+                              ])),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Can Score Processor'),
                       value: pitScoutingData.data.can_score_processor,
                       onChanged: (value) =>
                           handleChange('can_score_processor', value),
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Can Score Net'),
                       value: pitScoutingData.data.can_score_net,
                       onChanged: (value) =>
                           handleChange('can_score_net', value),
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Ground Coral Pickup'),
                       value: pitScoutingData.data.ground_coral_pickup,
                       onChanged: (value) =>
                           handleChange('ground_coral_pickup', value),
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Feeder Coral Pickup'),
                       value: pitScoutingData.data.feeder_coral_pickup,
                       onChanged: (value) =>
                           handleChange('feeder_coral_pickup', value),
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Ground Algae Pickup'),
                       value: pitScoutingData.data.ground_algae_pickup,
                       onChanged: (value) =>
                           handleChange('ground_algae_pickup', value),
                     ),
                     SwitchListTile(
+                      activeColor: Colors.blue,
                       title: Text('Reef Algae Pickup'),
                       value: pitScoutingData.data.reef_algae_pickup,
                       onChanged: (value) =>
                           handleChange('reef_algae_pickup', value),
                     ),
+                    SwitchListTile(
+                      activeColor: Colors.blue,
+                      title: Text('Can Shallow Climb'),
+                      value: pitScoutingData.data.climbing.contains('shallow'),
+                      onChanged: (value) {
+                        setState(() {
+                          List<String> updatedClimbing =
+                              List.from(pitScoutingData.data.climbing);
+                          if (value) {
+                            updatedClimbing.add('shallow');
+                          } else {
+                            updatedClimbing.remove('shallow');
+                          }
+                          pitScoutingData = pitScoutingData.copyWith(
+                            data: pitScoutingData.data.copyWith(
+                              climbing: updatedClimbing,
+                            ),
+                          );
+                        });
+                      },
+                    ),
+                    SwitchListTile(
+                      activeColor: Colors.blue,
+                      title: Text('Can Deep Climb'),
+                      value: pitScoutingData.data.climbing.contains('deep'),
+                      onChanged: (value) {
+                        setState(() {
+                          List<String> updatedClimbing =
+                              List.from(pitScoutingData.data.climbing);
+                          if (value) {
+                            updatedClimbing.add('deep');
+                          } else {
+                            updatedClimbing.remove('deep');
+                          }
+                          pitScoutingData = pitScoutingData.copyWith(
+                            data: pitScoutingData.data.copyWith(
+                              climbing: updatedClimbing,
+                            ),
+                          );
+                        });
+                      },
+                    ),
                     Text('Spare Parts'),
-                    TextField(
-                      keyboardType: TextInputType.number,
+                    DropdownButton<int>(
+                      isExpanded: true,
+                      items: [
+                        DropdownMenuItem(
+                            value: 0,
+                            child: Text(
+                              'No Spare Parts',
+                              style: TextStyle(color: Colors.red),
+                            )),
+                        DropdownMenuItem(
+                            value: 1,
+                            child: Text('Some Spare Parts',
+                                style: TextStyle(color: Colors.orange))),
+                        DropdownMenuItem(
+                            value: 2,
+                            child: Text('Some Spare Mechanisms',
+                                style: TextStyle(color: Colors.yellow))),
+                        DropdownMenuItem(
+                            value: 3,
+                            child: Text('Spare Everything',
+                                style: TextStyle(color: Colors.green))),
+                      ],
+                      value: pitScoutingData.data.spare_parts,
                       onChanged: (value) =>
-                          handleChange('spare_parts', int.tryParse(value) ?? 0),
-                      controller: sparePartsController,
+                          handleChange('spare_parts', value ?? 0),
                     ),
                     Text('Favorite Color'),
                     TextField(
@@ -986,13 +1201,13 @@ Widget buildAutoImage(int index) {
                         children: [
                           Text(
                             'Autos',
-                            style: TextStyle(fontSize: 30),
+                            style: TextStyle(fontSize: 30, color: Colors.blue),
                           ),
                         ],
                       ),
                     ),
                     Divider(
-                      color: const Color(0xFFD8D0D0),
+                      color: Colors.blue,
                       thickness: 2.0,
                     ),
                     SizedBox(height: 20),
@@ -1025,6 +1240,7 @@ Widget buildAutoImage(int index) {
     );
   }
 }
+
 class FeederButton extends StatelessWidget {
   final double size;
   final double scaleFactor; // Add scaleFactor
@@ -1034,7 +1250,7 @@ class FeederButton extends StatelessWidget {
     Key? key,
     required this.size,
     required this.onTap,
-    this.scaleFactor = 1.0, 
+    this.scaleFactor = 1.0,
   }) : super(key: key);
 
   @override
@@ -1042,7 +1258,6 @@ class FeederButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: ClipPath(
-
         clipper: RoundedRectangleClipper(
             cornerRadius: 20.0, scaleFactor: scaleFactor),
         child: Container(
@@ -1054,11 +1269,11 @@ class FeederButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.ac_unit, 
+                  Icons.ac_unit,
                   color: Colors.white,
-                  size: size * 0.3, 
+                  size: size * 0.3,
                 ),
-                SizedBox(height: size * 0.05), 
+                SizedBox(height: size * 0.05),
                 Text(
                   'Feeder',
                   textAlign: TextAlign.center,
@@ -1086,9 +1301,12 @@ class RoundedTriangleClipper extends CustomClipper<Path> {
 
     // Create the triangle with rounded corners
     path.moveTo(width / 2, 0); // Top point
-    path.arcToPoint(Offset(0, height), radius: Radius.circular(cornerRadius)); // Left corner
-    path.arcToPoint(Offset(width, height), radius: Radius.circular(cornerRadius)); // Right corner
-    path.arcToPoint(Offset(width / 2, 0), radius: Radius.circular(cornerRadius)); // Closing the loop back to top
+    path.arcToPoint(Offset(0, height),
+        radius: Radius.circular(cornerRadius)); // Left corner
+    path.arcToPoint(Offset(width, height),
+        radius: Radius.circular(cornerRadius)); // Right corner
+    path.arcToPoint(Offset(width / 2, 0),
+        radius: Radius.circular(cornerRadius)); // Closing the loop back to top
 
     path.close();
     return path;
@@ -1096,12 +1314,10 @@ class RoundedTriangleClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) {
-    return oldClipper is RoundedRectangleClipper && oldClipper.cornerRadius != cornerRadius;
+    return oldClipper is RoundedRectangleClipper &&
+        oldClipper.cornerRadius != cornerRadius;
   }
 }
-
-
-
 
 class RoundedRectangleClipper extends CustomClipper<Path> {
   final double cornerRadius;
