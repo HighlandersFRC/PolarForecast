@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Center(
             child: Text(
-              'Global Stats Go Here',
+              'Welcome to Polar Forecast. Begin by Searching a Tournament',
               style: TextStyle(color: Colors.blue, fontSize: 24),
             ),
           ),
