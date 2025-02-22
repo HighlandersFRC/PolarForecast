@@ -49,7 +49,10 @@ def create_join_code() -> str:
 
 def get_token_active(token: str):
     # logging.info(f"Middleware get_token_active introspect token {token}")
-    introspect = keycloak_openid.introspect(token)
+    try:
+        introspect = keycloak_openid.introspect(token)
+    except Exception as e:
+        raise HTTPException(200, str(e))
     # logging.info(f"introspect: {introspect}")
     return introspect["active"]
 
