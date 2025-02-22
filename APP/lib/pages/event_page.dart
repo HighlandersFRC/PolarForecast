@@ -1598,6 +1598,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
   List<dynamic> statuses = [];
   String? token;
   bool isLoading = true;
+  bool hasGoodGroup = true;
   @override
   void initState() {
     super.initState();
@@ -1610,14 +1611,21 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
     try {
       this.token = await apiService.token;
       if (token != null) {
-        final fetchedStatus = await apiService.fetchPitStatus(
-            int.parse(widget.widget.tournament.page.split('/')[3]),
-            widget.widget.tournament.page.split('/')[4]);
-        if (mounted) {
+        try {
+          final fetchedStatus = await apiService.fetchPitStatus(
+              int.parse(widget.widget.tournament.page.split('/')[3]),
+              widget.widget.tournament.page.split('/')[4]);
+          if (mounted) {
+            setState(() {
+              statuses = fetchedStatus;
+              isLoading = false;
+              token = token;
+            });
+          }
+        } catch (e) {
           setState(() {
-            statuses = fetchedStatus;
             isLoading = false;
-            token = token;
+            hasGoodGroup = false;
           });
         }
       } else {
@@ -1705,26 +1713,31 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
         child: token == null
             ? LoginWidget(
                 redirect_path: 'event/${widget.widget.tournament.key}')
-            : LayoutBuilder(
-                builder: (context, constraints) => Container(
-                    alignment: Alignment.center,
-                    height: constraints.maxHeight,
-                    width: constraints.maxWidth,
-                    child: InteractiveViewer(
-                      scaleEnabled: false,
-                      clipBehavior: Clip.hardEdge,
-                      child: SfDataGrid(
-                        allowSorting: true,
-                        columns: dataColumns,
-                        defaultColumnWidth: columnMinWidth,
-                        columnWidthMode: isWide
-                            ? ColumnWidthMode.fill
-                            : ColumnWidthMode.none,
-                        frozenColumnsCount: 0,
-                        source: _StatusSource(
-                            context, dataRows, widget.widget.tournament),
-                      ),
-                    ))));
+            : !hasGoodGroup
+                ? Card(
+                    child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text('Your Group is not part of this event')))
+                : LayoutBuilder(
+                    builder: (context, constraints) => Container(
+                        alignment: Alignment.center,
+                        height: constraints.maxHeight,
+                        width: constraints.maxWidth,
+                        child: InteractiveViewer(
+                          scaleEnabled: false,
+                          clipBehavior: Clip.hardEdge,
+                          child: SfDataGrid(
+                            allowSorting: true,
+                            columns: dataColumns,
+                            defaultColumnWidth: columnMinWidth,
+                            columnWidthMode: isWide
+                                ? ColumnWidthMode.fill
+                                : ColumnWidthMode.none,
+                            frozenColumnsCount: 0,
+                            source: _StatusSource(
+                                context, dataRows, widget.widget.tournament),
+                          ),
+                        ))));
   }
 }
 
