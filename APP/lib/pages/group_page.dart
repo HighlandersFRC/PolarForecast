@@ -1013,7 +1013,7 @@ class _MembersTabState extends State<_MembersTab> {
                                 headerBuilder: (context, isExpanded) {
                                   return Padding(
                                     child: Text(
-                                        'Owner: ${members?['owners'][index]['username']}'),
+                                        'Owner: ${members?['owners'][index]['firstName']}'),
                                     padding: EdgeInsets.all(20),
                                   );
                                 },
@@ -1044,7 +1044,7 @@ class _MembersTabState extends State<_MembersTab> {
                             headerBuilder: (context, isExpanded) {
                               return Padding(
                                 child: Text(
-                                    'Admin ${index + 1}: ${members?['admins'][index]['username']}'),
+                                    'Admin ${index + 1}: ${members?['admins'][index]['firstName']}'),
                                 padding: EdgeInsets.all(20),
                               );
                             },
@@ -1132,7 +1132,7 @@ class _MembersTabState extends State<_MembersTab> {
                             headerBuilder: (context, isExpanded) {
                               return Padding(
                                 child: Text(
-                                    'Member ${index + 1}: ${members?['members'][index]['username']}'),
+                                    'Member ${index + 1}: ${members?['members'][index]['firstName']}'),
                                 padding: EdgeInsets.all(20),
                               );
                             },

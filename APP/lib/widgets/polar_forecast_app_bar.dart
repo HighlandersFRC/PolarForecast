@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group_join_request.dart';
 import '../models/tournament.dart';
@@ -475,12 +476,15 @@ _openGroupsPopup(BuildContext context) async {
                             return AlertDialog(
                               title: const Text('Create a New Group'),
                               content: TextField(
-                                controller: groupNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Group Name',
-                                  hintText: 'Enter the name of the group',
-                                ),
-                              ),
+                                  controller: groupNameController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Group Name',
+                                    hintText: 'Enter the name of the group',
+                                  ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[a-zA-Z0-9]'))
+                                  ]),
                               actions: [
                                 TextButton(
                                   onPressed: () {

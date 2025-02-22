@@ -1084,6 +1084,10 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
         HTTPException(400, "You are already part of a group")
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
+    for char in group_name:
+        if char not in string.ascii_lowercase+string.ascii_uppercase+string.digits:
+            raise HTTPException(
+                400, "Make sure your group name has no special characters (no spaces)")
     user_info = get_user_info(token)
     try:
         if user_info.__contains__('team_number'):
