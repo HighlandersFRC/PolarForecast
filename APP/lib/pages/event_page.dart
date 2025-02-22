@@ -10,6 +10,7 @@ import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_display_2025.dart';
+import 'package:scouting_app/widgets/auto_pieces_2025.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2025.dart';
 import '../models/pit_scouting_2025.dart';
@@ -79,6 +80,9 @@ class _EventPageState extends State<EventPage> {
       _AutosTab(widget),
     ];
     return Scaffold(
+        appBar: PolarForecastAppBar(
+          extraText: '${widget.tournament.display}',
+        ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentTab,
           onTap: (newTabIdx) => setState(() => _currentTab = newTabIdx),
@@ -131,16 +135,7 @@ class _EventPageState extends State<EventPage> {
               theme.brightness == Brightness.dark ? Colors.white : Colors.black,
           showUnselectedLabels: false,
         ),
-        body: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [
-              PolarForecastSliverBar(
-                extraText: widget.tournament.display,
-              ),
-            ];
-          },
-          body: tabs[_currentTab],
-        ));
+        body: tabs[_currentTab]);
   }
 }
 
@@ -471,8 +466,9 @@ class _ChartsTab extends StatefulWidget {
 class _ChartsTabState extends State<_ChartsTab> {
   List<TeamStats2025> rankings = [];
   bool isLoading = true;
-  List<dynamic> scouting = [];
+  List<MatchScouting2025> scouting = [];
   List<int> teams = [];
+  String? token;
   int selectedTeam = 0;
   int secondTeam = 0;
   int lastMatch = 1;
@@ -483,25 +479,37 @@ class _ChartsTabState extends State<_ChartsTab> {
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
+      final token = await apiService.token;
       final fetchedRankings = await apiService.fetchEventRankings(
           int.parse(widget.widget.tournament.page.split('/')[3]),
           widget.widget.tournament.page.split('/')[4]);
-      final fetchedScouting = await apiService.fetchEventScouting(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
-      if (mounted) {
-        setState(() {
-          rankings = fetchedRankings;
-          isLoading = false;
-          scouting = fetchedScouting;
-          scouting.forEach((entry) {
-            if (!teams.contains(int.parse(entry['team_number'])))
-              teams.add(int.parse(entry['team_number']));
-            if (int.parse(entry['match_number'].toString()) > lastMatch)
-              lastMatch = int.parse(entry['match_number'].toString());
+      if (token != null) {
+        final fetchedScouting = await apiService.fetchEventScouting(
+            int.parse(widget.widget.tournament.page.split('/')[3]),
+            widget.widget.tournament.page.split('/')[4]);
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            scouting = fetchedScouting;
+            scouting.forEach((entry) {
+              if (!teams.contains(entry.team_number))
+                teams.add(entry.team_number);
+              if (entry.match_number > lastMatch)
+                lastMatch = entry.match_number;
+            });
+            teams.sort((a, b) => a - b);
+            this.token = token;
           });
-          teams.sort((a, b) => a - b);
-        });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            this.token = token;
+          });
+        }
       }
     } catch (e) {
       print('Error fetching data: $e');
@@ -523,271 +531,235 @@ class _ChartsTabState extends State<_ChartsTab> {
         child: SingleChildScrollView(
       child: Column(
         children: [
-          LayoutBuilder(builder: (context, constraints) {
-            bool landscape =
-                MediaQuery.of(context).orientation == Orientation.landscape;
+          Text('Scouting Data By Match',
+              style: TextStyle(fontSize: 20, color: Colors.blue)),
+          if (token != null)
+            LayoutBuilder(builder: (context, constraints) {
+              bool landscape =
+                  MediaQuery.of(context).orientation == Orientation.landscape;
 
-            if (!landscape && !_hasAdjustedForLandscape) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  setState(() {
-                    comparing = false;
-                  });
-                  _hasAdjustedForLandscape = true;
-                }
-              });
-            } else if (landscape) {
-              // Reset flag if needed for landscape changes
-              _hasAdjustedForLandscape = false;
-            }
-            List<dynamic> teamScoutingData = [];
-            if (selectedTeam != 0)
-              for (var entry in scouting) {
-                if (entry['active'] &&
-                    int.parse(entry['team_number']) ==
-                        teams[selectedTeam - 1]) {
-                  teamScoutingData.add(entry);
-                }
+              if (!landscape && !_hasAdjustedForLandscape) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    setState(() {
+                      comparing = false;
+                    });
+                    _hasAdjustedForLandscape = true;
+                  }
+                });
+              } else if (landscape) {
+                // Reset flag if needed for landscape changes
+                _hasAdjustedForLandscape = false;
               }
-            teamScoutingData
-                .sort((a, b) => a['match_number'] - b['match_number']);
-            Map<String, List> seriesData = {
-              'matches': [],
-              'entries': [],
-            };
-            List<String> seriesLabels = [
-              'auto_amp',
-              'auto_speaker',
-              'teleop_amp',
-              'teleop_speaker',
-              'teleop_amped_speaker',
-              'teleop_pass',
-            ];
-            for (var series in seriesLabels) {
-              seriesData[series] = [];
-            }
-            for (var entry in teamScoutingData) {
-              entry['data'].remove('miscellaneous');
-              entry['data'].remove('selectedPieces');
-              var flattened = flatten(
-                entry['data'],
-                delimiter: '_',
-              );
-              if (!seriesData['matches']!.contains(entry['match_number'])) {
-                seriesData['matches']?.add(entry['match_number']);
-                seriesData['entries']?.add(1);
-                for (var label in seriesLabels) {
-                  try {
-                    seriesData[label]?.add(flattened[label] ?? 0);
-                  } catch (e) {
-                    seriesData[label]?.add(0);
+              List<MatchScouting2025> teamScoutingData = [];
+              if (selectedTeam != 0)
+                for (var entry in scouting) {
+                  if (entry.team_number == teams[selectedTeam - 1]) {
+                    teamScoutingData.add(entry);
                   }
                 }
-              } else {
-                seriesData['entries']?[
-                    seriesData['matches']!.indexOf(entry['match_number'])] += 1;
-                for (var label in seriesLabels) {
-                  try {
-                    seriesData[label]?[seriesData['matches']!
-                        .indexOf(entry['match_number'])] += flattened[label];
-                  } catch (e) {}
-                }
-              }
-            }
-            List<int> entries = [...?seriesData.remove('entries')];
-            List<int> matches = [...?seriesData.remove('matches')];
-            for (var object in seriesData.entries) {
-              seriesData[object.key] = [
-                ...seriesData[object.key]!
-                    .indexed
-                    .map((val) => val.$2 / entries[val.$1])
+              teamScoutingData.sort((a, b) => a.match_number - b.match_number);
+              Map<String, List> seriesData = {
+                'matches': [],
+                'entries': [],
+              };
+              List<String> seriesLabels = [
+                'auto_scoring_l_1',
+                'auto_scoring_l_2',
+                'auto_scoring_l_3',
+                'auto_scoring_l_4',
+                'auto_scoring_net',
+                'auto_scoring_processor',
+                'teleop_scoring_l_1',
+                'teleop_scoring_l_2',
+                'teleop_scoring_l_3',
+                'teleop_scoring_l_4',
+                'teleop_scoring_net',
+                'teleop_scoring_processor',
               ];
-            }
-            List<dynamic> secondTeamScoutingData = [];
-            if (secondTeam != 0)
-              for (var entry in scouting) {
-                if (entry['active'] &&
-                    int.parse(entry['team_number']) == teams[secondTeam - 1]) {
-                  secondTeamScoutingData.add(entry);
-                }
+              for (var series in seriesLabels) {
+                seriesData[series] = [];
               }
-            secondTeamScoutingData
-                .sort((a, b) => a['match_number'] - b['match_number']);
-            Map<String, List> secondSeriesData = {
-              'matches': [],
-              'entries': [],
-            };
-            for (var series in seriesLabels) {
-              secondSeriesData[series] = [];
-            }
-            for (var entry in secondTeamScoutingData) {
-              entry['data'].remove('miscellaneous');
-              entry['data'].remove('selectedPieces');
-              var flattened = flatten(
-                entry['data'],
-                delimiter: '_',
-              );
-              if (!secondSeriesData['matches']!
-                  .contains(entry['match_number'])) {
-                secondSeriesData['matches']?.add(entry['match_number']);
-                secondSeriesData['entries']?.add(1);
-                for (var label in seriesLabels) {
-                  try {
-                    secondSeriesData[label]?.add(flattened[label] ?? 0);
-                  } catch (e) {
-                    secondSeriesData[label]?.add(0);
+              for (var x in teamScoutingData) {
+                var entry = x.toJson();
+                entry['data'].remove('miscellaneous');
+                entry['data'].remove('auto');
+                var flattened = flatten(
+                  entry['data'],
+                  delimiter: '_',
+                );
+                if (!seriesData['matches']!.contains(entry['match_number'])) {
+                  seriesData['matches']?.add(entry['match_number']);
+                  seriesData['entries']?.add(1);
+                  for (var label in seriesLabels) {
+                    try {
+                      seriesData[label]?.add(flattened[label] ?? 0);
+                    } catch (e) {
+                      seriesData[label]?.add(0);
+                    }
+                  }
+                } else {
+                  seriesData['entries']?[seriesData['matches']!
+                      .indexOf(entry['match_number'])] += 1;
+                  for (var label in seriesLabels) {
+                    try {
+                      seriesData[label]?[seriesData['matches']!
+                          .indexOf(entry['match_number'])] += flattened[label];
+                    } catch (e) {}
                   }
                 }
-              } else {
-                secondSeriesData['entries']?[secondSeriesData['matches']!
-                    .indexOf(entry['match_number'])] += 1;
-                for (var label in seriesLabels) {
-                  try {
-                    secondSeriesData[label]?[secondSeriesData['matches']!
-                        .indexOf(entry['match_number'])] += flattened[label];
-                  } catch (e) {}
+              }
+              List<int> entries = [...?seriesData.remove('entries')];
+              List<int> matches = [...?seriesData.remove('matches')];
+              for (var object in seriesData.entries) {
+                seriesData[object.key] = [
+                  ...seriesData[object.key]!
+                      .indexed
+                      .map((val) => val.$2 / entries[val.$1])
+                ];
+              }
+              List<MatchScouting2025> secondTeamScoutingData = [];
+              if (secondTeam != 0)
+                for (var entry in scouting) {
+                  if (entry.team_number == teams[secondTeam - 1]) {
+                    secondTeamScoutingData.add(entry);
+                  }
+                }
+              secondTeamScoutingData
+                  .sort((a, b) => a.match_number - b.match_number);
+              Map<String, List> secondSeriesData = {
+                'matches': [],
+                'entries': [],
+              };
+              for (var series in seriesLabels) {
+                secondSeriesData[series] = [];
+              }
+              for (var x in secondTeamScoutingData) {
+                var entry = x.toJson();
+                entry['data'].remove('miscellaneous');
+                entry['data'].remove('selectedPieces');
+                var flattened = flatten(
+                  entry['data'],
+                  delimiter: '_',
+                );
+                if (!secondSeriesData['matches']!
+                    .contains(entry['match_number'])) {
+                  secondSeriesData['matches']?.add(entry['match_number']);
+                  secondSeriesData['entries']?.add(1);
+                  for (var label in seriesLabels) {
+                    try {
+                      secondSeriesData[label]?.add(flattened[label] ?? 0);
+                    } catch (e) {
+                      secondSeriesData[label]?.add(0);
+                    }
+                  }
+                } else {
+                  secondSeriesData['entries']?[secondSeriesData['matches']!
+                      .indexOf(entry['match_number'])] += 1;
+                  for (var label in seriesLabels) {
+                    try {
+                      secondSeriesData[label]?[secondSeriesData['matches']!
+                          .indexOf(entry['match_number'])] += flattened[label];
+                    } catch (e) {}
+                  }
                 }
               }
-            }
-            List<int> secondEntries = [...?secondSeriesData.remove('entries')];
-            List<int> secondMatches = [...?secondSeriesData.remove('matches')];
-            for (var object in secondSeriesData.entries) {
-              secondSeriesData[object.key] = [
-                ...secondSeriesData[object.key]!
-                    .indexed
-                    .map((val) => val.$2 / secondEntries[val.$1])
+              List<int> secondEntries = [
+                ...?secondSeriesData.remove('entries')
               ];
-            }
-            double maxY = 1;
-            if (comparing && secondTeam != 0)
-              for (var match in secondMatches) {
-                double sum = 0;
-                for (String label in seriesLabels) {
-                  sum += secondSeriesData[label]?[secondMatches.indexOf(match)];
-                }
-                maxY = max(maxY, sum + 1);
+              List<int> secondMatches = [
+                ...?secondSeriesData.remove('matches')
+              ];
+              for (var object in secondSeriesData.entries) {
+                secondSeriesData[object.key] = [
+                  ...secondSeriesData[object.key]!
+                      .indexed
+                      .map((val) => val.$2 / secondEntries[val.$1])
+                ];
               }
-            if (selectedTeam != 0)
-              for (var match in matches) {
-                double sum = 0;
-                for (String label in seriesLabels) {
-                  sum += seriesData[label]?[matches.indexOf(match)];
+              double maxY = 1;
+              if (comparing && secondTeam != 0)
+                for (var match in secondMatches) {
+                  double sum = 0;
+                  for (String label in seriesLabels) {
+                    sum +=
+                        secondSeriesData[label]?[secondMatches.indexOf(match)];
+                  }
+                  maxY = max(maxY, sum + 1);
                 }
-                maxY = max(maxY, sum + 1);
-              }
-            var firstChart = SfCartesianChart(
-                primaryXAxis: NumericAxis(
-                  minimum: firstMatch.toDouble(),
-                  maximum: lastMatch.toDouble(),
-                ),
-                primaryYAxis: NumericAxis(
-                  maximum: maxY,
-                  minimum: 0,
-                ),
-                legend:
-                    Legend(isVisible: true, position: LegendPosition.bottom),
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  shared: true,
-                ),
-                series: [
-                  ...seriesData.entries.toList().map((entry) {
-                    return StackedAreaSeries<double, int>(
-                        enableTooltip: true,
-                        animationDuration: 500,
-                        name: entry.key,
-                        dataSource: [
-                          ...entry.value.map((val) {
-                            return double.parse(val.toString());
-                          }),
-                        ],
-                        borderDrawMode: BorderDrawMode.excludeBottom,
-                        borderWidth: 2,
-                        xValueMapper: (data, _) => matches[_],
-                        yValueMapper: (data, _) => data);
-                  })
-                ]);
-            var secondChart = SfCartesianChart(
-                primaryXAxis: NumericAxis(
-                  minimum: firstMatch.toDouble(),
-                  maximum: lastMatch.toDouble(),
-                ),
-                primaryYAxis: NumericAxis(
-                  maximum: maxY,
-                  minimum: 0,
-                ),
-                legend:
-                    Legend(isVisible: true, position: LegendPosition.bottom),
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  shared: true,
-                ),
-                series: [
-                  ...secondSeriesData.entries.toList().map((entry) {
-                    return StackedAreaSeries<double, int>(
-                        enableTooltip: true,
-                        animationDuration: 500,
-                        name: entry.key,
-                        dataSource: [
-                          ...entry.value.map((val) {
-                            return double.parse(val.toString());
-                          }),
-                        ],
-                        borderDrawMode: BorderDrawMode.excludeBottom,
-                        borderWidth: 2,
-                        xValueMapper: (data, _) => secondMatches[_],
-                        yValueMapper: (data, _) => data);
-                  })
-                ]);
-            return Row(children: [
-              Column(children: [
-                Padding(
-                  padding: EdgeInsets.all(
-                    30,
+              if (selectedTeam != 0)
+                for (var match in matches) {
+                  double sum = 0;
+                  for (String label in seriesLabels) {
+                    sum += seriesData[label]?[matches.indexOf(match)];
+                  }
+                  maxY = max(maxY, sum + 1);
+                }
+              var firstChart = SfCartesianChart(
+                  primaryXAxis: NumericAxis(
+                    minimum: firstMatch.toDouble(),
+                    maximum: lastMatch.toDouble(),
                   ),
-                  child: Row(children: [
-                    DropdownButton<int>(
-                      items: [
-                        DropdownMenuItem(
-                          child: Text('Select a Team'),
-                          value: 0,
-                        ),
-                        ...teams.map((team) => DropdownMenuItem(
-                              child: Text('Team $team'),
-                              value: teams.indexOf(team) + 1,
-                            ))
-                      ],
-                      onChanged: (team) => setState(() {
-                        selectedTeam = team ?? 0;
-                      }),
-                      value: selectedTeam,
-                    ),
-                    if (landscape)
-                      Tooltip(
-                          message: 'Compare',
-                          child: IconButton(
-                              icon: comparing
-                                  ? Icon(Icons.compare_arrows)
-                                  : Icon(Icons.compare_arrows,
-                                      color: Colors.blue),
-                              onPressed: () => setState(() {
-                                    comparing = !comparing;
-                                  })))
-                  ]),
-                ),
-                Row(children: [
-                  AnimatedSize(
-                      curve: Curves.decelerate,
-                      alignment: Alignment(0, 0),
-                      duration: Duration(milliseconds: 500),
-                      child: Container(
-                          width: comparing
-                              ? constraints.maxWidth / 2
-                              : constraints.maxWidth,
-                          child: firstChart))
-                ]),
-              ]),
-              if (comparing)
+                  primaryYAxis: NumericAxis(
+                    maximum: maxY,
+                    minimum: 0,
+                  ),
+                  legend:
+                      Legend(isVisible: true, position: LegendPosition.bottom),
+                  tooltipBehavior: TooltipBehavior(
+                    enable: true,
+                    shared: true,
+                  ),
+                  series: [
+                    ...seriesData.entries.toList().map((entry) {
+                      return StackedAreaSeries<double, int>(
+                          enableTooltip: true,
+                          animationDuration: 500,
+                          name: entry.key,
+                          dataSource: [
+                            ...entry.value.map((val) {
+                              return double.parse(val.toString());
+                            }),
+                          ],
+                          borderDrawMode: BorderDrawMode.excludeBottom,
+                          borderWidth: 2,
+                          xValueMapper: (data, _) => matches[_],
+                          yValueMapper: (data, _) => data);
+                    })
+                  ]);
+              var secondChart = SfCartesianChart(
+                  primaryXAxis: NumericAxis(
+                    minimum: firstMatch.toDouble(),
+                    maximum: lastMatch.toDouble(),
+                  ),
+                  primaryYAxis: NumericAxis(
+                    maximum: maxY,
+                    minimum: 0,
+                  ),
+                  legend:
+                      Legend(isVisible: true, position: LegendPosition.bottom),
+                  tooltipBehavior: TooltipBehavior(
+                    enable: true,
+                    shared: true,
+                  ),
+                  series: [
+                    ...secondSeriesData.entries.toList().map((entry) {
+                      return StackedAreaSeries<double, int>(
+                          enableTooltip: true,
+                          animationDuration: 500,
+                          name: entry.key,
+                          dataSource: [
+                            ...entry.value.map((val) {
+                              return double.parse(val.toString());
+                            }),
+                          ],
+                          borderDrawMode: BorderDrawMode.excludeBottom,
+                          borderWidth: 2,
+                          xValueMapper: (data, _) => secondMatches[_],
+                          yValueMapper: (data, _) => data);
+                    })
+                  ]);
+              return Row(children: [
                 Column(children: [
                   Padding(
                     padding: EdgeInsets.all(
@@ -803,13 +775,24 @@ class _ChartsTabState extends State<_ChartsTab> {
                           ...teams.map((team) => DropdownMenuItem(
                                 child: Text('Team $team'),
                                 value: teams.indexOf(team) + 1,
-                              )),
+                              ))
                         ],
                         onChanged: (team) => setState(() {
-                          secondTeam = team ?? 0;
+                          selectedTeam = team ?? 0;
                         }),
-                        value: secondTeam,
+                        value: selectedTeam,
                       ),
+                      if (landscape)
+                        Tooltip(
+                            message: 'Compare',
+                            child: IconButton(
+                                icon: comparing
+                                    ? Icon(Icons.compare_arrows)
+                                    : Icon(Icons.compare_arrows,
+                                        color: Colors.blue),
+                                onPressed: () => setState(() {
+                                      comparing = !comparing;
+                                    })))
                     ]),
                   ),
                   Row(children: [
@@ -818,12 +801,51 @@ class _ChartsTabState extends State<_ChartsTab> {
                         alignment: Alignment(0, 0),
                         duration: Duration(milliseconds: 500),
                         child: Container(
-                            width: comparing ? constraints.maxWidth / 2 : 0,
-                            child: secondChart))
+                            width: comparing
+                                ? constraints.maxWidth / 2
+                                : constraints.maxWidth,
+                            child: firstChart))
                   ]),
-                ])
-            ]);
-          }),
+                ]),
+                if (comparing)
+                  Column(children: [
+                    Padding(
+                      padding: EdgeInsets.all(
+                        30,
+                      ),
+                      child: Row(children: [
+                        DropdownButton<int>(
+                          items: [
+                            DropdownMenuItem(
+                              child: Text('Select a Team'),
+                              value: 0,
+                            ),
+                            ...teams.map((team) => DropdownMenuItem(
+                                  child: Text('Team $team'),
+                                  value: teams.indexOf(team) + 1,
+                                )),
+                          ],
+                          onChanged: (team) => setState(() {
+                            secondTeam = team ?? 0;
+                          }),
+                          value: secondTeam,
+                        ),
+                      ]),
+                    ),
+                    Row(children: [
+                      AnimatedSize(
+                          curve: Curves.decelerate,
+                          alignment: Alignment(0, 0),
+                          duration: Duration(milliseconds: 500),
+                          child: Container(
+                              width: comparing ? constraints.maxWidth / 2 : 0,
+                              child: secondChart))
+                    ]),
+                  ])
+              ]);
+            }),
+          if (token == null)
+            LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}'),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -1202,17 +1224,18 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 3'
     ];
     scoutNameController.text = data.scout_info.first_name ?? '';
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: loading
-          ? Center(
-              child: CircularProgressIndicator(
-              color: theme.primaryColor,
-            ))
-          : token == null
-              ? LoginWidget(
-                  redirect_path: 'event/${widget.widget.tournament.key}')
-              : Card(
+    return loading
+        ? Center(
+            child: CircularProgressIndicator(
+            color: theme.primaryColor,
+          ))
+        : token == null
+            ? Center(
+                child: LoginWidget(
+                    redirect_path: 'event/${widget.widget.tournament.key}'))
+            : SingleChildScrollView(
+                controller: scrollController,
+                child: Card(
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: Column(
@@ -1324,6 +1347,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
                         Divider(color: Colors.blue),
+                        AutoPieces2025(
+                          auto: data.data.auto,
+                          onChanged: (newAuto) {
+                            setState(() {
+                              data = data.copyWith(
+                                  data: data.data.copyWith(auto: newAuto));
+                            });
+                          },
+                        ),
                         SizedBox(height: 20),
                         Text(
                           'Auto Scoring',
@@ -1537,7 +1569,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     ),
                   ),
                 ),
-    );
+              );
   }
 }
 
@@ -1564,6 +1596,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
   List<GridColumn> dataColumns = [];
   List<DataGridRow> dataRows = [];
   List<dynamic> statuses = [];
+  String? token;
   bool isLoading = true;
   @override
   void initState() {
@@ -1575,13 +1608,21 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
-      final fetchedStatus = await apiService.fetchPitStatus(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
-      if (mounted) {
+      this.token = await apiService.token;
+      if (token != null) {
+        final fetchedStatus = await apiService.fetchPitStatus(
+            int.parse(widget.widget.tournament.page.split('/')[3]),
+            widget.widget.tournament.page.split('/')[4]);
+        if (mounted) {
+          setState(() {
+            statuses = fetchedStatus;
+            isLoading = false;
+            token = token;
+          });
+        }
+      } else {
         setState(() {
-          statuses = fetchedStatus;
-          isLoading = false;
+          token = token;
         });
       }
     } catch (e) {
@@ -1661,25 +1702,29 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
-        child: LayoutBuilder(
-            builder: (context, constraints) => Container(
-                alignment: Alignment.center,
-                height: constraints.maxHeight,
-                width: constraints.maxWidth,
-                child: InteractiveViewer(
-                  scaleEnabled: false,
-                  clipBehavior: Clip.hardEdge,
-                  child: SfDataGrid(
-                    allowSorting: true,
-                    columns: dataColumns,
-                    defaultColumnWidth: columnMinWidth,
-                    columnWidthMode:
-                        isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-                    frozenColumnsCount: 0,
-                    source: _StatusSource(
-                        context, dataRows, widget.widget.tournament),
-                  ),
-                ))));
+        child: token == null
+            ? LoginWidget(
+                redirect_path: 'event/${widget.widget.tournament.key}')
+            : LayoutBuilder(
+                builder: (context, constraints) => Container(
+                    alignment: Alignment.center,
+                    height: constraints.maxHeight,
+                    width: constraints.maxWidth,
+                    child: InteractiveViewer(
+                      scaleEnabled: false,
+                      clipBehavior: Clip.hardEdge,
+                      child: SfDataGrid(
+                        allowSorting: true,
+                        columns: dataColumns,
+                        defaultColumnWidth: columnMinWidth,
+                        columnWidthMode: isWide
+                            ? ColumnWidthMode.fill
+                            : ColumnWidthMode.none,
+                        frozenColumnsCount: 0,
+                        source: _StatusSource(
+                            context, dataRows, widget.widget.tournament),
+                      ),
+                    ))));
   }
 }
 
@@ -2190,7 +2235,7 @@ class _AutosTabState extends State<_AutosTab> {
   bool isLoading = true, farSide = false, closeSide = false;
   int currentPage = 0, scores = 0, pickups = 0;
   static const AUTOS_PER_PAGE = 15;
-
+  String? token;
   @override
   void initState() {
     super.initState();
@@ -2200,15 +2245,25 @@ class _AutosTabState extends State<_AutosTab> {
   fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
-      final fetchedData = await apiService.fetchEventScouting(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-      );
-      if (mounted) {
-        setState(() {
-          scoutingData = fetchedData;
-          isLoading = false;
-        });
+      token = await apiService.token;
+      if (token != null) {
+        final fetchedData = await apiService.fetchEventScouting(
+          int.parse(widget.widget.tournament.page.split('/')[3]),
+          widget.widget.tournament.page.split('/')[4],
+        );
+        if (mounted) {
+          setState(() {
+            scoutingData = fetchedData;
+            isLoading = false;
+            token = token;
+          });
+        }
+      } else {
+        if (mounted)
+          setState(() {
+            isLoading = false;
+            token = token;
+          });
       }
     } catch (e) {
       throw (e);
@@ -2272,103 +2327,113 @@ class _AutosTabState extends State<_AutosTab> {
     int numRows = (pageData.length / 3).ceil();
     return Center(
       child: isLoading
-          ? CircularProgressIndicator(color: Colors.blue)
-          : Column(
-              children: [
-                if (filteredData.length == 0 && scoutingData.length != 0)
-                  Text(
-                    'No data with selected filters',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                if (scoutingData.length == 0)
-                  Text(
-                    'No data for this event',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                  return SingleChildScrollView(
-                      child: Column(children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+          ? Center(
+              child: CircularProgressIndicator(
+              color: Colors.blue,
+            ))
+          : token == null
+              ? Center(
+                  child: LoginWidget(
+                      redirect_path: 'event/${widget.widget.tournament.key}'))
+              : Column(
+                  children: [
+                    if (filteredData.length == 0 && scoutingData.length != 0)
+                      Text(
+                        'No data with selected filters',
+                        style: TextStyle(fontSize: 30),
                       ),
-                      elevation: 5,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Close Autos'),
-                            Checkbox(
-                              value: closeSide,
-                              onChanged: (value) =>
-                                  setState(() => closeSide = value ?? false),
-                            ),
-                            Text('Far Autos'),
-                            Checkbox(
-                              value: farSide,
-                              onChanged: (value) =>
-                                  setState(() => farSide = value ?? false),
-                            ),
-                            SizedBox(height: 16),
-                            Counter(
-                              label: 'Scores',
-                              value: scores,
-                              max: 9,
-                              onChanged: (value) =>
-                                  setState(() => scores = value),
-                            ),
-                            SizedBox(height: 16),
-                            Counter(
-                              label: 'Pickups',
-                              value: pickups,
-                              max: 8,
-                              onChanged: (value) =>
-                                  setState(() => pickups = value),
-                            ),
-                          ],
+                    if (scoutingData.length == 0)
+                      Text(
+                        'No data for this event',
+                        style: TextStyle(fontSize: 30),
+                      ),
+                    Expanded(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                      return SingleChildScrollView(
+                          child: Column(children: [
+                        // Card(
+                        //   shape: RoundedRectangleBorder(
+                        //     borderRadius: BorderRadius.circular(20),
+                        //   ),
+                        //   elevation: 5,
+                        //   child: Padding(
+                        //     padding: const EdgeInsets.all(16),
+                        //     child: Column(
+                        //       crossAxisAlignment: CrossAxisAlignment.start,
+                        //       children: [
+                        //         Text('Close Autos'),
+                        //         Checkbox(
+                        //           value: closeSide,
+                        //           onChanged: (value) =>
+                        //               setState(() => closeSide = value ?? false),
+                        //         ),
+                        //         Text('Far Autos'),
+                        //         Checkbox(
+                        //           value: farSide,
+                        //           onChanged: (value) =>
+                        //               setState(() => farSide = value ?? false),
+                        //         ),
+                        //         SizedBox(height: 16),
+                        //         Counter(
+                        //           label: 'Scores',
+                        //           value: scores,
+                        //           max: 9,
+                        //           onChanged: (value) =>
+                        //               setState(() => scores = value),
+                        //         ),
+                        //         SizedBox(height: 16),
+                        //         Counter(
+                        //           label: 'Pickups',
+                        //           value: pickups,
+                        //           max: 8,
+                        //           onChanged: (value) =>
+                        //               setState(() => pickups = value),
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: List.generate(numColumns, (int colIndex) {
+                              return ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxWidth:
+                                          constraints.maxWidth / numColumns),
+                                  child: Column(
+                                    children:
+                                        List.generate(numRows, (int rowIndex) {
+                                      int index =
+                                          rowIndex * numColumns + colIndex;
+                                      if (index < pageData.length) {
+                                        return AutoDisplay2025(
+                                          scoutingData: pageData[index],
+                                        );
+                                      }
+                                      return SizedBox.shrink();
+                                    }),
+                                  ));
+                            }))
+                      ]));
+                    })),
+                    if (numPages > 1)
+                      NumberPaginator(
+                        initialPage: currentPage,
+                        numberPages: numPages,
+                        onPageChange: (page) {
+                          setState(() => currentPage = page);
+                        },
+                        config: NumberPaginatorUIConfig(
+                          buttonSelectedBackgroundColor: Colors.blue,
+                          buttonUnselectedForegroundColor: Colors.blue,
                         ),
+                        prevButtonContent:
+                            Icon(Icons.chevron_left, color: Colors.blue),
+                        nextButtonContent:
+                            Icon(Icons.chevron_right, color: Colors.blue),
                       ),
-                    ),
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(numColumns, (int colIndex) {
-                          return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxWidth: constraints.maxWidth / numColumns),
-                              child: Column(
-                                children:
-                                    List.generate(numRows, (int rowIndex) {
-                                  int index = rowIndex * numColumns + colIndex;
-                                  if (index < pageData.length) {
-                                    return AutoDisplay2025(
-                                      scoutingData: pageData[index],
-                                    );
-                                  }
-                                  return SizedBox.shrink();
-                                }),
-                              ));
-                        }))
-                  ]));
-                })),
-                if (numPages > 1)
-                  NumberPaginator(
-                    initialPage: currentPage,
-                    numberPages: numPages,
-                    onPageChange: (page) {
-                      setState(() => currentPage = page);
-                    },
-                    config: NumberPaginatorUIConfig(
-                      buttonSelectedBackgroundColor: Colors.blue,
-                      buttonUnselectedForegroundColor: Colors.blue,
-                    ),
-                    prevButtonContent:
-                        Icon(Icons.chevron_left, color: Colors.blue),
-                    nextButtonContent:
-                        Icon(Icons.chevron_right, color: Colors.blue),
-                  ),
-              ],
-            ),
+                  ],
+                ),
     );
   }
 }

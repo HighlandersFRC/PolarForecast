@@ -120,11 +120,12 @@ class ApiService {
   Future<int> postPitScouting(
       dynamic data, String year, String event, String team) async {
     try {
-      final endpoint = '$APIURL/$year/$event/$team/PitScouting';
+      final endpoint = '$APIURL/PitScouting';
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
           'Content-Type': 'application/json',
+          'token': (await token) ?? ''
         },
         body: jsonEncode(data),
       );
@@ -165,7 +166,9 @@ class ApiService {
     data = [...data];
     List<MatchScouting2025> retval = [];
     for (var x in data) {
-      retval.add(MatchScouting2025.fromJson(x));
+      try {
+        retval.add(MatchScouting2025.fromJson(x));
+      } catch (e) {}
     }
     return retval;
   }
@@ -177,13 +180,6 @@ class ApiService {
     var data = (await _fetchFromAPI(url, cacheKey));
     var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
-      dynamic died = matchData['data']['miscellaneous']['died'];
-      if (died == 1 || died == true) {
-        died = true;
-      } else {
-        died = false;
-      }
-      matchData['data']['miscellaneous']['died'] = died;
       returnValue.add(MatchScouting2025.fromJson(matchData));
     }
     return returnValue;
