@@ -171,8 +171,6 @@ def get_from_cache(key):
         return json.loads(redisClient.get(key))
     except Exception as e:
         logging.error(f"Error getting from cache {key}: {str(e)}")
-        if Exception is ConnectionError:
-            redisClient = get_redis_client()
         return None
 
 
@@ -247,6 +245,18 @@ def getEventRankings(event_code: str):
     return ETagCollection.find_one({"key": event_code})["rankings"]
 
 
+@cacheValue()
+def join_code(group_name):
+    DBEntry = Group(**GroupCollection.find_one({"name": group_name}))
+    if (DBEntry.join_code_expiration < datetime.now().timestamp()):
+        new_code = create_join_code()
+        GroupCollection.find_one_and_update(
+            {"name": group_name}, {"$set": {"join_code": new_code, "join_code_expiration": (datetime.now()+timedelta(days=7)).timestamp()}})
+        return new_code
+    else:
+        return DBEntry.join_code
+
+
 @app.get("/{year}/{event}/{team}/stats", tags=["stats"])
 def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None)):
     event_code = str(year) + event
@@ -255,11 +265,12 @@ def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(N
         data = getEventCalculatedData(event_code)
     else:
         if get_token_active(token=token):
-            groups = get_user_groups(token=token)
+            groups = [Group(**group)
+                      for group in get_user_groups_detailed(token=token)]
             foundGroup = False
             for group in groups:
-                if len(group['path'].split("/")) == 2:
-                    data = getGroupCalculatedData(event_code, group['id'])
+                if event_code in [x.event_code for x in group.events]:
+                    data = getGroupCalculatedData(event_code, group.group_id)
                     if data != None:
                         foundGroup = True
                     break
@@ -301,11 +312,12 @@ def get_Event_Stats(year: int, event: str, token: str = Header(None)):
         data = getEventCalculatedData(event_code)
     else:
         if get_token_active(token=token):
-            groups = get_user_groups(token=token)
+            groups = [Group(**group)
+                      for group in get_user_groups_detailed(token=token)]
             foundGroup = False
             for group in groups:
-                if len(group['path'].split("/")) == 2:
-                    data = getGroupCalculatedData(event_code, group['id'])
+                if event_code in [x.event_code for x in group.events]:
+                    data = getGroupCalculatedData(event_code, group.group_id)
                     if data != None:
                         foundGroup = True
                     break
@@ -354,12 +366,13 @@ def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
             data = getEventPredictions(event_code)
         else:
             if get_token_active(token=token):
-                groups = get_user_groups(token=token)
+                groups = [Group(**group)
+                          for group in get_user_groups_detailed(token=token)]
                 foundGroup = False
                 for group in groups:
-                    if len(group['path'].split("/")) == 2:
+                    if event_code in [x.event_code for x in group.events]:
                         data = getGroupPredictions(
-                            event_code, group['id'])
+                            event_code, group.group_id)
                         if data != None:
                             foundGroup = True
                         break
@@ -387,12 +400,13 @@ def get_match_details(year: int, event: str, match_key: str, token: str = Header
                 eventPredictions = getEventPredictions(event_code)
             else:
                 if get_token_active(token=token):
-                    groups = get_user_groups(token=token)
+                    groups = [Group(**group)
+                              for group in get_user_groups_detailed(token=token)]
                     foundGroup = False
                     for group in groups:
-                        if len(group['path'].split("/")) == 2:
+                        if event_code in [x.event_code for x in group.events]:
                             eventPredictions = getGroupPredictions(
-                                event_code, group['id'])
+                                event_code, group.group_id)
                             if eventPredictions != None:
                                 foundGroup = True
                             break
@@ -430,12 +444,13 @@ def get_team_match_predictions(year: int, event: str, team: str, token: str = He
         data = getEventPredictions(event_code)
     else:
         if get_token_active(token=token):
-            groups = get_user_groups(token=token)
+            groups = [Group(**group)
+                      for group in get_user_groups_detailed(token=token)]
             foundGroup = False
             for group in groups:
-                if len(group['path'].split("/")) == 2:
+                if event_code in [x.event_code for x in group.events]:
                     data = getGroupPredictions(
-                        event_code, group['id'])
+                        event_code, group.group_id)
                     if data != None:
                         foundGroup = True
                     break
@@ -524,14 +539,17 @@ def get_pit_scouting_status(year: int, event: str, token: str = Depends(check_to
 def post_pit_scouting_data(data: PitScouting2025, token: str = Depends(check_token_active)):
     data.time = datetime.utcnow().timestamp()
     data.scout_info = scout_info_from_token(token)
-    teams = getEventTeams(data.event_code)
+    try:
+        teams = getEventTeams(data.event_code)
+    except:
+        raise HTTPException(404, 'Event does not exist')
     teams = [team[3:] for team in teams]
     team = str(data.team_number)
     if not teams.__contains__(team):
         raise HTTPException(400, "No team key '"+str(data.team_number) +
                             "' in "+data.event_code)
     try:
-        PitScoutingCollection.insert_one(data)
+        PitScoutingCollection.insert_one(data.dict())
     except Exception as e:
         PitScoutingCollection.find_one_and_replace(
             {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id}, data.dict())
@@ -1128,12 +1146,6 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
     if retval != {}:
         # Get either the current cached join code or create a new one
         if retval['group_role'] == 'owner' or retval['group_role'] == 'admin':
-            @cacheValue(seconds=60*60*24*7)  # One Week
-            def join_code(group_name):
-                new_code = create_join_code()
-                GroupCollection.find_one_and_update(
-                    {"name": group_name}, {"$set": {"join_code": new_code}})
-                return new_code
             retval['group']['join_code'] = join_code(group_name)
         return retval
     raise HTTPException(

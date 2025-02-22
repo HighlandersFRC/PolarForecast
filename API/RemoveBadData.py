@@ -321,9 +321,9 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) 
     teams = []
     teamMatches: list[dict[int, list[MatchScouting2025]]] = []
     retval = []
-    scoutingData = removeOutliers(scoutingData)
     # print("removed outliers")
     scoutRatings = getMarkovianRatings(TBAData, scoutingData)
+    scoutingData = removeOutliers(scoutingData)
     # print("got markovian ratings")
     for entry in scoutingData:
         if not teams.__contains__(entry.team_number):

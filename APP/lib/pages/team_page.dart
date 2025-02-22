@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/widgets/auto_display_2025.dart';
+import 'package:scouting_app/widgets/pit_scouting_form.dart';
 import '../models/match_scouting_2025.dart';
 import '../widgets/deaths_form.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -1107,9 +1108,8 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        children: [Text('PitScouting')],
-      ),
+      child: PitScoutingForm(
+          widget.widget.tournament, widget.widget.teamNumber, true),
     );
   }
 }

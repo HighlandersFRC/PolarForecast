@@ -57,7 +57,7 @@ class WebAuthService implements AuthService {
         .replace(path: Uri.parse(window.location.href).path)
         .toString();
     window.location.href =
-        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$redirectUri/&client_id=$CLIENT';
+        '$AUTHURL/realms/$REALM/protocol/openid-connect/logout?post_logout_redirect_uri=$redirectUri&client_id=$CLIENT';
   }
 
   static Future<String?>? _runningFuture = null;
