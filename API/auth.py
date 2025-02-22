@@ -8,12 +8,19 @@ import requests
 
 from models.scout_info import ScoutInfo
 
-keycloak_openid = KeycloakOpenID(
-    server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-    realm_name=os.getenv("KEYCLOAK_REALM"),
-    client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-    client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-)
+keycloak_openid = None
+while (keycloak_openid == None):
+    try:
+        keycloak_openid = KeycloakOpenID(
+            server_url=os.getenv("KEYCLOAK_ENDPOINT"),
+            realm_name=os.getenv("KEYCLOAK_REALM"),
+            client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
+            client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+        )
+    except Exception as e:
+        logging.error(str(e))
+        keycloak_admin = None
+
 keycloak_admin = None
 while (keycloak_admin == None):
     try:
