@@ -178,7 +178,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       );
     });
 
-    print('Auto added');
+    // print('Auto added');
 
     final snackBar = SnackBar(
       content: Center(child: Text('Auto added')),
