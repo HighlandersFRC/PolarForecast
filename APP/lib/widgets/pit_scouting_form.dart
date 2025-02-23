@@ -169,7 +169,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               Auto2025(
                 starting_position_meters_from_processor: 0,
                 steps: [],
-                field_side: [],
+                field_side: ['red', 'blue'],
                 exit: false,
                 preload: false,
               ),
@@ -608,12 +608,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       thickness: 2.0,
                     ),
                     SizedBox(height: 20),
-                    if (!widget.locked)
-                      ElevatedButton(
-                        onPressed: widget.locked ? () {} : handleAddAuto,
-                        child: Text('Add Auto'),
-                      ),
-                    SizedBox(height: 20),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
@@ -656,6 +650,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                             ])));
                       },
                     ),
+                    if (!widget.locked)
+                      ElevatedButton(
+                        onPressed: widget.locked ? () {} : handleAddAuto,
+                        child: Text('Add Auto'),
+                      ),
                     SizedBox(height: 20),
                     if (!widget.locked)
                       ElevatedButton(

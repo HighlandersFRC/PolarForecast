@@ -7,7 +7,12 @@ import '../models/pit_scouting_2025.dart';
 class AutoPieces2025 extends StatefulWidget {
   final Auto2025 auto;
   final Function(Auto2025)? onChanged;
-  const AutoPieces2025({Key? key, required this.auto, this.onChanged})
+  final bool matchScouting;
+  const AutoPieces2025(
+      {Key? key,
+      required this.auto,
+      this.onChanged,
+      this.matchScouting = false})
       : super(key: key);
 
   @override
@@ -208,7 +213,25 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
   Widget buildStepsUI() {
     List<Widget> items = widget.auto.steps.asMap().entries.map((entry) {
       int stepIndex = entry.key;
-      String stepLabel = entry.value.name;
+      String stepLabel = entry.value.name == 'place_coral'
+          ? '${entry.value.extra_data['position']} Coral'
+          : entry.value.name == 'net_algae'
+              ? 'Net'
+              : entry.value.name == 'processor'
+                  ? 'Processor'
+                  : entry.value.name == 'feeder_pickup'
+                      ? entry.value.extra_data['processor_side']
+                          ? 'Processor Feeder Pickup'
+                          : 'Net Feeder Pickup'
+                      : entry.value.name == 'reef_algae'
+                          ? 'Removed Algae'
+                          : entry.value.name == 'coral_mark_pickup'
+                              ? entry.value.extra_data['algae']
+                                  ? entry.value.extra_data['coral']
+                                      ? 'Coral Mark Pickup - Both'
+                                      : 'Coral Mark Pickup - Algae'
+                                  : 'Coral Mark Pickup - Coral'
+                              : '';
       return Card(
         key: ValueKey(stepIndex),
         color: Colors.grey[800],
@@ -253,7 +276,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
 
   @override
   Widget build(context) {
-    double sliderValue = widget.auto.starting_position_meters_from_processor;
     String imagePath;
     double rotation = 0;
     switch (widget.auto.field_side.length) {
@@ -278,996 +300,950 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
     }
     return Center(
       child: Card(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              double cardWidth = constraints.maxWidth;
-              double originalImageHeight = 250.0;
-              double originalImageWidth = originalImageHeight * 1.09417040359;
-              double scaleFactor = cardWidth / originalImageHeight;
-              double displayedImageWidth = cardWidth;
-              double displayedImageHeight = originalImageWidth * scaleFactor;
-              double pixelsPerMeter = displayedImageWidth / fieldWidthMeters;
-              double overlayLeft = displayedImageWidth * 0.05;
-              double overlayBottom = displayedImageHeight * 0.2;
-              double overlayWidth = displayedImageWidth * 0.2;
-              double overlayHeight = displayedImageHeight * 0.3;
-              double squareSize = displayedImageWidth * 0.1;
-              double squareLeft = sliderValue * pixelsPerMeter - squareSize / 2;
-              if (squareLeft < 0) squareLeft = 0;
-              if (squareLeft > displayedImageWidth - squareSize)
-                squareLeft = displayedImageWidth - squareSize;
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            double cardWidth = constraints.maxWidth;
+            double originalImageHeight = 250;
+            double originalImageWidth = 250 * 1457 / 1337;
+            double scaleFactor = cardWidth / originalImageHeight;
+            double displayedImageWidth = cardWidth;
+            double displayedImageHeight = originalImageWidth * scaleFactor;
+            double pixelsPerMeter = displayedImageWidth / fieldWidthMeters;
+            double overlayLeft = displayedImageWidth * 0.05;
+            double overlayBottom = displayedImageHeight * 0.2;
+            double overlayWidth = displayedImageWidth * 0.2;
+            double overlayHeight = displayedImageHeight * 0.3;
+            double squareSize = displayedImageWidth * 0.1;
+            double squareLeft =
+                widget.auto.starting_position_meters_from_processor *
+                    pixelsPerMeter *
+                    7.25 /
+                    fieldWidthMeters;
+            if (squareLeft < 0) squareLeft = 0;
+            if (squareLeft > displayedImageWidth - squareSize)
+              squareLeft = displayedImageWidth - squareSize;
 
-              List<Widget> triangleWidgets = [];
-              List<Widget> triangleLabels = [];
-              int triangleCount = 6;
-              double triangleSize = displayedImageWidth * 0.075;
-              double centerX = displayedImageWidth / 2;
-              double centerY = (displayedImageHeight + (5.5 * scaleFactor)) / 2;
+            List<Widget> triangleWidgets = [];
+            List<Widget> triangleLabels = [];
+            int triangleCount = 6;
+            double triangleSize = displayedImageWidth * 0.075;
+            double centerX = displayedImageWidth / 2;
+            double centerY = (displayedImageHeight + (5.5 * scaleFactor)) / 2;
 
-              for (int i = 0; i < triangleCount; i++) {
-                int shiftedIndex = (i + 4) % triangleCount;
-                double angle = (-2 * pi / triangleCount) * shiftedIndex;
-                Color triangleColor =
-                    (i % 2 == 0) ? Colors.green : Colors.purple;
+            for (int i = 0; i < triangleCount; i++) {
+              int shiftedIndex = (i + 4) % triangleCount;
+              double angle = (-2 * pi / triangleCount) * shiftedIndex;
+              Color triangleColor = (i % 2 == 0) ? Colors.green : Colors.purple;
 
-                triangleWidgets.add(Positioned(
-                  left: centerX,
-                  top: centerY,
-                  child: buildTriangle(
-                    size: triangleSize,
-                    color: triangleColor.withOpacity(0.5),
-                    rotation: angle,
+              triangleWidgets.add(Positioned(
+                left: centerX,
+                top: centerY,
+                child: buildTriangle(
+                  size: triangleSize,
+                  color: triangleColor.withOpacity(0.75),
+                  rotation: angle,
+                ),
+              ));
+
+              int labelIndex = (i + 1 + triangleCount) % triangleCount;
+              double centroidDist = (2 * triangleSize * sqrt(3)) / 3;
+              double offsetX = -centroidDist * sin(angle);
+              double offsetY = centroidDist * cos(angle);
+              String letter1 = String.fromCharCode(65 + (2 * labelIndex));
+              String letter2 = String.fromCharCode(65 + (2 * labelIndex) + 1);
+
+              triangleLabels.add(Positioned(
+                left: centerX + offsetX - (triangleSize * 0.5),
+                top: centerY + offsetY - (triangleSize * 0.25),
+                child: Text(
+                  '$letter1-$letter2',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: triangleSize * 0.5,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 2,
+                        color: Colors.black54,
+                        offset: Offset(1, 1),
+                      )
+                    ],
                   ),
-                ));
+                ),
+              ));
+            }
 
-                int labelIndex = (i + 1 + triangleCount) % triangleCount;
-                double centroidDist = (2 * triangleSize * sqrt(3)) / 3;
-                double offsetX = -centroidDist * sin(angle);
-                double offsetY = centroidDist * cos(angle);
-                String letter1 = String.fromCharCode(65 + (2 * labelIndex));
-                String letter2 = String.fromCharCode(65 + (2 * labelIndex) + 1);
+            double feederButtonSize = displayedImageWidth * 0.175;
+            double ballSize = displayedImageWidth * 0.08;
 
-                triangleLabels.add(Positioned(
-                  left: centerX + offsetX - (triangleSize * 0.5),
-                  top: centerY + offsetY - (triangleSize * 0.25),
-                  child: Text(
-                    '$letter1-$letter2',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: triangleSize * 0.5,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 2,
-                          color: Colors.black54,
-                          offset: Offset(1, 1),
-                        )
-                      ],
-                    ),
-                  ),
-                ));
-              }
-
-              double feederButtonSize = displayedImageWidth * 0.1;
-              double ballSize = displayedImageWidth * 0.08;
-
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapDown: (TapDownDetails details) {
-                      RenderBox box = context.findRenderObject() as RenderBox;
-                      Offset localPos =
-                          box.globalToLocal(details.globalPosition);
-                      int selectedTriangle = -1;
-                      double minDistance = double.infinity;
-                      double triangleSizeLocal = displayedImageWidth * 0.075;
-                      double centroidDist =
-                          (2 * triangleSizeLocal * sqrt(3)) / 3;
-                      for (int i = 0; i < triangleCount; i++) {
-                        int shiftedIndex = (i + 4) % triangleCount;
-                        double angle = (-2 * pi / triangleCount) * shiftedIndex;
-                        double triCenterX = centerX - centroidDist * sin(angle);
-                        double triCenterY = centerY + centroidDist * cos(angle);
-                        double distance = sqrt(
-                            pow(localPos.dx - triCenterX, 2) +
-                                pow(localPos.dy - triCenterY, 2));
-                        if (distance < minDistance) {
-                          minDistance = distance;
-                          selectedTriangle = i;
-                        }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (TapDownDetails details) {
+                    RenderBox box = context.findRenderObject() as RenderBox;
+                    Offset localPos = box.globalToLocal(details.globalPosition);
+                    int selectedTriangle = -1;
+                    double minDistance = double.infinity;
+                    double triangleSizeLocal = displayedImageWidth * 0.075;
+                    double centroidDist = (2 * triangleSizeLocal * sqrt(3)) / 3;
+                    for (int i = 0; i < triangleCount; i++) {
+                      int shiftedIndex = (i + 4) % triangleCount;
+                      double angle = (-2 * pi / triangleCount) * shiftedIndex;
+                      double triCenterX = centerX - centroidDist * sin(angle);
+                      double triCenterY = centerY + centroidDist * cos(angle);
+                      double distance = sqrt(pow(localPos.dx - triCenterX, 2) +
+                          pow(localPos.dy - triCenterY, 2));
+                      if (distance < minDistance) {
+                        minDistance = distance;
+                        selectedTriangle = i;
                       }
-                      if (minDistance > triangleSizeLocal) return;
-                      if (widget.onChanged != null)
-                        _showTriangleMenu(context, selectedTriangle);
-                    },
-                    child: Stack(
-                      children: [
-                        Transform.rotate(
-                          angle: rotation,
-                          child: Image.asset(
-                            imagePath,
-                            width: displayedImageWidth,
-                            height: displayedImageHeight,
-                            fit: BoxFit.contain,
-                          ),
+                    }
+                    if (minDistance > triangleSizeLocal) return;
+                    if (widget.onChanged != null)
+                      _showTriangleMenu(context, selectedTriangle);
+                  },
+                  child: Stack(
+                    children: [
+                      Transform.rotate(
+                        angle: rotation,
+                        child: Image.asset(
+                          imagePath,
+                          width: displayedImageWidth,
+                          height: displayedImageHeight,
+                          fit: BoxFit.contain,
                         ),
-                        ...triangleWidgets,
-                        ...triangleLabels,
-                        Positioned(
-                          bottom: displayedImageHeight * 0.11,
-                          left: squareLeft,
-                          child: Container(
-                            width: squareSize,
-                            height: squareSize,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: Colors.blue,
-                                  width: displayedImageHeight * 0.005),
-                              borderRadius: BorderRadius.circular(
-                                  displayedImageHeight * 0.02),
-                              color: Colors.black87.withOpacity(0.2),
-                            ),
-                            child: Icon(Icons.smart_toy,
-                                size: 15 * scaleFactor, color: Colors.white),
-                          ),
-                        ),
-                        ...() {
-                          return [
-                            Positioned(
-                              left: overlayLeft,
-                              right: null,
-                              bottom: overlayBottom,
-                              child: GestureDetector(
-                                onTap: widget.onChanged == null
-                                    ? null
-                                    : () {
-                                        setState(() {
-                                          var autoSteps =
-                                              widget.auto.steps.toList();
-                                          autoSteps.add(AutoStep2025(
-                                              name: 'processor',
-                                              extra_data: {}));
-                                          isAnimatingProcessor = true;
-                                          var newAuto = widget.auto
-                                              .copyWith(steps: autoSteps);
-                                          widget.onChanged!(newAuto);
-                                        });
-                                        Future.delayed(
-                                            Duration(milliseconds: 50), () {
-                                          setState(() =>
-                                              isAnimatingProcessor = false);
-                                        });
-                                      },
-                                child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 100),
-                                  curve: Curves.easeInOutQuad,
-                                  width: isAnimatingProcessor
-                                      ? overlayWidth * 1.1
-                                      : overlayWidth,
-                                  height: isAnimatingProcessor
-                                      ? overlayHeight * 1.1
-                                      : overlayHeight,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(
-                                        isAnimatingProcessor ? 0.7 : 0.3),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.build,
-                                          color: Colors.white,
-                                          size:
-                                              (isAnimatingProcessor ? 32 : 28) *
-                                                  scaleFactor),
-                                      SizedBox(height: 4),
-                                      Text('Processor',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize:
-                                                  11 * (scaleFactor - 0.4))),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              left: null,
-                              right: overlayLeft,
-                              bottom: overlayBottom,
-                              child: GestureDetector(
-                                onTap: widget.onChanged == null
-                                    ? null
-                                    : () {
-                                        setState(() {
-                                          var autoSteps =
-                                              widget.auto.steps.toList();
-                                          autoSteps.add(AutoStep2025(
-                                              name: 'net_algae',
-                                              extra_data: {
-                                                'position': 'center'
-                                              }));
-                                          var newAuto = widget.auto
-                                              .copyWith(steps: autoSteps);
-                                          isAnimatingNet = true;
-                                          widget.onChanged!(newAuto);
-                                        });
-                                        Future.delayed(
-                                            Duration(milliseconds: 50), () {
-                                          setState(
-                                              () => isAnimatingNet = false);
-                                        });
-                                      },
-                                child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 100),
-                                  curve: Curves.easeInOutQuad,
-                                  width: isAnimatingNet
-                                      ? overlayHeight * 1.1
-                                      : overlayHeight,
-                                  height: isAnimatingNet
-                                      ? overlayWidth * 1.1
-                                      : overlayWidth,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(
-                                        isAnimatingNet ? 0.7 : 0.3),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.grid_4x4,
-                                          color: Colors.white,
-                                          size: (isAnimatingNet ? 32 : 28) *
-                                              scaleFactor),
-                                      SizedBox(height: 4),
-                                      Text('Net',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize:
-                                                  11 * (scaleFactor - 0.4))),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ];
-                        }(),
-                        Positioned(
-                          top: displayedImageHeight * 0.05,
-                          left: displayedImageWidth * 0.05,
-                          child: FeederButton(
-                            size: feederButtonSize,
-                            scaleFactor: scaleFactor,
-                            onTap: widget.onChanged == null
-                                ? () {}
-                                : () {
-                                    bool feederNear = true;
-                                    setState(() {
-                                      var autoSteps =
-                                          widget.auto.steps.toList();
-                                      autoSteps.add(AutoStep2025(
-                                          name: 'feeder_pickup',
-                                          extra_data: {
-                                            'processor_side': feederNear,
-                                            'position': 'left'
-                                          }));
-                                      var newAuto = widget.auto
-                                          .copyWith(steps: autoSteps);
-                                      widget.onChanged!(newAuto);
-                                    });
-                                  },
-                          ),
-                        ),
-                        Positioned(
-                          top: displayedImageHeight * 0.05,
-                          right: displayedImageWidth * 0.05,
-                          child: FeederButton(
-                            size: feederButtonSize,
-                            scaleFactor: scaleFactor,
-                            onTap: widget.onChanged == null
-                                ? () {}
-                                : () {
-                                    bool feederNear = false;
-                                    setState(() {
-                                      var autoSteps =
-                                          widget.auto.steps.toList();
-                                      autoSteps.add(AutoStep2025(
-                                          name: 'feeder_pickup',
-                                          extra_data: {
-                                            'processor_side': feederNear,
-                                            'position': 'left'
-                                          }));
-                                      var newAuto = widget.auto
-                                          .copyWith(steps: autoSteps);
-                                      widget.onChanged!(newAuto);
-                                    });
-                                  },
-                          ),
-                        ),
-                        Positioned(
-                          left: displayedImageWidth * 0.285 - ballSize / 2,
-                          top: displayedImageHeight * 0.125,
-                          child: GestureDetector(
-                            onTap: widget.onChanged == null
-                                ? null
-                                : () {
-                                    setState(() {
-                                      pickupBallScales[0] = 1.2;
-                                    });
-                                    Future.delayed(Duration(milliseconds: 100),
-                                        () {
-                                      setState(() {
-                                        pickupBallScales[0] = 1.0;
-                                      });
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16.0),
-                                            ),
-                                            title: Text(
-                                                'Select Option for processor'),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        algaeButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'processor',
-                                                                  'algae': true,
-                                                                  'coral': false
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Algae',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        coralButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'processor',
-                                                                  'algae':
-                                                                      false,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Coral',
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        bothButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'processor',
-                                                                  'algae': true,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Both',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    });
-                                  },
-                            child: AnimatedScale(
-                              scale: pickupBallScales[0],
-                              duration: Duration(milliseconds: 100),
-                              child: Container(
-                                width: ballSize,
-                                height: ballSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color.fromARGB(255, 58, 185, 164),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: displayedImageWidth * 0.5 - ballSize / 2,
-                          top: displayedImageHeight * 0.125,
-                          child: GestureDetector(
-                            onTap: widget.onChanged == null
-                                ? null
-                                : () {
-                                    setState(() {
-                                      pickupBallScales[1] = 1.2;
-                                    });
-                                    Future.delayed(Duration(milliseconds: 100),
-                                        () {
-                                      setState(() {
-                                        pickupBallScales[1] = 1.0;
-                                      });
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16.0),
-                                            ),
-                                            title: Text(
-                                                'Select Option for middle'),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        algaeButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'middle',
-                                                                  'algae': true,
-                                                                  'coral': false
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Algae',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        coralButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'middle',
-                                                                  'algae':
-                                                                      false,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Coral',
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        bothButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'middle',
-                                                                  'algae': true,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Both',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    });
-                                  },
-                            child: AnimatedScale(
-                              scale: pickupBallScales[1],
-                              duration: Duration(milliseconds: 100),
-                              child: Container(
-                                width: ballSize,
-                                height: ballSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color.fromARGB(255, 58, 185, 164),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: displayedImageWidth * 0.715 - ballSize / 2,
-                          top: displayedImageHeight * 0.125,
-                          child: GestureDetector(
-                            onTap: widget.onChanged == null
-                                ? null
-                                : () {
-                                    setState(() {
-                                      pickupBallScales[2] = 1.2;
-                                    });
-                                    Future.delayed(Duration(milliseconds: 100),
-                                        () {
-                                      setState(() {
-                                        pickupBallScales[2] = 1.0;
-                                      });
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16.0),
-                                            ),
-                                            title:
-                                                Text('Select Option for other'),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        algaeButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'other',
-                                                                  'algae': true,
-                                                                  'coral': false
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Algae',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        coralButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'other',
-                                                                  'algae':
-                                                                      false,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Coral',
-                                                      style: TextStyle(
-                                                          color: Colors.black)),
-                                                ),
-                                                SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        bothButtonColor,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                  ),
-                                                  onPressed: widget.onChanged ==
-                                                          null
-                                                      ? null
-                                                      : () {
-                                                          setState(() {
-                                                            var autoSteps =
-                                                                widget
-                                                                    .auto.steps
-                                                                    .toList();
-                                                            autoSteps.add(
-                                                                AutoStep2025(
-                                                                    name:
-                                                                        'coral_mark_pickup',
-                                                                    extra_data: {
-                                                                  'position':
-                                                                      'other',
-                                                                  'algae': true,
-                                                                  'coral': true
-                                                                }));
-                                                            var newAuto = widget
-                                                                .auto
-                                                                .copyWith(
-                                                                    steps:
-                                                                        autoSteps);
-                                                            widget.onChanged!(
-                                                                newAuto);
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                  child: Text('Both',
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    });
-                                  },
-                            child: AnimatedScale(
-                              scale: pickupBallScales[2],
-                              duration: Duration(milliseconds: 100),
-                              child: Container(
-                                width: ballSize,
-                                height: ballSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color.fromARGB(255, 58, 185, 164),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(
-                    width: displayedImageWidth,
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 8,
-                        thumbShape:
-                            RoundSliderThumbShape(enabledThumbRadius: 10.0),
                       ),
-                      child: Slider(
-                        value: sliderValue,
-                        inactiveColor: Colors.lightBlue,
-                        activeColor: Colors.lightBlue,
-                        thumbColor: Colors.white,
-                        min: 0,
-                        max: fieldWidthMeters,
-                        onChanged: widget.onChanged == null
-                            ? null
-                            : (value) {
-                                widget.onChanged!(widget.auto.copyWith(
-                                    starting_position_meters_from_processor:
-                                        value));
-                              },
+                      ...triangleWidgets,
+                      ...triangleLabels,
+                      Positioned(
+                        bottom: displayedImageHeight * 0.11,
+                        left: squareLeft,
+                        child: Container(
+                          width: squareSize,
+                          height: squareSize,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.blue,
+                                width: displayedImageHeight * 0.005),
+                            borderRadius: BorderRadius.circular(
+                                displayedImageHeight * 0.02),
+                            color: Colors.black87.withOpacity(0.2),
+                          ),
+                          child: Icon(Icons.smart_toy,
+                              size: 15 * scaleFactor, color: Colors.white),
+                        ),
                       ),
+                      ...() {
+                        return [
+                          Positioned(
+                            left: overlayLeft,
+                            right: null,
+                            bottom: overlayBottom,
+                            child: GestureDetector(
+                              onTap: widget.onChanged == null
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'processor', extra_data: {}));
+                                        isAnimatingProcessor = true;
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        widget.onChanged!(newAuto);
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(
+                                            () => isAnimatingProcessor = false);
+                                      });
+                                    },
+                              child: AnimatedContainer(
+                                duration: Durations.medium1,
+                                curve: Curves.easeInOutQuad,
+                                width: isAnimatingProcessor
+                                    ? overlayWidth * 1.1
+                                    : overlayWidth,
+                                height: isAnimatingProcessor
+                                    ? overlayHeight * 1.1
+                                    : overlayHeight,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.75),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.build,
+                                        color: Colors.white,
+                                        size: (28) * scaleFactor),
+                                    SizedBox(height: 4),
+                                    Text('Processor',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize:
+                                                11 * (scaleFactor - 0.4))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: null,
+                            right: overlayLeft,
+                            bottom: overlayBottom,
+                            child: GestureDetector(
+                              onTap: widget.onChanged == null
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'net_algae',
+                                            extra_data: {
+                                              'position': 'center'
+                                            }));
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        isAnimatingNet = true;
+                                        widget.onChanged!(newAuto);
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() => isAnimatingNet = false);
+                                      });
+                                    },
+                              child: AnimatedContainer(
+                                duration: Durations.medium1,
+                                curve: Curves.easeInOutQuad,
+                                width: isAnimatingNet
+                                    ? overlayHeight * 1.1
+                                    : overlayHeight,
+                                height: isAnimatingNet
+                                    ? overlayWidth * 1.1
+                                    : overlayWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.grid_4x4,
+                                        color: Colors.white,
+                                        size: (28) * scaleFactor),
+                                    SizedBox(height: 4),
+                                    Text('Net',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize:
+                                                11 * (scaleFactor - 0.4))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ];
+                      }(),
+                      Positioned(
+                        top: displayedImageHeight * 0.05,
+                        left: displayedImageWidth * 0.05,
+                        child: FeederButton(
+                          size: feederButtonSize,
+                          scaleFactor: scaleFactor,
+                          onTap: widget.onChanged == null
+                              ? () {}
+                              : () {
+                                  bool feederNear = true;
+                                  setState(() {
+                                    var autoSteps = widget.auto.steps.toList();
+                                    autoSteps.add(AutoStep2025(
+                                        name: 'feeder_pickup',
+                                        extra_data: {
+                                          'processor_side': feederNear,
+                                          'position': 'left'
+                                        }));
+                                    var newAuto =
+                                        widget.auto.copyWith(steps: autoSteps);
+                                    widget.onChanged!(newAuto);
+                                  });
+                                },
+                        ),
+                      ),
+                      Positioned(
+                        top: displayedImageHeight * 0.05,
+                        right: displayedImageWidth * 0.05,
+                        child: FeederButton(
+                          size: feederButtonSize,
+                          scaleFactor: scaleFactor,
+                          onTap: widget.onChanged == null
+                              ? () {}
+                              : () {
+                                  bool feederNear = false;
+                                  setState(() {
+                                    var autoSteps = widget.auto.steps.toList();
+                                    autoSteps.add(AutoStep2025(
+                                        name: 'feeder_pickup',
+                                        extra_data: {
+                                          'processor_side': feederNear,
+                                          'position': 'left'
+                                        }));
+                                    var newAuto =
+                                        widget.auto.copyWith(steps: autoSteps);
+                                    widget.onChanged!(newAuto);
+                                  });
+                                },
+                        ),
+                      ),
+                      Positioned(
+                        left: displayedImageWidth * 0.285 - ballSize / 2,
+                        top: displayedImageHeight * 0.125,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : () {
+                                  setState(() {
+                                    pickupBallScales[0] = 1.2;
+                                  });
+                                  Future.delayed(Durations.medium1, () {
+                                    setState(() {
+                                      pickupBallScales[0] = 1.0;
+                                    });
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                          ),
+                                          title: Text(
+                                              'Select Option for processor'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      algaeButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'processor',
+                                                                'algae': true,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Algae',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      coralButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'processor',
+                                                                'algae': false,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Coral',
+                                                    style: TextStyle(
+                                                        color: Colors.black)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      bothButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'processor',
+                                                                'algae': true,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Both',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  });
+                                },
+                          child: AnimatedScale(
+                            scale: pickupBallScales[0],
+                            duration: Durations.medium1,
+                            child: Container(
+                              width: ballSize,
+                              height: ballSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color.fromARGB(255, 58, 185, 164),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: displayedImageWidth * 0.5 - ballSize / 2,
+                        top: displayedImageHeight * 0.125,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : () {
+                                  setState(() {
+                                    pickupBallScales[1] = 1.2;
+                                  });
+                                  Future.delayed(Durations.medium1, () {
+                                    setState(() {
+                                      pickupBallScales[1] = 1.0;
+                                    });
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                          ),
+                                          title:
+                                              Text('Select Option for middle'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      algaeButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'middle',
+                                                                'algae': true,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Algae',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      coralButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'middle',
+                                                                'algae': false,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Coral',
+                                                    style: TextStyle(
+                                                        color: Colors.black)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      bothButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'middle',
+                                                                'algae': true,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Both',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  });
+                                },
+                          child: AnimatedScale(
+                            scale: pickupBallScales[1],
+                            duration: Durations.medium1,
+                            child: Container(
+                              width: ballSize,
+                              height: ballSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color.fromARGB(255, 58, 185, 164),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: displayedImageWidth * 0.715 - ballSize / 2,
+                        top: displayedImageHeight * 0.125,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : () {
+                                  setState(() {
+                                    pickupBallScales[2] = 1.2;
+                                  });
+                                  Future.delayed(Durations.medium1, () {
+                                    setState(() {
+                                      pickupBallScales[2] = 1.0;
+                                    });
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                          ),
+                                          title:
+                                              Text('Select Option for other'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      algaeButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'other',
+                                                                'algae': true,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Algae',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      coralButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'other',
+                                                                'algae': false,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Coral',
+                                                    style: TextStyle(
+                                                        color: Colors.black)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      bothButtonColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'other',
+                                                                'algae': true,
+                                                                'coral': true
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('Both',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  });
+                                },
+                          child: AnimatedScale(
+                            scale: pickupBallScales[2],
+                            duration: Durations.medium1,
+                            child: Container(
+                              width: ballSize,
+                              height: ballSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color.fromARGB(255, 58, 185, 164),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                SizedBox(
+                  width: displayedImageWidth,
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 8,
+                      thumbShape:
+                          RoundSliderThumbShape(enabledThumbRadius: 10.0),
                     ),
-                  ),
-                  Text('${sliderValue.toStringAsFixed(2)} meters',
-                      style: TextStyle(color: Colors.white)),
-                  buildStepsUI(),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Text('Field Side',
-                      style: TextStyle(fontSize: 20, color: Colors.blue)),
-                  DropdownButton<String>(
-                      value: widget.auto.field_side.contains('blue')
-                          ? widget.auto.field_side.contains('red')
-                              ? 'both'
-                              : 'blue'
-                          : 'red',
-                      hint: Text('Select Option'),
-                      isExpanded: true,
+                    child: Slider(
+                      value:
+                          widget.auto.starting_position_meters_from_processor,
+                      inactiveColor: Colors.lightBlue,
+                      activeColor: Colors.lightBlue,
+                      thumbColor: Colors.white,
+                      min: 0,
+                      max: fieldWidthMeters,
                       onChanged: widget.onChanged == null
                           ? null
-                          : (newValue) {
-                              if (newValue != null)
-                                setState(() {
-                                  List<String> newFieldSide = newValue == 'both'
-                                      ? ['red', 'blue']
-                                      : [newValue];
-                                  widget.onChanged!(widget.auto
-                                      .copyWith(field_side: newFieldSide));
-                                });
+                          : (value) {
+                              widget.onChanged!(widget.auto.copyWith(
+                                  starting_position_meters_from_processor:
+                                      value));
                             },
-                      items: [
-                        DropdownMenuItem(
-                            value: 'red',
-                            child: Text(
-                              'Red Side',
-                              style: TextStyle(color: Colors.red),
-                            )),
-                        DropdownMenuItem(
-                            value: 'blue',
-                            child: Text(
-                              'Blue Side',
-                              style: TextStyle(color: Colors.blue),
-                            )),
-                        DropdownMenuItem(
-                            value: 'both',
-                            child: Text(
-                              'Both',
-                              style: TextStyle(color: Colors.white),
-                            )),
-                      ]),
-                  SwitchListTile(
-                    activeColor: Colors.blue,
-                    title: Text('Exit'),
-                    value: widget.auto.exit,
+                    ),
+                  ),
+                ),
+                Text(
+                    '${widget.auto.starting_position_meters_from_processor.toStringAsFixed(2)} meters',
+                    style: TextStyle(color: Colors.white)),
+                buildStepsUI(),
+                SizedBox(
+                  height: 8,
+                ),
+                Text('Field Side',
+                    style: TextStyle(fontSize: 20, color: Colors.blue)),
+                DropdownButton<String>(
+                    value: widget.auto.field_side.contains('blue')
+                        ? widget.auto.field_side.contains('red')
+                            ? 'both'
+                            : 'blue'
+                        : 'red',
+                    hint: Text('Select Option'),
+                    isExpanded: true,
                     onChanged: widget.onChanged == null
                         ? null
-                        : (bool value) {
-                            widget
-                                .onChanged!(widget.auto.copyWith(exit: value));
+                        : (newValue) {
+                            if (newValue != null)
+                              setState(() {
+                                List<String> newFieldSide = newValue == 'both'
+                                    ? ['red', 'blue']
+                                    : [newValue];
+                                widget.onChanged!(widget.auto
+                                    .copyWith(field_side: newFieldSide));
+                              });
                           },
-                  ),
-                  SwitchListTile(
-                    activeColor: Colors.blue,
-                    title: Text('Preload'),
-                    value: widget.auto.preload,
-                    onChanged: widget.onChanged == null
-                        ? null
-                        : (bool value) {
-                            widget.onChanged!(
-                                widget.auto.copyWith(preload: value));
-                          },
-                  ),
-                ],
-              );
-            },
-          ),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'red',
+                          child: Text(
+                            'Red Side',
+                            style: TextStyle(color: Colors.red),
+                          )),
+                      DropdownMenuItem(
+                          value: 'blue',
+                          child: Text(
+                            'Blue Side',
+                            style: TextStyle(color: Colors.blue),
+                          )),
+                      DropdownMenuItem(
+                          value: 'both',
+                          child: Text(
+                            'Both',
+                            style: TextStyle(color: Colors.white),
+                          )),
+                    ]),
+                SwitchListTile(
+                  activeColor: Colors.blue,
+                  title: Text('Exit'),
+                  value: widget.auto.exit,
+                  onChanged: widget.onChanged == null
+                      ? null
+                      : (bool value) {
+                          widget.onChanged!(widget.auto.copyWith(exit: value));
+                        },
+                ),
+                SwitchListTile(
+                  activeColor: Colors.blue,
+                  title: Text('Preload'),
+                  value: widget.auto.preload,
+                  onChanged: widget.onChanged == null
+                      ? null
+                      : (bool value) {
+                          widget
+                              .onChanged!(widget.auto.copyWith(preload: value));
+                        },
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class FeederButton extends StatelessWidget {
+class FeederButton extends StatefulWidget {
   final double size;
   final double scaleFactor;
   final VoidCallback onTap;
@@ -1280,29 +1256,47 @@ class FeederButton extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _FeederButtonState createState() => _FeederButtonState();
+}
+
+class _FeederButtonState extends State<FeederButton> {
+  bool isAnimating = false;
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        setState(() {
+          isAnimating = true;
+        });
+        widget.onTap();
+        Future.delayed(Durations.medium1, () {
+          setState(() {
+            isAnimating = false;
+          });
+        });
+      },
       child: ClipPath(
         clipper: RoundedRectangleClipper(cornerRadius: 3.0, scaleFactor: 8),
-        child: Container(
-          width: size,
-          height: size,
-          color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.5),
+        child: AnimatedContainer(
+          duration: Durations.medium1,
+          width: isAnimating ? widget.size * 1.1 : widget.size,
+          height: isAnimating ? widget.size * 1.1 : widget.size,
+          color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.75),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.ac_unit,
+                  Icons.add_box_rounded,
                   color: Colors.white,
-                  size: size * 0.3,
+                  size: widget.size * 0.3,
                 ),
-                SizedBox(height: size * 0.05),
+                SizedBox(height: widget.size * 0.05),
                 Text(
                   'Feeder',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: size * 0.2),
+                  style: TextStyle(
+                      color: Colors.white, fontSize: widget.size * 0.2),
                 ),
               ],
             ),
