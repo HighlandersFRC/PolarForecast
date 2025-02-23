@@ -1351,92 +1351,52 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           auto: data.data.auto,
                           onChanged: (newAuto) {
                             setState(() {
+                              int l1 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('1');
+                              }).length;
+                              int l2 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('2');
+                              }).length;
+                              int l3 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('3');
+                              }).length;
+                              int l4 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('4');
+                              }).length;
+                              int net = newAuto.steps.where((item) {
+                                return item.name == 'net_algae';
+                              }).length;
+                              int processor = newAuto.steps.where((item) {
+                                return item.name == 'processor';
+                              }).length;
                               data = data.copyWith(
-                                  data: data.data.copyWith(auto: newAuto));
+                                  data: data.data.copyWith(
+                                      auto: newAuto,
+                                      auto_scoring: AutoScoring(
+                                          l_1: l1,
+                                          l_2: l2,
+                                          l_3: l3,
+                                          l_4: l4,
+                                          net: net,
+                                          processor: processor)));
                             });
                           },
                         ),
                         SizedBox(height: 20),
                         Text(
-                          'Auto Scoring',
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
-                        ),
-                        Divider(color: Colors.blue),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L4',
-                          value: data.data.auto_scoring.l_4,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_4: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L3',
-                          value: data.data.auto_scoring.l_3,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_3: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L2',
-                          value: data.data.auto_scoring.l_2,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_2: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L1',
-                          value: data.data.auto_scoring.l_1,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_1: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Net',
-                          value: data.data.auto_scoring.net,
-                          max: 18,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(net: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Processor',
-                          value: data.data.auto_scoring.processor,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(processor: value)));
-                          }),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Teleop Scoring',
+                          'Teleop',
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
                         Divider(color: Colors.blue),
