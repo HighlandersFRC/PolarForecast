@@ -1393,6 +1393,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                           processor: processor)));
                             });
                           },
+                          matchScouting: true,
                         ),
                         SizedBox(height: 20),
                         Text(

@@ -177,21 +177,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         ),
       );
     });
-
-    // print('Auto added');
-
-    final snackBar = SnackBar(
-      content: Center(child: Text('Auto added')),
-      duration: Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(left: 1420, right: 5, bottom: 10.0),
-      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10.0),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-    Future.delayed(Duration(seconds: 2), () {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    });
   }
 
   void handleSubmit() async {

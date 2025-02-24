@@ -1008,7 +1008,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                 allowFiltering: true,
                                 allowSorting: true,
                                 columns: columns,
-                                frozenColumnsCount: 2,
+                                frozenColumnsCount: 0,
                                 columnWidthMode: ColumnWidthMode.auto,
                                 source: _MatchScoutingSource(rows, scouting,
                                     (delete_index) {

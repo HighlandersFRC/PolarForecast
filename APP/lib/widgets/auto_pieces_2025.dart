@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/pit_scouting_2025.dart';
 
@@ -20,8 +21,18 @@ class AutoPieces2025 extends StatefulWidget {
 }
 
 class _AutoPieces2025State extends State<AutoPieces2025> {
-  bool isFlipped = false, isAnimatingNet = false, isAnimatingProcessor = false;
+  bool isFlipped = false,
+      isAnimatingNet = false,
+      isAnimatingProcessor = false,
+      isAnimatingProcessorGround = false,
+      isAnimatingNetGround = false;
   List<double> pickupBallScales = [1.0, 1.0, 1.0];
+  final GlobalKey processorKey = GlobalKey(),
+      netKey = GlobalKey(),
+      processorFeederKey = GlobalKey(),
+      netFeederKey = GlobalKey(),
+      processorGroundKey = GlobalKey(),
+      netGroundKey = GlobalKey();
   static const double fieldWidthMeters = 8.052;
   static const Color algaeButtonColor = Color.fromARGB(255, 58, 185, 164);
   static const Color coralButtonColor = Colors.white;
@@ -49,6 +60,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
   }
 
   void _showTriangleMenu(BuildContext context, int triangleIndex) {
+    HapticFeedback.lightImpact();
     int letterIndex = (triangleIndex + 1 + 6) % 6;
     String letter1 = String.fromCharCode(65 + (2 * letterIndex));
     String letter2 = String.fromCharCode(65 + (2 * letterIndex) + 1);
@@ -62,7 +74,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
             duration: Duration(milliseconds: 150),
             curve: Curves.easeOut,
             padding: EdgeInsets.all(12),
-            width: 340,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -78,51 +89,89 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Column(
-                        children: List.generate(4, (level) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 3.0),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                              ),
+                        children: [
+                          ...List.generate(4, (level) {
+                            return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 3.0),
+                                child: Row(children: [
+                                  if (widget.matchScouting)
+                                    IconButton(
+                                      onPressed: () {
+                                        List<AutoStep2025> newList =
+                                            widget.auto.steps.toList();
+                                        newList.add(AutoStep2025(
+                                            name: 'miss_coral',
+                                            extra_data: {
+                                              'position': '$letter1${4 - level}'
+                                            }));
+                                        Auto2025 newAuto = widget.auto
+                                            .copyWith(steps: newList);
+                                        widget.onChanged!(newAuto);
+                                        Navigator.pop(context);
+                                      },
+                                      icon: Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 6, horizontal: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      List<AutoStep2025> newList =
+                                          widget.auto.steps.toList();
+                                      newList.add(AutoStep2025(
+                                          name: 'place_coral',
+                                          extra_data: {
+                                            'position': '$letter1${4 - level}'
+                                          }));
+                                      Auto2025 newAuto =
+                                          widget.auto.copyWith(steps: newList);
+                                      widget.onChanged!(newAuto);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      '$letter1${4 - level}',
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.black),
+                                    ),
+                                  ),
+                                ]));
+                          }),
+                        ],
+                      ),
+                      SizedBox(
+                        width: 12,
+                      ),
+                      Column(
+                        children: [
+                          if (widget.matchScouting)
+                            IconButton(
+                              icon:
+                                  Icon(Icons.close_rounded, color: Colors.red),
                               onPressed: () {
                                 List<AutoStep2025> newList =
                                     widget.auto.steps.toList();
                                 newList.add(AutoStep2025(
-                                    name: 'place_coral',
+                                    name: 'reef_algae_miss',
                                     extra_data: {
-                                      'position': '$letter1${4 - level}'
+                                      'position': '$letter1-$letter2'
                                     }));
                                 Auto2025 newAuto =
                                     widget.auto.copyWith(steps: newList);
                                 widget.onChanged!(newAuto);
                                 Navigator.pop(context);
                               },
-                              child: Text(
-                                '$letter1${4 - level}',
-                                style: TextStyle(
-                                    fontSize: 14, color: Colors.black),
-                              ),
                             ),
-                          );
-                        }),
-                      ),
-                      SizedBox(width: 12),
-                      Column(
-                        children: [
-                          Text(
-                            'Removed Algae?',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 12),
                           Container(
-                            height: 150,
+                            height: 100,
                             width: 60,
                             child: Align(
                               alignment: (letter1 == 'A' ||
@@ -157,40 +206,64 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                           ),
                         ],
                       ),
-                      SizedBox(width: 12),
+                      SizedBox(
+                        width: 12,
+                      ),
                       Column(
                         children: List.generate(4, (level) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 3.0),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 3.0),
+                              child: Row(children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    List<AutoStep2025> newList =
+                                        widget.auto.steps.toList();
+                                    newList.add(AutoStep2025(
+                                        name: 'place_coral',
+                                        extra_data: {
+                                          'position': '$letter2${4 - level}'
+                                        }));
+                                    Auto2025 newAuto =
+                                        widget.auto.copyWith(steps: newList);
+                                    widget.onChanged!(newAuto);
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    '$letter2${4 - level}',
+                                    style: TextStyle(
+                                        fontSize: 14, color: Colors.black),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () {
-                                List<AutoStep2025> newList =
-                                    widget.auto.steps.toList();
-                                newList.add(AutoStep2025(
-                                    name: 'place_coral',
-                                    extra_data: {
-                                      'position': '$letter2${4 - level}'
-                                    }));
-                                Auto2025 newAuto =
-                                    widget.auto.copyWith(steps: newList);
-                                widget.onChanged!(newAuto);
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                '$letter2${4 - level}',
-                                style: TextStyle(
-                                    fontSize: 14, color: Colors.black),
-                              ),
-                            ),
-                          );
+                                if (widget.matchScouting)
+                                  IconButton(
+                                    onPressed: () {
+                                      List<AutoStep2025> newList =
+                                          widget.auto.steps.toList();
+                                      newList.add(AutoStep2025(
+                                          name: 'miss_coral',
+                                          extra_data: {
+                                            'position': '$letter2${4 - level}'
+                                          }));
+                                      Auto2025 newAuto =
+                                          widget.auto.copyWith(steps: newList);
+                                      widget.onChanged!(newAuto);
+                                      Navigator.pop(context);
+                                    },
+                                    icon: Icon(
+                                      Icons.close_rounded,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                              ]));
                         }),
                       ),
                     ],
@@ -215,23 +288,54 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
       int stepIndex = entry.key;
       String stepLabel = entry.value.name == 'place_coral'
           ? '${entry.value.extra_data['position']} Coral'
-          : entry.value.name == 'net_algae'
-              ? 'Net'
-              : entry.value.name == 'processor'
-                  ? 'Processor'
-                  : entry.value.name == 'feeder_pickup'
-                      ? entry.value.extra_data['processor_side']
-                          ? 'Processor Feeder Pickup'
-                          : 'Net Feeder Pickup'
-                      : entry.value.name == 'reef_algae'
-                          ? 'Removed Algae'
-                          : entry.value.name == 'coral_mark_pickup'
-                              ? entry.value.extra_data['algae']
-                                  ? entry.value.extra_data['coral']
-                                      ? 'Coral Mark Pickup - Both'
-                                      : 'Coral Mark Pickup - Algae'
-                                  : 'Coral Mark Pickup - Coral'
-                              : '';
+          : entry.value.name == 'miss_coral'
+              ? '${entry.value.extra_data['position']} Coral Miss'
+              : entry.value.name == 'net_algae'
+                  ? 'Net'
+                  : entry.value.name == 'processor'
+                      ? 'Processor'
+                      : entry.value.name == 'processor_miss'
+                          ? 'Processor Miss'
+                          : entry.value.name == 'net'
+                              ? 'Net'
+                              : entry.value.name == 'net_miss'
+                                  ? 'Net Miss'
+                                  : entry.value.name == 'feeder_pickup'
+                                      ? entry.value.extra_data['processor_side']
+                                          ? 'Processor Feeder Pickup'
+                                          : 'Net Feeder Pickup'
+                                      : entry.value.name == 'feeder_miss'
+                                          ? entry.value
+                                                  .extra_data['processor_side']
+                                              ? 'Processor Feeder Miss'
+                                              : 'Net Feeder Miss'
+                                          : entry.value.name == 'reef_algae'
+                                              ? '${entry.value.extra_data['position']} Removed Algae'
+                                              : entry.value.name ==
+                                                      'reef_algae_miss'
+                                                  ? '${entry.value.extra_data['position']} Algae Missed'
+                                                  : entry.value.name ==
+                                                          'coral_mark_pickup'
+                                                      ? entry.value.extra_data[
+                                                              'algae']
+                                                          ? entry.value
+                                                                      .extra_data[
+                                                                  'coral']
+                                                              ? '${entry.value.extra_data['position'] == 'middle' ? 'Middle' : entry.value.extra_data['position'] == 'other' ? "Net" : "Processor"} Coral Mark - Both'
+                                                              : '${entry.value.extra_data['position'] == 'middle' ? 'Middle' : entry.value.extra_data['position'] == 'other' ? "Net" : "Processor"} Coral Mark - Algae'
+                                                          : entry.value
+                                                                      .extra_data[
+                                                                  'coral']
+                                                              ? '${entry.value.extra_data['position'] == 'middle' ? 'Middle' : entry.value.extra_data['position'] == 'other' ? "Net" : "Processor"} Coral Mark - Coral'
+                                                              : '${entry.value.extra_data['position'] == 'middle' ? 'Middle' : entry.value.extra_data['position'] == 'other' ? "Net" : "Processor"} Coral Mark - None'
+                                                      : entry.value.name ==
+                                                              'ground_pickup'
+                                                          ? '${entry.value.extra_data['position'] == 'net' ? 'Net' : 'Processor'} Ground Pickup'
+                                                          : entry.value.name ==
+                                                                  'ground_miss'
+                                                              ? '${entry.value.extra_data['position'] == 'net' ? 'Net' : 'Processor'} Ground Miss'
+                                                              : entry
+                                                                  .value.name;
       return Card(
         key: ValueKey(stepIndex),
         color: Colors.grey[800],
@@ -435,16 +539,16 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                               size: 15 * scaleFactor, color: Colors.white),
                         ),
                       ),
-                      ...() {
-                        return [
-                          Positioned(
-                            left: overlayLeft,
-                            right: null,
-                            bottom: overlayBottom,
-                            child: GestureDetector(
-                              onTap: widget.onChanged == null
-                                  ? null
-                                  : () {
+                      Positioned(
+                        left: overlayLeft,
+                        right: null,
+                        bottom: overlayBottom,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : !widget.matchScouting
+                                  ? () {
+                                      HapticFeedback.lightImpact();
                                       setState(() {
                                         var autoSteps =
                                             widget.auto.steps.toList();
@@ -459,45 +563,118 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                         setState(
                                             () => isAnimatingProcessor = false);
                                       });
+                                    }
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        isAnimatingProcessor = true;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(
+                                            () => isAnimatingProcessor = false);
+                                      });
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (processorKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (processorKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'processor',
+                                                  extra_data: {}));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'processor_miss',
+                                                extra_data: {}));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          }
+                                        }
+                                      });
                                     },
-                              child: AnimatedContainer(
-                                duration: Durations.medium1,
-                                curve: Curves.easeInOutQuad,
-                                width: isAnimatingProcessor
-                                    ? overlayWidth * 1.1
-                                    : overlayWidth,
-                                height: isAnimatingProcessor
-                                    ? overlayHeight * 1.1
-                                    : overlayHeight,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.75),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.build,
+                          child: AnimatedContainer(
+                            key: processorKey,
+                            duration: Durations.medium1,
+                            curve: Curves.easeInOutQuad,
+                            width: isAnimatingProcessor
+                                ? overlayWidth * 1.1
+                                : overlayWidth,
+                            height: isAnimatingProcessor
+                                ? overlayHeight * 1.1
+                                : overlayHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.build,
+                                    color: Colors.white,
+                                    size: (28) * scaleFactor),
+                                SizedBox(height: 4),
+                                Text('Processor',
+                                    style: TextStyle(
                                         color: Colors.white,
-                                        size: (28) * scaleFactor),
-                                    SizedBox(height: 4),
-                                    Text('Processor',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize:
-                                                11 * (scaleFactor - 0.4))),
-                                  ],
-                                ),
-                              ),
+                                        fontSize: 11 * (scaleFactor - 0.4))),
+                              ],
                             ),
                           ),
-                          Positioned(
-                            left: null,
-                            right: overlayLeft,
-                            bottom: overlayBottom,
-                            child: GestureDetector(
-                              onTap: widget.onChanged == null
-                                  ? null
-                                  : () {
+                        ),
+                      ),
+                      Positioned(
+                        left: null,
+                        right: overlayLeft,
+                        bottom: overlayBottom,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : !widget.matchScouting
+                                  ? () {
                                       setState(() {
                                         var autoSteps =
                                             widget.auto.steps.toList();
@@ -514,87 +691,315 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                       Future.delayed(Durations.medium1, () {
                                         setState(() => isAnimatingNet = false);
                                       });
+                                    }
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        isAnimatingNet = true;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() => isAnimatingNet = false);
+                                      });
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (netKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (netKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'net', extra_data: {}));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'net_miss',
+                                                extra_data: {}));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          }
+                                        }
+                                      });
                                     },
-                              child: AnimatedContainer(
-                                duration: Durations.medium1,
-                                curve: Curves.easeInOutQuad,
-                                width: isAnimatingNet
-                                    ? overlayHeight * 1.1
-                                    : overlayHeight,
-                                height: isAnimatingNet
-                                    ? overlayWidth * 1.1
-                                    : overlayWidth,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.grid_4x4,
+                          child: AnimatedContainer(
+                            duration: Durations.medium1,
+                            key: netKey,
+                            curve: Curves.easeInOutQuad,
+                            width: isAnimatingNet
+                                ? overlayHeight * 1.1
+                                : overlayHeight,
+                            height: isAnimatingNet
+                                ? overlayWidth * 1.1
+                                : overlayWidth,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.grid_4x4,
+                                    color: Colors.white,
+                                    size: (28) * scaleFactor),
+                                SizedBox(height: 4),
+                                Text('Net',
+                                    style: TextStyle(
                                         color: Colors.white,
-                                        size: (28) * scaleFactor),
-                                    SizedBox(height: 4),
-                                    Text('Net',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize:
-                                                11 * (scaleFactor - 0.4))),
-                                  ],
-                                ),
-                              ),
+                                        fontSize: 11 * (scaleFactor - 0.4))),
+                              ],
                             ),
                           ),
-                        ];
-                      }(),
+                        ),
+                      ),
                       Positioned(
                         top: displayedImageHeight * 0.05,
                         left: displayedImageWidth * 0.05,
                         child: FeederButton(
+                          key: processorFeederKey,
                           size: feederButtonSize,
                           scaleFactor: scaleFactor,
                           onTap: widget.onChanged == null
                               ? () {}
-                              : () {
-                                  bool feederNear = true;
-                                  setState(() {
-                                    var autoSteps = widget.auto.steps.toList();
-                                    autoSteps.add(AutoStep2025(
-                                        name: 'feeder_pickup',
-                                        extra_data: {
-                                          'processor_side': feederNear,
-                                          'position': 'left'
-                                        }));
-                                    var newAuto =
-                                        widget.auto.copyWith(steps: autoSteps);
-                                    widget.onChanged!(newAuto);
-                                  });
-                                },
+                              : !widget.matchScouting
+                                  ? () {
+                                      bool feederNear = true;
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'feeder_pickup',
+                                            extra_data: {
+                                              'processor_side': feederNear,
+                                              'position': 'left'
+                                            }));
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        widget.onChanged!(newAuto);
+                                      });
+                                    }
+                                  : () {
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (processorFeederKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (processorFeederKey
+                                                          .currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            bool feederNear = true;
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'feeder_pickup',
+                                                  extra_data: {
+                                                    'processor_side':
+                                                        feederNear,
+                                                    'position': 'left'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            bool feederNear = true;
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'feeder_miss',
+                                                  extra_data: {
+                                                    'processor_side':
+                                                        feederNear,
+                                                    'position': 'left'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          }
+                                        }
+                                      });
+                                    },
                         ),
                       ),
                       Positioned(
                         top: displayedImageHeight * 0.05,
                         right: displayedImageWidth * 0.05,
                         child: FeederButton(
+                          key: netFeederKey,
                           size: feederButtonSize,
                           scaleFactor: scaleFactor,
                           onTap: widget.onChanged == null
                               ? () {}
-                              : () {
-                                  bool feederNear = false;
-                                  setState(() {
-                                    var autoSteps = widget.auto.steps.toList();
-                                    autoSteps.add(AutoStep2025(
-                                        name: 'feeder_pickup',
-                                        extra_data: {
-                                          'processor_side': feederNear,
-                                          'position': 'left'
-                                        }));
-                                    var newAuto =
-                                        widget.auto.copyWith(steps: autoSteps);
-                                    widget.onChanged!(newAuto);
-                                  });
-                                },
+                              : !widget.matchScouting
+                                  ? () {
+                                      bool feederNear = false;
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'feeder_pickup',
+                                            extra_data: {
+                                              'processor_side': feederNear,
+                                              'position': 'left'
+                                            }));
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        widget.onChanged!(newAuto);
+                                      });
+                                    }
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (netFeederKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (netFeederKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            bool feederNear = false;
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'feeder_pickup',
+                                                  extra_data: {
+                                                    'processor_side':
+                                                        feederNear,
+                                                    'position': 'left'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            bool feederNear = false;
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'feeder_miss',
+                                                  extra_data: {
+                                                    'processor_side':
+                                                        feederNear,
+                                                    'position': 'left'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          }
+                                        }
+                                      });
+                                    },
                         ),
                       ),
                       Positioned(
@@ -619,8 +1024,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                             borderRadius:
                                                 BorderRadius.circular(16.0),
                                           ),
-                                          title: Text(
-                                              'Select Option for processor'),
+                                          title: Text('Select Option'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -752,6 +1156,49 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                             .pop();
                                                       },
                                                 child: Text('Both',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'processor',
+                                                                'algae': false,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('None',
                                                     style: TextStyle(
                                                         color: Colors.white)),
                                               ),
@@ -798,8 +1245,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                             borderRadius:
                                                 BorderRadius.circular(16.0),
                                           ),
-                                          title:
-                                              Text('Select Option for middle'),
+                                          title: Text('Select Option'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -931,6 +1377,49 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                             .pop();
                                                       },
                                                 child: Text('Both',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'middle',
+                                                                'algae': false,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('None',
                                                     style: TextStyle(
                                                         color: Colors.white)),
                                               ),
@@ -977,8 +1466,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                             borderRadius:
                                                 BorderRadius.circular(16.0),
                                           ),
-                                          title:
-                                              Text('Select Option for other'),
+                                          title: Text('Select Option'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -1113,6 +1601,49 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                     style: TextStyle(
                                                         color: Colors.white)),
                                               ),
+                                              SizedBox(height: 8),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                onPressed: widget.onChanged ==
+                                                        null
+                                                    ? null
+                                                    : () {
+                                                        setState(() {
+                                                          var autoSteps = widget
+                                                              .auto.steps
+                                                              .toList();
+                                                          autoSteps.add(
+                                                              AutoStep2025(
+                                                                  name:
+                                                                      'coral_mark_pickup',
+                                                                  extra_data: {
+                                                                'position':
+                                                                    'other',
+                                                                'algae': false,
+                                                                'coral': false
+                                                              }));
+                                                          var newAuto = widget
+                                                              .auto
+                                                              .copyWith(
+                                                                  steps:
+                                                                      autoSteps);
+                                                          widget.onChanged!(
+                                                              newAuto);
+                                                        });
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                child: Text('None',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
                                             ],
                                           ),
                                         );
@@ -1130,6 +1661,272 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                 shape: BoxShape.circle,
                                 color: Color.fromARGB(255, 58, 185, 164),
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: overlayLeft,
+                        right: null,
+                        bottom: overlayBottom + overlayLeft + overlayHeight,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : !widget.matchScouting
+                                  ? () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'ground_pickup',
+                                            extra_data: {
+                                              'position': 'processor'
+                                            }));
+                                        isAnimatingProcessorGround = true;
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        widget.onChanged!(newAuto);
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() =>
+                                            isAnimatingProcessorGround = false);
+                                      });
+                                    }
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        isAnimatingProcessorGround = true;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() =>
+                                            isAnimatingProcessorGround = false);
+                                      });
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (processorGroundKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (processorGroundKey
+                                                          .currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'ground_pickup',
+                                                  extra_data: {
+                                                    'position': 'processor'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'ground_miss',
+                                                extra_data: {
+                                                  'position': 'processor'
+                                                }));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          }
+                                        }
+                                      });
+                                    },
+                          child: AnimatedContainer(
+                            key: processorGroundKey,
+                            duration: Durations.medium1,
+                            curve: Curves.easeInOutQuad,
+                            width: isAnimatingProcessorGround
+                                ? overlayWidth * 1.1 * 1.4
+                                : overlayWidth * 1.4,
+                            height: isAnimatingProcessorGround
+                                ? overlayHeight * 1.1 * 0.675
+                                : overlayHeight * 0.675,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.input_rounded,
+                                    color: Colors.white,
+                                    size: (28) * scaleFactor),
+                                SizedBox(height: 4),
+                                Text('Ground Pickup',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11 * (scaleFactor - 0.4))),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: overlayLeft,
+                        bottom: overlayBottom + overlayLeft + overlayHeight,
+                        child: GestureDetector(
+                          onTap: widget.onChanged == null
+                              ? null
+                              : !widget.matchScouting
+                                  ? () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        var autoSteps =
+                                            widget.auto.steps.toList();
+                                        autoSteps.add(AutoStep2025(
+                                            name: 'ground_pickup',
+                                            extra_data: {'position': 'net'}));
+                                        isAnimatingNetGround = true;
+                                        var newAuto = widget.auto
+                                            .copyWith(steps: autoSteps);
+                                        widget.onChanged!(newAuto);
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(
+                                            () => isAnimatingNetGround = false);
+                                      });
+                                    }
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        isAnimatingNetGround = true;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(
+                                            () => isAnimatingNetGround = false);
+                                      });
+                                      showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromRect(
+                                          (netGroundKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .localToGlobal(Offset.zero) &
+                                              (netGroundKey.currentContext!
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                          Offset.zero &
+                                              (Overlay.of(context)
+                                                          .context
+                                                          .findRenderObject()
+                                                      as RenderBox)
+                                                  .size,
+                                        ),
+                                        items: [
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Success',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            ),
+                                            value: 'option1',
+                                          ),
+                                          PopupMenuItem(
+                                            child: Text(
+                                              'Drop',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                            value: 'option2',
+                                          ),
+                                        ],
+                                      ).then((value) {
+                                        HapticFeedback.lightImpact();
+                                        if (value != null) {
+                                          if (value == 'option1') {
+                                            setState(() {
+                                              var autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(AutoStep2025(
+                                                  name: 'ground_pickup',
+                                                  extra_data: {
+                                                    'position': 'net'
+                                                  }));
+                                              var newAuto = widget.auto
+                                                  .copyWith(steps: autoSteps);
+                                              widget.onChanged!(newAuto);
+                                            });
+                                          } else if (value == 'option2') {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'ground_miss',
+                                                extra_data: {
+                                                  'position': 'net'
+                                                }));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          }
+                                        }
+                                      });
+                                    },
+                          child: AnimatedContainer(
+                            key: netGroundKey,
+                            duration: Durations.medium1,
+                            curve: Curves.easeInOutQuad,
+                            width: isAnimatingNetGround
+                                ? overlayWidth * 1.1 * 1.4
+                                : overlayWidth * 1.4,
+                            height: isAnimatingNetGround
+                                ? overlayHeight * 1.1 * 0.675
+                                : overlayHeight * 0.675,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.input_rounded,
+                                    color: Colors.white,
+                                    size: (28) * scaleFactor),
+                                SizedBox(height: 4),
+                                Text('Ground Pickup',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11 * (scaleFactor - 0.4))),
+                              ],
                             ),
                           ),
                         ),
@@ -1171,48 +1968,50 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                 SizedBox(
                   height: 8,
                 ),
-                Text('Field Side',
-                    style: TextStyle(fontSize: 20, color: Colors.blue)),
-                DropdownButton<String>(
-                    value: widget.auto.field_side.contains('blue')
-                        ? widget.auto.field_side.contains('red')
-                            ? 'both'
-                            : 'blue'
-                        : 'red',
-                    hint: Text('Select Option'),
-                    isExpanded: true,
-                    onChanged: widget.onChanged == null
-                        ? null
-                        : (newValue) {
-                            if (newValue != null)
-                              setState(() {
-                                List<String> newFieldSide = newValue == 'both'
-                                    ? ['red', 'blue']
-                                    : [newValue];
-                                widget.onChanged!(widget.auto
-                                    .copyWith(field_side: newFieldSide));
-                              });
-                          },
-                    items: [
-                      DropdownMenuItem(
-                          value: 'red',
-                          child: Text(
-                            'Red Side',
-                            style: TextStyle(color: Colors.red),
-                          )),
-                      DropdownMenuItem(
-                          value: 'blue',
-                          child: Text(
-                            'Blue Side',
-                            style: TextStyle(color: Colors.blue),
-                          )),
-                      DropdownMenuItem(
-                          value: 'both',
-                          child: Text(
-                            'Both',
-                            style: TextStyle(color: Colors.white),
-                          )),
-                    ]),
+                if (!widget.matchScouting)
+                  Text('Field Side',
+                      style: TextStyle(fontSize: 20, color: Colors.blue)),
+                if (!widget.matchScouting)
+                  DropdownButton<String>(
+                      value: widget.auto.field_side.contains('blue')
+                          ? widget.auto.field_side.contains('red')
+                              ? 'both'
+                              : 'blue'
+                          : 'red',
+                      hint: Text('Select Option'),
+                      isExpanded: true,
+                      onChanged: widget.onChanged == null
+                          ? null
+                          : (newValue) {
+                              if (newValue != null)
+                                setState(() {
+                                  List<String> newFieldSide = newValue == 'both'
+                                      ? ['red', 'blue']
+                                      : [newValue];
+                                  widget.onChanged!(widget.auto
+                                      .copyWith(field_side: newFieldSide));
+                                });
+                            },
+                      items: [
+                        DropdownMenuItem(
+                            value: 'red',
+                            child: Text(
+                              'Red Side',
+                              style: TextStyle(color: Colors.red),
+                            )),
+                        DropdownMenuItem(
+                            value: 'blue',
+                            child: Text(
+                              'Blue Side',
+                              style: TextStyle(color: Colors.blue),
+                            )),
+                        DropdownMenuItem(
+                            value: 'both',
+                            child: Text(
+                              'Both',
+                              style: TextStyle(color: Colors.white),
+                            )),
+                      ]),
                 SwitchListTile(
                   activeColor: Colors.blue,
                   title: Text('Exit'),
@@ -1220,6 +2019,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                   onChanged: widget.onChanged == null
                       ? null
                       : (bool value) {
+                          HapticFeedback.lightImpact();
                           widget.onChanged!(widget.auto.copyWith(exit: value));
                         },
                 ),
@@ -1230,6 +2030,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                   onChanged: widget.onChanged == null
                       ? null
                       : (bool value) {
+                          HapticFeedback.lightImpact();
                           widget
                               .onChanged!(widget.auto.copyWith(preload: value));
                         },
