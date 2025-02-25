@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
@@ -157,15 +156,15 @@ class ApiService {
     }
   }
 
-  Future<List<Image>> fetchTeamImages(
+  Future<List<PictureData>> fetchTeamImages(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_pictures';
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
-    var data = (await _fetchFromAPI(url, cacheKey));
-    List<Image> returnImages = [];
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
+    List<PictureData> returnImages = [];
     for (Map<String, dynamic> imageMap in data) {
       PictureData imageData = PictureData.fromJson(imageMap);
-      returnImages.add(Image.network(imageData.link));
+      returnImages.add(imageData);
     }
     return returnImages;
   }
@@ -725,6 +724,19 @@ class ApiService {
     );
     if (postItOnAPI.statusCode ~/ 100 != 2) {
       throw Exception(json.decode(postItOnAPI.body)['detail']);
+    }
+  }
+
+  Future<void> delete_image(PictureData image) async {
+    final url = '$APIURL/Pictures/Delete';
+    final request = await http.delete(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(image.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
     }
   }
 

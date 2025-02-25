@@ -1697,11 +1697,12 @@ async def get_event_pictures(year: str, event: str, token: str = Depends(check_t
 
 @app.delete("/Pictures/Delete", tags=["scouting"])
 def delete_pit_scouting_pictures(pictureData: PictureData, token: str = Depends(check_token_active)):
-    DBEntry = PictureCollection.find_one(pictureData.dict())
+    DBEntry = PictureCollection.find_one({'image_id': pictureData.image_id})
     if DBEntry is None:
         raise HTTPException(404, "Picture Not Found")
     if (pictureData.scout_info.user_id == get_user_info(token)["sub"]):
-        delete_result = PictureCollection.delete_one(pictureData.dict())
+        delete_result = PictureCollection.delete_one(
+            {'image_id': pictureData.image_id})
         deleteBlob(pictureData.image_id)
         deleted = False
     else:
@@ -1717,7 +1718,7 @@ def delete_pit_scouting_pictures(pictureData: PictureData, token: str = Depends(
                         members["members"] + members["admins"] + members["owners"])]
                     if pictureData.scout_info.user_id in memberIds:
                         delete_result = PictureCollection.delete_one(
-                            pictureData.dict())
+                            {'image_id': pictureData.image_id})
                         deleteBlob(pictureData.image_id)
                         deleted = True
                     break

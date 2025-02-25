@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/widgets/auto_display_2025.dart';
 import 'package:scouting_app/widgets/pit_scouting_form.dart';
 import '../models/match_scouting_2025.dart';
@@ -730,13 +731,13 @@ class _PicturesTab extends StatefulWidget {
 }
 
 class _PicturesTabState extends State<_PicturesTab> {
-  List<Image> images = [];
+  List<PictureData> images = [];
   bool isLoading = true;
   String? token;
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     this.token = await apiService.token;
-    if (token != null)
+    if (token != null) {
       try {
         final fetchedStats = await apiService.fetchTeamImages(
           int.parse(widget.widget.tournament.page.split('/')[3]),
@@ -755,7 +756,7 @@ class _PicturesTabState extends State<_PicturesTab> {
       } catch (e) {
         print('Error fetching data: $e');
       }
-    else {
+    } else {
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -799,16 +800,46 @@ class _PicturesTabState extends State<_PicturesTab> {
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
-                                    return Dialog(
-                                      insetPadding: EdgeInsets.all(10),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image(
-                                          image: images[index].image,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                    );
+                                    return Padding(
+                                        padding: EdgeInsets.all(20.0),
+                                        child: AlertDialog(
+                                          content: Padding(
+                                            padding: EdgeInsets.all(20.0),
+                                            child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: Image.network(
+                                                    images[index].link)),
+                                          ),
+                                          actions: [
+                                            ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.red,
+                                                    foregroundColor:
+                                                        Colors.white),
+                                                onPressed: () {
+                                                  final api =
+                                                      Provider.of<ApiService>(
+                                                          context,
+                                                          listen: false);
+                                                  Navigator.of(context).pop();
+                                                  api
+                                                      .delete_image(
+                                                          images[index])
+                                                      .then((_) {
+                                                    setState(() {
+                                                      images.removeAt(index);
+                                                    });
+                                                  });
+                                                },
+                                                child: Text('Delete')),
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text('Close'))
+                                          ],
+                                        ));
                                   },
                                 );
                               },
@@ -825,12 +856,11 @@ class _PicturesTabState extends State<_PicturesTab> {
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image(
-                                    image: images[index].image,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      images[index].link,
+                                      fit: BoxFit.fill,
+                                    )),
                               ),
                             );
                           },
