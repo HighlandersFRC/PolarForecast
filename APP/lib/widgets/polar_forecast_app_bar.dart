@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +53,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return SliverAppBar(
-      automaticallyImplyLeading: kIsWeb ? false : widget.showBackButton,
+      automaticallyImplyLeading: widget.showBackButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -219,8 +218,7 @@ class PolarForecastAppBar extends StatefulWidget
   final String? extraText;
   final bool backButton;
 
-  const PolarForecastAppBar(
-      {super.key, this.extraText, this.backButton = false})
+  const PolarForecastAppBar({super.key, this.extraText, this.backButton = true})
       : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
@@ -259,7 +257,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return AppBar(
-      automaticallyImplyLeading: kIsWeb ? false : widget.backButton,
+      automaticallyImplyLeading: widget.backButton,
       title: !isMobile()
           ? Row(
               children: [
