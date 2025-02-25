@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scouting_app/models/scout_info.dart';
 
 part 'picture_data.freezed.dart';
 part 'picture_data.g.dart';
@@ -6,7 +7,7 @@ part 'picture_data.g.dart';
 @freezed
 class PictureData with _$PictureData {
   const factory PictureData({
-    required String user_id,
+    required ScoutInfo scout_info,
     required int team_number,
     required int time,
     required String event_code,

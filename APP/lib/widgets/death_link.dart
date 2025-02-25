@@ -10,26 +10,28 @@ class DeathLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => Navigator.pushNamed(
-          context, '/event/${tournament.key}/deaths/frc$number'),
-      child: Text(
-        '${value}',
-        textScaler: TextScaler.linear(1.25),
-        style: TextStyle(
-          color: value == 'Incomplete'
-              ? Colors.yellow
-              : value == 'Done'
-                  ? Colors.green
-                  : Colors.red,
-          decoration: TextDecoration.underline,
-          decorationColor: value == 'Incomplete'
-              ? Colors.yellow
-              : value == 'Done'
-                  ? Colors.green
-                  : Colors.red,
-        ),
-      ),
-    );
+    return Container(
+        constraints: BoxConstraints.expand(),
+        child: TextButton(
+          onPressed: () => Navigator.pushNamed(
+              context, '/event/${tournament.key}/deaths/frc$number'),
+          child: Text(
+            '${value}',
+            textScaler: TextScaler.linear(1.25),
+            style: TextStyle(
+              color: value == 'Incomplete'
+                  ? Colors.yellow
+                  : value == 'Done'
+                      ? Colors.green
+                      : Colors.red,
+              decoration: TextDecoration.underline,
+              decorationColor: value == 'Incomplete'
+                  ? Colors.yellow
+                  : value == 'Done'
+                      ? Colors.green
+                      : Colors.red,
+            ),
+          ),
+        ));
   }
 }

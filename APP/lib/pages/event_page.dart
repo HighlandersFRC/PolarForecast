@@ -1667,7 +1667,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 175.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
@@ -2015,7 +2015,7 @@ class _QualsTabState extends State<_QualsTab> {
   @override
   Widget build(BuildContext context) {
     // final theme = Theme.of(context);
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 150.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
@@ -2169,7 +2169,7 @@ class _ElimsTabState extends State<_ElimsTab> {
   @override
   Widget build(BuildContext context) {
     // final theme = Theme.of(context);
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 175.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(

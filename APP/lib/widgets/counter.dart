@@ -8,12 +8,14 @@ class Counter extends StatelessWidget {
   final int value;
   final int max;
   final ValueChanged<int> onChanged;
+  final bool locked;
 
   Counter({
     required this.label,
     required this.value,
     required this.max,
     required this.onChanged,
+    this.locked = false,
   });
 
   @override
@@ -22,6 +24,7 @@ class Counter extends StatelessWidget {
       children: [
         Expanded(
           child: TextField(
+            readOnly: locked,
             decoration: InputDecoration(
               labelText: label,
               border: OutlineInputBorder(
@@ -52,10 +55,12 @@ class Counter extends StatelessWidget {
               fixedSize: Size(50, 50)),
           icon: Icon(Icons.remove),
           onPressed: value > 0
-              ? () {
-                  onChanged(value - 1);
-                  HapticFeedback.lightImpact();
-                }
+              ? locked
+                  ? null
+                  : () {
+                      onChanged(value - 1);
+                      HapticFeedback.lightImpact();
+                    }
               : null,
         ),
         SizedBox(width: 8),
@@ -70,10 +75,12 @@ class Counter extends StatelessWidget {
               fixedSize: Size(50, 50)),
           icon: Icon(Icons.add),
           onPressed: value < max
-              ? () {
-                  onChanged(value + 1);
-                  HapticFeedback.lightImpact();
-                }
+              ? locked
+                  ? null
+                  : () {
+                      onChanged(value + 1);
+                      HapticFeedback.lightImpact();
+                    }
               : null,
         ),
       ],

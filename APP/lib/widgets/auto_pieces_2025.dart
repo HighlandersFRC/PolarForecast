@@ -8,12 +8,13 @@ import '../models/pit_scouting_2025.dart';
 class AutoPieces2025 extends StatefulWidget {
   final Auto2025 auto;
   final Function(Auto2025)? onChanged;
-  final bool matchScouting;
+  final bool matchScouting, locked;
   const AutoPieces2025(
       {Key? key,
       required this.auto,
       this.onChanged,
-      this.matchScouting = false})
+      this.matchScouting = false,
+      this.locked = false})
       : super(key: key);
 
   @override
@@ -342,7 +343,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
         child: ListTile(
           title: Text('Step ${stepIndex + 1}: $stepLabel',
               style: TextStyle(color: Colors.white)),
-          trailing: widget.onChanged != null
+          trailing: widget.onChanged != null && !widget.locked
               ? IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
@@ -356,7 +357,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
         ),
       );
     }).toList();
-    return widget.onChanged == null
+    return widget.onChanged != null || !widget.locked
         ? ListView(
             children: items,
             shrinkWrap: true,
@@ -505,7 +506,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       }
                     }
                     if (minDistance > triangleSizeLocal) return;
-                    if (widget.onChanged != null)
+                    if (widget.onChanged != null && !widget.locked)
                       _showTriangleMenu(context, selectedTriangle);
                   },
                   child: Stack(
@@ -546,96 +547,102 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : !widget.matchScouting
-                                  ? () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'processor', extra_data: {}));
-                                        isAnimatingProcessor = true;
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        widget.onChanged!(newAuto);
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(
-                                            () => isAnimatingProcessor = false);
-                                      });
-                                    }
-                                  : () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        isAnimatingProcessor = true;
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(
-                                            () => isAnimatingProcessor = false);
-                                      });
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (processorKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (processorKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'processor',
-                                                  extra_data: {}));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
+                              : widget.locked
+                                  ? null
+                                  : !widget.matchScouting
+                                      ? () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
                                             var autoSteps =
                                                 widget.auto.steps.toList();
                                             autoSteps.add(AutoStep2025(
-                                                name: 'processor_miss',
+                                                name: 'processor',
                                                 extra_data: {}));
+                                            isAnimatingProcessor = true;
                                             var newAuto = widget.auto
                                                 .copyWith(steps: autoSteps);
                                             widget.onChanged!(newAuto);
-                                          }
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingProcessor = false);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            isAnimatingProcessor = true;
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingProcessor = false);
+                                          });
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (processorKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (processorKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'processor',
+                                                      extra_data: {}));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                var autoSteps =
+                                                    widget.auto.steps.toList();
+                                                autoSteps.add(AutoStep2025(
+                                                    name: 'processor_miss',
+                                                    extra_data: {}));
+                                                var newAuto = widget.auto
+                                                    .copyWith(steps: autoSteps);
+                                                widget.onChanged!(newAuto);
+                                              }
+                                            }
+                                          });
+                                        },
                           child: AnimatedContainer(
                             key: processorKey,
                             duration: Durations.medium1,
@@ -673,95 +680,103 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : !widget.matchScouting
-                                  ? () {
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'net_algae',
-                                            extra_data: {
-                                              'position': 'center'
-                                            }));
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        isAnimatingNet = true;
-                                        widget.onChanged!(newAuto);
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(() => isAnimatingNet = false);
-                                      });
-                                    }
-                                  : () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        isAnimatingNet = true;
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(() => isAnimatingNet = false);
-                                      });
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (netKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (netKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'net', extra_data: {}));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
+                              : widget.locked
+                                  ? null
+                                  : !widget.matchScouting
+                                      ? () {
+                                          setState(() {
                                             var autoSteps =
                                                 widget.auto.steps.toList();
                                             autoSteps.add(AutoStep2025(
-                                                name: 'net_miss',
-                                                extra_data: {}));
+                                                name: 'net_algae',
+                                                extra_data: {
+                                                  'position': 'center'
+                                                }));
                                             var newAuto = widget.auto
                                                 .copyWith(steps: autoSteps);
+                                            isAnimatingNet = true;
                                             widget.onChanged!(newAuto);
-                                          }
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(
+                                                () => isAnimatingNet = false);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            isAnimatingNet = true;
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(
+                                                () => isAnimatingNet = false);
+                                          });
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (netKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (netKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'net',
+                                                      extra_data: {}));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                var autoSteps =
+                                                    widget.auto.steps.toList();
+                                                autoSteps.add(AutoStep2025(
+                                                    name: 'net_miss',
+                                                    extra_data: {}));
+                                                var newAuto = widget.auto
+                                                    .copyWith(steps: autoSteps);
+                                                widget.onChanged!(newAuto);
+                                              }
+                                            }
+                                          });
+                                        },
                           child: AnimatedContainer(
                             duration: Durations.medium1,
                             key: netKey,
@@ -796,210 +811,227 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         top: displayedImageHeight * 0.05,
                         left: displayedImageWidth * 0.05,
                         child: FeederButton(
+                          locked: widget.locked,
                           key: processorFeederKey,
                           size: feederButtonSize,
                           scaleFactor: scaleFactor,
                           onTap: widget.onChanged == null
                               ? () {}
-                              : !widget.matchScouting
-                                  ? () {
-                                      bool feederNear = true;
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'feeder_pickup',
-                                            extra_data: {
-                                              'processor_side': feederNear,
-                                              'position': 'left'
-                                            }));
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        widget.onChanged!(newAuto);
-                                      });
-                                    }
-                                  : () {
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (processorFeederKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (processorFeederKey
-                                                          .currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            bool feederNear = true;
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'feeder_pickup',
-                                                  extra_data: {
-                                                    'processor_side':
-                                                        feederNear,
-                                                    'position': 'left'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
-                                            bool feederNear = true;
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'feeder_miss',
-                                                  extra_data: {
-                                                    'processor_side':
-                                                        feederNear,
-                                                    'position': 'left'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          }
+                              : widget.locked
+                                  ? () {}
+                                  : !widget.matchScouting
+                                      ? () {
+                                          bool feederNear = true;
+                                          setState(() {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'feeder_pickup',
+                                                extra_data: {
+                                                  'processor_side': feederNear,
+                                                  'position': 'left'
+                                                }));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (processorFeederKey
+                                                              .currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (processorFeederKey
+                                                              .currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                bool feederNear = true;
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'feeder_pickup',
+                                                      extra_data: {
+                                                        'processor_side':
+                                                            feederNear,
+                                                        'position': 'left'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                bool feederNear = true;
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'feeder_miss',
+                                                      extra_data: {
+                                                        'processor_side':
+                                                            feederNear,
+                                                        'position': 'left'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              }
+                                            }
+                                          });
+                                        },
                         ),
                       ),
                       Positioned(
                         top: displayedImageHeight * 0.05,
                         right: displayedImageWidth * 0.05,
                         child: FeederButton(
+                          locked: widget.locked,
                           key: netFeederKey,
                           size: feederButtonSize,
                           scaleFactor: scaleFactor,
                           onTap: widget.onChanged == null
                               ? () {}
-                              : !widget.matchScouting
-                                  ? () {
-                                      bool feederNear = false;
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'feeder_pickup',
-                                            extra_data: {
-                                              'processor_side': feederNear,
-                                              'position': 'left'
-                                            }));
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        widget.onChanged!(newAuto);
-                                      });
-                                    }
-                                  : () {
-                                      HapticFeedback.lightImpact();
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (netFeederKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (netFeederKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            bool feederNear = false;
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'feeder_pickup',
-                                                  extra_data: {
-                                                    'processor_side':
-                                                        feederNear,
-                                                    'position': 'left'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
-                                            bool feederNear = false;
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'feeder_miss',
-                                                  extra_data: {
-                                                    'processor_side':
-                                                        feederNear,
-                                                    'position': 'left'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          }
+                              : widget.locked
+                                  ? () {}
+                                  : !widget.matchScouting
+                                      ? () {
+                                          bool feederNear = false;
+                                          setState(() {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2025(
+                                                name: 'feeder_pickup',
+                                                extra_data: {
+                                                  'processor_side': feederNear,
+                                                  'position': 'left'
+                                                }));
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (netFeederKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (netFeederKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                bool feederNear = false;
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'feeder_pickup',
+                                                      extra_data: {
+                                                        'processor_side':
+                                                            feederNear,
+                                                        'position': 'left'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                bool feederNear = false;
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'feeder_miss',
+                                                      extra_data: {
+                                                        'processor_side':
+                                                            feederNear,
+                                                        'position': 'left'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              }
+                                            }
+                                          });
+                                        },
                         ),
                       ),
                       Positioned(
@@ -1008,207 +1040,242 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : () {
-                                  setState(() {
-                                    pickupBallScales[0] = 1.2;
-                                  });
-                                  Future.delayed(Durations.medium1, () {
-                                    setState(() {
-                                      pickupBallScales[0] = 1.0;
-                                    });
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16.0),
-                                          ),
-                                          title: Text('Select Option'),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      algaeButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'processor',
-                                                                'algae': true,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Algae',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                              : widget.locked
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        pickupBallScales[0] = 1.2;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() {
+                                          pickupBallScales[0] = 1.0;
+                                        });
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16.0),
                                               ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      coralButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                              title: Text('Select Option'),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          algaeButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'processor',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Algae',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'processor',
-                                                                'algae': false,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Coral',
-                                                    style: TextStyle(
-                                                        color: Colors.black)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      bothButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          coralButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'processor',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Coral',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'processor',
-                                                                'algae': true,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Both',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          bothButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'processor',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Both',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'processor',
-                                                                'algae': false,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('None',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'processor',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('None',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            );
+                                          },
                                         );
-                                      },
-                                    );
-                                  });
-                                },
+                                      });
+                                    },
                           child: AnimatedScale(
                             scale: pickupBallScales[0],
                             duration: Durations.medium1,
@@ -1229,207 +1296,242 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : () {
-                                  setState(() {
-                                    pickupBallScales[1] = 1.2;
-                                  });
-                                  Future.delayed(Durations.medium1, () {
-                                    setState(() {
-                                      pickupBallScales[1] = 1.0;
-                                    });
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16.0),
-                                          ),
-                                          title: Text('Select Option'),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      algaeButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'middle',
-                                                                'algae': true,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Algae',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                              : widget.locked
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        pickupBallScales[1] = 1.2;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() {
+                                          pickupBallScales[1] = 1.0;
+                                        });
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16.0),
                                               ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      coralButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                              title: Text('Select Option'),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          algaeButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'middle',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Algae',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'middle',
-                                                                'algae': false,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Coral',
-                                                    style: TextStyle(
-                                                        color: Colors.black)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      bothButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          coralButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'middle',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Coral',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'middle',
-                                                                'algae': true,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Both',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          bothButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'middle',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Both',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'middle',
-                                                                'algae': false,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('None',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'middle',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('None',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            );
+                                          },
                                         );
-                                      },
-                                    );
-                                  });
-                                },
+                                      });
+                                    },
                           child: AnimatedScale(
                             scale: pickupBallScales[1],
                             duration: Durations.medium1,
@@ -1450,207 +1552,242 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : () {
-                                  setState(() {
-                                    pickupBallScales[2] = 1.2;
-                                  });
-                                  Future.delayed(Durations.medium1, () {
-                                    setState(() {
-                                      pickupBallScales[2] = 1.0;
-                                    });
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16.0),
-                                          ),
-                                          title: Text('Select Option'),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      algaeButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'other',
-                                                                'algae': true,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Algae',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                              : widget.locked
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        pickupBallScales[2] = 1.2;
+                                      });
+                                      Future.delayed(Durations.medium1, () {
+                                        setState(() {
+                                          pickupBallScales[2] = 1.0;
+                                        });
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16.0),
                                               ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      coralButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                              title: Text('Select Option'),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          algaeButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'other',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Algae',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'other',
-                                                                'algae': false,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Coral',
-                                                    style: TextStyle(
-                                                        color: Colors.black)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      bothButtonColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          coralButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'other',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Coral',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'other',
-                                                                'algae': true,
-                                                                'coral': true
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('Both',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
-                                              SizedBox(height: 8),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          bothButtonColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'other',
+                                                                        'algae':
+                                                                            true,
+                                                                        'coral':
+                                                                            true
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('Both',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
                                                   ),
-                                                ),
-                                                onPressed: widget.onChanged ==
-                                                        null
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          var autoSteps = widget
-                                                              .auto.steps
-                                                              .toList();
-                                                          autoSteps.add(
-                                                              AutoStep2025(
-                                                                  name:
-                                                                      'coral_mark_pickup',
-                                                                  extra_data: {
-                                                                'position':
-                                                                    'other',
-                                                                'algae': false,
-                                                                'coral': false
-                                                              }));
-                                                          var newAuto = widget
-                                                              .auto
-                                                              .copyWith(
-                                                                  steps:
-                                                                      autoSteps);
-                                                          widget.onChanged!(
-                                                              newAuto);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                child: Text('None',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                                                  SizedBox(height: 8),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        widget.onChanged == null
+                                                            ? null
+                                                            : () {
+                                                                setState(() {
+                                                                  var autoSteps =
+                                                                      widget
+                                                                          .auto
+                                                                          .steps
+                                                                          .toList();
+                                                                  autoSteps.add(
+                                                                      AutoStep2025(
+                                                                          name:
+                                                                              'coral_mark_pickup',
+                                                                          extra_data: {
+                                                                        'position':
+                                                                            'other',
+                                                                        'algae':
+                                                                            false,
+                                                                        'coral':
+                                                                            false
+                                                                      }));
+                                                                  var newAuto = widget
+                                                                      .auto
+                                                                      .copyWith(
+                                                                          steps:
+                                                                              autoSteps);
+                                                                  widget.onChanged!(
+                                                                      newAuto);
+                                                                });
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                    child: Text('None',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            );
+                                          },
                                         );
-                                      },
-                                    );
-                                  });
-                                },
+                                      });
+                                    },
                           child: AnimatedScale(
                             scale: pickupBallScales[2],
                             duration: Durations.medium1,
@@ -1672,104 +1809,112 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : !widget.matchScouting
-                                  ? () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'ground_pickup',
-                                            extra_data: {
-                                              'position': 'processor'
-                                            }));
-                                        isAnimatingProcessorGround = true;
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        widget.onChanged!(newAuto);
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(() =>
-                                            isAnimatingProcessorGround = false);
-                                      });
-                                    }
-                                  : () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        isAnimatingProcessorGround = true;
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(() =>
-                                            isAnimatingProcessorGround = false);
-                                      });
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (processorGroundKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (processorGroundKey
-                                                          .currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'ground_pickup',
-                                                  extra_data: {
-                                                    'position': 'processor'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
+                              : widget.locked
+                                  ? null
+                                  : !widget.matchScouting
+                                      ? () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
                                             var autoSteps =
                                                 widget.auto.steps.toList();
                                             autoSteps.add(AutoStep2025(
-                                                name: 'ground_miss',
+                                                name: 'ground_pickup',
                                                 extra_data: {
                                                   'position': 'processor'
                                                 }));
+                                            isAnimatingProcessorGround = true;
                                             var newAuto = widget.auto
                                                 .copyWith(steps: autoSteps);
                                             widget.onChanged!(newAuto);
-                                          }
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingProcessorGround =
+                                                    false);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            isAnimatingProcessorGround = true;
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingProcessorGround =
+                                                    false);
+                                          });
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (processorGroundKey
+                                                              .currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (processorGroundKey
+                                                              .currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'ground_pickup',
+                                                      extra_data: {
+                                                        'position': 'processor'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                var autoSteps =
+                                                    widget.auto.steps.toList();
+                                                autoSteps.add(AutoStep2025(
+                                                    name: 'ground_miss',
+                                                    extra_data: {
+                                                      'position': 'processor'
+                                                    }));
+                                                var newAuto = widget.auto
+                                                    .copyWith(steps: autoSteps);
+                                                widget.onChanged!(newAuto);
+                                              }
+                                            }
+                                          });
+                                        },
                           child: AnimatedContainer(
                             key: processorGroundKey,
                             duration: Durations.medium1,
@@ -1806,101 +1951,108 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         child: GestureDetector(
                           onTap: widget.onChanged == null
                               ? null
-                              : !widget.matchScouting
-                                  ? () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        var autoSteps =
-                                            widget.auto.steps.toList();
-                                        autoSteps.add(AutoStep2025(
-                                            name: 'ground_pickup',
-                                            extra_data: {'position': 'net'}));
-                                        isAnimatingNetGround = true;
-                                        var newAuto = widget.auto
-                                            .copyWith(steps: autoSteps);
-                                        widget.onChanged!(newAuto);
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(
-                                            () => isAnimatingNetGround = false);
-                                      });
-                                    }
-                                  : () {
-                                      HapticFeedback.lightImpact();
-                                      setState(() {
-                                        isAnimatingNetGround = true;
-                                      });
-                                      Future.delayed(Durations.medium1, () {
-                                        setState(
-                                            () => isAnimatingNetGround = false);
-                                      });
-                                      showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromRect(
-                                          (netGroundKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .localToGlobal(Offset.zero) &
-                                              (netGroundKey.currentContext!
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                          Offset.zero &
-                                              (Overlay.of(context)
-                                                          .context
-                                                          .findRenderObject()
-                                                      as RenderBox)
-                                                  .size,
-                                        ),
-                                        items: [
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Success',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                            value: 'option1',
-                                          ),
-                                          PopupMenuItem(
-                                            child: Text(
-                                              'Drop',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                            value: 'option2',
-                                          ),
-                                        ],
-                                      ).then((value) {
-                                        HapticFeedback.lightImpact();
-                                        if (value != null) {
-                                          if (value == 'option1') {
-                                            setState(() {
-                                              var autoSteps =
-                                                  widget.auto.steps.toList();
-                                              autoSteps.add(AutoStep2025(
-                                                  name: 'ground_pickup',
-                                                  extra_data: {
-                                                    'position': 'net'
-                                                  }));
-                                              var newAuto = widget.auto
-                                                  .copyWith(steps: autoSteps);
-                                              widget.onChanged!(newAuto);
-                                            });
-                                          } else if (value == 'option2') {
+                              : widget.locked
+                                  ? null
+                                  : !widget.matchScouting
+                                      ? () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
                                             var autoSteps =
                                                 widget.auto.steps.toList();
                                             autoSteps.add(AutoStep2025(
-                                                name: 'ground_miss',
+                                                name: 'ground_pickup',
                                                 extra_data: {
                                                   'position': 'net'
                                                 }));
+                                            isAnimatingNetGround = true;
                                             var newAuto = widget.auto
                                                 .copyWith(steps: autoSteps);
                                             widget.onChanged!(newAuto);
-                                          }
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingNetGround = false);
+                                          });
                                         }
-                                      });
-                                    },
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            isAnimatingNetGround = true;
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(() =>
+                                                isAnimatingNetGround = false);
+                                          });
+                                          showMenu(
+                                            context: context,
+                                            position: RelativeRect.fromRect(
+                                              (netGroundKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .localToGlobal(
+                                                          Offset.zero) &
+                                                  (netGroundKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                              Offset.zero &
+                                                  (Overlay.of(context)
+                                                              .context
+                                                              .findRenderObject()
+                                                          as RenderBox)
+                                                      .size,
+                                            ),
+                                            items: [
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Success',
+                                                  style: TextStyle(
+                                                      color: Colors.green),
+                                                ),
+                                                value: 'option1',
+                                              ),
+                                              PopupMenuItem(
+                                                child: Text(
+                                                  'Drop',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                value: 'option2',
+                                              ),
+                                            ],
+                                          ).then((value) {
+                                            HapticFeedback.lightImpact();
+                                            if (value != null) {
+                                              if (value == 'option1') {
+                                                setState(() {
+                                                  var autoSteps = widget
+                                                      .auto.steps
+                                                      .toList();
+                                                  autoSteps.add(AutoStep2025(
+                                                      name: 'ground_pickup',
+                                                      extra_data: {
+                                                        'position': 'net'
+                                                      }));
+                                                  var newAuto = widget.auto
+                                                      .copyWith(
+                                                          steps: autoSteps);
+                                                  widget.onChanged!(newAuto);
+                                                });
+                                              } else if (value == 'option2') {
+                                                var autoSteps =
+                                                    widget.auto.steps.toList();
+                                                autoSteps.add(AutoStep2025(
+                                                    name: 'ground_miss',
+                                                    extra_data: {
+                                                      'position': 'net'
+                                                    }));
+                                                var newAuto = widget.auto
+                                                    .copyWith(steps: autoSteps);
+                                                widget.onChanged!(newAuto);
+                                              }
+                                            }
+                                          });
+                                        },
                           child: AnimatedContainer(
                             key: netGroundKey,
                             duration: Durations.medium1,
@@ -1951,7 +2103,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       thumbColor: Colors.white,
                       min: 0,
                       max: fieldWidthMeters,
-                      onChanged: widget.onChanged == null
+                      onChanged: widget.onChanged == null || widget.locked
                           ? null
                           : (value) {
                               widget.onChanged!(widget.auto.copyWith(
@@ -1980,7 +2132,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                           : 'red',
                       hint: Text('Select Option'),
                       isExpanded: true,
-                      onChanged: widget.onChanged == null
+                      onChanged: widget.onChanged == null || widget.locked
                           ? null
                           : (newValue) {
                               if (newValue != null)
@@ -2014,9 +2166,10 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       ]),
                 SwitchListTile(
                   activeColor: Colors.blue,
+                  inactiveThumbColor: Colors.blue,
                   title: Text('Exit'),
                   value: widget.auto.exit,
-                  onChanged: widget.onChanged == null
+                  onChanged: widget.onChanged == null || widget.locked
                       ? null
                       : (bool value) {
                           HapticFeedback.lightImpact();
@@ -2025,9 +2178,10 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                 ),
                 SwitchListTile(
                   activeColor: Colors.blue,
+                  inactiveThumbColor: Colors.blue,
                   title: Text('Preload'),
                   value: widget.auto.preload,
-                  onChanged: widget.onChanged == null
+                  onChanged: widget.onChanged == null || widget.locked
                       ? null
                       : (bool value) {
                           HapticFeedback.lightImpact();
@@ -2048,13 +2202,14 @@ class FeederButton extends StatefulWidget {
   final double size;
   final double scaleFactor;
   final VoidCallback onTap;
-
-  const FeederButton({
-    Key? key,
-    required this.size,
-    required this.onTap,
-    this.scaleFactor = 1.0,
-  }) : super(key: key);
+  final bool locked;
+  const FeederButton(
+      {Key? key,
+      required this.size,
+      required this.onTap,
+      this.scaleFactor = 1.0,
+      this.locked = false})
+      : super(key: key);
 
   @override
   _FeederButtonState createState() => _FeederButtonState();
@@ -2065,17 +2220,19 @@ class _FeederButtonState extends State<FeederButton> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          isAnimating = true;
-        });
-        widget.onTap();
-        Future.delayed(Durations.medium1, () {
-          setState(() {
-            isAnimating = false;
-          });
-        });
-      },
+      onTap: widget.locked
+          ? null
+          : () {
+              setState(() {
+                isAnimating = true;
+              });
+              widget.onTap();
+              Future.delayed(Durations.medium1, () {
+                setState(() {
+                  isAnimating = false;
+                });
+              });
+            },
       child: ClipPath(
         clipper: RoundedRectangleClipper(cornerRadius: 3.0, scaleFactor: 8),
         child: AnimatedContainer(

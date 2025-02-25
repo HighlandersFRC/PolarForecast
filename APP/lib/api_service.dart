@@ -11,6 +11,7 @@ import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
 import 'models/match_scouting_2025.dart';
+import 'models/pit_scouting_2025.dart';
 import 'models/tournament.dart';
 import 'package:image/image.dart' as img;
 
@@ -104,30 +105,49 @@ class ApiService {
     return data;
   }
 
-  Future<Map<String, dynamic>> fetchTeamPitScouting(
+  Future<PitScouting2025> fetchTeamPitScouting(
       String year, String event, String team) async {
     try {
       final storageName = '${year}${event}_${team}_PitScouting';
       final endpoint = '$APIURL/$year/$event/$team/PitScouting';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return data;
+      return PitScouting2025.fromJson(data);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
-      return {'pit_scouting': []};
+      return PitScouting2025(
+          scout_info: get_scout_info(await token ?? ''),
+          team_number: int.tryParse(team.substring(3)) ?? 0,
+          time: 0,
+          event_code: '${year}${event}',
+          data: PitData2025(
+              driver_experience_events: 0,
+              drive_train: '',
+              can_score_coral: false,
+              coral_levels: [],
+              can_score_processor: false,
+              can_score_net: false,
+              ground_coral_pickup: false,
+              feeder_coral_pickup: false,
+              ground_algae_pickup: false,
+              reef_algae_pickup: false,
+              climbing: [],
+              spare_parts: 0,
+              favorite_color: '',
+              autos: []));
     }
   }
 
   Future<int> postPitScouting(
-      dynamic data, String year, String event, String team) async {
+      PitScouting2025 data, String year, String event, String team) async {
     try {
-      final endpoint = '$APIURL/PitScouting';
+      final endpoint = '$APIURL/PitScouting/';
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
           'Content-Type': 'application/json',
           'token': (await token) ?? ''
         },
-        body: jsonEncode(data),
+        body: json.encode(data.toJson()),
       );
       final status = response.statusCode;
       return status;
@@ -688,7 +708,7 @@ class ApiService {
       throw Exception(json.decode(response.body)['detail']);
     }
     var data = PictureData(
-        user_id: '',
+        scout_info: get_scout_info(await token ?? ''),
         team_number: team,
         time: 0,
         event_code: event_code,

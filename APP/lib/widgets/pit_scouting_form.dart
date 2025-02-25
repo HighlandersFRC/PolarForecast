@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2025.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2025.dart';
+import 'package:scouting_app/widgets/counter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';
@@ -76,7 +77,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             'frc${widget.teamNumber}',
           )
           .then((fetchedData) => setState(() {
-                pitScoutingData = PitScouting2025.fromJson(fetchedData);
+                pitScoutingData = fetchedData;
                 loading = false;
                 driveTrainController.text = pitScoutingData.data.drive_train;
                 sparePartsController.text =
@@ -87,7 +88,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           .onError((e, _) {
         loading = false;
       });
-      if (token != null) {
+      if (token != null && !widget.locked) {
         pitScoutingData =
             pitScoutingData.copyWith(scout_info: get_scout_info(token));
         if (mounted) {
@@ -261,6 +262,18 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
+                            'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
+                            style: TextStyle(fontSize: 30, color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             'Questions',
                             style: TextStyle(fontSize: 30, color: Colors.blue),
                           ),
@@ -271,6 +284,18 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       color: Colors.blue,
                       thickness: 2.0,
                     ),
+                    Counter(
+                        label: 'Driver Experience (# of Events)',
+                        value: pitScoutingData.data.driver_experience_events,
+                        max: 500,
+                        locked: widget.locked,
+                        onChanged: (experience) {
+                          setState(() {
+                            pitScoutingData = pitScoutingData.copyWith(
+                                data: pitScoutingData.data.copyWith(
+                                    driver_experience_events: experience));
+                          });
+                        }),
                     Text('Drive Train'),
                     DropdownButton<String>(
                       isExpanded: true,
@@ -306,10 +331,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Can Score Coral'),
                       value: pitScoutingData.data.can_score_coral,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) => handleChange('can_score_coral', value),
                     ),
                     AnimatedSwitcher(
@@ -321,10 +347,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   Text('L1'),
                                   Switch(
                                     activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
                                     value: pitScoutingData.data.coral_levels
                                         .contains(1),
                                     onChanged: widget.locked
-                                        ? (_) {}
+                                        ? null
                                         : (value) {
                                             setState(() {
                                               List<int> updatedCoralLevels =
@@ -352,10 +379,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   Text('L2'),
                                   Switch(
                                     activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
                                     value: pitScoutingData.data.coral_levels
                                         .contains(2),
                                     onChanged: widget.locked
-                                        ? (_) {}
+                                        ? null
                                         : (value) {
                                             setState(() {
                                               List<int> updatedCoralLevels =
@@ -383,10 +411,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   Text('L3'),
                                   Switch(
                                     activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
                                     value: pitScoutingData.data.coral_levels
                                         .contains(3),
                                     onChanged: widget.locked
-                                        ? (_) {}
+                                        ? null
                                         : (value) {
                                             setState(() {
                                               List<int> updatedCoralLevels =
@@ -414,10 +443,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   Text('L4'),
                                   Switch(
                                     activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
                                     value: pitScoutingData.data.coral_levels
                                         .contains(4),
                                     onChanged: widget.locked
-                                        ? (_) {}
+                                        ? null
                                         : (value) {
                                             setState(() {
                                               List<int> updatedCoralLevels =
@@ -444,62 +474,69 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                               ])),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Can Score Processor'),
                       value: pitScoutingData.data.can_score_processor,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) =>
                               handleChange('can_score_processor', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Can Score Net'),
                       value: pitScoutingData.data.can_score_net,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) => handleChange('can_score_net', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Ground Coral Pickup'),
                       value: pitScoutingData.data.ground_coral_pickup,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) =>
                               handleChange('ground_coral_pickup', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Feeder Coral Pickup'),
                       value: pitScoutingData.data.feeder_coral_pickup,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) =>
                               handleChange('feeder_coral_pickup', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Ground Algae Pickup'),
                       value: pitScoutingData.data.ground_algae_pickup,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) =>
                               handleChange('ground_algae_pickup', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Reef Algae Pickup'),
                       value: pitScoutingData.data.reef_algae_pickup,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) => handleChange('reef_algae_pickup', value),
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Can Shallow Climb'),
                       value: pitScoutingData.data.climbing.contains('shallow'),
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) {
                               setState(() {
                                 List<String> updatedClimbing =
@@ -519,10 +556,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     ),
                     SwitchListTile(
                       activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.blue,
                       title: Text('Can Deep Climb'),
                       value: pitScoutingData.data.climbing.contains('deep'),
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) {
                               setState(() {
                                 List<String> updatedClimbing =
@@ -572,7 +610,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     TextField(
                       enabled: !widget.locked,
                       onChanged: widget.locked
-                          ? (_) {}
+                          ? null
                           : (value) => handleChange('favorite_color', value),
                       controller: favoriteColorController,
                     ),
@@ -603,35 +641,38 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                             child: Card(
                                 child: Column(children: [
                               AutoPieces2025(
-                                  auto: pitScoutingData.data.autos[index],
-                                  onChanged: (newAuto) {
-                                    setState(() {
-                                      List<Auto2025> newAutos =
-                                          pitScoutingData.data.autos.toList();
-                                      newAutos[index] = newAuto;
-                                      pitScoutingData =
-                                          pitScoutingData.copyWith(
-                                              data: pitScoutingData.data
-                                                  .copyWith(autos: newAutos));
-                                    });
-                                  }),
+                                auto: pitScoutingData.data.autos[index],
+                                onChanged: (newAuto) {
+                                  setState(() {
+                                    List<Auto2025> newAutos =
+                                        pitScoutingData.data.autos.toList();
+                                    newAutos[index] = newAuto;
+                                    pitScoutingData = pitScoutingData.copyWith(
+                                        data: pitScoutingData.data
+                                            .copyWith(autos: newAutos));
+                                  });
+                                },
+                                locked: widget.locked,
+                              ),
                               SizedBox(
                                 height: 8,
                               ),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  setState(() {
-                                    pitScoutingData = pitScoutingData.copyWith(
-                                      data: pitScoutingData.data.copyWith(
-                                        autos: List.from(
-                                            pitScoutingData.data.autos)
-                                          ..removeAt(index),
-                                      ),
-                                    );
-                                  });
-                                },
-                              ),
+                              if (!widget.locked)
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    setState(() {
+                                      pitScoutingData =
+                                          pitScoutingData.copyWith(
+                                        data: pitScoutingData.data.copyWith(
+                                          autos: List.from(
+                                              pitScoutingData.data.autos)
+                                            ..removeAt(index),
+                                        ),
+                                      );
+                                    });
+                                  },
+                                ),
                             ])));
                       },
                     ),
