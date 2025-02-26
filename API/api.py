@@ -10,6 +10,7 @@ from types import TracebackType
 from typing import Annotated
 import uuid
 import zipfile
+from better_profanity import profanity
 from bson import ObjectId
 from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -693,6 +694,8 @@ def post_match_scouting(data: MatchScouting2025, token: str = Depends(check_toke
     teamNumber = data.team_number
     match = TBACollection.find_one(
         {"key": f"{eventCode}_qm{str(matchNumber)}"})
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments)
     if match is None:
         raise HTTPException(400, "Check Your Match Number")
     exists = False
@@ -1123,6 +1126,8 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
         if char not in string.ascii_lowercase+string.ascii_uppercase+string.digits:
             raise HTTPException(
                 400, "Make sure your group name has no special characters (no spaces)")
+    if profanity.contains_profanity(group_name):
+        raise HTTPException(400, "Do not use profanity in a group name")
     user_info = get_user_info(token)
     try:
         if user_info.__contains__('team_number'):
@@ -1602,6 +1607,8 @@ def update_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
     oldEntry = MatchScoutingCollection.find_one(
         {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id})
     data.time = datetime.utcnow().timestamp()
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments)
     if oldEntry is None:
         raise HTTPException(
             404, "No such match scouting entry found to update")
@@ -1843,6 +1850,8 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
     year = event_code[:4]
     event = event_code[4:]
     team = data.team_key
+    for death in data.deaths:
+        death.death_reason = profanity.censor(death.death_reason)
     if not len(data.deaths) == 0:
         for idx, death in enumerate(data.deaths):
             match_number = int(death.match_number)

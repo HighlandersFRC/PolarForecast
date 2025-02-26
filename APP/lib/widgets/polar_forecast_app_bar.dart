@@ -506,6 +506,7 @@ _openGroupsPopup(BuildContext context) async {
                       onPressed: () {
                         final TextEditingController groupNameController =
                             TextEditingController();
+                        Navigator.of(context).pop();
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -540,6 +541,11 @@ _openGroupsPopup(BuildContext context) async {
                                       Navigator.of(context).pop();
                                       Navigator.of(context)
                                           .pushNamed('/group/${value.name}');
+                                    }).onError((e, _) {
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(e.toString())));
                                     });
                                   },
                                   child: const Text('Create'),

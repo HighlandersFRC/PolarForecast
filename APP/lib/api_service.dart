@@ -318,8 +318,7 @@ class ApiService {
     if (response.statusCode == 200) {
       return Group.fromJson(json.decode(response.body));
     } else {
-      throw Exception(
-          'Failed to create group: ${response.statusCode} - ${response.body}');
+      throw Exception('${response.body}');
     }
   }
 
