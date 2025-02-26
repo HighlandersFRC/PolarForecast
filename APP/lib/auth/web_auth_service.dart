@@ -51,8 +51,8 @@ class WebAuthService implements AuthService {
   @override
   Future<void> logout() async {
     // Remove token and refresh token from localStorage
-    window.sessionStorage.remove(tokenKey);
-    window.sessionStorage.remove(refreshTokenKey);
+    window.localStorage.remove(tokenKey);
+    window.localStorage.remove(refreshTokenKey);
     var redirectUri = Uri.parse(APPURL)
         .replace(path: Uri.parse(window.location.href).path)
         .toString();
@@ -71,7 +71,7 @@ class WebAuthService implements AuthService {
 
   Future<String?> _getToken() async {
     try {
-      final tokenData = window.sessionStorage[tokenKey];
+      final tokenData = window.localStorage[tokenKey];
       if (tokenData != null) {
         final data = json.decode(tokenData);
         final expirationTime = DateTime.parse(data[1]);
@@ -79,14 +79,14 @@ class WebAuthService implements AuthService {
         if (DateTime.now().isBefore(expirationTime)) {
           return token; // Token is still valid
         } else {
-          window.sessionStorage.remove(tokenKey); // Token expired
+          window.localStorage.remove(tokenKey); // Token expired
         }
       }
     } catch (e) {
       print(e);
     }
 
-    final refreshToken = window.sessionStorage[refreshTokenKey];
+    final refreshToken = window.localStorage[refreshTokenKey];
     if (refreshToken != null) {
       return await _refreshToken(refreshToken);
     }
@@ -144,7 +144,7 @@ class WebAuthService implements AuthService {
       saveToken(tokenData['access_token'], tokenData['refresh_token']);
       return tokenData['access_token'] as String?;
     } else {
-      window.sessionStorage
+      window.localStorage
           .remove(refreshTokenKey); // Refresh token expired or invalid
       throw Exception('Failed to refresh token: ${response.body}');
     }
@@ -154,8 +154,8 @@ class WebAuthService implements AuthService {
     final expirationTime =
         DateTime.now().add(Duration(minutes: 30)); // Current time + 30 minutes
     final tokenData = [token, expirationTime.toString()];
-    window.sessionStorage[tokenKey] = json.encode(tokenData);
-    window.sessionStorage[refreshTokenKey] = refreshToken;
+    window.localStorage[tokenKey] = json.encode(tokenData);
+    window.localStorage[refreshTokenKey] = refreshToken;
   }
 }
 

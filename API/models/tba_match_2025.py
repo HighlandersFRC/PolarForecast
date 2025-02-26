@@ -52,9 +52,9 @@ class ScoreBreakdown2025(BaseModel):
     endGameRobot3: str
     foulCount: int
     foulPoints: int
-    g206Penalty: bool
-    g408Penalty: bool
-    g424Penalty: bool
+    g206Penalty: bool = False
+    g408Penalty: bool = False
+    g424Penalty: bool = False
     netAlgaeCount: int
     rp: int
     techFoulCount: int

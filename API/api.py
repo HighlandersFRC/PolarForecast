@@ -664,7 +664,7 @@ def updateGroupGridPitData(group: Group, event_code: str):
         {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}})]
     for doc in data["data"]:
         teamPitEntries = [
-            x for x in pitEntries if x.team_number == int(doc["key"])]
+            x for x in pitEntries if x.team_number == int(doc['key'] if doc.__contains__('key') else -1)]
         if len(teamPitEntries) == 0:
             break
         latestEntry = teamPitEntries[0]
@@ -1078,6 +1078,41 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     return get_group(group_name=group_name, token=token)
 
 
+@app.delete("/Group/{group_name}/Event/{event}/Remove", tags=["groups"])
+def remove_event_from_group(group_name: str, event: str, token: str = Depends(check_token_active)):
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    if event not in [event.event_code for event in DB_Entry.events]:
+        raise HTTPException(
+            400, f"This group is not part of an event with the code '{event}'")
+    groupEvent = [x for x in DB_Entry.events if x.event_code == event][0]
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_Entry.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            401, "You must be an admin of this group to remove events")
+    for alliance in groupEvent.alliance_groups:
+        leave_alliance(group_name=group_name, token=token,
+                       event=event, other_group=alliance.name)
+    allianceRequests = get_group_alliance_requests(
+        group_name=group_name, token=token)
+    for allianceRequest in allianceRequests:
+        delete_alliance_request(group_name=group_name, event=event,
+                                token=token, alliance_request=AllianceRequest(**allianceRequest))
+    DB_Entry.events = [
+        x for x in DB_Entry.events if x.event_code != event]
+    GroupCollection.find_one_and_update(
+        {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+    return get_group(group_name=group_name, token=token)
+
+
 @app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     if len(get_user_groups(token)) != 0:
@@ -1127,7 +1162,7 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
-        raise HTTPException(404, f"Group Not Found: {str(e)}")
+        raise HTTPException(404, f"Group Not Found")
     groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
@@ -1508,6 +1543,9 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
             if group['id'] == DBgroup.owner_group_id:
                 raise HTTPException(
                     406, f"You must first promote an admin to owner before leaving")
+    else:
+        delete_group(group_name=group_name, token=token)
+        return {"message": "Successfully left and Successfully deleted the group"}
     for group in groups:
         if group['id'] == DBgroup.admin_group_id:
             remove_user_from_group(user_id=get_user_info(
@@ -1519,9 +1557,6 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
         token)['sub'], group_id=DBgroup.member_group_id)
     remove_user_from_group(user_id=get_user_info(
         token)['sub'], group_id=DBgroup.group_id)
-    if len(group_members) == 1:
-        delete_group(group_name=group_name)
-        return {"message": "Successfully left and Successfully deleted the group"}
     GroupJoinRequestCollection.delete_one(
         {"user_id": get_user_info(token)['sub'], "group_name": group_name})
     for event in DBgroup.events:
@@ -1558,7 +1593,6 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
     GroupPitStatusCollection.delete_one({"group_id": DBgroup.group_id})
     GroupPredictionCollection.delete_one({"group_id": DBgroup.group_id})
     delete_group_kc(group_id=DBgroup.group_id)
-    redisClient.delete(f"{group_name}join_code")
     return {"message": "Group successfully deleted"}
 
 

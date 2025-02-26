@@ -463,6 +463,21 @@ class ApiService {
     return (Group.fromJson(data['group']), data['group_role'].toString());
   }
 
+  Future<(Group, String)> remove_event_from_group(
+      String group_name, String event) async {
+    final response = await http.delete(
+      Uri.parse('$APIURL/Group/$group_name/Event/$event/Remove'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
   Future<List> get_event_groups(String event, int year) async {
     final response =
         await http.get(Uri.parse('$APIURL/$year/$event/Groups'), headers: {
