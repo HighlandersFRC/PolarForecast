@@ -99,6 +99,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                   if (widget.matchScouting)
                                     IconButton(
                                       onPressed: () {
+                                        HapticFeedback.lightImpact();
                                         List<AutoStep2025> newList =
                                             widget.auto.steps.toList();
                                         newList.add(AutoStep2025(
@@ -126,6 +127,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                       ),
                                     ),
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       List<AutoStep2025> newList =
                                           widget.auto.steps.toList();
                                       newList.add(AutoStep2025(
@@ -158,6 +160,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                               icon:
                                   Icon(Icons.close_rounded, color: Colors.red),
                               onPressed: () {
+                                HapticFeedback.lightImpact();
                                 List<AutoStep2025> newList =
                                     widget.auto.steps.toList();
                                 newList.add(AutoStep2025(
@@ -182,6 +185,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                   : Alignment.bottomCenter,
                               child: GestureDetector(
                                 onTap: () {
+                                  HapticFeedback.lightImpact();
                                   List<AutoStep2025> newList =
                                       widget.auto.steps.toList();
                                   newList.add(AutoStep2025(
@@ -226,6 +230,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                     ),
                                   ),
                                   onPressed: () {
+                                    HapticFeedback.lightImpact();
                                     List<AutoStep2025> newList =
                                         widget.auto.steps.toList();
                                     newList.add(AutoStep2025(
@@ -247,6 +252,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                 if (widget.matchScouting)
                                   IconButton(
                                     onPressed: () {
+                                      HapticFeedback.lightImpact();
                                       List<AutoStep2025> newList =
                                           widget.auto.steps.toList();
                                       newList.add(AutoStep2025(
@@ -569,7 +575,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                           });
                                         }
                                       : () {
-                                          HapticFeedback.lightImpact();
                                           setState(() {
                                             isAnimatingProcessor = true;
                                           });
@@ -684,6 +689,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                   ? null
                                   : !widget.matchScouting
                                       ? () {
+                                          HapticFeedback.lightImpact();
                                           setState(() {
                                             var autoSteps =
                                                 widget.auto.steps.toList();
@@ -703,7 +709,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                           });
                                         }
                                       : () {
-                                          HapticFeedback.lightImpact();
                                           setState(() {
                                             isAnimatingNet = true;
                                           });
@@ -821,6 +826,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                   ? () {}
                                   : !widget.matchScouting
                                       ? () {
+                                          HapticFeedback.lightImpact();
                                           bool feederNear = true;
                                           setState(() {
                                             var autoSteps =
@@ -935,6 +941,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                   ? () {}
                                   : !widget.matchScouting
                                       ? () {
+                                          HapticFeedback.lightImpact();
                                           bool feederNear = false;
                                           setState(() {
                                             var autoSteps =
@@ -951,7 +958,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                           });
                                         }
                                       : () {
-                                          HapticFeedback.lightImpact();
                                           showMenu(
                                             context: context,
                                             position: RelativeRect.fromRect(
@@ -1078,6 +1084,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1130,6 +1138,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1182,6 +1192,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1234,6 +1246,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1334,6 +1348,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1386,6 +1402,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1438,6 +1456,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1490,6 +1510,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1590,6 +1612,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1642,6 +1666,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1694,6 +1720,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1746,6 +1774,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                                         widget.onChanged == null
                                                             ? null
                                                             : () {
+                                                                HapticFeedback
+                                                                    .lightImpact();
                                                                 setState(() {
                                                                   var autoSteps =
                                                                       widget
@@ -1834,7 +1864,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                           });
                                         }
                                       : () {
-                                          HapticFeedback.lightImpact();
                                           setState(() {
                                             isAnimatingProcessorGround = true;
                                           });
@@ -1975,7 +2004,6 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                           });
                                         }
                                       : () {
-                                          HapticFeedback.lightImpact();
                                           setState(() {
                                             isAnimatingNetGround = true;
                                           });
@@ -2106,6 +2134,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       onChanged: widget.onChanged == null || widget.locked
                           ? null
                           : (value) {
+                              HapticFeedback.lightImpact();
                               widget.onChanged!(widget.auto.copyWith(
                                   starting_position_meters_from_processor:
                                       value));
@@ -2135,6 +2164,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       onChanged: widget.onChanged == null || widget.locked
                           ? null
                           : (newValue) {
+                              HapticFeedback.lightImpact();
                               if (newValue != null)
                                 setState(() {
                                   List<String> newFieldSide = newValue == 'both'

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2025.dart';
 import 'package:scouting_app/utils.dart';
@@ -102,6 +103,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   }
 
   void handleChange(String field, dynamic value) {
+    HapticFeedback.lightImpact();
     setState(() {
       switch (field) {
         case 'drive_train':
@@ -162,6 +164,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   }
 
   void handleAddAuto() {
+    HapticFeedback.lightImpact();
     setState(() {
       pitScoutingData = pitScoutingData.copyWith(
         data: pitScoutingData.data.copyWith(
@@ -189,6 +192,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       'frc${widget.teamNumber}',
     );
     if (status == 200) {
+      HapticFeedback.mediumImpact();
       setState(() {
         formSubmitted = true;
       });
@@ -216,7 +220,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   }
 
   void handleGoBack(BuildContext context) {
-    Navigator.pop(context);
+    Navigator.pushNamed(context, '/event/${widget.tournament.key}');
   }
 
   final Color algaeButtonColor = Color.fromARGB(255, 58, 185, 164);

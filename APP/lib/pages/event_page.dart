@@ -1147,6 +1147,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   // }
 
   void _submit() {
+    HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.post_match_scouting(data).then((_) {
       ScaffoldMessenger.of(context)
@@ -1170,6 +1171,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   void _update() {
+    HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.update_match_scouting(data).then((_) {
       ScaffoldMessenger.of(context)
@@ -1184,6 +1186,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   void _reset() {
+    HapticFeedback.mediumImpact();
     MatchScouting2025 reset = data.copyWith(
         match_number: data.match_number + 1,
         data: Data(
@@ -1484,6 +1487,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         Switch(
                           value: data.data.miscellaneous.died,
                           onChanged: (value) => setState(() {
+                            HapticFeedback.lightImpact();
                             data = data.copyWith(
                                 data: data.data.copyWith(
                                     miscellaneous: data.data.miscellaneous
