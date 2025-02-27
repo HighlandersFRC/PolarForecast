@@ -1185,7 +1185,9 @@ class _AutosTabState extends State<_AutosTab> {
     ));
     if (mounted) {
       setState(() {
-        scouting = [...fetchedStats];
+        scouting = fetchedStats.where((data) {
+          return data.team_number == widget.widget.teamNumber;
+        }).toList();
         isLoading = false;
       });
     }
@@ -1205,8 +1207,6 @@ class _AutosTabState extends State<_AutosTab> {
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
-    int numColumns = 3;
-    int numRows = (pageData.length / 3).ceil();
     return Center(
       child: isLoading
           ? CircularProgressIndicator(color: Colors.blue)
@@ -1224,6 +1224,8 @@ class _AutosTabState extends State<_AutosTab> {
                       ),
                     Expanded(
                         child: LayoutBuilder(builder: (context, constraints) {
+                      int numColumns = constraints.maxWidth < 500 ? 1 : 2;
+                      int numRows = (pageData.length / numColumns).ceil();
                       return SingleChildScrollView(
                           child: Column(children: [
                         Row(

@@ -181,7 +181,7 @@ class ApiService {
       int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
-    var data = (await _fetchFromAPI(url, cacheKey));
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
     data = [...data];
     List<MatchScouting2025> retval = [];
     for (var x in data) {
@@ -196,7 +196,7 @@ class ApiService {
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
-    var data = (await _fetchFromAPI(url, cacheKey));
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
     var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
       returnValue.add(MatchScouting2025.fromJson(matchData));

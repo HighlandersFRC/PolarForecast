@@ -688,7 +688,6 @@ numRuns = 0
 def post_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
     data.scout_info = scout_info_from_token(token)
     data.time = datetime.utcnow().timestamp()
-    logging.info(str(data))
     eventCode = data.event_code
     matchNumber = data.match_number
     teamNumber = data.team_number
@@ -1785,30 +1784,35 @@ def deleteBlob(blob_name: str):
 def get_scout_team_entries(team: str, event: str, year: int, token: str = Depends(check_token_active)):
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
-    members = []
-    team_number = int(team[3:])
-    for group in groups:
-        members.extend(fetch_group_members(group.group_id))
-    member_ids = [member['id'] for member in members]
-    alliance_members = []
-    for group in groups:
-        for groupEvent in group.events:
-            if groupEvent.event_code == event_code:
-                for alliance in groupEvent.alliance_groups:
-                    alliance_members.extend(
-                        fetch_group_members(alliance.group_id))
-    alliance_member_ids = [member['id'] for member in alliance_members]
-    member_entries = [MatchScouting2025(
-        **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
-    retval = []
-    retval.extend([entry.dict() for entry in member_entries])
-    for entry in alliance_entries:
-        entry_dict = entry.dict()
-        entry_dict['scout_info'].pop('first_name', None)
-        entry_dict['scout_info'].pop('username', None)
-        retval.append(entry_dict)
+    if (len(groups) != 0):
+        members = []
+        team_number = int(team[3:])
+        for group in groups:
+            members.extend(fetch_group_members(group.group_id))
+        member_ids = [member['id'] for member in members]
+        alliance_members = []
+        for group in groups:
+            for groupEvent in group.events:
+                if groupEvent.event_code == event_code:
+                    for alliance in groupEvent.alliance_groups:
+                        alliance_members.extend(
+                            fetch_group_members(alliance.group_id))
+        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_entries = [MatchScouting2025(
+            **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
+        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+        retval = []
+        retval.extend([entry.dict() for entry in member_entries])
+        for entry in alliance_entries:
+            entry_dict = entry.dict()
+            entry_dict['scout_info'].pop('first_name', None)
+            entry_dict['scout_info'].pop('username', None)
+            retval.append(entry_dict)
+    else:
+        user_id = get_user_info(token)['sub']
+        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
 
@@ -1816,29 +1820,34 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
 def get_scout_event_entries(event: str, year: int, token: str = Depends(check_token_active)):
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
-    members = []
-    for group in groups:
-        members.extend(fetch_group_members(group.group_id))
-    member_ids = [member['id'] for member in members]
-    alliance_members = []
-    for group in groups:
-        for groupEvent in group.events:
-            if groupEvent.event_code == event_code:
-                for alliance in groupEvent.alliance_groups:
-                    alliance_members.extend(
-                        fetch_group_members(alliance.group_id))
-    alliance_member_ids = [member['id'] for member in alliance_members]
-    member_entries = [MatchScouting2025(
-        **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
-    retval = []
-    retval.extend([entry.dict() for entry in member_entries])
-    for entry in alliance_entries:
-        entry_dict = entry.dict()
-        entry_dict['scout_info'].pop('first_name', None)
-        entry_dict['scout_info'].pop('username', None)
-        retval.append(entry_dict)
+    if (len(groups) != 0):
+        members = []
+        for group in groups:
+            members.extend(fetch_group_members(group.group_id))
+        member_ids = [member['id'] for member in members]
+        alliance_members = []
+        for group in groups:
+            for groupEvent in group.events:
+                if groupEvent.event_code == event_code:
+                    for alliance in groupEvent.alliance_groups:
+                        alliance_members.extend(
+                            fetch_group_members(alliance.group_id))
+        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_entries = [MatchScouting2025(
+            **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
+        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+        retval = []
+        retval.extend([entry.dict() for entry in member_entries])
+        for entry in alliance_entries:
+            entry_dict = entry.dict()
+            entry_dict['scout_info'].pop('first_name', None)
+            entry_dict['scout_info'].pop('username', None)
+            retval.append(entry_dict)
+    else:
+        user_id = get_user_info(token)['sub']
+        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
 
@@ -2005,8 +2014,6 @@ def get_user_join_requests(token: str = Depends(check_token_active)):
     requests = [GroupJoinRequest(
         **request).dict() for request in GroupJoinRequestCollection.find({"user_id": userID})]
     return requests
-
-# TODO Continue Cleanup From Here (Also remove active, and just switch to deleting)
 
 
 def convertData(calculatedData, year, event_code):
