@@ -8,7 +8,8 @@ part of 'picture_data.dart';
 
 _$PictureDataImpl _$$PictureDataImplFromJson(Map<String, dynamic> json) =>
     _$PictureDataImpl(
-      user_id: json['user_id'] as String,
+      scout_info:
+          ScoutInfo.fromJson(json['scout_info'] as Map<String, dynamic>),
       team_number: (json['team_number'] as num).toInt(),
       time: (json['time'] as num).toInt(),
       event_code: json['event_code'] as String,
@@ -21,7 +22,7 @@ _$PictureDataImpl _$$PictureDataImplFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$$PictureDataImplToJson(_$PictureDataImpl instance) =>
     <String, dynamic>{
-      'user_id': instance.user_id,
+      'scout_info': instance.scout_info.toJson(),
       'team_number': instance.team_number,
       'time': instance.time,
       'event_code': instance.event_code,

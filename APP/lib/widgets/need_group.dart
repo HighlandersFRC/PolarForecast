@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/tournament.dart';
-
 class NeedGroup extends StatelessWidget {
-  final Tournament tournament;
-  final void Function() onClick;
-  const NeedGroup({super.key, required this.tournament, required this.onClick});
+  const NeedGroup({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +11,6 @@ class NeedGroup extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(children: [
                 const Text('You must be part of a group to use this feature'),
-                ListBody(
-                  children: [],
-                ),
-                ElevatedButton(
-                  onPressed: onClick,
-                  child: const Text('Create a New Group'),
-                )
               ]),
             )));
   }

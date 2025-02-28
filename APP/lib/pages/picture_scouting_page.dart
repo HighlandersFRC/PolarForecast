@@ -55,10 +55,15 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
 
   Future<void> _captureImage(BuildContext context) async {
     final cameraCaptureService = createCameraCaptureService();
+    setState(() {
+      _image = null;
+      _isLoading = true;
+    });
     final image = await cameraCaptureService.getImage(context);
     if (image != null) {
       setState(() {
         _image = image;
+        _isLoading = false;
       });
     }
   }
@@ -99,7 +104,11 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('${widget.team} Pictures'),
+                            Text(
+                              '${widget.team} Pictures',
+                              style:
+                                  TextStyle(color: Colors.blue, fontSize: 30),
+                            ),
                             if (_image != null)
                               Image.memory(
                                 Uint8List.fromList(img.encodeJpg(_image!)),
@@ -109,6 +118,10 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
                                             _image!.height.toDouble(),
                                         constraints.maxWidth /
                                             _image!.width.toDouble()),
+                              ),
+                            if (_image == null && _isLoading)
+                              CircularProgressIndicator(
+                                color: Colors.blue,
                               ),
                             SizedBox(height: 20),
                             ElevatedButton(
@@ -122,7 +135,9 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
                               ElevatedButton(
                                 onPressed: () => _postImage(context),
                                 child: _isLoading
-                                    ? CircularProgressIndicator()
+                                    ? CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      )
                                     : Text('Upload Image'),
                               ),
                           ],

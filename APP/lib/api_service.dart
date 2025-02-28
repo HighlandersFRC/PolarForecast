@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
@@ -11,6 +10,7 @@ import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
 import 'models/match_scouting_2025.dart';
+import 'models/pit_scouting_2025.dart';
 import 'models/tournament.dart';
 import 'package:image/image.dart' as img;
 
@@ -104,30 +104,49 @@ class ApiService {
     return data;
   }
 
-  Future<Map<String, dynamic>> fetchTeamPitScouting(
+  Future<PitScouting2025> fetchTeamPitScouting(
       String year, String event, String team) async {
     try {
       final storageName = '${year}${event}_${team}_PitScouting';
       final endpoint = '$APIURL/$year/$event/$team/PitScouting';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return data;
+      return PitScouting2025.fromJson(data);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
-      return {'pit_scouting': []};
+      return PitScouting2025(
+          scout_info: get_scout_info(await token ?? ''),
+          team_number: int.tryParse(team.substring(3)) ?? 0,
+          time: 0,
+          event_code: '${year}${event}',
+          data: PitData2025(
+              driver_experience_events: 0,
+              drive_train: '',
+              can_score_coral: false,
+              coral_levels: [],
+              can_score_processor: false,
+              can_score_net: false,
+              ground_coral_pickup: false,
+              feeder_coral_pickup: false,
+              ground_algae_pickup: false,
+              reef_algae_pickup: false,
+              climbing: [],
+              spare_parts: 0,
+              favorite_color: '',
+              autos: []));
     }
   }
 
   Future<int> postPitScouting(
-      dynamic data, String year, String event, String team) async {
+      PitScouting2025 data, String year, String event, String team) async {
     try {
-      final endpoint = '$APIURL/PitScouting';
+      final endpoint = '$APIURL/PitScouting/';
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
           'Content-Type': 'application/json',
           'token': (await token) ?? ''
         },
-        body: jsonEncode(data),
+        body: json.encode(data.toJson()),
       );
       final status = response.statusCode;
       return status;
@@ -137,15 +156,15 @@ class ApiService {
     }
   }
 
-  Future<List<Image>> fetchTeamImages(
+  Future<List<PictureData>> fetchTeamImages(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_pictures';
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
-    var data = (await _fetchFromAPI(url, cacheKey));
-    List<Image> returnImages = [];
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
+    List<PictureData> returnImages = [];
     for (Map<String, dynamic> imageMap in data) {
       PictureData imageData = PictureData.fromJson(imageMap);
-      returnImages.add(Image.network(imageData.link));
+      returnImages.add(imageData);
     }
     return returnImages;
   }
@@ -162,7 +181,7 @@ class ApiService {
       int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
-    var data = (await _fetchFromAPI(url, cacheKey));
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
     data = [...data];
     List<MatchScouting2025> retval = [];
     for (var x in data) {
@@ -177,7 +196,7 @@ class ApiService {
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
-    var data = (await _fetchFromAPI(url, cacheKey));
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
     var returnValue = <MatchScouting2025>[];
     for (var matchData in data) {
       returnValue.add(MatchScouting2025.fromJson(matchData));
@@ -299,8 +318,7 @@ class ApiService {
     if (response.statusCode == 200) {
       return Group.fromJson(json.decode(response.body));
     } else {
-      throw Exception(
-          'Failed to create group: ${response.statusCode} - ${response.body}');
+      throw Exception('${response.body}');
     }
   }
 
@@ -433,6 +451,21 @@ class ApiService {
       String group_name, String event) async {
     final response = await http.post(
       Uri.parse('$APIURL/Group/$group_name/Event/$event/Add'),
+      headers: {
+        'token': (await token) ?? '',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+    final data = json.decode(response.body);
+    return (Group.fromJson(data['group']), data['group_role'].toString());
+  }
+
+  Future<(Group, String)> remove_event_from_group(
+      String group_name, String event) async {
+    final response = await http.delete(
+      Uri.parse('$APIURL/Group/$group_name/Event/$event/Remove'),
       headers: {
         'token': (await token) ?? '',
       },
@@ -688,7 +721,7 @@ class ApiService {
       throw Exception(json.decode(response.body)['detail']);
     }
     var data = PictureData(
-        user_id: '',
+        scout_info: get_scout_info(await token ?? ''),
         team_number: team,
         time: 0,
         event_code: event_code,
@@ -705,6 +738,19 @@ class ApiService {
     );
     if (postItOnAPI.statusCode ~/ 100 != 2) {
       throw Exception(json.decode(postItOnAPI.body)['detail']);
+    }
+  }
+
+  Future<void> delete_image(PictureData image) async {
+    final url = '$APIURL/Pictures/Delete';
+    final request = await http.delete(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(image.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
     }
   }
 

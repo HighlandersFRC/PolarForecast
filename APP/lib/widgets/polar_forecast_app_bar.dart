@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +53,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return SliverAppBar(
-      automaticallyImplyLeading: kIsWeb ? false : widget.showBackButton,
+      automaticallyImplyLeading: widget.showBackButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -107,6 +106,18 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
               context: context,
               position: position,
               items: [
+                if (token != null)
+                  PopupMenuItem(
+                    enabled: false,
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Logged in as: ${get_scout_info(token ?? '').username}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 if (token != null)
                   PopupMenuItem(
                     child: Container(
@@ -179,36 +190,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
   }
 
   void _openSearch() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SearchAnchor.bar(
-        suggestionsBuilder: (context, searchController) =>
-            _getSuggestions(searchController),
-      ),
-    );
-  }
-
-  List<Widget> _getSuggestions(SearchController searchController) {
-    if (tournaments.isEmpty) return [];
-    var filteredTournaments = tournaments
-        .where(
-          (tournament) => tournament.display
-              .toLowerCase()
-              .contains(searchController.text.toLowerCase()),
-        )
-        .toList();
-    List<Widget> suggestions = [
-      ...filteredTournaments.map((tournament) {
-        return ListTile(
-          title: Text(tournament.display),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/event/${tournament.key}');
-          },
-        );
-      })
-    ];
-    return suggestions;
+    showSearch(
+        context: context, delegate: TournamentSearchDelegate(tournaments));
   }
 }
 
@@ -219,8 +202,7 @@ class PolarForecastAppBar extends StatefulWidget
   final String? extraText;
   final bool backButton;
 
-  const PolarForecastAppBar(
-      {super.key, this.extraText, this.backButton = false})
+  const PolarForecastAppBar({super.key, this.extraText, this.backButton = true})
       : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
@@ -259,7 +241,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     final theme = Theme.of(context);
     final apiService = Provider.of<ApiService>(context);
     return AppBar(
-      automaticallyImplyLeading: kIsWeb ? false : widget.backButton,
+      automaticallyImplyLeading: widget.backButton,
       title: !isMobile()
           ? Row(
               children: [
@@ -312,6 +294,18 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
               context: context,
               position: position,
               items: [
+                if (token != null)
+                  PopupMenuItem(
+                    enabled: false,
+                    child: Container(
+                      width: 200,
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Logged in as: ${get_scout_info(token ?? '').username}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 if (token != null)
                   PopupMenuItem(
                     child: Container(
@@ -384,36 +378,78 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   }
 
   void _openSearch() {
-    showModalBottomSheet(
+    showSearch(
       context: context,
-      builder: (context) => SearchAnchor.bar(
-        suggestionsBuilder: (context, searchController) =>
-            _getSuggestions(searchController),
+      delegate: TournamentSearchDelegate(tournaments),
+    );
+  }
+}
+
+class TournamentSearchDelegate extends SearchDelegate {
+  final List<Tournament> tournaments;
+
+  TournamentSearchDelegate(this.tournaments);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
       ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
     );
   }
 
-  List<Widget> _getSuggestions(SearchController searchController) {
-    if (tournaments.isEmpty) return [];
-    var filteredTournaments = tournaments
-        .where(
-          (tournament) => tournament.display
-              .toLowerCase()
-              .contains(searchController.text.toLowerCase()),
-        )
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = tournaments
+        .where((tournament) =>
+            tournament.display.toLowerCase().contains(query.toLowerCase()))
         .toList();
-    List<Widget> suggestions = [
-      ...filteredTournaments.map((tournament) {
+
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
         return ListTile(
-          title: Text(tournament.display),
+          title: Text(results[index].display),
           onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/event/${tournament.key}');
+            Navigator.pushNamed(context, '/event/${results[index].key}');
           },
         );
-      })
-    ];
-    return suggestions;
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = tournaments
+        .where((tournament) =>
+            tournament.display.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(suggestions[index].display),
+          onTap: () {
+            Navigator.pushNamed(context, '/event/${suggestions[index].key}');
+          },
+        );
+      },
+    );
   }
 }
 
@@ -470,6 +506,7 @@ _openGroupsPopup(BuildContext context) async {
                       onPressed: () {
                         final TextEditingController groupNameController =
                             TextEditingController();
+                        Navigator.of(context).pop();
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -504,6 +541,11 @@ _openGroupsPopup(BuildContext context) async {
                                       Navigator.of(context).pop();
                                       Navigator.of(context)
                                           .pushNamed('/group/${value.name}');
+                                    }).onError((e, _) {
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(e.toString())));
                                     });
                                   },
                                   child: const Text('Create'),

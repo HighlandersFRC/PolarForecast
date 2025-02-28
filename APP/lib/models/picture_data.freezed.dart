@@ -20,7 +20,7 @@ PictureData _$PictureDataFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PictureData {
-  String get user_id => throw _privateConstructorUsedError;
+  ScoutInfo get scout_info => throw _privateConstructorUsedError;
   int get team_number => throw _privateConstructorUsedError;
   int get time => throw _privateConstructorUsedError;
   String get event_code => throw _privateConstructorUsedError;
@@ -45,13 +45,15 @@ abstract class $PictureDataCopyWith<$Res> {
       _$PictureDataCopyWithImpl<$Res, PictureData>;
   @useResult
   $Res call(
-      {String user_id,
+      {ScoutInfo scout_info,
       int team_number,
       int time,
       String event_code,
       String image_id,
       String link,
       List<String> permissions});
+
+  $ScoutInfoCopyWith<$Res> get scout_info;
 }
 
 /// @nodoc
@@ -69,7 +71,7 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? user_id = null,
+    Object? scout_info = null,
     Object? team_number = null,
     Object? time = null,
     Object? event_code = null,
@@ -78,10 +80,10 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
     Object? permissions = null,
   }) {
     return _then(_value.copyWith(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
+      scout_info: null == scout_info
+          ? _value.scout_info
+          : scout_info // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -108,6 +110,16 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
               as List<String>,
     ) as $Val);
   }
+
+  /// Create a copy of PictureData
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ScoutInfoCopyWith<$Res> get scout_info {
+    return $ScoutInfoCopyWith<$Res>(_value.scout_info, (value) {
+      return _then(_value.copyWith(scout_info: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -119,13 +131,16 @@ abstract class _$$PictureDataImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String user_id,
+      {ScoutInfo scout_info,
       int team_number,
       int time,
       String event_code,
       String image_id,
       String link,
       List<String> permissions});
+
+  @override
+  $ScoutInfoCopyWith<$Res> get scout_info;
 }
 
 /// @nodoc
@@ -141,7 +156,7 @@ class __$$PictureDataImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? user_id = null,
+    Object? scout_info = null,
     Object? team_number = null,
     Object? time = null,
     Object? event_code = null,
@@ -150,10 +165,10 @@ class __$$PictureDataImplCopyWithImpl<$Res>
     Object? permissions = null,
   }) {
     return _then(_$PictureDataImpl(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
+      scout_info: null == scout_info
+          ? _value.scout_info
+          : scout_info // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
@@ -186,7 +201,7 @@ class __$$PictureDataImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PictureDataImpl implements _PictureData {
   const _$PictureDataImpl(
-      {required this.user_id,
+      {required this.scout_info,
       required this.team_number,
       required this.time,
       required this.event_code,
@@ -199,7 +214,7 @@ class _$PictureDataImpl implements _PictureData {
       _$$PictureDataImplFromJson(json);
 
   @override
-  final String user_id;
+  final ScoutInfo scout_info;
   @override
   final int team_number;
   @override
@@ -220,7 +235,7 @@ class _$PictureDataImpl implements _PictureData {
 
   @override
   String toString() {
-    return 'PictureData(user_id: $user_id, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link, permissions: $permissions)';
+    return 'PictureData(scout_info: $scout_info, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link, permissions: $permissions)';
   }
 
   @override
@@ -228,7 +243,8 @@ class _$PictureDataImpl implements _PictureData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PictureDataImpl &&
-            (identical(other.user_id, user_id) || other.user_id == user_id) &&
+            (identical(other.scout_info, scout_info) ||
+                other.scout_info == scout_info) &&
             (identical(other.team_number, team_number) ||
                 other.team_number == team_number) &&
             (identical(other.time, time) || other.time == time) &&
@@ -245,7 +261,7 @@ class _$PictureDataImpl implements _PictureData {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      user_id,
+      scout_info,
       team_number,
       time,
       event_code,
@@ -271,7 +287,7 @@ class _$PictureDataImpl implements _PictureData {
 
 abstract class _PictureData implements PictureData {
   const factory _PictureData(
-      {required final String user_id,
+      {required final ScoutInfo scout_info,
       required final int team_number,
       required final int time,
       required final String event_code,
@@ -283,7 +299,7 @@ abstract class _PictureData implements PictureData {
       _$PictureDataImpl.fromJson;
 
   @override
-  String get user_id;
+  ScoutInfo get scout_info;
   @override
   int get team_number;
   @override

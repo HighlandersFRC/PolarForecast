@@ -10,6 +10,7 @@ from types import TracebackType
 from typing import Annotated
 import uuid
 import zipfile
+from better_profanity import profanity
 from bson import ObjectId
 from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -664,7 +665,7 @@ def updateGroupGridPitData(group: Group, event_code: str):
         {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}})]
     for doc in data["data"]:
         teamPitEntries = [
-            x for x in pitEntries if x.team_number == int(doc["key"])]
+            x for x in pitEntries if x.team_number == int(doc['key'] if doc.__contains__('key') else -1)]
         if len(teamPitEntries) == 0:
             break
         latestEntry = teamPitEntries[0]
@@ -687,12 +688,13 @@ numRuns = 0
 def post_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
     data.scout_info = scout_info_from_token(token)
     data.time = datetime.utcnow().timestamp()
-    logging.info(str(data))
     eventCode = data.event_code
     matchNumber = data.match_number
     teamNumber = data.team_number
     match = TBACollection.find_one(
         {"key": f"{eventCode}_qm{str(matchNumber)}"})
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments)
     if match is None:
         raise HTTPException(400, "Check Your Match Number")
     exists = False
@@ -1078,6 +1080,41 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     return get_group(group_name=group_name, token=token)
 
 
+@app.delete("/Group/{group_name}/Event/{event}/Remove", tags=["groups"])
+def remove_event_from_group(group_name: str, event: str, token: str = Depends(check_token_active)):
+    try:
+        DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(
+            404, "This group does not exist")
+    if event not in [event.event_code for event in DB_Entry.events]:
+        raise HTTPException(
+            400, f"This group is not part of an event with the code '{event}'")
+    groupEvent = [x for x in DB_Entry.events if x.event_code == event][0]
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_Entry.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            401, "You must be an admin of this group to remove events")
+    for alliance in groupEvent.alliance_groups:
+        leave_alliance(group_name=group_name, token=token,
+                       event=event, other_group=alliance.name)
+    allianceRequests = get_group_alliance_requests(
+        group_name=group_name, token=token)
+    for allianceRequest in allianceRequests:
+        delete_alliance_request(group_name=group_name, event=event,
+                                token=token, alliance_request=AllianceRequest(**allianceRequest))
+    DB_Entry.events = [
+        x for x in DB_Entry.events if x.event_code != event]
+    GroupCollection.find_one_and_update(
+        {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+    return get_group(group_name=group_name, token=token)
+
+
 @app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     if len(get_user_groups(token)) != 0:
@@ -1088,6 +1125,8 @@ def create_group(group_name: str | None = None, token: str = Depends(check_token
         if char not in string.ascii_lowercase+string.ascii_uppercase+string.digits:
             raise HTTPException(
                 400, "Make sure your group name has no special characters (no spaces)")
+    if profanity.contains_profanity(group_name):
+        raise HTTPException(400, "Do not use profanity in a group name")
     user_info = get_user_info(token)
     try:
         if user_info.__contains__('team_number'):
@@ -1127,7 +1166,7 @@ def get_group(group_name: str, token: str = Depends(check_token_active)):
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
-        raise HTTPException(404, f"Group Not Found: {str(e)}")
+        raise HTTPException(404, f"Group Not Found")
     groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
@@ -1508,6 +1547,9 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
             if group['id'] == DBgroup.owner_group_id:
                 raise HTTPException(
                     406, f"You must first promote an admin to owner before leaving")
+    else:
+        delete_group(group_name=group_name, token=token)
+        return {"message": "Successfully left and Successfully deleted the group"}
     for group in groups:
         if group['id'] == DBgroup.admin_group_id:
             remove_user_from_group(user_id=get_user_info(
@@ -1519,9 +1561,6 @@ def leave_group(group_name: str, token: str = Depends(check_token_active)):
         token)['sub'], group_id=DBgroup.member_group_id)
     remove_user_from_group(user_id=get_user_info(
         token)['sub'], group_id=DBgroup.group_id)
-    if len(group_members) == 1:
-        delete_group(group_name=group_name)
-        return {"message": "Successfully left and Successfully deleted the group"}
     GroupJoinRequestCollection.delete_one(
         {"user_id": get_user_info(token)['sub'], "group_name": group_name})
     for event in DBgroup.events:
@@ -1558,7 +1597,6 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
     GroupPitStatusCollection.delete_one({"group_id": DBgroup.group_id})
     GroupPredictionCollection.delete_one({"group_id": DBgroup.group_id})
     delete_group_kc(group_id=DBgroup.group_id)
-    redisClient.delete(f"{group_name}join_code")
     return {"message": "Group successfully deleted"}
 
 
@@ -1568,6 +1606,8 @@ def update_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
     oldEntry = MatchScoutingCollection.find_one(
         {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id})
     data.time = datetime.utcnow().timestamp()
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments)
     if oldEntry is None:
         raise HTTPException(
             404, "No such match scouting entry found to update")
@@ -1697,11 +1737,12 @@ async def get_event_pictures(year: str, event: str, token: str = Depends(check_t
 
 @app.delete("/Pictures/Delete", tags=["scouting"])
 def delete_pit_scouting_pictures(pictureData: PictureData, token: str = Depends(check_token_active)):
-    DBEntry = PictureCollection.find_one(pictureData.dict())
+    DBEntry = PictureCollection.find_one({'image_id': pictureData.image_id})
     if DBEntry is None:
         raise HTTPException(404, "Picture Not Found")
     if (pictureData.scout_info.user_id == get_user_info(token)["sub"]):
-        delete_result = PictureCollection.delete_one(pictureData.dict())
+        delete_result = PictureCollection.delete_one(
+            {'image_id': pictureData.image_id})
         deleteBlob(pictureData.image_id)
         deleted = False
     else:
@@ -1717,7 +1758,7 @@ def delete_pit_scouting_pictures(pictureData: PictureData, token: str = Depends(
                         members["members"] + members["admins"] + members["owners"])]
                     if pictureData.scout_info.user_id in memberIds:
                         delete_result = PictureCollection.delete_one(
-                            pictureData.dict())
+                            {'image_id': pictureData.image_id})
                         deleteBlob(pictureData.image_id)
                         deleted = True
                     break
@@ -1743,30 +1784,35 @@ def deleteBlob(blob_name: str):
 def get_scout_team_entries(team: str, event: str, year: int, token: str = Depends(check_token_active)):
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
-    members = []
-    team_number = int(team[3:])
-    for group in groups:
-        members.extend(fetch_group_members(group.group_id))
-    member_ids = [member['id'] for member in members]
-    alliance_members = []
-    for group in groups:
-        for groupEvent in group.events:
-            if groupEvent.event_code == event_code:
-                for alliance in groupEvent.alliance_groups:
-                    alliance_members.extend(
-                        fetch_group_members(alliance.group_id))
-    alliance_member_ids = [member['id'] for member in alliance_members]
-    member_entries = [MatchScouting2025(
-        **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
-    retval = []
-    retval.extend([entry.dict() for entry in member_entries])
-    for entry in alliance_entries:
-        entry_dict = entry.dict()
-        entry_dict['scout_info'].pop('first_name', None)
-        entry_dict['scout_info'].pop('username', None)
-        retval.append(entry_dict)
+    if (len(groups) != 0):
+        members = []
+        team_number = int(team[3:])
+        for group in groups:
+            members.extend(fetch_group_members(group.group_id))
+        member_ids = [member['id'] for member in members]
+        alliance_members = []
+        for group in groups:
+            for groupEvent in group.events:
+                if groupEvent.event_code == event_code:
+                    for alliance in groupEvent.alliance_groups:
+                        alliance_members.extend(
+                            fetch_group_members(alliance.group_id))
+        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_entries = [MatchScouting2025(
+            **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
+        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+        retval = []
+        retval.extend([entry.dict() for entry in member_entries])
+        for entry in alliance_entries:
+            entry_dict = entry.dict()
+            entry_dict['scout_info'].pop('first_name', None)
+            entry_dict['scout_info'].pop('username', None)
+            retval.append(entry_dict)
+    else:
+        user_id = get_user_info(token)['sub']
+        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
 
@@ -1774,29 +1820,34 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
 def get_scout_event_entries(event: str, year: int, token: str = Depends(check_token_active)):
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
-    members = []
-    for group in groups:
-        members.extend(fetch_group_members(group.group_id))
-    member_ids = [member['id'] for member in members]
-    alliance_members = []
-    for group in groups:
-        for groupEvent in group.events:
-            if groupEvent.event_code == event_code:
-                for alliance in groupEvent.alliance_groups:
-                    alliance_members.extend(
-                        fetch_group_members(alliance.group_id))
-    alliance_member_ids = [member['id'] for member in alliance_members]
-    member_entries = [MatchScouting2025(
-        **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
-    alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
-    retval = []
-    retval.extend([entry.dict() for entry in member_entries])
-    for entry in alliance_entries:
-        entry_dict = entry.dict()
-        entry_dict['scout_info'].pop('first_name', None)
-        entry_dict['scout_info'].pop('username', None)
-        retval.append(entry_dict)
+    if (len(groups) != 0):
+        members = []
+        for group in groups:
+            members.extend(fetch_group_members(group.group_id))
+        member_ids = [member['id'] for member in members]
+        alliance_members = []
+        for group in groups:
+            for groupEvent in group.events:
+                if groupEvent.event_code == event_code:
+                    for alliance in groupEvent.alliance_groups:
+                        alliance_members.extend(
+                            fetch_group_members(alliance.group_id))
+        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_entries = [MatchScouting2025(
+            **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
+        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+        retval = []
+        retval.extend([entry.dict() for entry in member_entries])
+        for entry in alliance_entries:
+            entry_dict = entry.dict()
+            entry_dict['scout_info'].pop('first_name', None)
+            entry_dict['scout_info'].pop('username', None)
+            retval.append(entry_dict)
+    else:
+        user_id = get_user_info(token)['sub']
+        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+            {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
 
@@ -1808,6 +1859,8 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
     year = event_code[:4]
     event = event_code[4:]
     team = data.team_key
+    for death in data.deaths:
+        death.death_reason = profanity.censor(death.death_reason)
     if not len(data.deaths) == 0:
         for idx, death in enumerate(data.deaths):
             match_number = int(death.match_number)
@@ -1961,8 +2014,6 @@ def get_user_join_requests(token: str = Depends(check_token_active)):
     requests = [GroupJoinRequest(
         **request).dict() for request in GroupJoinRequestCollection.find({"user_id": userID})]
     return requests
-
-# TODO Continue Cleanup From Here (Also remove active, and just switch to deleting)
 
 
 def convertData(calculatedData, year, event_code):

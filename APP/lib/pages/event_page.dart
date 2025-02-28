@@ -1147,6 +1147,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   // }
 
   void _submit() {
+    HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.post_match_scouting(data).then((_) {
       ScaffoldMessenger.of(context)
@@ -1170,6 +1171,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   void _update() {
+    HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.update_match_scouting(data).then((_) {
       ScaffoldMessenger.of(context)
@@ -1184,6 +1186,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   void _reset() {
+    HapticFeedback.mediumImpact();
     MatchScouting2025 reset = data.copyWith(
         match_number: data.match_number + 1,
         data: Data(
@@ -1351,92 +1354,53 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           auto: data.data.auto,
                           onChanged: (newAuto) {
                             setState(() {
+                              int l1 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('1');
+                              }).length;
+                              int l2 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('2');
+                              }).length;
+                              int l3 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('3');
+                              }).length;
+                              int l4 = newAuto.steps.where((item) {
+                                return item.name == 'place_coral' &&
+                                    item.extra_data['position']
+                                        .toString()
+                                        .contains('4');
+                              }).length;
+                              int net = newAuto.steps.where((item) {
+                                return item.name == 'net_algae';
+                              }).length;
+                              int processor = newAuto.steps.where((item) {
+                                return item.name == 'processor';
+                              }).length;
                               data = data.copyWith(
-                                  data: data.data.copyWith(auto: newAuto));
+                                  data: data.data.copyWith(
+                                      auto: newAuto,
+                                      auto_scoring: AutoScoring(
+                                          l_1: l1,
+                                          l_2: l2,
+                                          l_3: l3,
+                                          l_4: l4,
+                                          net: net,
+                                          processor: processor)));
                             });
                           },
+                          matchScouting: true,
                         ),
                         SizedBox(height: 20),
                         Text(
-                          'Auto Scoring',
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
-                        ),
-                        Divider(color: Colors.blue),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L4',
-                          value: data.data.auto_scoring.l_4,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_4: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L3',
-                          value: data.data.auto_scoring.l_3,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_3: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L2',
-                          value: data.data.auto_scoring.l_2,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_2: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L1',
-                          value: data.data.auto_scoring.l_1,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(l_1: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Net',
-                          value: data.data.auto_scoring.net,
-                          max: 18,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(net: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Processor',
-                          value: data.data.auto_scoring.processor,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(processor: value)));
-                          }),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Teleop Scoring',
+                          'Teleop',
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
                         Divider(color: Colors.blue),
@@ -1523,6 +1487,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         Switch(
                           value: data.data.miscellaneous.died,
                           onChanged: (value) => setState(() {
+                            HapticFeedback.lightImpact();
                             data = data.copyWith(
                                 data: data.data.copyWith(
                                     miscellaneous: data.data.miscellaneous
@@ -1706,7 +1671,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 175.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
@@ -2054,7 +2019,7 @@ class _QualsTabState extends State<_QualsTab> {
   @override
   Widget build(BuildContext context) {
     // final theme = Theme.of(context);
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 150.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
@@ -2208,7 +2173,7 @@ class _ElimsTabState extends State<_ElimsTab> {
   @override
   Widget build(BuildContext context) {
     // final theme = Theme.of(context);
-    const columnMinWidth = 110.0;
+    const columnMinWidth = 175.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
     return Center(
@@ -2336,8 +2301,6 @@ class _AutosTabState extends State<_AutosTab> {
       currentPage * AUTOS_PER_PAGE,
       min(filteredData.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
-    int numColumns = 3;
-    int numRows = (pageData.length / 3).ceil();
     return Center(
       child: isLoading
           ? Center(
@@ -2362,6 +2325,8 @@ class _AutosTabState extends State<_AutosTab> {
                       ),
                     Expanded(
                         child: LayoutBuilder(builder: (context, constraints) {
+                      int numColumns = constraints.maxWidth < 500 ? 1 : 2;
+                      int numRows = (pageData.length / numColumns).ceil();
                       return SingleChildScrollView(
                           child: Column(children: [
                         // Card(

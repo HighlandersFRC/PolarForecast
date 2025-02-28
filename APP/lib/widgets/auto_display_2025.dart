@@ -50,10 +50,15 @@ class _AutoDisplay2025State extends State<AutoDisplay2025> {
                             'Net: ${scoutingData.data.auto_scoring.net} | ' +
                             'Processor: ${scoutingData.data.auto_scoring.processor}',
                         triggerMode: TooltipTriggerMode.tap,
-                        child:
-                            AutoPieces2025(auto: widget.scoutingData.data.auto),
+                        child: AutoPieces2025(
+                          auto: widget.scoutingData.data.auto,
+                          matchScouting: true,
+                        ),
                       )
-                    : AutoPieces2025(auto: widget.scoutingData.data.auto),
+                    : AutoPieces2025(
+                        auto: widget.scoutingData.data.auto,
+                        matchScouting: true,
+                      ),
                 if (!isMobile())
                   Padding(
                     padding: const EdgeInsets.all(8.0),
