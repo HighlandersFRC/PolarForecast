@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainApp extends StatelessWidget {
+  static final RouteObserver<PageRoute> observer = RouteObserver<PageRoute>();
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeDataProvider>(
@@ -61,6 +62,7 @@ class MainApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           home: HomePage(),
           theme: themeNotifier.themeData,
+          navigatorObservers: [observer],
           // initialRoute: '/home',
           onGenerateRoute: (RouteSettings settings) {
             var query = null;

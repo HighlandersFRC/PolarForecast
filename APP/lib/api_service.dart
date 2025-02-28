@@ -99,7 +99,7 @@ class ApiService {
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {
     final cacheKey = '${year}_${event}_pit_status';
     final url = '${APIURL}/${year}/${event}/PitScoutingStatus';
-    var data = (await _fetchFromAPI(url, cacheKey))['data'];
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false))['data'];
     data = [...data];
     return data;
   }

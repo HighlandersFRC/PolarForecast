@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/match_scouting_2025.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
@@ -1557,13 +1558,14 @@ class _PitScoutingTab extends StatefulWidget {
   }
 }
 
-class _PitScoutingTabState extends State<_PitScoutingTab> {
+class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   List<GridColumn> dataColumns = [];
   List<DataGridRow> dataRows = [];
   List<dynamic> statuses = [];
   String? token;
   bool isLoading = true;
   bool hasGoodGroup = true;
+
   @override
   void initState() {
     super.initState();
@@ -1571,10 +1573,28 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
     fetchData().then((_) => updateGrid());
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MainApp.observer
+        .subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
+  }
+
+  @override
+  void didPopNext() {
+    fetchData().then((_) => updateGrid());
+  }
+
+  @override
+  void dispose() {
+    MainApp.observer.unsubscribe(this);
+    super.dispose();
+  }
+
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
-      this.token = await apiService.token;
+      token = await apiService.token;
       if (token != null) {
         try {
           final fetchedStatus = await apiService.fetchPitStatus(
@@ -1584,7 +1604,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
             setState(() {
               statuses = fetchedStatus;
               isLoading = false;
-              token = token;
+              updateGrid();
             });
           }
         } catch (e) {
@@ -1594,9 +1614,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
           });
         }
       } else {
-        setState(() {
-          token = token;
-        });
+        setState(() {});
       }
     } catch (e) {
       print('Error fetching data: $e');
@@ -1647,13 +1665,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               ))),
     ];
 
-    statuses.sort((a, b) {
-      return int.parse(a['key']) - int.parse(b['key']);
-    });
-
-    // statuses.sort((a, b) {
-    //   return a['key'] - b['key'];
-    // });
+    statuses.sort((a, b) => int.parse(a['key']).compareTo(int.parse(b['key'])));
 
     dataRows = [
       for (Map<String, dynamic> status in statuses)
@@ -1674,6 +1686,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
     const columnMinWidth = 175.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
+
     return Center(
         child: token == null
             ? LoginWidget(
