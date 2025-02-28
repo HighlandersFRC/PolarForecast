@@ -353,6 +353,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
               ? IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     List<AutoStep2025> newSteps = widget.auto.steps.toList();
                     newSteps.removeAt(stepIndex);
                     var newAuto = widget.auto.copyWith(steps: newSteps);
