@@ -353,6 +353,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
               ? IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     List<AutoStep2025> newSteps = widget.auto.steps.toList();
                     newSteps.removeAt(stepIndex);
                     var newAuto = widget.auto.copyWith(steps: newSteps);
@@ -620,8 +621,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 setState(() {
                                                   var autoSteps = widget
@@ -754,8 +755,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 setState(() {
                                                   var autoSteps = widget
@@ -883,8 +884,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 bool feederNear = true;
                                                 setState(() {
@@ -996,8 +997,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 bool feederNear = false;
                                                 setState(() {
@@ -1912,8 +1913,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 setState(() {
                                                   var autoSteps = widget
@@ -2049,8 +2050,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                                               ),
                                             ],
                                           ).then((value) {
-                                            HapticFeedback.lightImpact();
                                             if (value != null) {
+                                              HapticFeedback.lightImpact();
                                               if (value == 'option1') {
                                                 setState(() {
                                                   var autoSteps = widget

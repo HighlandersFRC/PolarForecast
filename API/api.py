@@ -1665,7 +1665,7 @@ def get_picture_post_url(token: str = Depends(check_token_active)):
         expiry=datetime.utcnow()+timedelta(minutes=5),
     )
     blob_url = f"{RobotPicturesClient.primary_endpoint}/{image_id_string}"
-    presigned_url = f"{blob_url}?{sas}"
+    presigned_url = f"{blob_url}?{sas}&Cache-Control=max-age=86400"
     return {"presigned_url": presigned_url, "image_id": image_id_string}
 
 
@@ -1676,7 +1676,7 @@ def confirm_picture_upload(data: PictureData, token: str = Depends(check_token_a
         raise HTTPException(
             404, "Picture not found. Please make sure the upload completed")
     data.time = datetime.utcnow().timestamp()
-    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}"
+    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}?width=800"
     data.scout_info = scout_info_from_token(token=token)
     try:
         PictureCollection.insert_one(data.dict())
