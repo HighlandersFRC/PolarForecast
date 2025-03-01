@@ -753,6 +753,7 @@ mixin _$Auto2025 {
   List<String> get field_side => throw _privateConstructorUsedError;
   bool get exit => throw _privateConstructorUsedError;
   bool get preload => throw _privateConstructorUsedError;
+  bool get both_sides => throw _privateConstructorUsedError;
 
   /// Serializes this Auto2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -774,7 +775,8 @@ abstract class $Auto2025CopyWith<$Res> {
       List<AutoStep2025> steps,
       List<String> field_side,
       bool exit,
-      bool preload});
+      bool preload,
+      bool both_sides});
 }
 
 /// @nodoc
@@ -797,6 +799,7 @@ class _$Auto2025CopyWithImpl<$Res, $Val extends Auto2025>
     Object? field_side = null,
     Object? exit = null,
     Object? preload = null,
+    Object? both_sides = null,
   }) {
     return _then(_value.copyWith(
       starting_position_meters_from_processor: null ==
@@ -820,6 +823,10 @@ class _$Auto2025CopyWithImpl<$Res, $Val extends Auto2025>
           ? _value.preload
           : preload // ignore: cast_nullable_to_non_nullable
               as bool,
+      both_sides: null == both_sides
+          ? _value.both_sides
+          : both_sides // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -837,7 +844,8 @@ abstract class _$$Auto2025ImplCopyWith<$Res>
       List<AutoStep2025> steps,
       List<String> field_side,
       bool exit,
-      bool preload});
+      bool preload,
+      bool both_sides});
 }
 
 /// @nodoc
@@ -858,6 +866,7 @@ class __$$Auto2025ImplCopyWithImpl<$Res>
     Object? field_side = null,
     Object? exit = null,
     Object? preload = null,
+    Object? both_sides = null,
   }) {
     return _then(_$Auto2025Impl(
       starting_position_meters_from_processor: null ==
@@ -881,6 +890,10 @@ class __$$Auto2025ImplCopyWithImpl<$Res>
           ? _value.preload
           : preload // ignore: cast_nullable_to_non_nullable
               as bool,
+      both_sides: null == both_sides
+          ? _value.both_sides
+          : both_sides // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -893,7 +906,8 @@ class _$Auto2025Impl implements _Auto2025 {
       required final List<AutoStep2025> steps,
       required final List<String> field_side,
       required this.exit,
-      required this.preload})
+      required this.preload,
+      this.both_sides = false})
       : _steps = steps,
         _field_side = field_side;
 
@@ -922,10 +936,13 @@ class _$Auto2025Impl implements _Auto2025 {
   final bool exit;
   @override
   final bool preload;
+  @override
+  @JsonKey()
+  final bool both_sides;
 
   @override
   String toString() {
-    return 'Auto2025(starting_position_meters_from_processor: $starting_position_meters_from_processor, steps: $steps, field_side: $field_side, exit: $exit, preload: $preload)';
+    return 'Auto2025(starting_position_meters_from_processor: $starting_position_meters_from_processor, steps: $steps, field_side: $field_side, exit: $exit, preload: $preload, both_sides: $both_sides)';
   }
 
   @override
@@ -941,7 +958,9 @@ class _$Auto2025Impl implements _Auto2025 {
             const DeepCollectionEquality()
                 .equals(other._field_side, _field_side) &&
             (identical(other.exit, exit) || other.exit == exit) &&
-            (identical(other.preload, preload) || other.preload == preload));
+            (identical(other.preload, preload) || other.preload == preload) &&
+            (identical(other.both_sides, both_sides) ||
+                other.both_sides == both_sides));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -952,7 +971,8 @@ class _$Auto2025Impl implements _Auto2025 {
       const DeepCollectionEquality().hash(_steps),
       const DeepCollectionEquality().hash(_field_side),
       exit,
-      preload);
+      preload,
+      both_sides);
 
   /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.
@@ -976,7 +996,8 @@ abstract class _Auto2025 implements Auto2025 {
       required final List<AutoStep2025> steps,
       required final List<String> field_side,
       required final bool exit,
-      required final bool preload}) = _$Auto2025Impl;
+      required final bool preload,
+      final bool both_sides}) = _$Auto2025Impl;
 
   factory _Auto2025.fromJson(Map<String, dynamic> json) =
       _$Auto2025Impl.fromJson;
@@ -991,6 +1012,8 @@ abstract class _Auto2025 implements Auto2025 {
   bool get exit;
   @override
   bool get preload;
+  @override
+  bool get both_sides;
 
   /// Create a copy of Auto2025
   /// with the given fields replaced by the non-null parameter values.

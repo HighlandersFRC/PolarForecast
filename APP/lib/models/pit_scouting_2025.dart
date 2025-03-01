@@ -50,6 +50,7 @@ class Auto2025 with _$Auto2025 {
     required List<String> field_side,
     required bool exit,
     required bool preload,
+    @Default(false) bool both_sides,
   }) = _Auto2025;
 
   factory Auto2025.fromJson(Map<String, dynamic> json) =>

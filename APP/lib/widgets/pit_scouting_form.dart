@@ -176,6 +176,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 field_side: ['red', 'blue'],
                 exit: false,
                 preload: false,
+                both_sides: false,
               ),
             ),
         ),

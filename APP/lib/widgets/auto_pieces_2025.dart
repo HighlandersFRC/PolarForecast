@@ -2220,6 +2220,20 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                               .onChanged!(widget.auto.copyWith(preload: value));
                         },
                 ),
+                if (!widget.matchScouting)
+                  SwitchListTile(
+                    activeColor: Colors.blue,
+                    inactiveThumbColor: Colors.blue,
+                    title: Text('Works on Left and Right?'),
+                    value: widget.auto.both_sides,
+                    onChanged: widget.onChanged == null || widget.locked
+                        ? null
+                        : (bool value) {
+                            HapticFeedback.lightImpact();
+                            widget.onChanged!(
+                                widget.auto.copyWith(both_sides: value));
+                          },
+                  ),
               ],
             );
           },
