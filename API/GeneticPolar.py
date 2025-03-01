@@ -13,6 +13,7 @@ from RemoveBadData import (
 )
 
 warnings.filterwarnings("ignore")
+NET_ALGAE_COMPLETION_RATE = 0.9
 
 
 def flatten_dict(dd, separator="_", prefix=""):
@@ -109,6 +110,10 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     for row in data:
         if not row.score_breakdown == None:
             for allianceStr in row.alliances:
+                if allianceStr == 'red':
+                    opponentStr = 'blue'
+                else:
+                    opponentStr = 'red'
                 oprMatchEntry = copy.deepcopy(blankOprEntry)
                 oprMatchEntry["allianceStr"] = allianceStr
                 oprMatchEntry["match_number"] = row.match_number
@@ -136,7 +141,9 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                 oprMatchEntry["teleop_scoring_l_4"] = getLevelScoringCount(
                     row.score_breakdown[allianceStr].teleopReef.topRow, autoLevel=row.score_breakdown[allianceStr].autoReef.topRow)
                 oprMatchEntry["processor"] = row.score_breakdown[allianceStr].wallAlgaeCount
-                oprMatchEntry["net"] = row.score_breakdown[allianceStr].netAlgaeCount
+                oprMatchEntry["net"] = row.score_breakdown[allianceStr].netAlgaeCount - \
+                    (row.score_breakdown[opponentStr].wallAlgaeCount *
+                     NET_ALGAE_COMPLETION_RATE)
                 oprMatchEntry["coopertition"] = 1 if row.score_breakdown[allianceStr].coopertitionCriteriaMet else 0
                 oprMatchEntry['foul_points'] = row.score_breakdown[allianceStr].foulPoints
                 oprMatchList.append(copy.deepcopy(oprMatchEntry))
@@ -255,7 +262,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         4,
         5,
         4,
-        6,
+        2,
     ]
 
     numEntries = len(scoutingBaseData)
@@ -436,7 +443,8 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             teamDeaths[i] = 0
     autoPoints += teamMobility * 3
     algaeTotal = XMatrix["net"] + XMatrix["processor"]
-    algaePoints = XMatrix["net"] * 4 + XMatrix["processor"]*6
+    algaePoints = XMatrix["net"] * 4 + \
+        XMatrix["processor"]*2
     coralTotal = autoCoral + teleopCoral
     teleopCoralPoints = np.zeros(len(teams))
     for i, x in enumerate([XMatrix[f'teleop_scoring_l_{i}'] for i in range(1, 5)]):

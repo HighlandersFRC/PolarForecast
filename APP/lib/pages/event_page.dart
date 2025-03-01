@@ -959,7 +959,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         name: 'Processor',
                         key: 'processor',
                         enabled: true,
-                        weight: 6),
+                        weight: 2),
                     new Field(
                         name: 'Mobility',
                         key: 'mobility',
