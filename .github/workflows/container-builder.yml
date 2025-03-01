@@ -37,7 +37,7 @@ jobs:
           id: deploy-to-webapp
           uses: azure/webapps-deploy@v2
           with:
-            app-name: 'HighlanderScoutingKeycloak'
+            app-name: 'HighlanderScoutingKC'
             slot-name: 'production'
             publish-profile: ${{ secrets.AzureAppService_PublishProfile_77a861e6874340409e32da87915fcdfd }}
             images: 'highlanderscouting.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_894a66622b344887b97ea38a0840b94f }}/keycloak:latest'
