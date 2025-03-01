@@ -1829,7 +1829,7 @@ class _MatchStatusSource extends DataGridSource {
         returnCells.add(Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
           alignment: Alignment.center,
-          color: matchStatus['predicted'] && matchStatus['blue_win_rp'] == 2
+          color: matchStatus['predicted'] && matchStatus['blue_win_rp'] == 3
               ? const Color.fromARGB(255, 0, 100, 150)
               : matchStatus['predicted'] && matchStatus['blue_win_rp'] == 0
                   ? color
@@ -1851,7 +1851,7 @@ class _MatchStatusSource extends DataGridSource {
         returnCells.add(Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
           alignment: Alignment.center,
-          color: matchStatus['predicted'] && matchStatus['red_win_rp'] == 2
+          color: matchStatus['predicted'] && matchStatus['red_win_rp'] == 3
               ? const Color.fromARGB(255, 140, 10, 0)
               : matchStatus['predicted'] && matchStatus['red_win_rp'] == 0
                   ? color

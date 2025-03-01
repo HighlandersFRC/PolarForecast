@@ -29,7 +29,7 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
     colorScrollController = ScrollController();
     notifier = widget.notifier ?? ScribbleNotifier();
     super.initState();
-    rootBundle.load('assets/2024GameField.png').then((value) {
+    rootBundle.load('assets/2025GameField.png').then((value) {
       decodeImageFromList(value.buffer.asUint8List())
           .then((data) => setState(() {
                 decodedImage = (data);
@@ -70,14 +70,14 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
               ),
             ),
             decodedImage == null
-                ? Image.asset('assets/2024GameField.png')
+                ? Image.asset('assets/2025GameField.png')
                 : Container(
                     width: maxWidth,
                     height: maxHeight,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset('assets/2024GameField.png'),
+                        Image.asset('assets/2025GameField.png'),
                         Scribble(
                           notifier: notifier,
                         ),
