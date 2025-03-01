@@ -440,7 +440,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     coralTotal = autoCoral + teleopCoral
     teleopCoralPoints = np.zeros(len(teams))
     for i, x in enumerate([XMatrix[f'teleop_scoring_l_{i}'] for i in range(1, 5)]):
-        teleopCoralPoints += (x * OPRWeights[3+i])
+        teleopCoralPoints += (x * OPRWeights[4+i])
     autoCoralPoints = np.zeros(len(teams))
     for i, x in enumerate([XMatrix[f'auto_scoring_l_{i}'] for i in range(1, 5)]):
         autoCoralPoints += (x * OPRWeights[i])
