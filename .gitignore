@@ -165,3 +165,6 @@ node_modules/
 
 # DrawIO
 *.bkp
+
+roles.json
+users.json
