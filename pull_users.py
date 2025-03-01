@@ -37,6 +37,18 @@ def fetch_data(endpoint, access_token):
     return response.json()
 
 
+def fetch_user_credentials(user_id, access_token):
+    """Fetch credentials for a specific user."""
+    url = f"{KEYCLOAK_HOST}/admin/realms/{REALM_NAME}/users/{user_id}/credentials"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
 def save_json(filename, data):
     """Save JSON data to a file."""
     with open(filename, "w") as f:
@@ -47,7 +59,17 @@ def main():
     access_token = get_access_token()
 
     users = fetch_data("users", access_token)
-    save_json("users.json", users)
+
+    for user in users:
+        user_id = user.get("id")
+        if user_id:
+            user["credentials"] = fetch_user_credentials(user_id, access_token)
+
+    userdata = {
+        'users': users
+    }
+
+    save_json("users.json", userdata)
     print("Saved users.json")
 
     roles = fetch_data("roles", access_token)
