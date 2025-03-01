@@ -1026,6 +1026,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             field_side: ['red', 'blue'],
             exit: false,
             preload: false,
+            both_sides: false,
           ),
           auto_scoring:
               AutoScoring(l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
@@ -1201,6 +1202,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               field_side: ['red', 'blue'],
               exit: false,
               preload: false,
+              both_sides: false,
             ),
             auto_scoring: AutoScoring(
                 l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),

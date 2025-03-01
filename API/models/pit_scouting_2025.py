@@ -22,6 +22,7 @@ class Auto2025(BaseModel):
     field_side: List[str]
     exit: bool
     preload: bool
+    both_sides: bool = False
 
 
 class PitData2025(BaseModel):

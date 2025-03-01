@@ -540,6 +540,7 @@ def get_pit_scouting_status(year: int, event: str, token: str = Depends(check_to
 def post_pit_scouting_data(data: PitScouting2025, token: str = Depends(check_token_active)):
     data.time = datetime.utcnow().timestamp()
     data.scout_info = scout_info_from_token(token)
+    data.data.favorite_color = profanity.censor(data.data.favorite_color)
     try:
         teams = getEventTeams(data.event_code)
     except:

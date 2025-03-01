@@ -81,6 +81,7 @@ _$Auto2025Impl _$$Auto2025ImplFromJson(Map<String, dynamic> json) =>
           .toList(),
       exit: json['exit'] as bool,
       preload: json['preload'] as bool,
+      both_sides: json['both_sides'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$Auto2025ImplToJson(_$Auto2025Impl instance) =>
@@ -91,6 +92,7 @@ Map<String, dynamic> _$$Auto2025ImplToJson(_$Auto2025Impl instance) =>
       'field_side': instance.field_side,
       'exit': instance.exit,
       'preload': instance.preload,
+      'both_sides': instance.both_sides,
     };
 
 _$AutoStep2025Impl _$$AutoStep2025ImplFromJson(Map<String, dynamic> json) =>

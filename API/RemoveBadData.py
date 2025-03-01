@@ -2,9 +2,7 @@ import copy
 import numpy as np
 import pandas as pd
 
-from models.pit_scouting_2025 import Auto2025
-from models.scout_info import ScoutInfo
-from models.match_scouting_2025 import Data2025, MatchScouting2025, Miscellaneous2025, Scoring2025
+from models.match_scouting_2025 import Data2025, MatchScouting2025, Scoring2025
 
 
 def dataOPR(scoutData: MatchScouting2025) -> int:
