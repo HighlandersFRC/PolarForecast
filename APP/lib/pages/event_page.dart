@@ -534,7 +534,7 @@ class _ChartsTabState extends State<_ChartsTab> {
         children: [
           Text('Scouting Data By Match',
               style: TextStyle(fontSize: 20, color: Colors.blue)),
-          if (token != null)
+          if (token != null && teams.isNotEmpty)
             LayoutBuilder(builder: (context, constraints) {
               bool landscape =
                   MediaQuery.of(context).orientation == Orientation.landscape;
@@ -847,6 +847,10 @@ class _ChartsTabState extends State<_ChartsTab> {
             }),
           if (token == null)
             LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}'),
+          if (token != null && teams.isEmpty)
+            Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No scouting data available for this event')),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
