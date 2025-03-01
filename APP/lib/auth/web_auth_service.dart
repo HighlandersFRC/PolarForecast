@@ -88,7 +88,11 @@ class WebAuthService implements AuthService {
 
     final refreshToken = window.localStorage[refreshTokenKey];
     if (refreshToken != null) {
-      return await _refreshToken(refreshToken);
+      try {
+        return await _refreshToken(refreshToken);
+      } catch (e) {
+        print(e);
+      }
     }
 
     final uri = Uri.parse(window.location.href);
