@@ -364,7 +364,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
         ),
       );
     }).toList();
-    return widget.onChanged != null || !widget.locked
+    return widget.onChanged == null || widget.locked
         ? ListView(
             children: items,
             shrinkWrap: true,
