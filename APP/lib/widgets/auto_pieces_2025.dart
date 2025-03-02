@@ -2195,31 +2195,34 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                               style: TextStyle(color: Colors.white),
                             )),
                       ]),
-                SwitchListTile(
-                  activeColor: Colors.blue,
-                  inactiveThumbColor: Colors.blue,
-                  title: Text('Exit'),
-                  value: widget.auto.exit,
-                  onChanged: widget.onChanged == null || widget.locked
-                      ? null
-                      : (bool value) {
-                          HapticFeedback.lightImpact();
-                          widget.onChanged!(widget.auto.copyWith(exit: value));
-                        },
-                ),
-                SwitchListTile(
-                  activeColor: Colors.blue,
-                  inactiveThumbColor: Colors.blue,
-                  title: Text('Preload'),
-                  value: widget.auto.preload,
-                  onChanged: widget.onChanged == null || widget.locked
-                      ? null
-                      : (bool value) {
-                          HapticFeedback.lightImpact();
-                          widget
-                              .onChanged!(widget.auto.copyWith(preload: value));
-                        },
-                ),
+                if (!widget.matchScouting)
+                  SwitchListTile(
+                    activeColor: Colors.blue,
+                    inactiveThumbColor: Colors.blue,
+                    title: Text('Exit'),
+                    value: widget.auto.exit,
+                    onChanged: widget.onChanged == null || widget.locked
+                        ? null
+                        : (bool value) {
+                            HapticFeedback.lightImpact();
+                            widget
+                                .onChanged!(widget.auto.copyWith(exit: value));
+                          },
+                  ),
+                if (!widget.matchScouting)
+                  SwitchListTile(
+                    activeColor: Colors.blue,
+                    inactiveThumbColor: Colors.blue,
+                    title: Text('Preload'),
+                    value: widget.auto.preload,
+                    onChanged: widget.onChanged == null || widget.locked
+                        ? null
+                        : (bool value) {
+                            HapticFeedback.lightImpact();
+                            widget.onChanged!(
+                                widget.auto.copyWith(preload: value));
+                          },
+                  ),
                 if (!widget.matchScouting)
                   SwitchListTile(
                     activeColor: Colors.blue,
