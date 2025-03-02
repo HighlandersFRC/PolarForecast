@@ -1,9 +1,12 @@
-import 'dart:io';
-
+import 'dart:convert';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:csv/csv.dart';
+
+import '../utils.dart';
 
 class BarChartWithWeights extends StatefulWidget {
   final List<TeamStats2025> data;
@@ -116,18 +119,50 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
       Colors.blueGrey,
       Colors.greenAccent,
     ];
-    bool isMobile() {
-      try {
-        return (Platform.isAndroid || Platform.isIOS);
-      } catch (e) {
-        return false;
+
+    void _exportToCSV() {
+      List<List<dynamic>> rows = [];
+      List<dynamic> header = ['team_number'];
+      for (var field in fields) {
+        if (field.enabled) {
+          header.add('${field.name} (x${field.weight})');
+        }
       }
+      header.add('Total');
+      rows.add(header);
+
+      for (var data in chartData) {
+        List<dynamic> row = [data['team_number']];
+        double total = 0;
+        for (var field in fields) {
+          if (field.enabled) {
+            double value = data[field.key] is num
+                ? (data[field.key] as num).toDouble()
+                : 0.0;
+            row.add(value);
+            total += value;
+          }
+        }
+        row.add(total);
+        rows.add(row);
+      }
+
+      String csv = ListToCsvConverter().convert(rows);
+      final bytes = utf8.encode(csv);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', '${widget.title}.csv')
+        ..click();
+      html.Url.revokeObjectUrl(url);
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           widget.title,
+          textAlign: TextAlign.center,
           style: TextStyle(color: Colors.blue, fontSize: 20),
         ),
         SfCartesianChart(
@@ -180,6 +215,11 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
               ),
             );
           }).toList(),
+        ),
+        SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: _exportToCSV,
+          child: Text('Export to CSV'),
         ),
       ],
     );

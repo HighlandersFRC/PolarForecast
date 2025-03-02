@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
+import 'dart:html' as html;
+import 'package:csv/csv.dart';
 import 'package:flat/flat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -366,23 +369,56 @@ class _RankingsTabState extends State<_RankingsTab> {
     const columnMinWidth = 95.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
-    return Center(
-        child: LayoutBuilder(
-            builder: (context, constraints) => Container(
-                  height: constraints.maxHeight,
-                  width: constraints.maxWidth,
-                  child: SfDataGrid(
-                    allowFiltering: true,
-                    defaultColumnWidth: columnMinWidth,
-                    columnWidthMode:
-                        isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-                    allowSorting: true,
-                    columns: dataColumns,
-                    frozenColumnsCount: 2,
-                    source: _TeamDataSource(dataRows, minValues, maxValues,
-                        heatMapFromKey, context, widget.tournament),
-                  ),
-                )));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            List<List<dynamic>> csvData = [
+              dataColumns.map((e) => e.columnName).toList()
+            ];
+            for (var row in dataRows) {
+              csvData.add(row.getCells().map((e) => e.value).toList());
+            }
+            String csv = const ListToCsvConverter().convert(csvData);
+            final bytes = utf8.encode(csv);
+            final blob = html.Blob([bytes]);
+            final url = html.Url.createObjectUrlFromBlob(blob);
+            html.AnchorElement(href: url)
+              ..setAttribute('download', '${widget.tournament.display}.csv')
+              ..click();
+            html.Url.revokeObjectUrl(url);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            side: BorderSide(color: Colors.blue.shade900, width: 2),
+          ),
+          child: Text('Export as CSV'),
+        ),
+        Expanded(
+          child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) => Container(
+                height: constraints.maxHeight,
+                width: constraints.maxWidth,
+                child: SfDataGrid(
+                  allowFiltering: true,
+                  defaultColumnWidth: columnMinWidth,
+                  columnWidthMode:
+                      isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+                  allowSorting: true,
+                  columns: dataColumns,
+                  frozenColumnsCount: 2,
+                  source: _TeamDataSource(dataRows, minValues, maxValues,
+                      heatMapFromKey, context, widget.tournament),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -851,6 +887,7 @@ class _ChartsTabState extends State<_ChartsTab> {
             Padding(
                 padding: EdgeInsets.all(20),
                 child: Text('No scouting data available for this event')),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -874,6 +911,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -892,6 +930,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -910,6 +949,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -1598,6 +1638,9 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   }
 
   Future<void> fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       token = await apiService.token;
@@ -1694,34 +1737,37 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
         dataColumns.length * columnMinWidth;
 
     return Center(
-        child: token == null
-            ? LoginWidget(
-                redirect_path: 'event/${widget.widget.tournament.key}')
-            : !hasGoodGroup
-                ? Card(
-                    child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: Text('Your Group is not part of this event')))
-                : LayoutBuilder(
-                    builder: (context, constraints) => Container(
-                        alignment: Alignment.center,
-                        height: constraints.maxHeight,
-                        width: constraints.maxWidth,
-                        child: InteractiveViewer(
-                          scaleEnabled: false,
-                          clipBehavior: Clip.hardEdge,
-                          child: SfDataGrid(
-                            allowSorting: true,
-                            columns: dataColumns,
-                            defaultColumnWidth: columnMinWidth,
-                            columnWidthMode: isWide
-                                ? ColumnWidthMode.fill
-                                : ColumnWidthMode.none,
-                            frozenColumnsCount: 0,
-                            source: _StatusSource(
-                                context, dataRows, widget.widget.tournament),
-                          ),
-                        ))));
+        child: isLoading
+            ? CircularProgressIndicator(color: Colors.blue)
+            : token == null
+                ? LoginWidget(
+                    redirect_path: 'event/${widget.widget.tournament.key}')
+                : !hasGoodGroup
+                    ? Card(
+                        child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child:
+                                Text('Your Group is not part of this event')))
+                    : LayoutBuilder(
+                        builder: (context, constraints) => Container(
+                            alignment: Alignment.center,
+                            height: constraints.maxHeight,
+                            width: constraints.maxWidth,
+                            child: InteractiveViewer(
+                              scaleEnabled: false,
+                              clipBehavior: Clip.hardEdge,
+                              child: SfDataGrid(
+                                allowSorting: true,
+                                columns: dataColumns,
+                                defaultColumnWidth: columnMinWidth,
+                                columnWidthMode: isWide
+                                    ? ColumnWidthMode.fill
+                                    : ColumnWidthMode.none,
+                                frozenColumnsCount: 0,
+                                source: _StatusSource(context, dataRows,
+                                    widget.widget.tournament),
+                              ),
+                            ))));
   }
 }
 
@@ -2332,6 +2378,10 @@ class _AutosTabState extends State<_AutosTab> {
                       redirect_path: 'event/${widget.widget.tournament.key}'))
               : Column(
                   children: [
+                    Text(
+                      'Filtering Coming Soon...',
+                      style: TextStyle(color: Colors.blue, fontSize: 30),
+                    ),
                     if (filteredData.length == 0 && scoutingData.length != 0)
                       Text(
                         'No data with selected filters',
