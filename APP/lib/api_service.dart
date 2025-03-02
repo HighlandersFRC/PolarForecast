@@ -492,7 +492,7 @@ class ApiService {
       String group_name, String event_key, String other_group) async {
     final response = await http.post(
       Uri.parse(
-          '$APIURL/Group/$group_name/Event/$event_key/Alliance/Request/?other_group=$other_group'),
+          '$APIURL/Group/$group_name/Event/$event_key/Alliance/Request?other_group=$other_group'),
       headers: {
         'token': (await token) ?? '',
       },
