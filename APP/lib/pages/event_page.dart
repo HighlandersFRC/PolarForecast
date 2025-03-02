@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
+import 'dart:html' as html;
+import 'package:csv/csv.dart';
 import 'package:flat/flat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -366,23 +369,56 @@ class _RankingsTabState extends State<_RankingsTab> {
     const columnMinWidth = 95.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
-    return Center(
-        child: LayoutBuilder(
-            builder: (context, constraints) => Container(
-                  height: constraints.maxHeight,
-                  width: constraints.maxWidth,
-                  child: SfDataGrid(
-                    allowFiltering: true,
-                    defaultColumnWidth: columnMinWidth,
-                    columnWidthMode:
-                        isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-                    allowSorting: true,
-                    columns: dataColumns,
-                    frozenColumnsCount: 2,
-                    source: _TeamDataSource(dataRows, minValues, maxValues,
-                        heatMapFromKey, context, widget.tournament),
-                  ),
-                )));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            List<List<dynamic>> csvData = [
+              dataColumns.map((e) => e.columnName).toList()
+            ];
+            for (var row in dataRows) {
+              csvData.add(row.getCells().map((e) => e.value).toList());
+            }
+            String csv = const ListToCsvConverter().convert(csvData);
+            final bytes = utf8.encode(csv);
+            final blob = html.Blob([bytes]);
+            final url = html.Url.createObjectUrlFromBlob(blob);
+            html.AnchorElement(href: url)
+              ..setAttribute('download', '${widget.tournament.display}.csv')
+              ..click();
+            html.Url.revokeObjectUrl(url);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            side: BorderSide(color: Colors.blue.shade900, width: 2),
+          ),
+          child: Text('Export as CSV'),
+        ),
+        Expanded(
+          child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) => Container(
+                height: constraints.maxHeight,
+                width: constraints.maxWidth,
+                child: SfDataGrid(
+                  allowFiltering: true,
+                  defaultColumnWidth: columnMinWidth,
+                  columnWidthMode:
+                      isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+                  allowSorting: true,
+                  columns: dataColumns,
+                  frozenColumnsCount: 2,
+                  source: _TeamDataSource(dataRows, minValues, maxValues,
+                      heatMapFromKey, context, widget.tournament),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -851,6 +887,7 @@ class _ChartsTabState extends State<_ChartsTab> {
             Padding(
                 padding: EdgeInsets.all(20),
                 child: Text('No scouting data available for this event')),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -874,6 +911,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -892,6 +930,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
@@ -910,6 +949,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                   ])),
+          Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
