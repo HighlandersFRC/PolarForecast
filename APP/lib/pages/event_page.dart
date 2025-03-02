@@ -1638,6 +1638,9 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   }
 
   Future<void> fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       token = await apiService.token;
@@ -1734,34 +1737,37 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
         dataColumns.length * columnMinWidth;
 
     return Center(
-        child: token == null
-            ? LoginWidget(
-                redirect_path: 'event/${widget.widget.tournament.key}')
-            : !hasGoodGroup
-                ? Card(
-                    child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: Text('Your Group is not part of this event')))
-                : LayoutBuilder(
-                    builder: (context, constraints) => Container(
-                        alignment: Alignment.center,
-                        height: constraints.maxHeight,
-                        width: constraints.maxWidth,
-                        child: InteractiveViewer(
-                          scaleEnabled: false,
-                          clipBehavior: Clip.hardEdge,
-                          child: SfDataGrid(
-                            allowSorting: true,
-                            columns: dataColumns,
-                            defaultColumnWidth: columnMinWidth,
-                            columnWidthMode: isWide
-                                ? ColumnWidthMode.fill
-                                : ColumnWidthMode.none,
-                            frozenColumnsCount: 0,
-                            source: _StatusSource(
-                                context, dataRows, widget.widget.tournament),
-                          ),
-                        ))));
+        child: isLoading
+            ? CircularProgressIndicator(color: Colors.blue)
+            : token == null
+                ? LoginWidget(
+                    redirect_path: 'event/${widget.widget.tournament.key}')
+                : !hasGoodGroup
+                    ? Card(
+                        child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child:
+                                Text('Your Group is not part of this event')))
+                    : LayoutBuilder(
+                        builder: (context, constraints) => Container(
+                            alignment: Alignment.center,
+                            height: constraints.maxHeight,
+                            width: constraints.maxWidth,
+                            child: InteractiveViewer(
+                              scaleEnabled: false,
+                              clipBehavior: Clip.hardEdge,
+                              child: SfDataGrid(
+                                allowSorting: true,
+                                columns: dataColumns,
+                                defaultColumnWidth: columnMinWidth,
+                                columnWidthMode: isWide
+                                    ? ColumnWidthMode.fill
+                                    : ColumnWidthMode.none,
+                                frozenColumnsCount: 0,
+                                source: _StatusSource(context, dataRows,
+                                    widget.widget.tournament),
+                              ),
+                            ))));
   }
 }
 
@@ -2372,6 +2378,10 @@ class _AutosTabState extends State<_AutosTab> {
                       redirect_path: 'event/${widget.widget.tournament.key}'))
               : Column(
                   children: [
+                    Text(
+                      'Filtering Coming Soon...',
+                      style: TextStyle(color: Colors.blue, fontSize: 30),
+                    ),
                     if (filteredData.length == 0 && scoutingData.length != 0)
                       Text(
                         'No data with selected filters',
