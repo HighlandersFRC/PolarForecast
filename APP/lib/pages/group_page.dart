@@ -639,7 +639,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                             if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}'),
                                                                                             ...List.generate(groups.length, (int group_index) {
                                                                                               return ListTile(
-                                                                                                  title: Text(groups[group_index]['name']),
+                                                                                                  title: Text('${groups[group_index]['name']} - ${groups[group_index]['affiliation'].substring(3)}'),
                                                                                                   onTap: () {
                                                                                                     apiService.request_alliance(widget.group!.name, widget.group!.events[event_index].event_code, groups[group_index]['name']).then((_requests) {
                                                                                                       setState(() {
