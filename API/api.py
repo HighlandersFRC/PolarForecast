@@ -1871,7 +1871,6 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
             for entry in matchScoutingEntries:
                 if entry.match_number == match_number:
                     teamInMatch = True
-                else:
                     break
             if not teamInMatch:
                 raise HTTPException(
