@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
@@ -247,7 +248,7 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
                     for team1 in teamEntries[teams[1]]:
                         for team2 in teamEntries[teams[2]]:
                             combinations.append(
-                                {teams[0]: team0, teams[1]                                    : team1, teams[2]: team2}
+                                {teams[0]: team0, teams[1]: team1, teams[2]: team2}
                             )
                 combinationError = []
                 for i in range(len(combinations)):
@@ -315,7 +316,6 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
 
 
 def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) -> tuple[list[MatchScouting2025], list]:
-    # print("Removed selected Pieces")
     teams = []
     teamMatches: list[dict[int, list[MatchScouting2025]]] = []
     retval = []
@@ -331,13 +331,16 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) 
             teamMatches[teams.index(entry.team_number)
                         ][entry.match_number] = []
         teamMatches[teams.index(entry.team_number)][entry.match_number].append(
-            entry.match_number)
+            entry)
     # print("made list of teams")
+    # print(teamMatches)
     for team in teams:
-        for match, matches in teamMatches[teams.index(team)]:
+        for match in teamMatches[teams.index(team)]:
+            matches = teamMatches[teams.index(team)][match]
             teamEntries: list[MatchScouting2025] = matches
             returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=teamEntries[0].scout_info, data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
-                l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous))
+                l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous), time=int(datetime.now().timestamp()))
+            # print("Made Blank Entry")
             totalTrust = 0
             for entry in teamEntries:
                 entryTrust = scoutRatings["trustRatings"][scoutRatings["scouts"].index(
@@ -355,6 +358,7 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) 
                 returnEntry.data.auto_scoring.l_4 += entry.data.auto_scoring.l_4*entryTrust
                 returnEntry.data.auto_scoring.net += entry.data.auto_scoring.net*entryTrust
                 returnEntry.data.auto_scoring.processor += entry.data.auto_scoring.processor*entryTrust
+            # print("Made Entry")
             if not totalTrust == 0:
                 returnEntry.data.teleop_scoring.l_1 /= totalTrust
                 returnEntry.data.teleop_scoring.l_2 /= totalTrust
