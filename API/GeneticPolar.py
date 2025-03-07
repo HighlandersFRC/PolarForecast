@@ -199,8 +199,8 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
-        matchScoutingCount[teams.index(entry.team_number)] += 1
-        teamDeaths[teams.index(entry.team_number)
+        matchScoutingCount[teams.index(str(entry.team_number))] += 1
+        teamDeaths[teams.index(str(entry.team_number))
                    ] += 1 if entry.data.miscellaneous.died else 0
 
     # All of the keys, maxs, and mins

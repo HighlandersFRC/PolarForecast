@@ -1373,6 +1373,22 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           onChanged: (int? value) {
                             setState(() {
                               driverStationIndex = value!;
+                              if (value == 0) {
+                                data = data.copyWith(
+                                    data: data.data.copyWith(
+                                        auto: data.data.auto.copyWith(
+                                            field_side: ['red', 'blue'])));
+                              } else if (value < 4) {
+                                data = data.copyWith(
+                                    data: data.data.copyWith(
+                                        auto: data.data.auto
+                                            .copyWith(field_side: ['red'])));
+                              } else if (value > 3) {
+                                data = data.copyWith(
+                                    data: data.data.copyWith(
+                                        auto: data.data.auto
+                                            .copyWith(field_side: ['blue'])));
+                              }
                             });
                             getNewMatchDetails(data.match_number);
                           },

@@ -1960,20 +1960,20 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
         scoutEntries = [x for x in [MatchScouting2025(
             **entry) for entry in get_scout_team_entries(team, event, year, token)]]
         deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
-        for entry in scoutEntries:
-            if entry.data.miscellaneous.died:
-                deathEntries.append(entry)
         if len(deathEntries) == 0:
             return DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
         else:
             formData = DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(
                 year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
             notRecorded = True
-            for death in formData.deaths:
-                if death.match_number == entry.match_number:
-                    notRecorded = False
-            if notRecorded:
-                formData.deaths.append(Death(match_number=entry.match_number))
+            for entry in deathEntries:
+                for death in formData.deaths:
+                    if death.match_number == entry.match_number:
+                        notRecorded = False
+                        break
+                if notRecorded:
+                    formData.deaths.append(
+                        Death(match_number=entry.match_number))
             return formData.dict()
 
 
@@ -2035,7 +2035,7 @@ def convertData(calculatedData, year, event_code):
             if item["team_key"] == data["key"]:
                 data["rank"] = item["rank"]
                 break
-        idx = calculatedData["team_number"].index(team)
+        idx = calculatedData["team_number"].index(f"{team}")
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
         retvallist.append(data)
@@ -2222,22 +2222,24 @@ def updateGroupData(group: Group, event_code: str):
     numEntries = []
     for event in group.events:
         if event.event_code == event_code:
-            users = _getGroupMembers(group.group_id)
-            members = users['owners']
-            members.extend(users['members'])
-            members.extend(users['admins'])
-            for alliance in event.alliance_groups:
-                allianceMembers = _getGroupMembers(alliance.group_id)
-                members.extend(allianceMembers['owners'])
-                members.extend(allianceMembers['members'])
-                members.extend(allianceMembers['admins'])
-            member_ids = [member["id"]
-                          for member in members if isinstance(member, dict)]
-            scoutingData = [MatchScouting2025(**entry) for entry in list(MatchScoutingCollection.find(
-                {"scout_info.id": {"$in": member_ids}}))]
+            members = []
+            members.extend(fetch_group_members(group.group_id))
+            member_ids = [member['id'] for member in members]
+            alliance_members = []
+            for groupEvent in group.events:
+                if groupEvent.event_code == event_code:
+                    for alliance in groupEvent.alliance_groups:
+                        alliance_members.extend(
+                            fetch_group_members(alliance.group_id))
+            alliance_member_ids = [member['id'] for member in alliance_members]
+            member_entries = [MatchScouting2025(
+                **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
+            alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+                {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
             try:
                 calculatedData, ratings = analyzeData(
-                    TBAData, scoutingData)
+                    TBAData, member_entries+alliance_entries)
+                print("analyzed")
                 data = calculatedData.to_dict("list")
                 data = convertData(data, YEAR, event_code)
             except Exception as e:
@@ -2315,14 +2317,17 @@ def updateGroupData(group: Group, event_code: str):
             metadata = {"last_modified": datetime.utcnow().timestamp(),
                         "etag": None, "tba": False}
             try:
-                # print("manufacturing scout rankings")
+                print("manufacturing scout rankings")
                 ratings = {
                     "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
-                ratings["entries"] = list(
-                    numpy.zeros(len(ratings["scouts"])))
-                for idx, scout in enumerate(ratings["scouts"]):
-                    ratings["entries"][idx] = numEntries[scouts.index(
-                        scout["name"])]
+                print(ratings)
+                # scouts = ratings["scouts"]
+                # ratings["entries"] = list(
+                #     numpy.zeros(len(ratings["scouts"])))
+                # for idx, scout in enumerate(ratings["scouts"]):
+                #     ratings["entries"][idx] = numEntries[scouts.index(
+                #         scout)]
+                print("Made Ratings")
             except Exception as e:
                 logging.error(e)
             try:
