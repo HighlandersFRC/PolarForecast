@@ -3,7 +3,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from models.match_scouting_2025 import Data2025, MatchScouting2025, Scoring2025
+from models.scout_info import ScoutInfo
+from models.match_scouting_2025 import Data2025, MatchScouting2025, Miscellaneous2025, Scoring2025
 
 
 def dataOPR(scoutData: MatchScouting2025) -> int:
@@ -317,7 +318,6 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
 
 def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) -> tuple[list[MatchScouting2025], list]:
     teams = []
-    teamMatches: list[dict[int, list[MatchScouting2025]]] = []
     retval = []
     # print("removed outliers")
     scoutRatings = getMarkovianRatings(TBAData, scoutingData)
@@ -326,53 +326,50 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) 
     for entry in scoutingData:
         if not teams.__contains__(entry.team_number):
             teams.append(entry.team_number)
-            teamMatches.append({})
-        if not entry.match_number in teamMatches[teams.index(entry.team_number)]:
-            teamMatches[teams.index(entry.team_number)
-                        ][entry.match_number] = []
-        teamMatches[teams.index(entry.team_number)][entry.match_number].append(
-            entry)
     # print("made list of teams")
     # print(teamMatches)
     for team in teams:
-        for match in teamMatches[teams.index(team)]:
-            matches = teamMatches[teams.index(team)][match]
-            teamEntries: list[MatchScouting2025] = matches
-            returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=teamEntries[0].scout_info, data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
-                l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous), time=int(datetime.now().timestamp()))
-            # print("Made Blank Entry")
-            totalTrust = 0
-            for entry in teamEntries:
-                entryTrust = scoutRatings["trustRatings"][scoutRatings["scouts"].index(
-                    entry.scout_info.user_id)]
-                totalTrust += entryTrust
-                returnEntry.data.teleop_scoring.l_1 += entry.data.teleop_scoring.l_1*entryTrust
-                returnEntry.data.teleop_scoring.l_2 += entry.data.teleop_scoring.l_2*entryTrust
-                returnEntry.data.teleop_scoring.l_3 += entry.data.teleop_scoring.l_3*entryTrust
-                returnEntry.data.teleop_scoring.l_4 += entry.data.teleop_scoring.l_4*entryTrust
-                returnEntry.data.teleop_scoring.net += entry.data.teleop_scoring.net*entryTrust
-                returnEntry.data.teleop_scoring.processor += entry.data.teleop_scoring.processor*entryTrust
-                returnEntry.data.auto_scoring.l_1 += entry.data.auto_scoring.l_1*entryTrust
-                returnEntry.data.auto_scoring.l_2 += entry.data.auto_scoring.l_2*entryTrust
-                returnEntry.data.auto_scoring.l_3 += entry.data.auto_scoring.l_3*entryTrust
-                returnEntry.data.auto_scoring.l_4 += entry.data.auto_scoring.l_4*entryTrust
-                returnEntry.data.auto_scoring.net += entry.data.auto_scoring.net*entryTrust
-                returnEntry.data.auto_scoring.processor += entry.data.auto_scoring.processor*entryTrust
-            # print("Made Entry")
-            if not totalTrust == 0:
-                returnEntry.data.teleop_scoring.l_1 /= totalTrust
-                returnEntry.data.teleop_scoring.l_2 /= totalTrust
-                returnEntry.data.teleop_scoring.l_3 /= totalTrust
-                returnEntry.data.teleop_scoring.l_4 /= totalTrust
-                returnEntry.data.teleop_scoring.net /= totalTrust
-                returnEntry.data.teleop_scoring.processor /= totalTrust
-                returnEntry.data.auto_scoring.l_1 /= totalTrust
-                returnEntry.data.auto_scoring.l_2 /= totalTrust
-                returnEntry.data.auto_scoring.l_3 /= totalTrust
-                returnEntry.data.auto_scoring.l_4 /= totalTrust
-                returnEntry.data.auto_scoring.net /= totalTrust
-                returnEntry.data.auto_scoring.processor /= totalTrust
-            retval.append(returnEntry)
+        teamEntries: list[MatchScouting2025] = []
+        returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=ScoutInfo(user_id="", first_name="", username="", team_number=0), data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
+            l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=Miscellaneous2025(died=False, comments="")))
+        for entry in scoutingData:
+            if entry.team_number == team:
+                if not teamEntries.__contains__(entry):
+                    teamEntries.append(entry)
+                    returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=teamEntries[0].scout_info, data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
+                        l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous))
+        totalTrust = 0
+        for entry in teamEntries:
+            entryTrust = scoutRatings["trustRatings"][scoutRatings["scouts"].index(
+                entry.scout_info.user_id)]
+            totalTrust += entryTrust
+            returnEntry.data.teleop_scoring.l_1 += entry.data.teleop_scoring.l_1*entryTrust
+            returnEntry.data.teleop_scoring.l_2 += entry.data.teleop_scoring.l_2*entryTrust
+            returnEntry.data.teleop_scoring.l_3 += entry.data.teleop_scoring.l_3*entryTrust
+            returnEntry.data.teleop_scoring.l_4 += entry.data.teleop_scoring.l_4*entryTrust
+            returnEntry.data.teleop_scoring.net += entry.data.teleop_scoring.net*entryTrust
+            returnEntry.data.teleop_scoring.processor += entry.data.teleop_scoring.processor*entryTrust
+            returnEntry.data.auto_scoring.l_1 += entry.data.auto_scoring.l_1*entryTrust
+            returnEntry.data.auto_scoring.l_2 += entry.data.auto_scoring.l_2*entryTrust
+            returnEntry.data.auto_scoring.l_3 += entry.data.auto_scoring.l_3*entryTrust
+            returnEntry.data.auto_scoring.l_4 += entry.data.auto_scoring.l_4*entryTrust
+            returnEntry.data.auto_scoring.net += entry.data.auto_scoring.net*entryTrust
+            returnEntry.data.auto_scoring.processor += entry.data.auto_scoring.processor*entryTrust
+        if not totalTrust == 0:
+            returnEntry.data.teleop_scoring.l_1 /= totalTrust
+            returnEntry.data.teleop_scoring.l_2 /= totalTrust
+            returnEntry.data.teleop_scoring.l_3 /= totalTrust
+            returnEntry.data.teleop_scoring.l_4 /= totalTrust
+            returnEntry.data.teleop_scoring.net /= totalTrust
+            returnEntry.data.teleop_scoring.processor /= totalTrust
+            returnEntry.data.auto_scoring.l_1 /= totalTrust
+            returnEntry.data.auto_scoring.l_2 /= totalTrust
+            returnEntry.data.auto_scoring.l_3 /= totalTrust
+            returnEntry.data.auto_scoring.l_4 /= totalTrust
+            returnEntry.data.auto_scoring.net /= totalTrust
+            returnEntry.data.auto_scoring.processor /= totalTrust
+        retval.append(returnEntry)
+    # print("adjusted data")
     retval = removeOutliers(retval)
     # print("removed more outliers")
     return retval, scoutRatings
