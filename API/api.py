@@ -252,7 +252,7 @@ def join_code(group_name):
     if (DBEntry.join_code_expiration < datetime.now().timestamp()):
         new_code = create_join_code()
         GroupCollection.find_one_and_update(
-            {"name": group_name}, {"$set": {"join_code": new_code, "join_code_expiration": (datetime.now()+timedelta(days=7)).timestamp()}})
+            {"name": group_name}, {"$set": {"join_code": new_code, "join_code_expiration": int((datetime.now()+timedelta(days=7)).timestamp())}})
         return new_code
     else:
         return DBEntry.join_code
