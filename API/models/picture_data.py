@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel, HttpUrl
 
 from models.scout_info import ScoutInfo
@@ -11,3 +12,5 @@ class PictureData(BaseModel):
     image_id: str
     link: str
     permissions: list[str] = []
+    image_type: Literal['full_robot',
+                        'manipulator', 'wires'] = 'full_robot'

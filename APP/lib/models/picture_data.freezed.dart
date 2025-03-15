@@ -27,6 +27,7 @@ mixin _$PictureData {
   String get image_id => throw _privateConstructorUsedError;
   String get link => throw _privateConstructorUsedError;
   List<String> get permissions => throw _privateConstructorUsedError;
+  String get image_type => throw _privateConstructorUsedError;
 
   /// Serializes this PictureData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +52,8 @@ abstract class $PictureDataCopyWith<$Res> {
       String event_code,
       String image_id,
       String link,
-      List<String> permissions});
+      List<String> permissions,
+      String image_type});
 
   $ScoutInfoCopyWith<$Res> get scout_info;
 }
@@ -78,6 +80,7 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
     Object? image_id = null,
     Object? link = null,
     Object? permissions = null,
+    Object? image_type = null,
   }) {
     return _then(_value.copyWith(
       scout_info: null == scout_info
@@ -108,6 +111,10 @@ class _$PictureDataCopyWithImpl<$Res, $Val extends PictureData>
           ? _value.permissions
           : permissions // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      image_type: null == image_type
+          ? _value.image_type
+          : image_type // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 
@@ -137,7 +144,8 @@ abstract class _$$PictureDataImplCopyWith<$Res>
       String event_code,
       String image_id,
       String link,
-      List<String> permissions});
+      List<String> permissions,
+      String image_type});
 
   @override
   $ScoutInfoCopyWith<$Res> get scout_info;
@@ -163,6 +171,7 @@ class __$$PictureDataImplCopyWithImpl<$Res>
     Object? image_id = null,
     Object? link = null,
     Object? permissions = null,
+    Object? image_type = null,
   }) {
     return _then(_$PictureDataImpl(
       scout_info: null == scout_info
@@ -193,6 +202,10 @@ class __$$PictureDataImplCopyWithImpl<$Res>
           ? _value._permissions
           : permissions // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      image_type: null == image_type
+          ? _value.image_type
+          : image_type // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -207,7 +220,8 @@ class _$PictureDataImpl implements _PictureData {
       required this.event_code,
       required this.image_id,
       required this.link,
-      required final List<String> permissions})
+      required final List<String> permissions,
+      this.image_type = 'full_robot'})
       : _permissions = permissions;
 
   factory _$PictureDataImpl.fromJson(Map<String, dynamic> json) =>
@@ -234,8 +248,12 @@ class _$PictureDataImpl implements _PictureData {
   }
 
   @override
+  @JsonKey()
+  final String image_type;
+
+  @override
   String toString() {
-    return 'PictureData(scout_info: $scout_info, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link, permissions: $permissions)';
+    return 'PictureData(scout_info: $scout_info, team_number: $team_number, time: $time, event_code: $event_code, image_id: $image_id, link: $link, permissions: $permissions, image_type: $image_type)';
   }
 
   @override
@@ -254,7 +272,9 @@ class _$PictureDataImpl implements _PictureData {
                 other.image_id == image_id) &&
             (identical(other.link, link) || other.link == link) &&
             const DeepCollectionEquality()
-                .equals(other._permissions, _permissions));
+                .equals(other._permissions, _permissions) &&
+            (identical(other.image_type, image_type) ||
+                other.image_type == image_type));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -267,7 +287,8 @@ class _$PictureDataImpl implements _PictureData {
       event_code,
       image_id,
       link,
-      const DeepCollectionEquality().hash(_permissions));
+      const DeepCollectionEquality().hash(_permissions),
+      image_type);
 
   /// Create a copy of PictureData
   /// with the given fields replaced by the non-null parameter values.
@@ -293,7 +314,8 @@ abstract class _PictureData implements PictureData {
       required final String event_code,
       required final String image_id,
       required final String link,
-      required final List<String> permissions}) = _$PictureDataImpl;
+      required final List<String> permissions,
+      final String image_type}) = _$PictureDataImpl;
 
   factory _PictureData.fromJson(Map<String, dynamic> json) =
       _$PictureDataImpl.fromJson;
@@ -312,6 +334,8 @@ abstract class _PictureData implements PictureData {
   String get link;
   @override
   List<String> get permissions;
+  @override
+  String get image_type;
 
   /// Create a copy of PictureData
   /// with the given fields replaced by the non-null parameter values.
