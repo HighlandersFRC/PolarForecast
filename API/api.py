@@ -1690,7 +1690,7 @@ def confirm_picture_upload(data: PictureData, token: str = Depends(check_token_a
         raise HTTPException(
             404, "Picture not found. Please make sure the upload completed")
     data.time = datetime.utcnow().timestamp()
-    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}?width=800"
+    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}"
     data.scout_info = scout_info_from_token(token=token)
     try:
         PictureCollection.insert_one(data.dict())
