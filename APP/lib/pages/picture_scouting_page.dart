@@ -77,7 +77,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
 
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
-      await apiService.post_image(_image!, widget.eventCode, widget.team);
+      await apiService.post_image(
+          _image!, widget.eventCode, widget.team, 'full_robot');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Image uploaded successfully')),
       );

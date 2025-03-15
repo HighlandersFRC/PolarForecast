@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/deaths_form.dart';
+import 'package:scouting_app/models/match_scouting_2025.dart';
 import 'package:scouting_app/models/scout_info.dart';
 import '../api_service.dart';
 
@@ -31,9 +32,10 @@ class _DeathsFormState extends State<DeathsForm> {
       team_key: widget.teamNumber.toString(),
       total: 0,
       time: 0);
+  List<MatchScouting2025> matchScouting = [];
   List<TextEditingController> controllers = [];
   bool formSubmitted = false;
-  bool loading = true;
+  bool loading = true, commentsLoading = true;
 
   @override
   void initState() {
@@ -56,6 +58,19 @@ class _DeathsFormState extends State<DeathsForm> {
                     .add(TextEditingController(text: death.death_reason));
               }
               loading = false;
+              api
+                  .fetchTeamMatchScouting(
+                      int.parse(widget.tournament.page.split('/')[3]),
+                      widget.tournament.page.split('/')[4],
+                      'frc${widget.teamNumber.toString()}')
+                  .then(
+                (value) {
+                  setState(() {
+                    matchScouting = value;
+                    commentsLoading = false;
+                  });
+                },
+              );
             }));
   }
 
@@ -135,6 +150,14 @@ class _DeathsFormState extends State<DeathsForm> {
                             ...deaths.deaths.map((death) {
                               TextEditingController _controller =
                                   controllers[deaths.deaths.indexOf(death)];
+                              List<String> comments = matchScouting
+                                  .where((element) =>
+                                      element.match_number ==
+                                          death.match_number &&
+                                      element.data.miscellaneous.comments
+                                          .isNotEmpty)
+                                  .map((e) => e.data.miscellaneous.comments)
+                                  .toList();
                               return Card(
                                 margin: EdgeInsets.symmetric(vertical: 8.0),
                                 child: Padding(
@@ -296,6 +319,53 @@ class _DeathsFormState extends State<DeathsForm> {
                                           ),
                                         ],
                                       ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Comments',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      if (commentsLoading)
+                                        Center(
+                                          child: CircularProgressIndicator(
+                                              color: Colors.blue),
+                                        )
+                                      else if (comments.isNotEmpty)
+                                        ...List.generate(
+                                          comments.length,
+                                          (commentIndex) {
+                                            return Card(
+                                              margin: EdgeInsets.symmetric(
+                                                  vertical: 8.0),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              color: Colors.grey[800],
+                                              child: ListTile(
+                                                title: Text(
+                                                  'Match ${death.match_number} - Comment ${commentIndex + 1}',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Text(
+                                                    comments[commentIndex],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      else
+                                        Text('No comments found'),
                                     ],
                                   ),
                                 ),

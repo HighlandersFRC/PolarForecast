@@ -252,7 +252,7 @@ def join_code(group_name):
     if (DBEntry.join_code_expiration < datetime.now().timestamp()):
         new_code = create_join_code()
         GroupCollection.find_one_and_update(
-            {"name": group_name}, {"$set": {"join_code": new_code, "join_code_expiration": (datetime.now()+timedelta(days=7)).timestamp()}})
+            {"name": group_name}, {"$set": {"join_code": new_code, "join_code_expiration": int((datetime.now()+timedelta(days=7)).timestamp())}})
         return new_code
     else:
         return DBEntry.join_code
@@ -629,7 +629,7 @@ def updateGroupStatus(group: Group, event_code: str):
             deathMatches = [
                 x for x in matchScoutingEntries if x.data.miscellaneous.died and int(status.key) == x.team_number]
             for match in deathMatches:
-                if not match.match_number in [death.match_number for death in latestEntry.deaths]:
+                if not match.match_number in [death.match_number for death in latestEntry.deaths if death.death_reason != '']:
                     status.follow_up_status = "Incomplete"
                     break
         else:
@@ -638,11 +638,24 @@ def updateGroupStatus(group: Group, event_code: str):
             if len(deathMatches) == 0:
                 status.follow_up_status = "Done"
             else:
-                status.follow_up_status = "Incomplete"
+                status.follow_up_status = "Not Started"
         teamPictures = [
             x for x in pictures if x.team_number == int(status.key)]
         if len(teamPictures) > 0:
-            status.picture_status = "Done"
+            full_robot = False
+            manipulator = False
+            wires = False
+            for picture in teamPictures:
+                if picture.image_type == "full_robot":
+                    full_robot = True
+                elif picture.image_type == "manipulator":
+                    manipulator = True
+                elif picture.image_type == "wires":
+                    wires = True
+            if full_robot and manipulator and wires:
+                status.picture_status = "Done"
+            else:
+                status.picture_status = "Incomplete"
         else:
             status.picture_status = "Not Started"
     try:
@@ -1677,7 +1690,7 @@ def confirm_picture_upload(data: PictureData, token: str = Depends(check_token_a
         raise HTTPException(
             404, "Picture not found. Please make sure the upload completed")
     data.time = datetime.utcnow().timestamp()
-    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}?width=800"
+    data.link = f"{RobotPicturesClient.primary_endpoint}/{data.image_id}"
     data.scout_info = scout_info_from_token(token=token)
     try:
         PictureCollection.insert_one(data.dict())
@@ -1706,12 +1719,45 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str
         # Query the collection using the key
         pictures = [PictureData(**data) for data in list(PictureCollection.find(
             {"event_code": eventCode, "scout_info.user_id": {"$in": member_ids}, "team_number": team_number}))]
+        event: GroupEvent = None
+        retval = []
+        for _event in groups[0].events:
+            if _event.event_code == eventCode:
+                event = _event
+        if event is not None:
+            alliancePictures = []
+            for allianceGroup in event.alliance_groups:
+                owners, admins, allianceMembers = _getGroupMembers(
+                    allianceGroup.group_id)
+                allianceMemberIds = [[member["id"]
+                                      for member in people]for people in [owners, admins, allianceMembers]]
+                ids = []
+                for alliance in allianceMemberIds:
+                    ids.extend(alliance)
+                alliancePictures = [PictureData(**data) for data in list(PictureCollection.find(
+                    {"event_code": eventCode, "scout_info.user_id": {"$in": ids}, "team_number": team_number}))]
+                for picture in alliancePictures:
+                    data = picture.dict(exclude={'scout_info'})
+                    data['scout_info'] = picture.scout_info.dict(
+                        exclude={'username', 'first_name'})
+                    retval.append(data)
+        for group in get_user_groups(token):
+            if group["id"] == groups[0].admin_group_id:
+                for picture in pictures:
+                    picture.permissions = ["delete"]
+                break
         user_id = get_user_info(token)["sub"]
-        return pictures
+        for picture in pictures:
+            if picture.scout_info.user_id == user_id:
+                picture.permissions = ["delete"]
+        retval.extend([picture.dict() for picture in pictures])
+        return retval
     user_data = get_user_info(token)
     user_id = user_data["sub"]
-    pictures = list(PictureCollection.find(
-        {"event_code": eventCode, "scout_info.user_id": user_id, "team_number": team_number}))
+    pictures = [PictureData(**data) for data in list(PictureCollection.find(
+        {"event_code": eventCode, "scout_info.user_id": user_id, "team_number": team_number}))]
+    for picture in pictures:
+        picture.permissions = ["delete"]
     return [PictureData(**data).dict() for data in pictures]
 
 
@@ -1719,6 +1765,7 @@ async def get_pit_scouting_pictures(team: str, event: str, year: int, token: str
 async def get_event_pictures(year: str, event: str, token: str = Depends(check_token_active)):
     eventCode = str(year) + event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
+    user_id = get_user_info(token)["sub"]
     if (len(groups) != 0):
         users = get_group_members(groups[0].name, token)
         members = users["members"] + users["admins"] + users["owners"]
@@ -1728,11 +1775,42 @@ async def get_event_pictures(year: str, event: str, token: str = Depends(check_t
             {"event_code": eventCode, "scout_info.user_id": {"$in": member_ids}}))
         pictures = [PictureData(**data) for data in list(PictureCollection.find(
             {"event_code": eventCode, "scout_info.user_id": {"$in": member_ids}}))]
-        kc_groups = get_user_groups(token)
-        user_id = get_user_info(token)["sub"]
-        return pictures
-    pictures = list(PictureCollection.find(
-        {"event_code": eventCode, "scout_info.user_id": user_id}))
+        event: GroupEvent = None
+        retval = []
+        for _event in groups[0].events:
+            if _event.event_code == eventCode:
+                event = _event
+        if event is not None:
+            alliancePictures = []
+            for allianceGroup in event.alliance_groups:
+                owners, admins, allianceMembers = _getGroupMembers(
+                    allianceGroup.group_id)
+                allianceMemberIds = [[member["id"]
+                                      for member in people]for people in [owners, admins, allianceMembers]]
+                ids = []
+                for alliance in allianceMemberIds:
+                    ids.extend(alliance)
+                alliancePictures = [PictureData(**data) for data in list(PictureCollection.find(
+                    {"event_code": eventCode, "scout_info.user_id": {"$in": ids}}))]
+                for picture in alliancePictures:
+                    data = picture.dict(exclude={'scout_info'})
+                    data['scout_info'] = picture.scout_info.dict(
+                        exclude={'username', 'first_name'})
+                    retval.append(data)
+        for group in get_user_groups(token):
+            if group["id"] == groups[0].admin_group_id:
+                for picture in pictures:
+                    picture.permissions = ["delete"]
+                break
+        for picture in pictures:
+            if picture.scout_info.user_id == user_id:
+                picture.permissions = ["delete"]
+        retval.extend([picture.dict() for picture in pictures])
+        return retval
+    pictures = [PictureData(**data) for data in list(PictureCollection.find(
+        {"event_code": eventCode, "scout_info.user_id": user_id}))]
+    for picture in pictures:
+        picture.permissions = ["delete"]
     return [PictureData(**data).dict() for data in pictures]
 
 
@@ -2041,7 +2119,7 @@ def convertData(calculatedData, year, event_code):
     return retvallist
 
 
-def _getGroupMembers(group_id: str):
+def _getGroupMembers(group_id: str) -> tuple[list, list, list]:
     try:
         DBgroup = Group(**GroupCollection.find_one({'group_id': group_id}))
     except Exception as e:
@@ -2076,12 +2154,7 @@ def _getGroupMembers(group_id: str):
     for owner in owners:
         if admins.__contains__(owner):
             admins.remove(owner)
-    retval = {
-        "owners": owners,
-        "admins": admins,
-        "members": members,
-    }
-    return retval
+    return owners, admins, members
 
 
 def updateData(event_code: str):

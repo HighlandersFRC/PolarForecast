@@ -18,6 +18,7 @@ _$PictureDataImpl _$$PictureDataImplFromJson(Map<String, dynamic> json) =>
       permissions: (json['permissions'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      image_type: json['image_type'] as String? ?? 'full_robot',
     );
 
 Map<String, dynamic> _$$PictureDataImplToJson(_$PictureDataImpl instance) =>
@@ -29,4 +30,5 @@ Map<String, dynamic> _$$PictureDataImplToJson(_$PictureDataImpl instance) =>
       'image_id': instance.image_id,
       'link': instance.link,
       'permissions': instance.permissions,
+      'image_type': instance.image_type,
     };

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/auth/auth_service.dart';
@@ -17,8 +18,16 @@ import 'api_service.dart'; // Make sure this file contains the ApiService class
 
 Future main() async {
   // await dotenv.load(fileName: '.env');
+  WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  runApp(MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown
+  ]).then((_) {
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {

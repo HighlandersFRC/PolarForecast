@@ -697,7 +697,17 @@ class ApiService {
     return retVal;
   }
 
-  Future<void> post_image(img.Image image, String event_code, int team) async {
+  Future<void> post_image(
+      img.Image image, String event_code, int team, String image_type) async {
+    // Resize the image before uploading
+    double aspectRatio = image.width.toDouble() / image.height.toDouble();
+    img.Image resizedImage;
+    if (aspectRatio < 1) {
+      resizedImage = img.copyResize(image, height: 800);
+    } else {
+      resizedImage = img.copyResize(image, width: 800);
+    }
+    // Get the pre-signed URL for uploading the image
     final putURLResponse = await http.get(
       Uri.parse('$APIURL/Pictures/PutURL'),
       headers: {
@@ -715,7 +725,7 @@ class ApiService {
         'x-ms-blob-type': 'BlockBlob',
         'Content-Type': 'application/jpeg',
       },
-      body: img.encodeJpg(image),
+      body: img.encodeJpg(resizedImage),
     );
     if (response.statusCode ~/ 100 != 2) {
       throw Exception(json.decode(response.body)['detail']);
@@ -727,7 +737,8 @@ class ApiService {
         event_code: event_code,
         image_id: image_id,
         link: '',
-        permissions: []);
+        permissions: [],
+        image_type: image_type);
     final postItOnAPI = await http.post(
       Uri.parse('$APIURL/Pictures/ConfirmUpload'),
       headers: {

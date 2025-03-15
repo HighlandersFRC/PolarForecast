@@ -7,5 +7,6 @@
     "link": "https://somewhere.on.azure.net",
     "permissions": [
         "admin"
-    ]
+    ],
+    "image_type": "full_robot"
 }
