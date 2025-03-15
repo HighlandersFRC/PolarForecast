@@ -178,6 +178,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
           series: fields.where((field) => field.enabled).map((field) {
             final index = fields.indexOf(field);
             return StackedColumnSeries<Map<String, dynamic>, String>(
+              animationDuration: 500,
               dataSource: chartData.take(widget.number).toList(),
               xValueMapper: (data, _) => data['team_number']?.toString() ?? '',
               yValueMapper: (data, _) => (data[field.key] is num)
