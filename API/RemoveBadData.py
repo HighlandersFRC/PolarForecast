@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+from models.pit_scouting_2025 import Auto2025
 from models.scout_info import ScoutInfo
 from models.match_scouting_2025 import Data2025, MatchScouting2025, Miscellaneous2025, Scoring2025
 
@@ -128,15 +129,15 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
     # print("made list of all scouts")
     for game in TBADict:
         entries: list[MatchScouting2025] = []
-        teamEntries: dict[str, list[MatchScouting2025]] = {}
-        teams = []
+        teamEntries: dict[int, list[MatchScouting2025]] = {}
+        teams: list[int] = []
         # get combination-based error
         for entry in scoutingData:
             if entry.match_number == game["match_number"]:
                 for i in range(3):
                     if (
                         game["station" + str(i + 1)]
-                        == entry.team_number
+                        == str(entry.team_number)
                     ):
                         entries.append(entry)
                         if not teams.__contains__(entry.team_number):
@@ -146,7 +147,7 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
             teamEntries[entry.team_number] = []
         for entry in entries:
             teamEntries[entry.team_number].append(entry)
-        combinations: list[dict[str, MatchScouting2025]] = []
+        combinations: list[dict[int, MatchScouting2025]] = []
         if len(teams) == 3:
             for team0 in teamEntries[teams[0]]:
                 for team1 in teamEntries[teams[1]]:
@@ -207,6 +208,7 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
 
 
 def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]):
+    scoutingData = copy.deepcopy(scoutingData)
     scoutRatings = getScoutRatings(TBAData, scoutingData)
     # print("got one time ratings")
     for j in range(10):
@@ -223,14 +225,14 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
             scoutTrustRatings.append(0)
         for game in TBADict:
             entries: list[MatchScouting2025] = []
-            teamEntries: dict[str, list[MatchScouting2025]] = {}
-            teams = []
+            teamEntries: dict[int, list[MatchScouting2025]] = {}
+            teams: list[int] = []
             for entry in scoutingData:
                 if entry.match_number == game["match_number"]:
                     for i in range(3):
                         if (
                             game["station" + str(i + 1)]
-                            == entry.team_number
+                            == str(entry.team_number)
                         ):
                             entries.append(entry)
                             if not teams.__contains__(
@@ -243,13 +245,13 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
             for entry in entries:
                 teamEntries[entry.team_number].append(entry)
             # get combination-based error
-            combinations: list[dict[str, MatchScouting2025]] = []
+            combinations: list[dict[int, MatchScouting2025]] = []
             if len(teams) == 3:
                 for team0 in teamEntries[teams[0]]:
                     for team1 in teamEntries[teams[1]]:
                         for team2 in teamEntries[teams[2]]:
                             combinations.append(
-                                {teams[0]: team0, teams[1]: team1, teams[2]: team2}
+                                {teams[0]: team0, teams[1]                                    : team1, teams[2]: team2}
                             )
                 combinationError = []
                 for i in range(len(combinations)):
@@ -330,14 +332,14 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) 
     # print(teamMatches)
     for team in teams:
         teamEntries: list[MatchScouting2025] = []
-        returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=ScoutInfo(user_id="", first_name="", username="", team_number=0), data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
-            l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=Miscellaneous2025(died=False, comments="")))
+        returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=ScoutInfo(user_id="", first_name="", username="", team_number=0), data=Data2025(auto=Auto2025(starting_position_meters_from_processor=0.0, steps=[], field_side=[], exit=False, preload=False, both_sides=False,), auto_scoring=Scoring2025(
+            l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=Miscellaneous2025(died=False, comments="")), time=0)
         for entry in scoutingData:
             if entry.team_number == team:
                 if not teamEntries.__contains__(entry):
                     teamEntries.append(entry)
                     returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=teamEntries[0].scout_info, data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
-                        l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous))
+                        l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous), time=0)
         totalTrust = 0
         for entry in teamEntries:
             entryTrust = scoutRatings["trustRatings"][scoutRatings["scouts"].index(

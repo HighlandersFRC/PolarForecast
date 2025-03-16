@@ -290,15 +290,14 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
     teamMatchesList = copy.deepcopy(blankAEntry)
-    # scoutingDataFunction = TeamBasedData
+    scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
     ratings = {'scouts': [], 'trustRatings': [], 'entries': []}
-    # try:
-    #     scoutingData, ratings = scoutingDataFunction(
-    #         oprMatchDataFrame, scoutingData)
-    # except Exception as e:
-    #     print(e)
-    # print("threw away scouting data")
+    try:
+        scoutingData, ratings = scoutingDataFunction(
+            oprMatchDataFrame, scoutingData)
+    except Exception as e:
+        print(e)
     # Make A and Y lists with scouting data
     for team in teams:
         teamMatches = []

@@ -2389,17 +2389,17 @@ def updateGroupData(group: Group, event_code: str):
             metadata = {"last_modified": datetime.utcnow().timestamp(),
                         "etag": None, "tba": False}
             try:
-                print("manufacturing scout rankings")
+                # print("manufacturing scout rankings")
                 ratings = {
                     "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
-                print(ratings)
-                # scouts = ratings["scouts"]
-                # ratings["entries"] = list(
-                #     numpy.zeros(len(ratings["scouts"])))
-                # for idx, scout in enumerate(ratings["scouts"]):
-                #     ratings["entries"][idx] = numEntries[scouts.index(
-                #         scout)]
-                print("Made Ratings")
+                # print(ratings)
+                ratings["entries"] = list(
+                    numpy.zeros(len(ratings["scouts"])))
+                for idx, scout in enumerate(ratings["scouts"]):
+                    for entry in member_entries+alliance_entries:
+                        if entry.scout_info.user_id == scout:
+                            ratings["entries"][idx] += 1
+                # print("Made Ratings")
             except Exception as e:
                 logging.error(e)
             try:
@@ -2445,8 +2445,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances['red'].team_keys,
-                "blue_dq_team_keys": match.alliances['red'].dq_team_keys,
-                "blue_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
@@ -2488,8 +2488,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances["red"].team_keys,
-                "blue_dq_team_keys": match.alliances['red'].dq_team_keys,
-                "blue_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
@@ -2560,7 +2560,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
         calculatedData[i]["simulated_rank"] = int(0)
     for matchPrediction in matchPredictions:
         for alliance in ["red", "blue"]:
-            for team in matchPrediction[f"{alliance}_teams"] and team not in matchPrediction[f"{alliance}_dq_team_keys"] and team not in matchPrediction[f"{alliance}_surrogate_team_keys"]:
+            for team in [x for x in matchPrediction[f"{alliance}_teams"] if x not in matchPrediction[f"{alliance}_dq_team_keys"] and x not in matchPrediction[f"{alliance}_surrogate_team_keys"]]:
                 dataTeam = {}
                 idx = 0
                 try:
