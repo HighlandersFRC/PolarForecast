@@ -184,6 +184,12 @@ class _RankingsTabState extends State<_RankingsTab> {
     ),
     GridColumn(
       allowSorting: true,
+      label: Text('Teleop Coral'),
+      columnName: 'teleop_coral',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
       label: Text('Teleop Coral Points'),
       columnName: 'teleop_coral_points',
       allowFiltering: false,
@@ -219,6 +225,7 @@ class _RankingsTabState extends State<_RankingsTab> {
     'rank': true,
     'simulated_rp': true,
     'auto_coral_points': true,
+    'teleop_coral': true,
     'teleop_coral_points': true,
     'net': true,
     'processor': true,
@@ -439,7 +446,8 @@ class _TeamDataSource extends DataGridSource {
               opr: e.value,
               scouting: scouting);
         }
-        if (e.columnName == 'teleop_coral_points') {
+        if (e.columnName == 'teleop_coral_points' ||
+            e.columnName == 'teleop_coral') {
           return _CoralMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
               color: color,
@@ -516,6 +524,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
               style: TextStyle(
                 color: Colors.white,
                 decoration: TextDecoration.underline,
+                decorationThickness: 2,
               ))),
       onTap: () {
         int firstMatch = 0, lastMatch = 1;
@@ -671,6 +680,7 @@ class _CoralMenuOnClick extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white,
                   decoration: TextDecoration.underline,
+                  decorationThickness: 2,
                 ))),
         onTap: () {
           TeamStats2025 stats = rankings.firstWhere(
