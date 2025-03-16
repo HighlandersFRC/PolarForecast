@@ -212,54 +212,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       columnName: 'death_rate',
       allowFiltering: false,
     ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC4'),
-      columnName: 'auto_scoring_l_4',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC3'),
-      columnName: 'auto_scoring_l_3',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC2'),
-      columnName: 'auto_scoring_l_2',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC1'),
-      columnName: 'auto_scoring_l_1',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC4'),
-      columnName: 'teleop_scoring_l_4',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC3'),
-      columnName: 'teleop_scoring_l_3',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC2'),
-      columnName: 'teleop_scoring_l_2',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC1'),
-      columnName: 'teleop_scoring_l_1',
-      allowFiltering: false,
-    ),
   ];
   Map<String, bool> heatMapFromKey = {
     'team_number': false,
@@ -272,14 +224,6 @@ class _RankingsTabState extends State<_RankingsTab> {
     'processor': true,
     'climbing_points': true,
     'death_rate': true,
-    'auto_scoring_l_4': true,
-    'auto_scoring_l_3': true,
-    'auto_scoring_l_2': true,
-    'auto_scoring_l_1': true,
-    'teleop_scoring_l_4': true,
-    'teleop_scoring_l_3': true,
-    'teleop_scoring_l_2': true,
-    'teleop_scoring_l_1': true,
   };
   List<MatchScouting2025> scouting = [];
   Map<String, num> minValues = {};
@@ -437,8 +381,15 @@ class _RankingsTabState extends State<_RankingsTab> {
                   allowSorting: true,
                   columns: dataColumns,
                   frozenColumnsCount: 2,
-                  source: _TeamDataSource(dataRows, minValues, maxValues,
-                      heatMapFromKey, context, widget.tournament, scouting),
+                  source: _TeamDataSource(
+                      dataRows,
+                      minValues,
+                      maxValues,
+                      heatMapFromKey,
+                      context,
+                      widget.tournament,
+                      scouting,
+                      rankings),
                 ),
               ),
             ),
@@ -451,12 +402,13 @@ class _RankingsTabState extends State<_RankingsTab> {
 
 class _TeamDataSource extends DataGridSource {
   _TeamDataSource(this.rows, this.minValues, this.maxValues, this.heatMap,
-      this.context, this.tournament, this.scouting);
+      this.context, this.tournament, this.scouting, this.rankings);
   final Map<String, dynamic> minValues, maxValues, heatMap;
   final List<DataGridRow> rows;
   final BuildContext context;
   final Tournament tournament;
   final List<MatchScouting2025> scouting;
+  final List<TeamStats2025> rankings;
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
@@ -486,6 +438,22 @@ class _TeamDataSource extends DataGridSource {
               color: color,
               opr: e.value,
               scouting: scouting);
+        }
+        if (e.columnName == 'teleop_coral_points') {
+          return _CoralMenuOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              auto: false,
+              coralOPR: e.value,
+              rankings: rankings);
+        }
+        if (e.columnName == 'auto_coral_points') {
+          return _CoralMenuOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              auto: true,
+              coralOPR: e.value,
+              rankings: rankings);
         }
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -675,6 +643,99 @@ class _OvertimeChartOnClick extends StatelessWidget {
                   ));
       },
     );
+  }
+}
+
+class _CoralMenuOnClick extends StatelessWidget {
+  final bool auto;
+  final int teamNumber;
+  final Color color;
+  final double coralOPR;
+  final List<TeamStats2025> rankings;
+  _CoralMenuOnClick(
+      {required this.auto,
+      required this.teamNumber,
+      required this.color,
+      required this.coralOPR,
+      required this.rankings});
+  final GlobalKey containerKey = GlobalKey();
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        child: Container(
+            key: containerKey,
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            alignment: Alignment.center,
+            color: color,
+            child: Text('${(coralOPR * 10).roundToDouble() / 10}',
+                style: TextStyle(
+                  color: Colors.white,
+                  decoration: TextDecoration.underline,
+                ))),
+        onTap: () {
+          TeamStats2025 stats = rankings.firstWhere(
+              (element) => element.team_number == teamNumber.toString());
+          showMenu(
+              context: context,
+              position: RelativeRect.fromRect(
+                (containerKey.currentContext!.findRenderObject() as RenderBox)
+                        .localToGlobal(Offset.zero) &
+                    (containerKey.currentContext!.findRenderObject()
+                            as RenderBox)
+                        .size,
+                Offset.zero &
+                    (Overlay.of(context).context.findRenderObject()
+                            as RenderBox)
+                        .size,
+              ),
+              items: [
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    'Team ${teamNumber}',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}4: ${auto ? stats.auto_scoring_l_4.toStringAsFixed(1) : stats.teleop_scoring_l_4.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}3: ${auto ? stats.auto_scoring_l_3.toStringAsFixed(1) : stats.teleop_scoring_l_3.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_3 : stats.teleop_scoring_l_3,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}2: ${auto ? stats.auto_scoring_l_2.toStringAsFixed(1) : stats.teleop_scoring_l_2.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_2 : stats.teleop_scoring_l_2,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}1: ${auto ? stats.auto_scoring_l_1.toStringAsFixed(1) : stats.teleop_scoring_l_1.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_1 : stats.teleop_scoring_l_1,
+                ),
+              ]);
+        });
   }
 }
 
