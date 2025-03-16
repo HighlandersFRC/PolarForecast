@@ -29,7 +29,7 @@ from models.pit_scouting_2025 import PitScouting2025
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
 from models.group_join_request import GroupJoinRequest
-from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_token
+from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_blob_storage_client, get_redis_client
 import requests
@@ -2391,7 +2391,7 @@ def updateGroupData(group: Group, event_code: str):
             try:
                 # print("manufacturing scout rankings")
                 ratings = {
-                    "scouts": ratings["scouts"], "trustRatings": ratings["trustRatings"], "entries": []}
+                    "scouts": [scout_info_from_id(scout_id).dict() for scout_id in ratings["scouts"]], "trustRatings": ratings["trustRatings"], "entries": []}
                 # print(ratings)
                 ratings["entries"] = list(
                     numpy.zeros(len(ratings["scouts"])))

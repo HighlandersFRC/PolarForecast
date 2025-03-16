@@ -181,7 +181,7 @@ class ApiService {
       int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
-    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: true));
     data = [...data];
     List<MatchScouting2025> retval = [];
     for (var x in data) {

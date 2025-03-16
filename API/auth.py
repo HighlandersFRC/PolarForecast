@@ -156,3 +156,11 @@ def scout_info_from_token(token: str) -> ScoutInfo:
     return ScoutInfo(
         user_id=user_info['sub'],
         first_name=user_info['name'], username=user_info['preferred_username'], team_number=user_info['team_number'])
+
+
+def scout_info_from_id(user_id: str) -> ScoutInfo:
+    user_info = keycloak_admin.get_user(user_id)
+    print(user_info)
+    return ScoutInfo(
+        user_id=user_info['id'],
+        first_name=user_info['firstName'], username=user_info['username'], team_number=int(user_info['attributes']['team_number'][0]))

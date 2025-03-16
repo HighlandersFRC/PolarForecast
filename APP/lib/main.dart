@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
                   CLIENT: CLIENT,
                   authService:
                       createAuthService(APIURL, AUTHURL, APPURL, REALM, CLIENT),
-                  cacheDuration: Duration(minutes: 5),
+                  cacheDuration: Duration(minutes: 2),
                 )),
         ChangeNotifierProvider(create: (_) => ThemeDataProvider()),
       ],
