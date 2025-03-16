@@ -156,6 +156,9 @@ class _RankingsTab extends StatefulWidget {
 class _RankingsTabState extends State<_RankingsTab> {
   List<TeamStats2025> rankings = [];
   bool isLoading = true;
+  List<int> teams = [];
+  String? token;
+  int lastMatch = 1;
   List<GridColumn> dataColumns = [
     GridColumn(
         allowSorting: true,
@@ -278,6 +281,7 @@ class _RankingsTabState extends State<_RankingsTab> {
     'teleop_scoring_l_2': true,
     'teleop_scoring_l_1': true,
   };
+  List<MatchScouting2025> scouting = [];
   Map<String, num> minValues = {};
   Map<String, num> maxValues = {};
   List<DataGridRow> dataRows = [];
@@ -346,19 +350,42 @@ class _RankingsTabState extends State<_RankingsTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    // try {
-    final fetchedRankings = await apiService.fetchEventRankings(
-        int.parse(widget.tournament.page.split('/')[3]),
-        widget.tournament.page.split('/')[4]);
-    if (mounted) {
-      setState(() {
-        rankings = fetchedRankings;
-        isLoading = false;
-      });
+    try {
+      final token = await apiService.token;
+      final fetchedRankings = await apiService.fetchEventRankings(
+          int.parse(widget.widget.tournament.page.split('/')[3]),
+          widget.widget.tournament.page.split('/')[4]);
+      if (token != null) {
+        final fetchedScouting = await apiService.fetchEventScouting(
+            int.parse(widget.widget.tournament.page.split('/')[3]),
+            widget.widget.tournament.page.split('/')[4]);
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            scouting = fetchedScouting;
+            scouting.forEach((entry) {
+              if (!teams.contains(entry.team_number))
+                teams.add(entry.team_number);
+              if (entry.match_number > lastMatch)
+                lastMatch = entry.match_number;
+            });
+            teams.sort((a, b) => a - b);
+            this.token = token;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            this.token = token;
+          });
+        }
+      }
+    } catch (e) {
+      print(e);
     }
-    // } catch (e) {
-    //   print('Error fetching data: $e');
-    // }
   }
 
   @override
@@ -411,7 +438,7 @@ class _RankingsTabState extends State<_RankingsTab> {
                   columns: dataColumns,
                   frozenColumnsCount: 2,
                   source: _TeamDataSource(dataRows, minValues, maxValues,
-                      heatMapFromKey, context, widget.tournament),
+                      heatMapFromKey, context, widget.tournament, scouting),
                 ),
               ),
             ),
@@ -424,11 +451,12 @@ class _RankingsTabState extends State<_RankingsTab> {
 
 class _TeamDataSource extends DataGridSource {
   _TeamDataSource(this.rows, this.minValues, this.maxValues, this.heatMap,
-      this.context, this.tournament);
+      this.context, this.tournament, this.scouting);
   final Map<String, dynamic> minValues, maxValues, heatMap;
   final List<DataGridRow> rows;
   final BuildContext context;
   final Tournament tournament;
+  final List<MatchScouting2025> scouting;
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
@@ -451,6 +479,13 @@ class _TeamDataSource extends DataGridSource {
           return Container(
               color: color,
               child: TeamLink(int.parse(e.value.toString()), tournament));
+        }
+        if (e.columnName == 'OPR') {
+          return _OvertimeChartOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              opr: e.value,
+              scouting: scouting);
         }
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -487,6 +522,160 @@ class _TeamDataSource extends DataGridSource {
       return _roundToTenths(value).toStringAsFixed(1);
     }
     return value;
+  }
+}
+
+class _OvertimeChartOnClick extends StatelessWidget {
+  final int teamNumber;
+  final double opr;
+  final Color color;
+  final GlobalKey key = GlobalKey();
+  final List<MatchScouting2025> scouting;
+  _OvertimeChartOnClick(
+      {required this.teamNumber,
+      required this.color,
+      required this.opr,
+      required this.scouting});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          alignment: Alignment.center,
+          color: color,
+          child: Text('${(opr * 10).roundToDouble() / 10}',
+              style: TextStyle(
+                color: Colors.white,
+                decoration: TextDecoration.underline,
+              ))),
+      onTap: () {
+        print(scouting);
+        int firstMatch = 0, lastMatch = 1;
+        scouting.forEach((entry) {
+          if (entry.match_number > lastMatch) lastMatch = entry.match_number;
+        });
+        double maxY = 1;
+        Map<String, List> seriesData = {
+          'matches': [],
+          'entries': [],
+        };
+        List<String> seriesLabels = [
+          'auto_scoring_l_1',
+          'auto_scoring_l_2',
+          'auto_scoring_l_3',
+          'auto_scoring_l_4',
+          'auto_scoring_net',
+          'auto_scoring_processor',
+          'teleop_scoring_l_1',
+          'teleop_scoring_l_2',
+          'teleop_scoring_l_3',
+          'teleop_scoring_l_4',
+          'teleop_scoring_net',
+          'teleop_scoring_processor',
+        ];
+        for (var series in seriesLabels) {
+          seriesData[series] = [];
+        }
+        List<MatchScouting2025> teamScoutingData = [];
+        for (var entry in scouting) {
+          if (entry.team_number == teamNumber) {
+            teamScoutingData.add(entry);
+          }
+        }
+        teamScoutingData.sort((a, b) => a.match_number - b.match_number);
+        for (var x in teamScoutingData) {
+          var entry = x.toJson();
+          entry['data'].remove('miscellaneous');
+          entry['data'].remove('selectedPieces');
+          var flattened = flatten(
+            entry['data'],
+            delimiter: '_',
+          );
+          if (!seriesData['matches']!.contains(entry['match_number'])) {
+            seriesData['matches']?.add(entry['match_number']);
+            seriesData['entries']?.add(1);
+            for (var label in seriesLabels) {
+              try {
+                seriesData[label]?.add(flattened[label] ?? 0);
+              } catch (e) {
+                seriesData[label]?.add(0);
+              }
+            }
+          } else {
+            seriesData['entries']
+                ?[seriesData['matches']!.indexOf(entry['match_number'])] += 1;
+            for (var label in seriesLabels) {
+              try {
+                seriesData[label]?[seriesData['matches']!
+                    .indexOf(entry['match_number'])] += flattened[label];
+              } catch (e) {}
+            }
+          }
+        }
+        List<int> entries = [...?seriesData.remove('entries')];
+        List<int> matches = [...?seriesData.remove('matches')];
+        for (var object in seriesData.entries) {
+          seriesData[object.key] = [
+            ...seriesData[object.key]!
+                .indexed
+                .map((val) => val.$2 / entries[val.$1])
+          ];
+        }
+        for (var match in matches) {
+          double sum = 0;
+          for (String label in seriesLabels) {
+            sum += seriesData[label]?[matches.indexOf(match)];
+          }
+          maxY = max(maxY, sum + 1);
+        }
+
+        var firstChart = SfCartesianChart(
+            primaryXAxis: NumericAxis(
+              minimum: firstMatch.toDouble(),
+              maximum: lastMatch.toDouble(),
+            ),
+            primaryYAxis: NumericAxis(
+              maximum: maxY,
+              minimum: 0,
+            ),
+            legend: Legend(isVisible: true, position: LegendPosition.bottom),
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              shared: true,
+            ),
+            series: [
+              ...seriesData.entries.toList().map((entry) {
+                return StackedAreaSeries<double, int>(
+                    markerSettings: MarkerSettings(
+                        shape: DataMarkerType.circle, isVisible: true),
+                    enableTooltip: true,
+                    animationDuration: 500,
+                    name: entry.key,
+                    dataSource: [
+                      ...entry.value.map((val) {
+                        return double.parse(val.toString());
+                      }),
+                    ],
+                    borderDrawMode: BorderDrawMode.excludeBottom,
+                    borderWidth: 2,
+                    xValueMapper: (data, _) => matches[_],
+                    yValueMapper: (data, _) => data);
+              })
+            ]);
+        if (teamScoutingData.length > 0)
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: Text('Team $teamNumber Scouting Data'),
+                    content: Container(
+                      height: 400,
+                      width: 800,
+                      child: firstChart,
+                    ),
+                  ));
+      },
+    );
   }
 }
 
@@ -574,7 +763,6 @@ class _ChartsTabState extends State<_ChartsTab> {
             LayoutBuilder(builder: (context, constraints) {
               bool landscape =
                   MediaQuery.of(context).orientation == Orientation.landscape;
-
               if (!landscape && !_hasAdjustedForLandscape) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) {
@@ -750,6 +938,8 @@ class _ChartsTabState extends State<_ChartsTab> {
                   series: [
                     ...seriesData.entries.toList().map((entry) {
                       return StackedAreaSeries<double, int>(
+                          markerSettings: MarkerSettings(
+                              shape: DataMarkerType.circle, isVisible: true),
                           enableTooltip: true,
                           animationDuration: 500,
                           name: entry.key,
@@ -782,6 +972,8 @@ class _ChartsTabState extends State<_ChartsTab> {
                   series: [
                     ...secondSeriesData.entries.toList().map((entry) {
                       return StackedAreaSeries<double, int>(
+                          markerSettings: MarkerSettings(
+                              shape: DataMarkerType.circle, isVisible: true),
                           enableTooltip: true,
                           animationDuration: 500,
                           name: entry.key,
