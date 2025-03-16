@@ -550,7 +550,6 @@ class _OvertimeChartOnClick extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ))),
       onTap: () {
-        print(scouting);
         int firstMatch = 0, lastMatch = 1;
         scouting.forEach((entry) {
           if (entry.match_number > lastMatch) lastMatch = entry.match_number;
