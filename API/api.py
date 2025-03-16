@@ -2391,14 +2391,18 @@ def updateGroupData(group: Group, event_code: str):
             try:
                 # print("manufacturing scout rankings")
                 ratings = {
-                    "scouts": [scout_info_from_id(scout_id).dict() for scout_id in ratings["scouts"]], "trustRatings": ratings["trustRatings"], "entries": []}
+                    "scouts": [scout_info_from_id(scout_id).dict() for scout_id in ratings["scouts"]], "trustRatings": ratings["trustRatings"], "entries": [], "contribution": []}
                 # print(ratings)
                 ratings["entries"] = list(
                     numpy.zeros(len(ratings["scouts"])))
+                ratings["contribution"] = list(
+                    numpy.zeros(len(ratings["scouts"])))
                 for idx, scout in enumerate(ratings["scouts"]):
                     for entry in member_entries+alliance_entries:
-                        if entry.scout_info.user_id == scout:
+                        if entry.scout_info.user_id == scout['user_id']:
                             ratings["entries"][idx] += 1
+                    ratings["contribution"][idx] = (
+                        ratings["trustRatings"][idx] ** 2)*ratings["entries"][idx]
                 # print("Made Ratings")
             except Exception as e:
                 logging.error(e)
@@ -2672,6 +2676,22 @@ def update_database():
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
+        groupsToUpdate = [
+            Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
+        # print("found groups")
+        for group in groupsToUpdate:
+            # print(group.name)
+            for event in group.events:
+                # print(event)
+                if not event.up_to_date:
+                    try:
+                        updateGroupData(group, event.event_code)
+                        # print('updated calculated data')
+                        updateGroupGridPitData(group, event.event_code)
+                        GroupCollection.update_one(
+                            {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
+                    except Exception as e:
+                        logging.error(str(e))
         for event in etags:
             headers = {"accept": "application/json",
                        "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
