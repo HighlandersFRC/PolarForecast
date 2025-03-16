@@ -2427,6 +2427,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "match_number": match.match_number,
                 "set_number": match.set_number,
                 "blue_teams": match.alliances['blue'].team_keys,
+                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
                 "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
@@ -2443,6 +2445,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances['red'].team_keys,
+                "blue_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
@@ -2467,6 +2471,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "match_number": match.match_number,
                 "set_number": match.set_number,
                 "blue_teams": match.alliances["blue"].team_keys,
+                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
                 "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
@@ -2482,6 +2488,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances["red"].team_keys,
+                "blue_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
@@ -2552,7 +2560,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
         calculatedData[i]["simulated_rank"] = int(0)
     for matchPrediction in matchPredictions:
         for alliance in ["red", "blue"]:
-            for team in matchPrediction[f"{alliance}_teams"]:
+            for team in matchPrediction[f"{alliance}_teams"] and team not in matchPrediction[f"{alliance}_dq_team_keys"] and team not in matchPrediction[f"{alliance}_surrogate_team_keys"]:
                 dataTeam = {}
                 idx = 0
                 try:

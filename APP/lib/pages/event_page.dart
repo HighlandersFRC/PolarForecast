@@ -156,6 +156,9 @@ class _RankingsTab extends StatefulWidget {
 class _RankingsTabState extends State<_RankingsTab> {
   List<TeamStats2025> rankings = [];
   bool isLoading = true;
+  List<int> teams = [];
+  String? token;
+  int lastMatch = 1;
   List<GridColumn> dataColumns = [
     GridColumn(
         allowSorting: true,
@@ -209,54 +212,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       columnName: 'death_rate',
       allowFiltering: false,
     ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC4'),
-      columnName: 'auto_scoring_l_4',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC3'),
-      columnName: 'auto_scoring_l_3',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC2'),
-      columnName: 'auto_scoring_l_2',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('AC1'),
-      columnName: 'auto_scoring_l_1',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC4'),
-      columnName: 'teleop_scoring_l_4',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC3'),
-      columnName: 'teleop_scoring_l_3',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC2'),
-      columnName: 'teleop_scoring_l_2',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('TC1'),
-      columnName: 'teleop_scoring_l_1',
-      allowFiltering: false,
-    ),
   ];
   Map<String, bool> heatMapFromKey = {
     'team_number': false,
@@ -269,15 +224,8 @@ class _RankingsTabState extends State<_RankingsTab> {
     'processor': true,
     'climbing_points': true,
     'death_rate': true,
-    'auto_scoring_l_4': true,
-    'auto_scoring_l_3': true,
-    'auto_scoring_l_2': true,
-    'auto_scoring_l_1': true,
-    'teleop_scoring_l_4': true,
-    'teleop_scoring_l_3': true,
-    'teleop_scoring_l_2': true,
-    'teleop_scoring_l_1': true,
   };
+  List<MatchScouting2025> scouting = [];
   Map<String, num> minValues = {};
   Map<String, num> maxValues = {};
   List<DataGridRow> dataRows = [];
@@ -346,19 +294,42 @@ class _RankingsTabState extends State<_RankingsTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    // try {
-    final fetchedRankings = await apiService.fetchEventRankings(
-        int.parse(widget.tournament.page.split('/')[3]),
-        widget.tournament.page.split('/')[4]);
-    if (mounted) {
-      setState(() {
-        rankings = fetchedRankings;
-        isLoading = false;
-      });
+    try {
+      final token = await apiService.token;
+      final fetchedRankings = await apiService.fetchEventRankings(
+          int.parse(widget.widget.tournament.page.split('/')[3]),
+          widget.widget.tournament.page.split('/')[4]);
+      if (token != null) {
+        final fetchedScouting = await apiService.fetchEventScouting(
+            int.parse(widget.widget.tournament.page.split('/')[3]),
+            widget.widget.tournament.page.split('/')[4]);
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            scouting = fetchedScouting;
+            scouting.forEach((entry) {
+              if (!teams.contains(entry.team_number))
+                teams.add(entry.team_number);
+              if (entry.match_number > lastMatch)
+                lastMatch = entry.match_number;
+            });
+            teams.sort((a, b) => a - b);
+            this.token = token;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            rankings = fetchedRankings;
+            isLoading = false;
+            this.token = token;
+          });
+        }
+      }
+    } catch (e) {
+      print(e);
     }
-    // } catch (e) {
-    //   print('Error fetching data: $e');
-    // }
   }
 
   @override
@@ -410,8 +381,15 @@ class _RankingsTabState extends State<_RankingsTab> {
                   allowSorting: true,
                   columns: dataColumns,
                   frozenColumnsCount: 2,
-                  source: _TeamDataSource(dataRows, minValues, maxValues,
-                      heatMapFromKey, context, widget.tournament),
+                  source: _TeamDataSource(
+                      dataRows,
+                      minValues,
+                      maxValues,
+                      heatMapFromKey,
+                      context,
+                      widget.tournament,
+                      scouting,
+                      rankings),
                 ),
               ),
             ),
@@ -424,11 +402,13 @@ class _RankingsTabState extends State<_RankingsTab> {
 
 class _TeamDataSource extends DataGridSource {
   _TeamDataSource(this.rows, this.minValues, this.maxValues, this.heatMap,
-      this.context, this.tournament);
+      this.context, this.tournament, this.scouting, this.rankings);
   final Map<String, dynamic> minValues, maxValues, heatMap;
   final List<DataGridRow> rows;
   final BuildContext context;
   final Tournament tournament;
+  final List<MatchScouting2025> scouting;
+  final List<TeamStats2025> rankings;
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
@@ -451,6 +431,29 @@ class _TeamDataSource extends DataGridSource {
           return Container(
               color: color,
               child: TeamLink(int.parse(e.value.toString()), tournament));
+        }
+        if (e.columnName == 'OPR') {
+          return _OvertimeChartOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              opr: e.value,
+              scouting: scouting);
+        }
+        if (e.columnName == 'teleop_coral_points') {
+          return _CoralMenuOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              auto: false,
+              coralOPR: e.value,
+              rankings: rankings);
+        }
+        if (e.columnName == 'auto_coral_points') {
+          return _CoralMenuOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              auto: true,
+              coralOPR: e.value,
+              rankings: rankings);
         }
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -487,6 +490,252 @@ class _TeamDataSource extends DataGridSource {
       return _roundToTenths(value).toStringAsFixed(1);
     }
     return value;
+  }
+}
+
+class _OvertimeChartOnClick extends StatelessWidget {
+  final int teamNumber;
+  final double opr;
+  final Color color;
+  final GlobalKey key = GlobalKey();
+  final List<MatchScouting2025> scouting;
+  _OvertimeChartOnClick(
+      {required this.teamNumber,
+      required this.color,
+      required this.opr,
+      required this.scouting});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          alignment: Alignment.center,
+          color: color,
+          child: Text('${(opr * 10).roundToDouble() / 10}',
+              style: TextStyle(
+                color: Colors.white,
+                decoration: TextDecoration.underline,
+              ))),
+      onTap: () {
+        int firstMatch = 0, lastMatch = 1;
+        scouting.forEach((entry) {
+          if (entry.match_number > lastMatch) lastMatch = entry.match_number;
+        });
+        double maxY = 1;
+        Map<String, List> seriesData = {
+          'matches': [],
+          'entries': [],
+        };
+        List<String> seriesLabels = [
+          'auto_scoring_l_1',
+          'auto_scoring_l_2',
+          'auto_scoring_l_3',
+          'auto_scoring_l_4',
+          'auto_scoring_net',
+          'auto_scoring_processor',
+          'teleop_scoring_l_1',
+          'teleop_scoring_l_2',
+          'teleop_scoring_l_3',
+          'teleop_scoring_l_4',
+          'teleop_scoring_net',
+          'teleop_scoring_processor',
+        ];
+        for (var series in seriesLabels) {
+          seriesData[series] = [];
+        }
+        List<MatchScouting2025> teamScoutingData = [];
+        for (var entry in scouting) {
+          if (entry.team_number == teamNumber) {
+            teamScoutingData.add(entry);
+          }
+        }
+        teamScoutingData.sort((a, b) => a.match_number - b.match_number);
+        for (var x in teamScoutingData) {
+          var entry = x.toJson();
+          entry['data'].remove('miscellaneous');
+          entry['data'].remove('selectedPieces');
+          var flattened = flatten(
+            entry['data'],
+            delimiter: '_',
+          );
+          if (!seriesData['matches']!.contains(entry['match_number'])) {
+            seriesData['matches']?.add(entry['match_number']);
+            seriesData['entries']?.add(1);
+            for (var label in seriesLabels) {
+              try {
+                seriesData[label]?.add(flattened[label] ?? 0);
+              } catch (e) {
+                seriesData[label]?.add(0);
+              }
+            }
+          } else {
+            seriesData['entries']
+                ?[seriesData['matches']!.indexOf(entry['match_number'])] += 1;
+            for (var label in seriesLabels) {
+              try {
+                seriesData[label]?[seriesData['matches']!
+                    .indexOf(entry['match_number'])] += flattened[label];
+              } catch (e) {}
+            }
+          }
+        }
+        List<int> entries = [...?seriesData.remove('entries')];
+        List<int> matches = [...?seriesData.remove('matches')];
+        for (var object in seriesData.entries) {
+          seriesData[object.key] = [
+            ...seriesData[object.key]!
+                .indexed
+                .map((val) => val.$2 / entries[val.$1])
+          ];
+        }
+        for (var match in matches) {
+          double sum = 0;
+          for (String label in seriesLabels) {
+            sum += seriesData[label]?[matches.indexOf(match)];
+          }
+          maxY = max(maxY, sum + 1);
+        }
+
+        var firstChart = SfCartesianChart(
+            primaryXAxis: NumericAxis(
+              minimum: firstMatch.toDouble(),
+              maximum: lastMatch.toDouble(),
+            ),
+            primaryYAxis: NumericAxis(
+              maximum: maxY,
+              minimum: 0,
+            ),
+            legend: Legend(isVisible: true, position: LegendPosition.bottom),
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              shared: true,
+            ),
+            series: [
+              ...seriesData.entries.toList().map((entry) {
+                return StackedAreaSeries<double, int>(
+                    markerSettings: MarkerSettings(
+                        shape: DataMarkerType.circle, isVisible: true),
+                    enableTooltip: true,
+                    animationDuration: 500,
+                    name: entry.key,
+                    dataSource: [
+                      ...entry.value.map((val) {
+                        return double.parse(val.toString());
+                      }),
+                    ],
+                    borderDrawMode: BorderDrawMode.excludeBottom,
+                    borderWidth: 2,
+                    xValueMapper: (data, _) => matches[_],
+                    yValueMapper: (data, _) => data);
+              })
+            ]);
+        if (teamScoutingData.length > 0)
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: Text('Team $teamNumber Scouting Data'),
+                    content: Container(
+                      height: 400,
+                      width: 800,
+                      child: firstChart,
+                    ),
+                  ));
+      },
+    );
+  }
+}
+
+class _CoralMenuOnClick extends StatelessWidget {
+  final bool auto;
+  final int teamNumber;
+  final Color color;
+  final double coralOPR;
+  final List<TeamStats2025> rankings;
+  _CoralMenuOnClick(
+      {required this.auto,
+      required this.teamNumber,
+      required this.color,
+      required this.coralOPR,
+      required this.rankings});
+  final GlobalKey containerKey = GlobalKey();
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        child: Container(
+            key: containerKey,
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            alignment: Alignment.center,
+            color: color,
+            child: Text('${(coralOPR * 10).roundToDouble() / 10}',
+                style: TextStyle(
+                  color: Colors.white,
+                  decoration: TextDecoration.underline,
+                ))),
+        onTap: () {
+          TeamStats2025 stats = rankings.firstWhere(
+              (element) => element.team_number == teamNumber.toString());
+          showMenu(
+              context: context,
+              position: RelativeRect.fromRect(
+                (containerKey.currentContext!.findRenderObject() as RenderBox)
+                        .localToGlobal(Offset.zero) &
+                    (containerKey.currentContext!.findRenderObject()
+                            as RenderBox)
+                        .size,
+                Offset.zero &
+                    (Overlay.of(context).context.findRenderObject()
+                            as RenderBox)
+                        .size,
+              ),
+              items: [
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    'Team ${teamNumber}',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}4: ${auto ? stats.auto_scoring_l_4.toStringAsFixed(1) : stats.teleop_scoring_l_4.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}3: ${auto ? stats.auto_scoring_l_3.toStringAsFixed(1) : stats.teleop_scoring_l_3.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_3 : stats.teleop_scoring_l_3,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}2: ${auto ? stats.auto_scoring_l_2.toStringAsFixed(1) : stats.teleop_scoring_l_2.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_2 : stats.teleop_scoring_l_2,
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    '#${auto ? 'A' : 'T'}1: ${auto ? stats.auto_scoring_l_1.toStringAsFixed(1) : stats.teleop_scoring_l_1.toStringAsFixed(1)}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      auto ? stats.auto_scoring_l_1 : stats.teleop_scoring_l_1,
+                ),
+              ]);
+        });
   }
 }
 
@@ -574,7 +823,6 @@ class _ChartsTabState extends State<_ChartsTab> {
             LayoutBuilder(builder: (context, constraints) {
               bool landscape =
                   MediaQuery.of(context).orientation == Orientation.landscape;
-
               if (!landscape && !_hasAdjustedForLandscape) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) {
@@ -750,6 +998,8 @@ class _ChartsTabState extends State<_ChartsTab> {
                   series: [
                     ...seriesData.entries.toList().map((entry) {
                       return StackedAreaSeries<double, int>(
+                          markerSettings: MarkerSettings(
+                              shape: DataMarkerType.circle, isVisible: true),
                           enableTooltip: true,
                           animationDuration: 500,
                           name: entry.key,
@@ -782,6 +1032,8 @@ class _ChartsTabState extends State<_ChartsTab> {
                   series: [
                     ...secondSeriesData.entries.toList().map((entry) {
                       return StackedAreaSeries<double, int>(
+                          markerSettings: MarkerSettings(
+                              shape: DataMarkerType.circle, isVisible: true),
                           enableTooltip: true,
                           animationDuration: 500,
                           name: entry.key,
