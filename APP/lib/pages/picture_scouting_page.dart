@@ -323,7 +323,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
   Widget _buildSection(String section) {
     List<Widget> cards = [];
     for (final picture in _takenPictures) {
-      cards.add(_buildNetworkImageCard(picture));
+      if (picture.image_type == section)
+        cards.add(_buildNetworkImageCard(picture));
     }
     for (int index = 0;
         index < _sectionEncodedImages[section]!.length;
