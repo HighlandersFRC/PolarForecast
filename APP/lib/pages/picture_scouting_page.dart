@@ -124,13 +124,11 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
       _capturing[section] = true;
     });
     var image = await cameraCaptureService.getImage(context);
-    if (image != null) {
-      setState(() {
-        _sectionEncodedImages[section]!.add(image);
-        _sectionUploading[section]!.add(false);
-        _capturing[section] = false;
-      });
-    }
+    setState(() {
+      if (image != null) _sectionEncodedImages[section]!.add(image);
+      _sectionUploading[section]!.add(false);
+      _capturing[section] = false;
+    });
   }
 
   Future<void> _pickImage(String section) async {
@@ -139,13 +137,11 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
       _capturing[section] = true;
     });
     final image = await cameraCaptureService.pickImageFromGallery(context);
-    if (image != null) {
-      setState(() {
-        _sectionEncodedImages[section]!.add(image);
-        _sectionUploading[section]!.add(false);
-        _capturing[section] = false;
-      });
-    }
+    setState(() {
+      if (image != null) _sectionEncodedImages[section]!.add(image);
+      _sectionUploading[section]!.add(false);
+      _capturing[section] = false;
+    });
   }
 
   void _removeImage(String section, int index) {
