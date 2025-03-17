@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
@@ -12,7 +13,6 @@ import 'models/alliance_request.dart';
 import 'models/match_scouting_2025.dart';
 import 'models/pit_scouting_2025.dart';
 import 'models/tournament.dart';
-import 'package:image/image.dart' as img;
 
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
@@ -698,15 +698,7 @@ class ApiService {
   }
 
   Future<void> post_image(
-      img.Image image, String event_code, int team, String image_type) async {
-    // Resize the image before uploading
-    double aspectRatio = image.width.toDouble() / image.height.toDouble();
-    img.Image resizedImage;
-    if (aspectRatio < 1) {
-      resizedImage = img.copyResize(image, height: 800);
-    } else {
-      resizedImage = img.copyResize(image, width: 800);
-    }
+      Uint8List image, String event_code, int team, String image_type) async {
     // Get the pre-signed URL for uploading the image
     final putURLResponse = await http.get(
       Uri.parse('$APIURL/Pictures/PutURL'),
@@ -725,7 +717,7 @@ class ApiService {
         'x-ms-blob-type': 'BlockBlob',
         'Content-Type': 'application/jpeg',
       },
-      body: img.encodeJpg(resizedImage),
+      body: image,
     );
     if (response.statusCode ~/ 100 != 2) {
       throw Exception(json.decode(response.body)['detail']);
