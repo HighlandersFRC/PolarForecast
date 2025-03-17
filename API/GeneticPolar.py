@@ -375,7 +375,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             return error
         return func
 
-    mutation_percent_genes = 0.02
+    mutation_percent_genes = 0.01
 
     # Define a function to perform the genetic algorithm operation
     # print("doing genetic algorithm")
@@ -383,11 +383,16 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     def perform_genetic_algorithm(i):
         ga = geneticAlg(
-            create_fitness_func(ScoutingDataMins[i], ScoutingDataMaxs[i]),
-            [pd.DataFrame(AMatrix[teams]), pd.DataFrame(
+            errorFunction=create_fitness_func(
+                ScoutingDataMins[i], ScoutingDataMaxs[i]),
+            functionInputs=[pd.DataFrame(AMatrix[teams]), pd.DataFrame(
                 YMatrix[ScoutingDataKeys[i]])],
-            pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
-            mutation_percent_genes,
+            maxs={ScoutingDataKeys[j]: ScoutingDataMaxs[j]
+                  for j in range(len(ScoutingDataKeys))},
+            mins={ScoutingDataKeys[j]: ScoutingDataMins[j]
+                  for j in range(len(ScoutingDataKeys))},
+            startingValue=pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
+            mutationPercent=mutation_percent_genes,
         )
         result = ga.run()
         for key in result[0].columns:
@@ -401,11 +406,15 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
-            create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
-            [pd.DataFrame(TBAOnlyAList, columns=teams),
-             pd.DataFrame(TBAOnlyYMatrix[TBAOnlyKeys[i]])],
-            pd.DataFrame(TBAOnlyXMatrix[TBAOnlyKeys[i]]),
-            mutation_percent_genes,
+            errorFunction=create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
+            functionInputs=[pd.DataFrame(TBAOnlyAList, columns=teams),
+                            pd.DataFrame(TBAOnlyYMatrix[TBAOnlyKeys[i]])],
+            maxs={TBAOnlyKeys[j]: TBAOnlyMaxs[j]
+                  for j in range(len(TBAOnlyKeys))},
+            mins={TBAOnlyKeys[j]: TBAOnlyMins[j]
+                  for j in range(len(TBAOnlyKeys))},
+            startingValue=pd.DataFrame(TBAOnlyXMatrix[TBAOnlyKeys[i]]),
+            mutationPercent=mutation_percent_genes,
         )
         result = ga.run()
         # print(result[0].columns)
