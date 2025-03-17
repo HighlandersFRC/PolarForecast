@@ -812,27 +812,32 @@ class _PicturesTabState extends State<_PicturesTab> {
                                                     images[index].link)),
                                           ),
                                           actions: [
-                                            ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.red,
-                                                    foregroundColor:
-                                                        Colors.white),
-                                                onPressed: () {
-                                                  final api =
-                                                      Provider.of<ApiService>(
-                                                          context,
-                                                          listen: false);
-                                                  Navigator.of(context).pop();
-                                                  api
-                                                      .delete_image(
-                                                          images[index])
-                                                      .then((_) {
-                                                    setState(() {
-                                                      images.removeAt(index);
+                                            if (images[index]
+                                                .permissions
+                                                .contains('delete'))
+                                              ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          foregroundColor:
+                                                              Colors.white),
+                                                  onPressed: () {
+                                                    final api =
+                                                        Provider.of<ApiService>(
+                                                            context,
+                                                            listen: false);
+                                                    Navigator.of(context).pop();
+                                                    api
+                                                        .delete_image(
+                                                            images[index])
+                                                        .then((_) {
+                                                      setState(() {
+                                                        images.removeAt(index);
+                                                      });
                                                     });
-                                                  });
-                                                },
-                                                child: Text('Delete')),
+                                                  },
+                                                  child: Text('Delete')),
                                             TextButton(
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
@@ -860,6 +865,23 @@ class _PicturesTabState extends State<_PicturesTab> {
                                     child: Image.network(
                                       images[index].link,
                                       fit: BoxFit.fill,
+                                      loadingBuilder: (context, child, event) {
+                                        if (event == null) {
+                                          return child;
+                                        } else {
+                                          return Center(
+                                            child: CircularProgressIndicator
+                                                .adaptive(
+                                              value:
+                                                  event.cumulativeBytesLoaded /
+                                                      event.expectedTotalBytes!,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Colors.blue),
+                                            ),
+                                          );
+                                        }
+                                      },
                                     )),
                               ),
                             );

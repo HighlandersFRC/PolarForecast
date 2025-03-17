@@ -2431,6 +2431,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "match_number": match.match_number,
                 "set_number": match.set_number,
                 "blue_teams": match.alliances['blue'].team_keys,
+                "blue_human_player": 0,
                 "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
                 "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
                 "blue_mobility": 0,
@@ -2449,6 +2450,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances['red'].team_keys,
+                "red_human_player": 0,
                 "red_dq_team_keys": match.alliances['red'].dq_team_keys,
                 "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
@@ -2475,6 +2477,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "match_number": match.match_number,
                 "set_number": match.set_number,
                 "blue_teams": match.alliances["blue"].team_keys,
+                "blue_human_player": 0,
                 "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
                 "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
                 "blue_mobility": 0,
@@ -2492,6 +2495,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 "blue_net": 0,
                 "blue_auto_coral": 0,
                 "red_teams": match.alliances["red"].team_keys,
+                "red_human_player": 0,
                 "red_dq_team_keys": match.alliances['red'].dq_team_keys,
                 "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
                 "red_mobility": 0,
@@ -2536,6 +2540,8 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
                 opponent = "blue"
             else:
                 opponent = "red"
+            matchPrediction[f"{alliance}_human_player"] = matchPrediction[f'{opponent}_processor']*4
+            matchPrediction[f"{alliance}_score"] += matchPrediction[f"{alliance}_human_player"]
             matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
             # print('auto_coral', matchPrediction[f"{alliance}_auto_coral"], 'mobility', round(
@@ -2767,12 +2773,14 @@ def update_database():
                         TBACollection.find_one_and_update({"key": tbaEntry.key}, {"$set": {"time": tbaEntry.time, "actual_time": tbaEntry.actual_time,
                                                                                            "post_result_time": tbaEntry.post_result_time, "score_breakdown": {'red': tbaEntry.score_breakdown['red'].dict(), 'blue': tbaEntry.score_breakdown['blue'].dict()} if tbaEntry.score_breakdown is not None else None, "alliances": {'red': tbaEntry.alliances['red'].dict(), 'blue': tbaEntry.alliances['blue'].dict()}}})
                 event["etag"] = r.headers["ETag"]
-                event["up_to_date"] = True
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)
                 # logging.error(e)
                 try:
                     updateData(event["key"])
+                    event["up_to_date"] = True
+                    ETagCollection.find_one_and_replace(
+                        {"key": event["key"]}, event)
                 except Exception as e:
                     print(e, event["key"])
                     pass
