@@ -415,7 +415,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
       child: Card(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            double cardWidth = constraints.maxWidth;
+            double cardWidth = min(constraints.maxWidth, 500);
             double originalImageHeight = 250;
             double originalImageWidth = 250 * 1457 / 1337;
             double scaleFactor = cardWidth / originalImageHeight;
