@@ -128,14 +128,9 @@ class _MatchPageState extends State<MatchPage> {
               label: 'Blue Autos'),
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(
-            color: theme.brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black),
-        selectedItemColor:
-            theme.brightness == Brightness.dark ? Colors.white : Colors.black,
-        unselectedItemColor:
-            theme.brightness == Brightness.dark ? Colors.white : Colors.black,
+        selectedLabelStyle: TextStyle(color: Colors.white),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
       ),
       body: tabs[_currentTab],

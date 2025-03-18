@@ -207,13 +207,11 @@ class _GroupPageState extends State<GroupPage> {
                 label: 'Settings'),
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(
-            color: theme.brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black),
-        selectedItemColor:
-            theme.brightness == Brightness.dark ? Colors.white : Colors.black,
-        showUnselectedLabels: false,
+        selectedLabelStyle: TextStyle(color: Colors.white),
+        unselectedLabelStyle: TextStyle(color: Colors.white),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
+        showUnselectedLabels: true,
       ),
       body: RefreshIndicator(
         triggerMode: RefreshIndicatorTriggerMode.onEdge,
