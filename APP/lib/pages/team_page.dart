@@ -812,6 +812,8 @@ class _PicturesTabState extends State<_PicturesTab> {
                                                     images[index].link)),
                                           ),
                                           actions: [
+                                            Text(
+                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}'),
                                             if (images[index]
                                                 .permissions
                                                 .contains('delete'))
