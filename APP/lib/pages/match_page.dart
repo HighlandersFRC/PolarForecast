@@ -116,7 +116,7 @@ class _MatchPageState extends State<MatchPage> {
               label: 'Stats'),
           BottomNavigationBarItem(
               icon: Icon(Icons.precision_manufacturing_outlined,
-                  color: Colors.red),
+                  color: Colors.red.shade900),
               activeIcon: Icon(Icons.precision_manufacturing,
                   color: Colors.red.shade900),
               label: 'Red Autos'),
@@ -608,7 +608,7 @@ class _BlueTabState extends State<_BlueTab> {
               .fetchTeamMatchScouting(
                   int.parse(widget.widget.tournament.key.substring(0, 4)),
                   widget.widget.tournament.key.substring(4),
-                  _match.match.alliances.red.team_keys[0])
+                  _match.match.alliances.blue.team_keys[0])
               .then((_r1scouting) => setState(() {
                     b1scouting = _r1scouting;
                     b1Loading = false;
@@ -617,7 +617,7 @@ class _BlueTabState extends State<_BlueTab> {
               .fetchTeamMatchScouting(
                   int.parse(widget.widget.tournament.key.substring(0, 4)),
                   widget.widget.tournament.key.substring(4),
-                  _match.match.alliances.red.team_keys[1])
+                  _match.match.alliances.blue.team_keys[1])
               .then((_r2scouting) {
             b2scouting = _r2scouting;
             b2Loading = false;
@@ -626,7 +626,7 @@ class _BlueTabState extends State<_BlueTab> {
               .fetchTeamMatchScouting(
                   int.parse(widget.widget.tournament.key.substring(0, 4)),
                   widget.widget.tournament.key.substring(4),
-                  _match.match.alliances.red.team_keys[2])
+                  _match.match.alliances.blue.team_keys[2])
               .then((_r3scouting) {
             b3scouting = _r3scouting;
             b3Loading = false;
