@@ -130,8 +130,8 @@ class _EventPageState extends State<EventPage> {
               color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black),
-          selectedItemColor:
-              theme.brightness == Brightness.dark ? Colors.white : Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white,
           showUnselectedLabels: true,
         ),
         body: tabs[_currentTab]);
