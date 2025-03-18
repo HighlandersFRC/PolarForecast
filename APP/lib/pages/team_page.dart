@@ -701,7 +701,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
                     height: constraints.maxHeight,
                     width: constraints.maxWidth,
                     child: InteractiveViewer(
-                      scaleEnabled: false,
+                      allowScale: false,
                       clipBehavior: Clip.hardEdge,
                       child: SfDataGrid(
                         columns: dataColumns,
@@ -1058,6 +1058,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             height: constraints.maxHeight,
                             width: constraints.maxWidth,
                             child: InteractiveViewer(
+                              allowScale: false,
                               child: SfDataGrid(
                                 allowFiltering: true,
                                 allowSorting: true,
