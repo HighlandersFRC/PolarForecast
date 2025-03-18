@@ -5,7 +5,6 @@ import 'package:csv/csv.dart';
 import 'package:flat/flat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
@@ -13,7 +12,6 @@ import 'package:scouting_app/models/match_scouting_2025.dart';
 import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/auto_display_2025.dart';
 import 'package:scouting_app/widgets/auto_pieces_2025.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2025.dart';
@@ -81,7 +79,6 @@ class _EventPageState extends State<EventPage> {
       _PitScoutingTab(widget),
       _QualsTab(widget),
       _ElimsTab(widget),
-      _AutosTab(widget),
     ];
     return Scaffold(
         appBar: PolarForecastAppBar(
@@ -123,21 +120,19 @@ class _EventPageState extends State<EventPage> {
                 activeIcon:
                     Icon(Icons.workspace_premium, color: theme.primaryColor),
                 label: 'Elims'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.precision_manufacturing_outlined,
-                    color: theme.primaryColor),
-                activeIcon: Icon(Icons.precision_manufacturing,
-                    color: theme.primaryColor),
-                label: 'Autos')
           ],
           type: BottomNavigationBarType.shifting,
           selectedLabelStyle: TextStyle(
               color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black),
+          unselectedLabelStyle: TextStyle(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black),
           selectedItemColor:
               theme.brightness == Brightness.dark ? Colors.white : Colors.black,
-          showUnselectedLabels: false,
+          showUnselectedLabels: true,
         ),
         body: tabs[_currentTab]);
   }
@@ -2538,227 +2533,5 @@ class _ElimsTabState extends State<_ElimsTab> {
                         context, dataRows, widget.widget.tournament, statuses),
                   ),
                 ))));
-  }
-}
-
-class _AutosTab extends StatefulWidget {
-  final EventPage widget;
-  const _AutosTab(this.widget);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _AutosTabState();
-  }
-}
-
-class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2025> scoutingData = [];
-  bool isLoading = true, farSide = false, closeSide = false;
-  int currentPage = 0, scores = 0, pickups = 0;
-  static const AUTOS_PER_PAGE = 15;
-  String? token;
-  @override
-  void initState() {
-    super.initState();
-    fetchData().then((_) => setState(() => {}));
-  }
-
-  fetchData() async {
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    try {
-      token = await apiService.token;
-      if (token != null) {
-        final fetchedData = await apiService.fetchEventScouting(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4],
-        );
-        if (mounted) {
-          setState(() {
-            scoutingData = fetchedData;
-            isLoading = false;
-            token = token;
-          });
-        }
-      } else {
-        if (mounted)
-          setState(() {
-            isLoading = false;
-            token = token;
-          });
-      }
-    } catch (e) {
-      throw (e);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Filter out all of the Data which doesn't follow the form's filters
-    List<MatchScouting2025> filteredData = scoutingData;
-    // TODO add auto filtration
-    // .where((entry) {
-    //   if ((entry.data.selectedPieces?.length ?? 0) == 0 &&
-    //       (farSide || closeSide || pickups > 0)) {
-    //     return false;
-    //   }
-    //   if (closeSide) {
-    //     const closeNotes = [
-    //       'spike_left',
-    //       'spike_middle',
-    //       'spike_right',
-    //       'halfway_far_left',
-    //       'halfway_middle_left',
-    //       'halfway_middle',
-    //     ];
-    //     if (!(entry.data.selectedPieces
-    //             ?.any((element) => closeNotes.any((note) => note == element)) ??
-    //         false)) return false;
-    //   }
-    //   if (farSide) {
-    //     const farNotes = [
-    //       'halfway_middle_right',
-    //       'halfway_far_right',
-    //     ];
-    //     if (!(entry.data.selectedPieces
-    //             ?.any((element) => farNotes.any((note) => note == element)) ??
-    //         false)) return false;
-    //   }
-    //   if (entry.data.selectedPieces!.length < pickups) {
-    //     return false;
-    //   }
-    //   int numScores = entry.data.auto.amp + entry.data.auto.speaker;
-    //   if (numScores < scores) {
-    //     return false;
-    //   }
-    //   return true;
-    // }).toList();
-    int numPages = (filteredData.length / AUTOS_PER_PAGE).ceil();
-    // make sure we don't map it to a non-existent page
-    if (currentPage >= numPages) {
-      setState(() => currentPage = numPages - 1);
-    }
-    if (currentPage < 0) {
-      currentPage = 0;
-    }
-    List<MatchScouting2025> pageData = filteredData.sublist(
-      currentPage * AUTOS_PER_PAGE,
-      min(filteredData.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
-    );
-    return Center(
-      child: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-              color: Colors.blue,
-            ))
-          : token == null
-              ? Center(
-                  child: LoginWidget(
-                      redirect_path: 'event/${widget.widget.tournament.key}'))
-              : Column(
-                  children: [
-                    Text(
-                      'Filtering Coming Soon...',
-                      style: TextStyle(color: Colors.blue, fontSize: 30),
-                    ),
-                    if (filteredData.length == 0 && scoutingData.length != 0)
-                      Text(
-                        'No data with selected filters',
-                        style: TextStyle(fontSize: 30),
-                      ),
-                    if (scoutingData.length == 0)
-                      Text(
-                        'No data for this event',
-                        style: TextStyle(fontSize: 30),
-                      ),
-                    Expanded(
-                        child: LayoutBuilder(builder: (context, constraints) {
-                      int numColumns = constraints.maxWidth < 500 ? 1 : 2;
-                      int numRows = (pageData.length / numColumns).ceil();
-                      return SingleChildScrollView(
-                          child: Column(children: [
-                        // Card(
-                        //   shape: RoundedRectangleBorder(
-                        //     borderRadius: BorderRadius.circular(20),
-                        //   ),
-                        //   elevation: 5,
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.all(16),
-                        //     child: Column(
-                        //       crossAxisAlignment: CrossAxisAlignment.start,
-                        //       children: [
-                        //         Text('Close Autos'),
-                        //         Checkbox(
-                        //           value: closeSide,
-                        //           onChanged: (value) =>
-                        //               setState(() => closeSide = value ?? false),
-                        //         ),
-                        //         Text('Far Autos'),
-                        //         Checkbox(
-                        //           value: farSide,
-                        //           onChanged: (value) =>
-                        //               setState(() => farSide = value ?? false),
-                        //         ),
-                        //         SizedBox(height: 16),
-                        //         Counter(
-                        //           label: 'Scores',
-                        //           value: scores,
-                        //           max: 9,
-                        //           onChanged: (value) =>
-                        //               setState(() => scores = value),
-                        //         ),
-                        //         SizedBox(height: 16),
-                        //         Counter(
-                        //           label: 'Pickups',
-                        //           value: pickups,
-                        //           max: 8,
-                        //           onChanged: (value) =>
-                        //               setState(() => pickups = value),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: List.generate(numColumns, (int colIndex) {
-                              return ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                      maxWidth:
-                                          constraints.maxWidth / numColumns),
-                                  child: Column(
-                                    children:
-                                        List.generate(numRows, (int rowIndex) {
-                                      int index =
-                                          rowIndex * numColumns + colIndex;
-                                      if (index < pageData.length) {
-                                        return AutoDisplay2025(
-                                          scoutingData: pageData[index],
-                                        );
-                                      }
-                                      return SizedBox.shrink();
-                                    }),
-                                  ));
-                            }))
-                      ]));
-                    })),
-                    if (numPages > 1)
-                      NumberPaginator(
-                        initialPage: currentPage,
-                        numberPages: numPages,
-                        onPageChange: (page) {
-                          setState(() => currentPage = page);
-                        },
-                        config: NumberPaginatorUIConfig(
-                          buttonSelectedBackgroundColor: Colors.blue,
-                          buttonUnselectedForegroundColor: Colors.blue,
-                        ),
-                        prevButtonContent:
-                            Icon(Icons.chevron_left, color: Colors.blue),
-                        nextButtonContent:
-                            Icon(Icons.chevron_right, color: Colors.blue),
-                      ),
-                  ],
-                ),
-    );
   }
 }
