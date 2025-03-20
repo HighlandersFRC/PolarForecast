@@ -505,8 +505,10 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       behavior: HitTestBehavior.opaque,
                       onTapDown: (TapDownDetails details) {
                         RenderBox box = context.findRenderObject() as RenderBox;
-                        Offset localPos =
-                            box.globalToLocal(details.globalPosition);
+                        Offset localPos = box.globalToLocal(
+                            details.globalPosition.translate(
+                                0 - max((constraints.maxWidth - 500) / 2, 0),
+                                0));
                         int selectedTriangle = -1;
                         double minDistance = double.infinity;
                         double triangleSizeLocal = displayedImageWidth * 0.075;
@@ -515,7 +517,8 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                         for (int i = 0; i < triangleCount; i++) {
                           int shiftedIndex = (i + 4) % triangleCount;
                           double angle =
-                              (-2 * pi / triangleCount) * shiftedIndex;
+                              (-2 * pi / triangleCount) * shiftedIndex +
+                                  formRotation * pi / 2;
                           double triCenterX =
                               centerX - centroidDist * sin(angle);
                           double triCenterY =
