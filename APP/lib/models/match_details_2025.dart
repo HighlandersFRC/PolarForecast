@@ -15,9 +15,9 @@ part 'match_details_2025.g.dart';
 class MatchDetails2025 with _$MatchDetails2025 {
   const factory MatchDetails2025({
     required Match2025 match,
-    required MatchPrediction2025 prediction,
-    required List<TeamStats2025> red_teams,
-    required List<TeamStats2025> blue_teams,
+    required MatchPrediction2025? prediction,
+    required List<TeamStats2025>? red_teams,
+    required List<TeamStats2025>? blue_teams,
   }) = _MatchDetails2025;
 
   factory MatchDetails2025.fromJson(Map<String, Object?> json) =>

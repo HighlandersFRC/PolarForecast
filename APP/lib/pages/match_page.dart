@@ -194,7 +194,7 @@ class _StatsTabState extends State<_StatsTab> {
             blueProcessor = 0,
             blueNet = 0,
             blueClimb = 0;
-        for (var blueTeam in stats!.blue_teams) {
+        for (var blueTeam in stats?.blue_teams ?? []) {
           blueOPR += blueTeam.OPR;
           blueCoral += blueTeam.coral_points;
           blueProcessor += blueTeam.processor;
@@ -226,7 +226,7 @@ class _StatsTabState extends State<_StatsTab> {
             redProcessor = 0,
             redNet = 0,
             redClimb = 0;
-        for (var redTeam in stats!.red_teams) {
+        for (var redTeam in stats?.red_teams ?? []) {
           redOPR += redTeam.OPR;
           redCoral += redTeam.coral_points;
           redProcessor += redTeam.processor;
@@ -283,24 +283,24 @@ class _StatsTabState extends State<_StatsTab> {
                               height: 8,
                             ),
                             Text(
-                              'Blue Predicted Score: ${stats?.prediction.blue_score.toStringAsFixed(2)}',
+                              'Blue Predicted Score: ${stats?.prediction?.blue_score.toStringAsFixed(2)}',
                               style:
                                   TextStyle(fontSize: 20, color: Colors.blue),
                             ),
-                            if (stats?.prediction.blue_actual_score != null)
+                            if (stats?.prediction?.blue_actual_score != null)
                               Text(
-                                'Blue Actual Score: ${stats?.prediction.blue_actual_score}',
+                                'Blue Actual Score: ${stats?.prediction?.blue_actual_score}',
                                 style:
                                     TextStyle(fontSize: 20, color: Colors.blue),
                               ),
                             Text(
-                              'Blue Predicted RP: ${stats?.prediction.blue_total_rp}',
+                              'Blue Predicted RP: ${stats?.prediction?.blue_total_rp}',
                               style:
                                   TextStyle(fontSize: 20, color: Colors.blue),
                             ),
-                            if (!(stats?.prediction.predicted ?? true))
+                            if (!(stats?.prediction?.predicted ?? true))
                               Text(
-                                'Blue Actual RP: ${stats?.prediction.blue_display_rp}',
+                                'Blue Actual RP: ${stats?.prediction?.blue_display_rp}',
                                 style:
                                     TextStyle(fontSize: 20, color: Colors.blue),
                               ),
@@ -329,22 +329,22 @@ class _StatsTabState extends State<_StatsTab> {
                               height: 8,
                             ),
                             Text(
-                              'Red Predicted Score: ${stats?.prediction.red_score.toStringAsFixed(2)}',
+                              'Red Predicted Score: ${stats?.prediction?.red_score.toStringAsFixed(2)}',
                               style: TextStyle(fontSize: 20, color: Colors.red),
                             ),
-                            if (stats?.prediction.red_actual_score != null)
+                            if (stats?.prediction?.red_actual_score != null)
                               Text(
-                                'Red Actual Score: ${stats?.prediction.red_actual_score}',
+                                'Red Actual Score: ${stats?.prediction?.red_actual_score}',
                                 style:
                                     TextStyle(fontSize: 20, color: Colors.red),
                               ),
                             Text(
-                              'Red Predicted RP: ${stats?.prediction.red_total_rp}',
+                              'Red Predicted RP: ${stats?.prediction?.red_total_rp}',
                               style: TextStyle(fontSize: 20, color: Colors.red),
                             ),
-                            if (!(stats?.prediction.predicted ?? true))
+                            if (!(stats?.prediction?.predicted ?? true))
                               Text(
-                                'Red Actual RP: ${stats?.prediction.red_display_rp}',
+                                'Red Actual RP: ${stats?.prediction?.red_display_rp}',
                                 style:
                                     TextStyle(fontSize: 20, color: Colors.red),
                               ),
