@@ -21,9 +21,9 @@ MatchDetails2025 _$MatchDetails2025FromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$MatchDetails2025 {
   Match2025 get match => throw _privateConstructorUsedError;
-  MatchPrediction2025 get prediction => throw _privateConstructorUsedError;
-  List<TeamStats2025> get red_teams => throw _privateConstructorUsedError;
-  List<TeamStats2025> get blue_teams => throw _privateConstructorUsedError;
+  MatchPrediction2025? get prediction => throw _privateConstructorUsedError;
+  List<TeamStats2025>? get red_teams => throw _privateConstructorUsedError;
+  List<TeamStats2025>? get blue_teams => throw _privateConstructorUsedError;
 
   /// Serializes this MatchDetails2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -43,12 +43,12 @@ abstract class $MatchDetails2025CopyWith<$Res> {
   @useResult
   $Res call(
       {Match2025 match,
-      MatchPrediction2025 prediction,
-      List<TeamStats2025> red_teams,
-      List<TeamStats2025> blue_teams});
+      MatchPrediction2025? prediction,
+      List<TeamStats2025>? red_teams,
+      List<TeamStats2025>? blue_teams});
 
   $Match2025CopyWith<$Res> get match;
-  $MatchPrediction2025CopyWith<$Res> get prediction;
+  $MatchPrediction2025CopyWith<$Res>? get prediction;
 }
 
 /// @nodoc
@@ -67,27 +67,27 @@ class _$MatchDetails2025CopyWithImpl<$Res, $Val extends MatchDetails2025>
   @override
   $Res call({
     Object? match = null,
-    Object? prediction = null,
-    Object? red_teams = null,
-    Object? blue_teams = null,
+    Object? prediction = freezed,
+    Object? red_teams = freezed,
+    Object? blue_teams = freezed,
   }) {
     return _then(_value.copyWith(
       match: null == match
           ? _value.match
           : match // ignore: cast_nullable_to_non_nullable
               as Match2025,
-      prediction: null == prediction
+      prediction: freezed == prediction
           ? _value.prediction
           : prediction // ignore: cast_nullable_to_non_nullable
-              as MatchPrediction2025,
-      red_teams: null == red_teams
+              as MatchPrediction2025?,
+      red_teams: freezed == red_teams
           ? _value.red_teams
           : red_teams // ignore: cast_nullable_to_non_nullable
-              as List<TeamStats2025>,
-      blue_teams: null == blue_teams
+              as List<TeamStats2025>?,
+      blue_teams: freezed == blue_teams
           ? _value.blue_teams
           : blue_teams // ignore: cast_nullable_to_non_nullable
-              as List<TeamStats2025>,
+              as List<TeamStats2025>?,
     ) as $Val);
   }
 
@@ -105,8 +105,12 @@ class _$MatchDetails2025CopyWithImpl<$Res, $Val extends MatchDetails2025>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $MatchPrediction2025CopyWith<$Res> get prediction {
-    return $MatchPrediction2025CopyWith<$Res>(_value.prediction, (value) {
+  $MatchPrediction2025CopyWith<$Res>? get prediction {
+    if (_value.prediction == null) {
+      return null;
+    }
+
+    return $MatchPrediction2025CopyWith<$Res>(_value.prediction!, (value) {
       return _then(_value.copyWith(prediction: value) as $Val);
     });
   }
@@ -122,14 +126,14 @@ abstract class _$$MatchDetails2025ImplCopyWith<$Res>
   @useResult
   $Res call(
       {Match2025 match,
-      MatchPrediction2025 prediction,
-      List<TeamStats2025> red_teams,
-      List<TeamStats2025> blue_teams});
+      MatchPrediction2025? prediction,
+      List<TeamStats2025>? red_teams,
+      List<TeamStats2025>? blue_teams});
 
   @override
   $Match2025CopyWith<$Res> get match;
   @override
-  $MatchPrediction2025CopyWith<$Res> get prediction;
+  $MatchPrediction2025CopyWith<$Res>? get prediction;
 }
 
 /// @nodoc
@@ -146,27 +150,27 @@ class __$$MatchDetails2025ImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? match = null,
-    Object? prediction = null,
-    Object? red_teams = null,
-    Object? blue_teams = null,
+    Object? prediction = freezed,
+    Object? red_teams = freezed,
+    Object? blue_teams = freezed,
   }) {
     return _then(_$MatchDetails2025Impl(
       match: null == match
           ? _value.match
           : match // ignore: cast_nullable_to_non_nullable
               as Match2025,
-      prediction: null == prediction
+      prediction: freezed == prediction
           ? _value.prediction
           : prediction // ignore: cast_nullable_to_non_nullable
-              as MatchPrediction2025,
-      red_teams: null == red_teams
+              as MatchPrediction2025?,
+      red_teams: freezed == red_teams
           ? _value._red_teams
           : red_teams // ignore: cast_nullable_to_non_nullable
-              as List<TeamStats2025>,
-      blue_teams: null == blue_teams
+              as List<TeamStats2025>?,
+      blue_teams: freezed == blue_teams
           ? _value._blue_teams
           : blue_teams // ignore: cast_nullable_to_non_nullable
-              as List<TeamStats2025>,
+              as List<TeamStats2025>?,
     ));
   }
 }
@@ -179,8 +183,8 @@ class _$MatchDetails2025Impl
   const _$MatchDetails2025Impl(
       {required this.match,
       required this.prediction,
-      required final List<TeamStats2025> red_teams,
-      required final List<TeamStats2025> blue_teams})
+      required final List<TeamStats2025>? red_teams,
+      required final List<TeamStats2025>? blue_teams})
       : _red_teams = red_teams,
         _blue_teams = blue_teams;
 
@@ -190,21 +194,25 @@ class _$MatchDetails2025Impl
   @override
   final Match2025 match;
   @override
-  final MatchPrediction2025 prediction;
-  final List<TeamStats2025> _red_teams;
+  final MatchPrediction2025? prediction;
+  final List<TeamStats2025>? _red_teams;
   @override
-  List<TeamStats2025> get red_teams {
+  List<TeamStats2025>? get red_teams {
+    final value = _red_teams;
+    if (value == null) return null;
     if (_red_teams is EqualUnmodifiableListView) return _red_teams;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_red_teams);
+    return EqualUnmodifiableListView(value);
   }
 
-  final List<TeamStats2025> _blue_teams;
+  final List<TeamStats2025>? _blue_teams;
   @override
-  List<TeamStats2025> get blue_teams {
+  List<TeamStats2025>? get blue_teams {
+    final value = _blue_teams;
+    if (value == null) return null;
     if (_blue_teams is EqualUnmodifiableListView) return _blue_teams;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_blue_teams);
+    return EqualUnmodifiableListView(value);
   }
 
   @override
@@ -266,9 +274,9 @@ class _$MatchDetails2025Impl
 abstract class _MatchDetails2025 implements MatchDetails2025 {
   const factory _MatchDetails2025(
       {required final Match2025 match,
-      required final MatchPrediction2025 prediction,
-      required final List<TeamStats2025> red_teams,
-      required final List<TeamStats2025> blue_teams}) = _$MatchDetails2025Impl;
+      required final MatchPrediction2025? prediction,
+      required final List<TeamStats2025>? red_teams,
+      required final List<TeamStats2025>? blue_teams}) = _$MatchDetails2025Impl;
 
   factory _MatchDetails2025.fromJson(Map<String, dynamic> json) =
       _$MatchDetails2025Impl.fromJson;
@@ -276,11 +284,11 @@ abstract class _MatchDetails2025 implements MatchDetails2025 {
   @override
   Match2025 get match;
   @override
-  MatchPrediction2025 get prediction;
+  MatchPrediction2025? get prediction;
   @override
-  List<TeamStats2025> get red_teams;
+  List<TeamStats2025>? get red_teams;
   @override
-  List<TeamStats2025> get blue_teams;
+  List<TeamStats2025>? get blue_teams;
 
   /// Create a copy of MatchDetails2025
   /// with the given fields replaced by the non-null parameter values.

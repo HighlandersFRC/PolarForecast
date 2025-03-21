@@ -383,7 +383,8 @@ def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
                 data = getEventPredictions(event_code)
         data.pop("_id")
         return {"data": data["data"]}
-    except:
+    except Exception as e:
+        print(e)
         return {"data": []}
 
 
@@ -393,7 +394,7 @@ def get_match_details(year: int, event: str, match_key: str, token: str = Header
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
         tbaMatch.pop("_id")
-        matchPrediction = {}
+        matchPrediction = None
         blueTeamStats = []
         redTeamStats = []
         try:
