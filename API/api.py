@@ -343,7 +343,7 @@ def get_Year_Events(year: int):
 
 
 @app.get("/search_keys", tags=["miscellaneous"])
-@cacheValue()
+@cacheValue(seconds=60*60*24)  # Cache it for a day
 def get_Search_Keys():
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
