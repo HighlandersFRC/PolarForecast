@@ -375,7 +375,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             return error
         return func
 
-    mutation_percent_genes = 0.01
+    mutation_percent_genes = 0.02
 
     # Define a function to perform the genetic algorithm operation
     # print("doing genetic algorithm")

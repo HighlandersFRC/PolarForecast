@@ -19,6 +19,8 @@ class ApiService {
   final Duration cacheDuration;
   final AuthService authService;
   Future<String?> get token async => await authService.getToken();
+
+  List<Tournament>? tournaments;
   // set token(dynamic token) => _token = token;
 
   ApiService(
@@ -31,9 +33,10 @@ class ApiService {
       required this.cacheDuration});
 
   Map<String, dynamic> _cache = {};
-
-  dynamic _setInCache(String key, dynamic value) {
-    DateTime timestamp = DateTime.now();
+  Map<String, Future> _pendingRequests = {};
+  dynamic _setInCache(String key, dynamic value,
+      {Duration cacheTime = const Duration(minutes: 5)}) {
+    DateTime timestamp = DateTime.now().add(cacheTime);
     Map<String, dynamic> item = {
       'data': value,
       'timestamp': timestamp,
@@ -43,26 +46,37 @@ class ApiService {
 
   dynamic _getFromCache(String key, Function() ifExpired) {
     if (_cache.containsKey(key) &&
-        DateTime.now().difference(_cache[key]['timestamp']) < cacheDuration) {
+        DateTime.now().compareTo(_cache[key]['timestamp']) < 0) {
       return _cache[key]['data'];
     }
     return ifExpired();
   }
 
   Future<dynamic> _fetchFromAPI(String url, String cacheKey,
-      {bool? useCache}) async {
+      {bool? useCache,
+      Duration cacheTime = const Duration(minutes: 5),
+      Map<String, String> extraHeaders = const {}}) async {
     Function() getFromAPI = () async {
-      Map<String, String> headers = {};
-      final _token = await token;
-      if (_token != null) headers = {'token': _token};
-      final response = await http.get(Uri.parse(url), headers: headers);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _setInCache(cacheKey, data);
-        return data;
-      } else {
-        throw Exception('Failed to load data from ' + url);
-      }
+      if (_pendingRequests.containsKey(cacheKey))
+        return _pendingRequests[cacheKey];
+      Map<String, String> headers = extraHeaders;
+      Future<dynamic> Function() futureFunc = () async {
+        final _token = await token;
+        if (_token != null) headers = {'token': _token, ...extraHeaders};
+        final response = await http.get(Uri.parse(url), headers: headers);
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          _setInCache(cacheKey, data, cacheTime: cacheTime);
+          return data;
+        } else {
+          throw Exception('Failed to load data from ' + url);
+        }
+      };
+      final future = futureFunc().whenComplete(() {
+        _pendingRequests.remove(cacheKey);
+      });
+      _pendingRequests[cacheKey] = future;
+      return future;
     };
     if (useCache ?? true) return _getFromCache(cacheKey, getFromAPI);
     return getFromAPI();
@@ -71,12 +85,14 @@ class ApiService {
   Future<List<Tournament>> fetchTournaments() async {
     final cacheKey = 'tournaments';
     final url = '$APIURL/search_keys';
-    final tournaments = [
-      for (var x in ((await _fetchFromAPI(url, cacheKey)
-          as Map<String, dynamic>)['data']))
-        Tournament.fromJson(x)
-    ];
-    return tournaments;
+    if (this.tournaments == null) {
+      tournaments = [
+        for (var x in ((await _fetchFromAPI(url, cacheKey)
+            as Map<String, dynamic>)['data']))
+          Tournament.fromJson(x)
+      ];
+    }
+    return this.tournaments!;
   }
 
   Future<Map<String, dynamic>> fetchTeamStats(
@@ -183,13 +199,13 @@ class ApiService {
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey, useCache: true));
     data = [...data];
-    List<MatchScouting2025> retval = [];
+    List<MatchScouting2025> retVal = [];
     for (var x in data) {
       try {
-        retval.add(MatchScouting2025.fromJson(x));
+        retVal.add(MatchScouting2025.fromJson(x));
       } catch (e) {}
     }
-    return retval;
+    return retVal;
   }
 
   Future<List<MatchScouting2025>> fetchTeamMatchScouting(
@@ -274,11 +290,13 @@ class ApiService {
     if (token == null) {
       throw Exception('no user token');
     }
-    final response = await http.get(
-      Uri.parse('$APIURL/User/Groups'),
-      headers: {'token': token},
+    String endpoint = '$APIURL/User/Groups';
+    final data = await _fetchFromAPI(
+      endpoint,
+      'user_groups',
+      useCache: false,
     );
-    return json.decode(response.body);
+    return data;
   }
 
   Future<List<Group>> get_user_groups_detailed() async {
@@ -323,30 +341,14 @@ class ApiService {
   }
 
   Future<(Group, String)> get_group(String name) async {
-    final response = await http.get(
-      Uri.parse('$APIURL/Group/$name'),
-      headers: {
-        'token': (await token) ?? '',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    final data = json.decode(response.body);
+    final endpoint = '$APIURL/Group/$name';
+    final data = await _fetchFromAPI(endpoint, '', useCache: false);
     return (Group.fromJson(data['group']), data['group_role'].toString());
   }
 
   Future<Map> get_group_members(String name) async {
-    final response = await http.get(
-      Uri.parse('$APIURL/Group/$name/Members'),
-      headers: {
-        'token': (await token) ?? '',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    return json.decode(response.body);
+    final endpoint = '$APIURL/Group/$name/Members';
+    return await _fetchFromAPI(endpoint, '', useCache: false);
   }
 
   Future<List<GroupJoinRequest>> join_group(
@@ -478,14 +480,8 @@ class ApiService {
   }
 
   Future<List> get_event_groups(String event, int year) async {
-    final response =
-        await http.get(Uri.parse('$APIURL/$year/$event/Groups'), headers: {
-      'token': (await token) ?? '',
-    });
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    return json.decode(response.body);
+    final endpoint = '$APIURL/$year/$event/Groups';
+    return await _fetchFromAPI(endpoint, '', useCache: false);
   }
 
   Future<List<AllianceRequest>> request_alliance(
@@ -509,14 +505,8 @@ class ApiService {
   }
 
   Future<List<AllianceRequest>> get_alliance_requests(String group_name) async {
-    final response = await http
-        .get(Uri.parse('$APIURL/Group/$group_name/AllianceRequests'), headers: {
-      'token': (await token) ?? '',
-    });
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    final requests = json.decode(response.body);
+    final endpoint = '$APIURL/Group/$group_name/AllianceRequests';
+    final requests = await _fetchFromAPI(endpoint, '', useCache: false);
     List<AllianceRequest> retVal = [];
     for (final request in requests) {
       retVal.add(AllianceRequest.fromJson(request));
@@ -601,16 +591,8 @@ class ApiService {
   }
 
   Future<List<GroupJoinRequest>> get_user_join_requests() async {
-    final response = await http.get(
-      Uri.parse('$APIURL/User/GroupJoinRequests'),
-      headers: {
-        'token': (await token) ?? '',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    final requests = json.decode(response.body);
+    final endpoint = '$APIURL/User/GroupJoinRequests';
+    final requests = await _fetchFromAPI(endpoint, '', useCache: false);
     List<GroupJoinRequest> retVal = [];
     for (final request in requests) {
       retVal.add(GroupJoinRequest.fromJson(request));
@@ -620,16 +602,8 @@ class ApiService {
 
   Future<List<GroupJoinRequest>> get_group_join_requests(
       String group_name) async {
-    final response = await http.get(
-      Uri.parse('$APIURL/Group/$group_name/JoinRequests'),
-      headers: {
-        'token': (await token) ?? '',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw Exception(json.decode(response.body)['detail']);
-    }
-    final requests = json.decode(response.body);
+    final endpoint = '$APIURL/Group/$group_name/JoinRequests';
+    final requests = await _fetchFromAPI(endpoint, '', useCache: false);
     List<GroupJoinRequest> retVal = [];
     for (final request in requests) {
       retVal.add(GroupJoinRequest.fromJson(request));
