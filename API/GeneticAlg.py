@@ -31,9 +31,9 @@ class geneticAlg:
         return np.max([min, np.min([max, value])])
 
     def mutate_gene(self, current_value, max, min):
-        sigma = (max - min)/(1.0+float(self.generationNumber)*0.05)
+        sigma = 1  # (max - min)/(1.0+float(self.generationNumber)*0.05)
         mutated_value = np.random.normal(current_value, sigma)
-        return self.clamp(min, max, mutated_value)
+        return mutated_value
 
     def mutateGenes(self, mutant: pd.DataFrame) -> pd.DataFrame:
         mutant = pd.DataFrame(copy.deepcopy(mutant))
@@ -114,7 +114,7 @@ class geneticAlg:
                 self.generationsSinceImprovement += 1
             if self.generationsSinceImprovement >= 25:
                 foundSolution = True
-            if self.generationNumber > 10000:
+            if self.generationNumber > 1500:
                 foundSolution = True
             self.generationNumber += 1
         return [self.bestSolution, self.bestSolutionError]
