@@ -977,6 +977,39 @@ class _MembersTabState extends State<_MembersTab> {
     });
   }
 
+  // Add drag-to-refresh functionality
+  Future<void> _refreshData() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    setState(() {
+      loading = true;
+    });
+    await apiService.get_group_members(widget.group?.name ?? '').then((value) {
+      members = value;
+      if (mounted) {
+        setState(() {
+          members = value;
+        });
+      }
+    });
+    await apiService
+        .get_group_join_requests(widget.group?.name ?? '')
+        .then((value) {
+      requests = value;
+      if (mounted) {
+        setState(() {
+          requests = value;
+          loading = false;
+        });
+      }
+    }).onError((e, _) {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(
@@ -986,153 +1019,182 @@ class _MembersTabState extends State<_MembersTab> {
         requests?.where((request) => !request.accepted).toList();
     return loading
         ? Center(child: CircularProgressIndicator(color: Colors.blue))
-        : SingleChildScrollView(
-            child: Column(children: [
-              SizedBox(
-                height: 10,
-              ),
-              if (widget.membership != 'member')
-                Card(
-                    child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Text('Join Requests',
-                          style: TextStyle(color: Colors.white, fontSize: 30)),
-                      if ((filteredRequests?.length ?? 0) == 0)
-                        Text('No Pending Join Requests'),
-                      ExpansionPanelList.radio(elevation: 0, children: [
-                        ...List.generate(
-                          filteredRequests?.length ?? 0,
-                          (requestIndex) => ExpansionPanelRadio(
-                              canTapOnHeader: true,
-                              backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                              value: filteredRequests![requestIndex],
-                              headerBuilder: (context, isExpanded) {
-                                return ListTile(
-                                  title: Text(
-                                      'Username: ${filteredRequests[requestIndex].username}\nTime of Request: ${DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(filteredRequests[requestIndex].request_time * 1000).toLocal())}'),
-                                );
-                              },
-                              body: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      apiService
-                                          .accept_join_request(
-                                              filteredRequests[requestIndex])
-                                          .then((value) {
-                                        setState(() {
-                                          requests = value;
-                                        });
-                                        apiService
-                                            .get_group_members(
-                                                widget.group!.name)
-                                            .then(
-                                              (Map _members) => setState(() {
-                                                members = _members;
-                                              }),
-                                            );
-                                      });
-                                    },
-                                    style: ButtonStyle(
-                                        foregroundColor: WidgetStatePropertyAll(
-                                            Colors.green)),
-                                    icon: Icon(Icons.check_rounded),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      apiService
-                                          .decline_join_request(
-                                              filteredRequests[requestIndex])
-                                          .then((value) {
-                                        setState(() {
-                                          requests = value;
-                                        });
-                                      });
-                                    },
-                                    style: ButtonStyle(
-                                        foregroundColor:
-                                            WidgetStatePropertyAll(Colors.red)),
-                                    icon: Icon(Icons.close_rounded),
-                                  )
-                                ],
-                              )),
-                        )
-                      ]),
-                    ],
-                  ),
-                )),
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Column(children: [
-                    Text(
-                      'Owners',
-                      style: TextStyle(color: Colors.white, fontSize: 30),
-                    ),
-                    ExpansionPanelList.radio(
-                      dividerColor: Colors.blue,
-                      elevation: 0,
-                      children: List.generate(
-                          members?['owners'].length,
-                          (index) => ExpansionPanelRadio(
+        : RefreshIndicator(
+            onRefresh: _refreshData,
+            child: SingleChildScrollView(
+              child: Column(children: [
+                SizedBox(
+                  height: 10,
+                ),
+                if (widget.membership != 'member')
+                  Card(
+                      child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Text('Join Requests',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 30)),
+                        if ((filteredRequests?.length ?? 0) == 0)
+                          Text('No Pending Join Requests'),
+                        ExpansionPanelList.radio(elevation: 0, children: [
+                          ...List.generate(
+                            filteredRequests?.length ?? 0,
+                            (requestIndex) => ExpansionPanelRadio(
                                 canTapOnHeader: true,
                                 backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                                value: members?['owners'][index],
+                                value: filteredRequests![requestIndex],
                                 headerBuilder: (context, isExpanded) {
-                                  return Padding(
-                                    child: Text(
-                                        'Owner: ${members?['owners'][index]['firstName']}'),
-                                    padding: EdgeInsets.all(20),
+                                  return ListTile(
+                                    title: Text(
+                                        'Username: ${filteredRequests[requestIndex].username}\nTime of Request: ${DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(filteredRequests[requestIndex].request_time * 1000).toLocal())}'),
                                   );
                                 },
-                                body:
-                                    Text(members?['owners'][index]['username']),
-                              )),
+                                body: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        apiService
+                                            .accept_join_request(
+                                                filteredRequests[requestIndex])
+                                            .then((value) {
+                                          setState(() {
+                                            requests = value;
+                                          });
+                                          apiService
+                                              .get_group_members(
+                                                  widget.group!.name)
+                                              .then(
+                                                (Map _members) => setState(() {
+                                                  members = _members;
+                                                }),
+                                              );
+                                        });
+                                      },
+                                      style: ButtonStyle(
+                                          foregroundColor:
+                                              WidgetStatePropertyAll(
+                                                  Colors.green)),
+                                      icon: Icon(Icons.check_rounded),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        apiService
+                                            .decline_join_request(
+                                                filteredRequests[requestIndex])
+                                            .then((value) {
+                                          setState(() {
+                                            requests = value;
+                                          });
+                                        });
+                                      },
+                                      style: ButtonStyle(
+                                          foregroundColor:
+                                              WidgetStatePropertyAll(
+                                                  Colors.red)),
+                                      icon: Icon(Icons.close_rounded),
+                                    )
+                                  ],
+                                )),
+                          )
+                        ]),
+                      ],
                     ),
-                  ]),
+                  )),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(children: [
+                      Text(
+                        'Owners',
+                        style: TextStyle(color: Colors.white, fontSize: 30),
+                      ),
+                      ExpansionPanelList.radio(
+                        dividerColor: Colors.blue,
+                        elevation: 0,
+                        children: List.generate(
+                            members?['owners'].length,
+                            (index) => ExpansionPanelRadio(
+                                  canTapOnHeader: true,
+                                  backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                                  value: members?['owners'][index],
+                                  headerBuilder: (context, isExpanded) {
+                                    return Padding(
+                                      child: Text(
+                                          'Owner: ${members?['owners'][index]['firstName']}'),
+                                      padding: EdgeInsets.all(20),
+                                    );
+                                  },
+                                  body: Text(
+                                      members?['owners'][index]['username']),
+                                )),
+                      ),
+                    ]),
+                  ),
                 ),
-              ),
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Column(children: [
-                    Text(
-                      'Admins',
-                      style: TextStyle(color: Colors.white, fontSize: 30),
-                    ),
-                    ExpansionPanelList.radio(
-                      dividerColor: Colors.blue,
-                      elevation: 0,
-                      children: List.generate(
-                        members?['admins'].length,
-                        (index) => ExpansionPanelRadio(
-                            canTapOnHeader: true,
-                            backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                            value: members?['admins'][index],
-                            headerBuilder: (context, isExpanded) {
-                              return Padding(
-                                child: Text(
-                                    'Admin ${index + 1}: ${members?['admins'][index]['firstName']}'),
-                                padding: EdgeInsets.all(20),
-                              );
-                            },
-                            body: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(members?['admins'][index]['username']),
-                                  if (widget.membership == 'owner')
-                                    SizedBox(width: 8),
-                                  if (widget.membership == 'owner')
-                                    ElevatedButton(
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Column(children: [
+                      Text(
+                        'Admins',
+                        style: TextStyle(color: Colors.white, fontSize: 30),
+                      ),
+                      ExpansionPanelList.radio(
+                        dividerColor: Colors.blue,
+                        elevation: 0,
+                        children: List.generate(
+                          members?['admins'].length,
+                          (index) => ExpansionPanelRadio(
+                              canTapOnHeader: true,
+                              backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                              value: members?['admins'][index],
+                              headerBuilder: (context, isExpanded) {
+                                return Padding(
+                                  child: Text(
+                                      'Admin ${index + 1}: ${members?['admins'][index]['firstName']}'),
+                                  padding: EdgeInsets.all(20),
+                                );
+                              },
+                              body: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(members?['admins'][index]['username']),
+                                    if (widget.membership == 'owner')
+                                      SizedBox(width: 8),
+                                    if (widget.membership == 'owner')
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            apiService
+                                                .demote_group_member(
+                                                    widget.group?.name ?? '',
+                                                    members?['admins'][index]
+                                                        ['id'])
+                                                .then((value) {
+                                              setState(() {
+                                                members = value;
+                                              });
+                                            });
+                                          },
+                                          style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.red),
+                                              foregroundColor:
+                                                  WidgetStatePropertyAll(
+                                                      Colors.white)),
+                                          child: Text('Demote to Member')),
+                                    if (widget.membership == 'owner')
+                                      SizedBox(width: 8),
+                                    if (widget.membership == 'owner')
+                                      ElevatedButton(
                                         onPressed: () {
                                           apiService
-                                              .demote_group_member(
+                                              .promote_group_admin(
                                                   widget.group?.name ?? '',
                                                   members?['admins'][index]
                                                       ['id'])
@@ -1145,136 +1207,113 @@ class _MembersTabState extends State<_MembersTab> {
                                         style: ButtonStyle(
                                             backgroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.red),
+                                                    Colors.yellow),
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
-                                                    Colors.white)),
-                                        child: Text('Demote to Member')),
-                                  if (widget.membership == 'owner')
-                                    SizedBox(width: 8),
-                                  if (widget.membership == 'owner')
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        apiService
-                                            .promote_group_admin(
-                                                widget.group?.name ?? '',
-                                                members?['admins'][index]['id'])
-                                            .then((value) {
-                                          setState(() {
-                                            members = value;
-                                          });
-                                        });
-                                      },
-                                      style: ButtonStyle(
-                                          backgroundColor:
-                                              WidgetStatePropertyAll(
-                                                  Colors.yellow),
-                                          foregroundColor:
-                                              WidgetStatePropertyAll(
-                                                  Colors.black)),
-                                      child: Text('Promote to Owner'),
-                                    )
-                                ],
-                              ),
-                            )),
+                                                    Colors.black)),
+                                        child: Text('Promote to Owner'),
+                                      )
+                                  ],
+                                ),
+                              )),
+                        ),
                       ),
-                    ),
-                    if (members?['admins'].length == 0)
-                      Text('There are no admins in your group')
-                  ]),
+                      if (members?['admins'].length == 0)
+                        Text('There are no admins in your group')
+                    ]),
+                  ),
                 ),
-              ),
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Column(children: [
-                    Text(
-                      'Members',
-                      style: TextStyle(color: Colors.white, fontSize: 30),
-                    ),
-                    ExpansionPanelList.radio(
-                      dividerColor: Colors.blue,
-                      elevation: 0,
-                      children: List.generate(
-                        members?['members'].length,
-                        (index) => ExpansionPanelRadio(
-                            canTapOnHeader: true,
-                            backgroundColor: Color.fromARGB(0, 0, 0, 0),
-                            value: members?['members'][index],
-                            headerBuilder: (context, isExpanded) {
-                              return Padding(
-                                child: Text(
-                                    'Member ${index + 1}: ${members?['members'][index]['firstName']}'),
-                                padding: EdgeInsets.all(20),
-                              );
-                            },
-                            body: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (!(widget.membership == 'owner' ||
-                                        widget.membership == 'admin'))
-                                      Text(
-                                          'username: ${members?['members'][index]['username']}'),
-                                    if (widget.membership == 'owner' ||
-                                        widget.membership == 'admin')
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                    if (widget.membership == 'owner' ||
-                                        widget.membership == 'admin')
-                                      ElevatedButton(
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.red),
-                                              foregroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      Colors.white)),
-                                          onPressed: () {
-                                            apiService
-                                                .kick_group_member(
-                                                    widget.group?.name ?? '',
-                                                    members?['members'][index]
-                                                        ['id'])
-                                                .then((value) {
-                                              setState(() {
-                                                members = value;
-                                              });
-                                            });
-                                          },
-                                          child: Text('Kick')),
-                                    if (widget.membership == 'owner')
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                    if (widget.membership == 'owner')
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            apiService
-                                                .promote_group_member(
-                                                    widget.group?.name ?? '',
-                                                    members?['members'][index]
-                                                        ['id'])
-                                                .then((value) {
-                                              setState(() {
-                                                members = value;
-                                              });
-                                            });
-                                          },
-                                          child: Text('Promote to Admin')),
-                                  ]),
-                            )),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Column(children: [
+                      Text(
+                        'Members',
+                        style: TextStyle(color: Colors.white, fontSize: 30),
                       ),
-                    ),
-                    if (members?['members'].length == 0)
-                      Text('There are no members in your group')
-                  ]),
+                      ExpansionPanelList.radio(
+                        dividerColor: Colors.blue,
+                        elevation: 0,
+                        children: List.generate(
+                          members?['members'].length,
+                          (index) => ExpansionPanelRadio(
+                              canTapOnHeader: true,
+                              backgroundColor: Color.fromARGB(0, 0, 0, 0),
+                              value: members?['members'][index],
+                              headerBuilder: (context, isExpanded) {
+                                return Padding(
+                                  child: Text(
+                                      'Member ${index + 1}: ${members?['members'][index]['firstName']}'),
+                                  padding: EdgeInsets.all(20),
+                                );
+                              },
+                              body: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (!(widget.membership == 'owner' ||
+                                          widget.membership == 'admin'))
+                                        Text(
+                                            'username: ${members?['members'][index]['username']}'),
+                                      if (widget.membership == 'owner' ||
+                                          widget.membership == 'admin')
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                      if (widget.membership == 'owner' ||
+                                          widget.membership == 'admin')
+                                        ElevatedButton(
+                                            style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStatePropertyAll(
+                                                        Colors.red),
+                                                foregroundColor:
+                                                    WidgetStatePropertyAll(
+                                                        Colors.white)),
+                                            onPressed: () {
+                                              apiService
+                                                  .kick_group_member(
+                                                      widget.group?.name ?? '',
+                                                      members?['members'][index]
+                                                          ['id'])
+                                                  .then((value) {
+                                                setState(() {
+                                                  members = value;
+                                                });
+                                              });
+                                            },
+                                            child: Text('Kick')),
+                                      if (widget.membership == 'owner')
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                      if (widget.membership == 'owner')
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              apiService
+                                                  .promote_group_member(
+                                                      widget.group?.name ?? '',
+                                                      members?['members'][index]
+                                                          ['id'])
+                                                  .then((value) {
+                                                setState(() {
+                                                  members = value;
+                                                });
+                                              });
+                                            },
+                                            child: Text('Promote to Admin')),
+                                    ]),
+                              )),
+                        ),
+                      ),
+                      if (members?['members'].length == 0)
+                        Text('There are no members in your group')
+                    ]),
+                  ),
                 ),
-              ),
-            ]),
-          );
+              ]),
+            ));
   }
 }
 
