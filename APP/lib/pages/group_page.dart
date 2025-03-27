@@ -112,6 +112,7 @@ class _GroupPageState extends State<GroupPage> {
         errorMessage = error.toString();
       });
     }
+    await Future.delayed(Durations.medium1);
   }
 
   @override
@@ -169,7 +170,9 @@ class _GroupPageState extends State<GroupPage> {
       body: RefreshIndicator(
         triggerMode: RefreshIndicatorTriggerMode.onEdge,
         onRefresh: _fetchGroupData, // Calls the new fetch function
+        color: Colors.blue,
         child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
           child: loading
               ? Center(child: CircularProgressIndicator(color: Colors.blue))
               : token == null
