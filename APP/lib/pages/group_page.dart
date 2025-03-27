@@ -167,27 +167,32 @@ class _GroupPageState extends State<GroupPage> {
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
       ),
-      body: RefreshIndicator(
-        triggerMode: RefreshIndicatorTriggerMode.onEdge,
-        onRefresh: _fetchGroupData, // Calls the new fetch function
-        color: Colors.blue,
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: loading
-              ? Center(child: CircularProgressIndicator(color: Colors.blue))
-              : token == null
-                  ? Center(
-                      child: LoginWidget(
-                      redirect_path: widget.joinCode == null
-                          ? 'group/${widget.group}/'
-                          : 'group/${widget.group}/join/${widget.joinCode}',
-                    ))
-                  : errorMessage != null
-                      ? Center(
-                          child: Text(errorMessage!,
-                              style: TextStyle(
-                                  color: Colors.blue, fontSize: 20.0)))
-                      : tabs[_currentTab],
+      body: LayoutBuilder(
+        builder: (context, constraints) => RefreshIndicator(
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          onRefresh: _fetchGroupData, // Calls the new fetch function
+          color: Colors.blue,
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: loading
+                ? Center(child: CircularProgressIndicator(color: Colors.blue))
+                : token == null
+                    ? Center(
+                        child: LoginWidget(
+                        redirect_path: widget.joinCode == null
+                            ? 'group/${widget.group}/'
+                            : 'group/${widget.group}/join/${widget.joinCode}',
+                      ))
+                    : errorMessage != null
+                        ? Center(
+                            child: Text(errorMessage!,
+                                style: TextStyle(
+                                    color: Colors.blue, fontSize: 20.0)))
+                        : SizedBox(
+                            height: constraints.maxHeight,
+                            width: constraints.maxWidth,
+                            child: tabs[_currentTab]),
+          ),
         ),
       ),
       floatingActionButton: Column(
@@ -980,7 +985,7 @@ class _MembersTabState extends State<_MembersTab> {
     final filteredRequests =
         requests?.where((request) => !request.accepted).toList();
     return loading
-        ? CircularProgressIndicator(color: Colors.blue)
+        ? Center(child: CircularProgressIndicator(color: Colors.blue))
         : SingleChildScrollView(
             child: Column(children: [
               SizedBox(
