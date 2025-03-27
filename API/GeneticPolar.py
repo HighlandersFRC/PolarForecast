@@ -289,7 +289,8 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
-    teamMatchesList = copy.deepcopy(blankAEntry)
+    teamMatchesList: dict[str, dict[int, list[MatchScouting2025]]] = {
+        team: {} for team in blankAEntry}
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
     ratings = {'scouts': [], 'trustRatings': [], 'entries': []}
@@ -299,20 +300,18 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     except Exception as e:
         print(e)
     # Make A and Y lists with scouting data
-    for team in teams:
-        teamMatches = []
-        for entry in scoutingData:
-            if entry.team_number == team:
-                if not teamMatches.__contains__(
-                    entry.match_number
-                ):
-                    teamMatches.append(entry.match_number)
-        teamMatchesList[team] = teamMatches
+    for entry in scoutingData:
+        if str(entry.team_number) not in teamMatchesList:
+            teamMatchesList[str(entry.team_number)] = {}
+        if entry.match_number not in teamMatchesList[str(entry.team_number)]:
+            teamMatchesList[str(entry.team_number)][entry.match_number] = []
+        teamMatchesList[str(entry.team_number)
+                        ][entry.match_number].append(entry)
+    # print('trying to find data for all teams.')
     hasEnoughEntriesPerTeam = True
-    for team in teams:
-        if len(teamMatches[teams.index(team)]) < 5:
+    for team in teamMatchesList:
+        if len(teamMatchesList[team].keys()) < 5:
             hasEnoughEntriesPerTeam = False
-            break
     if hasEnoughEntriesPerTeam:
         YMatrix = pd.DataFrame(
             None, columns=unpack_nested_list(ScoutingDataKeys))
@@ -325,13 +324,13 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             numEntries = 0
             for entry in scoutingData:
                 if (
-                    entry.team_number == team
+                    str(entry.team_number) == team
                     and entry.match_number == teamMatch
                 ):
                     numEntries += 1
             for entry in scoutingData:
                 if (
-                    entry.team_number == team
+                    str(entry.team_number) == team
                     and entry.match_number == teamMatch
                 ):
                     newY = [
@@ -444,9 +443,11 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         if i < 4:
             autoPoints += array*OPRWeights[i]
             autoCoral += array
-        elif i < 10:
+        elif i < 8:
             teleopPoints += array*OPRWeights[i]
             teleopCoral += array
+        elif i < 10:
+            teleopPoints += array*OPRWeights[i]
         # except Exception as e:
         #     print(i, e)
     # print("looped through results")
