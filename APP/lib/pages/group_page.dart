@@ -32,6 +32,12 @@ class _GroupPageState extends State<GroupPage> {
   bool loading = true;
   String? errorMessage;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchGroupData();
+  }
+
   set group(Group? _group) {
     this.groupData = _group;
     if (mounted) {
@@ -50,116 +56,62 @@ class _GroupPageState extends State<GroupPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService.token.then((_token) {
-      token = _token;
-      if (mounted) {
+  Future<void> _fetchGroupData() async {
+    setState(() {
+      loading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      token = await apiService.token;
+
+      if (token == null) {
         setState(() {
-          token = _token;
+          loading = false;
+          errorMessage = 'Please log in to access the group page.';
         });
+        return;
       }
-      if (token != null) {
-        if (widget.joinCode == null) {
-          apiService.get_group(widget.group).then(
-            (value) {
-              var (_groupData, _membership) = value;
-              groupData = _groupData;
-              membership = _membership;
-              join_link =
-                  '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-              loading = false;
-              if (mounted) {
-                setState(() {
-                  membership = _membership;
-                  groupData = _groupData;
-                  join_link =
-                      '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-                  loading = false;
-                });
-              }
-            },
-          ).onError((error, stackTrace) {
-            loading = false;
-            errorMessage = error.toString();
-            if (mounted)
-              setState(() {
-                loading = false;
-                errorMessage = error.toString();
-              });
-          });
-        } else {
-          apiService.join_group(widget.group, widget.joinCode!).then((value) {
-            if (value.any((element) =>
-                (element.group_name == widget.group) && !element.accepted)) {
-              errorMessage = 'Join Request Sent';
-              if (mounted) {
-                setState(() {
-                  errorMessage = 'Join Request Sent';
-                });
-              }
-            }
-            apiService.get_group(widget.group).then(
-              (value) {
-                var (_groupData, _membership) = value;
-                groupData = _groupData;
-                membership = _membership;
-                join_link =
-                    '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-                loading = false;
-                errorMessage = null;
-                if (mounted) {
-                  setState(() {
-                    membership = _membership;
-                    groupData = _groupData;
-                    join_link =
-                        '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
-                    loading = false;
-                    errorMessage = null;
-                  });
-                }
-              },
-            ).onError((e, _) {
-              loading = false;
-              if (mounted)
-                setState(() {
-                  loading = false;
-                });
-            });
-          }).onError((error, stackTrace) {
-            errorMessage = error.toString();
-            if (mounted) {
-              setState(() {
-                errorMessage = error.toString();
-              });
-            }
-            loading = false;
-            if (mounted)
-              setState(() {
-                loading = false;
-              });
-          });
-        }
-      } else {
-        loading = false;
-        if (mounted)
-          setState(() {
-            loading = false;
-            errorMessage = 'Please log in to access the group page.';
-          });
-      }
-    }).onError((e, __) {
-      loading = false;
-      errorMessage = e.toString();
-      if (mounted) {
+
+      if (widget.joinCode == null) {
+        final (fetchedGroup, fetchedMembership) =
+            await apiService.get_group(widget.group);
         setState(() {
-          errorMessage = e.toString();
+          groupData = fetchedGroup;
+          membershipData = fetchedMembership;
+          join_link =
+              '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
           loading = false;
         });
+      } else {
+        final joinResults =
+            await apiService.join_group(widget.group, widget.joinCode!);
+
+        if (joinResults.any((element) =>
+            (element.group_name == widget.group) && !element.accepted)) {
+          setState(() {
+            errorMessage = 'Join Request Sent';
+          });
+        }
+
+        final (fetchedGroup, fetchedMembership) =
+            await apiService.get_group(widget.group);
+        setState(() {
+          groupData = fetchedGroup;
+          membershipData = fetchedMembership;
+          join_link =
+              '${apiService.APPURL}/group/${groupData?.name}/join/${groupData!.join_code}';
+          loading = false;
+          errorMessage = null;
+        });
       }
-    });
+    } catch (error) {
+      setState(() {
+        loading = false;
+        errorMessage = error.toString();
+      });
+    }
   }
 
   @override
@@ -183,6 +135,7 @@ class _GroupPageState extends State<GroupPage> {
           membership: membershipData,
         )
     ];
+
     return Scaffold(
       appBar: PolarForecastAppBar(
         extraText: '${widget.group}',
@@ -215,23 +168,24 @@ class _GroupPageState extends State<GroupPage> {
       ),
       body: RefreshIndicator(
         triggerMode: RefreshIndicatorTriggerMode.onEdge,
-        onRefresh: () async {
-          this.initState();
-          await Future.delayed(Duration(seconds: 2));
-        },
-        child: loading
-            ? CircularProgressIndicator(color: Colors.blue)
-            : token == null
-                ? Center(
-                    child: LoginWidget(
-                    redirect_path: widget.joinCode == null
-                        ? 'group/${widget.group}/'
-                        : 'group/${widget.group}/join/${widget.joinCode}',
-                  ))
-                : errorMessage != null
-                    ? Text(errorMessage!,
-                        style: TextStyle(color: Colors.blue, fontSize: 30.0))
-                    : tabs[_currentTab],
+        onRefresh: _fetchGroupData, // Calls the new fetch function
+        child: SingleChildScrollView(
+          child: loading
+              ? Center(child: CircularProgressIndicator(color: Colors.blue))
+              : token == null
+                  ? Center(
+                      child: LoginWidget(
+                      redirect_path: widget.joinCode == null
+                          ? 'group/${widget.group}/'
+                          : 'group/${widget.group}/join/${widget.joinCode}',
+                    ))
+                  : errorMessage != null
+                      ? Center(
+                          child: Text(errorMessage!,
+                              style: TextStyle(
+                                  color: Colors.blue, fontSize: 20.0)))
+                      : tabs[_currentTab],
+        ),
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
