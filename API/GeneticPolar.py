@@ -308,6 +308,15 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                 ):
                     teamMatches.append(entry.match_number)
         teamMatchesList[team] = teamMatches
+    hasEnoughEntriesPerTeam = True
+    for team in teams:
+        if len(teamMatches[teams.index(team)]) < 5:
+            hasEnoughEntriesPerTeam = False
+            break
+    if hasEnoughEntriesPerTeam:
+        YMatrix = pd.DataFrame(
+            None, columns=unpack_nested_list(ScoutingDataKeys))
+        Alist = []
     teamIdx = -1
     for team in teams:
         teamIdx += 1
