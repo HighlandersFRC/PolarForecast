@@ -2104,7 +2104,7 @@ def convertData(calculatedData, year, event_code):
         rankings = [{"team_key": "frc"+str(team), "rank": 0}
                     for team in calculatedData["team_number"]]
     for team in calculatedData["team_number"]:
-        keyList.append(keyStr+team)
+        keyList.append(keyStr+str(team))
     retval0 = {"data": {"keys": keyList}}
     retvallist = [retval0]
     for team in calculatedData["team_number"]:
@@ -2291,8 +2291,6 @@ def updateData(event_code: str):
 def updateGroupData(group: Group, event_code: str):
     TBAData = [TBAMatch2025(**x)
                for x in TBACollection.find({'event_key': event_code})]
-    scouts = []
-    numEntries = []
     for event in group.events:
         if event.event_code == event_code:
             members = []
@@ -2683,22 +2681,6 @@ def update_database():
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
-        groupsToUpdate = [
-            Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
-        # print("found groups")
-        for group in groupsToUpdate:
-            # print(group.name)
-            for event in group.events:
-                # print(event)
-                if not event.up_to_date:
-                    try:
-                        updateGroupData(group, event.event_code)
-                        # print('updated calculated data')
-                        updateGroupGridPitData(group, event.event_code)
-                        GroupCollection.update_one(
-                            {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
-                    except Exception as e:
-                        logging.error(str(e))
         for event in etags:
             headers = {"accept": "application/json",
                        "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
