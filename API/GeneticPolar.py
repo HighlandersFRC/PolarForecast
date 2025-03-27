@@ -289,7 +289,8 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
-    teamMatchesList: dict[int, dict[int, list[MatchScouting2025]]] = {}
+    teamMatchesList: dict[str, dict[int, list[MatchScouting2025]]] = {
+        team: {} for team in blankAEntry}
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
     ratings = {'scouts': [], 'trustRatings': [], 'entries': []}
