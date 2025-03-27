@@ -308,6 +308,7 @@ class _EventsTab extends StatefulWidget {
 
 class _EventsTabState extends State<_EventsTab> {
   List<AllianceRequest> requests = [];
+  List<Tournament> tournaments = [];
   @override
   void initState() {
     super.initState();
@@ -325,6 +326,14 @@ class _EventsTabState extends State<_EventsTab> {
             }
           },
         );
+        apiService.fetchTournaments().then((_tournaments) {
+          if (mounted) {
+            setState(() {
+              tournaments = _tournaments;
+            });
+          }
+          tournaments = _tournaments;
+        });
       }
     });
   }
@@ -505,12 +514,66 @@ class _EventsTabState extends State<_EventsTab> {
                         value: event_index,
                         headerBuilder: (context, isExpanded) => Card(
                               child: ListTile(
-                                title: Text(
-                                    widget
-                                        .group!.events[event_index].event_code,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize: 30, color: Colors.white)),
+                                title: ClipRect(
+                                  child: Row(children: [
+                                    Tooltip(
+                                      message: widget.group!.events[event_index]
+                                              .up_to_date
+                                          ? 'Event Data Up To Date'
+                                          : 'Event Data Updating',
+                                      child: Container(
+                                        width: 15,
+                                        height: 15,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: widget
+                                                  .group!
+                                                  .events[event_index]
+                                                  .up_to_date
+                                              ? Colors.green
+                                              : Colors.orange,
+                                        ),
+                                      ),
+                                      triggerMode: TooltipTriggerMode.tap,
+                                    ),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    TextButton(
+                                        style: TextButton.styleFrom(
+                                            padding: EdgeInsets.all(0)),
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed(
+                                              '/event/${widget.group!.events[event_index].event_code}');
+                                        },
+                                        child: Text(
+                                            tournaments.any((tournament) =>
+                                                    tournament.key ==
+                                                    widget
+                                                        .group!
+                                                        .events[event_index]
+                                                        .event_code)
+                                                ? tournaments
+                                                    .firstWhere((tournament) =>
+                                                        tournament.key ==
+                                                        widget
+                                                            .group!
+                                                            .events[event_index]
+                                                            .event_code)
+                                                    .display
+                                                : widget
+                                                    .group!
+                                                    .events[event_index]
+                                                    .event_code,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.blue,
+                                                decorationColor: Colors.blue,
+                                                decoration:
+                                                    TextDecoration.underline)))
+                                  ]),
+                                ),
                               ),
                             ),
                         body: Padding(
