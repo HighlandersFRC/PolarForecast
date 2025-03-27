@@ -245,47 +245,50 @@ class _GroupPageState extends State<GroupPage> {
             ),
           if (groupData?.join_code != null) SizedBox(height: 5),
           if (groupData?.join_code != null)
-            ElevatedButton(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: join_link!));
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return Padding(
-                      padding: EdgeInsets.all(20),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) => Column(
-                          children: [
-                            Text('Join Link Copied to Clipboard'),
-                            SizedBox(height: 10),
-                            QrImageView(
-                              size: min(constraints.maxWidth,
-                                  (constraints.maxHeight - 30)),
-                              data: join_link!,
-                              eyeStyle: QrEyeStyle(
+            Tooltip(
+              message: 'Invite Scouts',
+              child: FloatingActionButton.small(
+                backgroundColor: Colors.blue,
+                shape: CircleBorder(
+                  side: BorderSide(color: Colors.blue),
+                ),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: join_link!));
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding: EdgeInsets.all(20),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => Column(
+                            children: [
+                              Text('Join Link Copied to Clipboard'),
+                              SizedBox(height: 10),
+                              QrImageView(
+                                size: min(constraints.maxWidth,
+                                    (constraints.maxHeight - 30)),
+                                data: join_link!,
+                                eyeStyle: QrEyeStyle(
+                                    color: Colors.blue,
+                                    eyeShape: QrEyeShape.square),
+                                dataModuleStyle: QrDataModuleStyle(
                                   color: Colors.blue,
-                                  eyeShape: QrEyeShape.square),
-                              dataModuleStyle: QrDataModuleStyle(
-                                color: Colors.blue,
-                                dataModuleShape: QrDataModuleShape.square,
+                                  dataModuleShape: QrDataModuleShape.square,
+                                ),
+                                embeddedImage:
+                                    AssetImage('assets/PolarBearHead.png'),
+                                embeddedImageStyle: QrEmbeddedImageStyle(),
                               ),
-                              embeddedImage:
-                                  AssetImage('assets/PolarBearHead.png'),
-                              embeddedImageStyle: QrEmbeddedImageStyle(),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.copy),
-                SizedBox(width: 10),
-                Text('Join Code: ${groupData!.join_code}')
-              ]),
-            ),
+                      );
+                    },
+                  );
+                },
+                child: Icon(Icons.group_add),
+              ),
+            )
         ],
       ),
     );
