@@ -12,6 +12,7 @@ class TeamStats2025 with _$TeamStats2025 {
     required String team_number,
     required double match_count,
     required double OPR,
+    int? OPRRank,
     required double endgame_points,
     required double teleop_points,
     required double auto_points,
