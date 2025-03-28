@@ -26,6 +26,7 @@ mixin _$TeamStats2025 {
   String get team_number => throw _privateConstructorUsedError;
   double get match_count => throw _privateConstructorUsedError;
   double get OPR => throw _privateConstructorUsedError;
+  int? get OPRRank => throw _privateConstructorUsedError;
   double get endgame_points => throw _privateConstructorUsedError;
   double get teleop_points => throw _privateConstructorUsedError;
   double get auto_points => throw _privateConstructorUsedError;
@@ -86,6 +87,7 @@ abstract class $TeamStats2025CopyWith<$Res> {
       String team_number,
       double match_count,
       double OPR,
+      int? OPRRank,
       double endgame_points,
       double teleop_points,
       double auto_points,
@@ -145,6 +147,7 @@ class _$TeamStats2025CopyWithImpl<$Res, $Val extends TeamStats2025>
     Object? team_number = null,
     Object? match_count = null,
     Object? OPR = null,
+    Object? OPRRank = freezed,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
@@ -207,6 +210,10 @@ class _$TeamStats2025CopyWithImpl<$Res, $Val extends TeamStats2025>
           ? _value.OPR
           : OPR // ignore: cast_nullable_to_non_nullable
               as double,
+      OPRRank: freezed == OPRRank
+          ? _value.OPRRank
+          : OPRRank // ignore: cast_nullable_to_non_nullable
+              as int?,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -370,6 +377,7 @@ abstract class _$$TeamStats2025ImplCopyWith<$Res>
       String team_number,
       double match_count,
       double OPR,
+      int? OPRRank,
       double endgame_points,
       double teleop_points,
       double auto_points,
@@ -427,6 +435,7 @@ class __$$TeamStats2025ImplCopyWithImpl<$Res>
     Object? team_number = null,
     Object? match_count = null,
     Object? OPR = null,
+    Object? OPRRank = freezed,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
@@ -489,6 +498,10 @@ class __$$TeamStats2025ImplCopyWithImpl<$Res>
           ? _value.OPR
           : OPR // ignore: cast_nullable_to_non_nullable
               as double,
+      OPRRank: freezed == OPRRank
+          ? _value.OPRRank
+          : OPRRank // ignore: cast_nullable_to_non_nullable
+              as int?,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -647,6 +660,7 @@ class _$TeamStats2025Impl implements _TeamStats2025 {
       required this.team_number,
       required this.match_count,
       required this.OPR,
+      this.OPRRank,
       required this.endgame_points,
       required this.teleop_points,
       required this.auto_points,
@@ -699,6 +713,8 @@ class _$TeamStats2025Impl implements _TeamStats2025 {
   final double match_count;
   @override
   final double OPR;
+  @override
+  final int? OPRRank;
   @override
   final double endgame_points;
   @override
@@ -774,7 +790,7 @@ class _$TeamStats2025Impl implements _TeamStats2025 {
 
   @override
   String toString() {
-    return 'TeamStats2025(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, l_4_total: $l_4_total, l_3_total: $l_3_total, l_2_total: $l_2_total, l_1_total: $l_1_total, total_pieces: $total_pieces, algae_total: $algae_total, algae_points: $algae_points, coral_total: $coral_total, coral_points: $coral_points, teleop_coral_points: $teleop_coral_points, teleop_coral: $teleop_coral, auto_coral_points: $auto_coral_points, auto_coral: $auto_coral, shallow_climb_rate: $shallow_climb_rate, deep_climb_rate: $deep_climb_rate, climbing_points: $climbing_points, mobility: $mobility, death_rate: $death_rate, parking: $parking, auto_scoring_l_1: $auto_scoring_l_1, auto_scoring_l_2: $auto_scoring_l_2, auto_scoring_l_3: $auto_scoring_l_3, auto_scoring_l_4: $auto_scoring_l_4, teleop_scoring_l_1: $teleop_scoring_l_1, teleop_scoring_l_2: $teleop_scoring_l_2, teleop_scoring_l_3: $teleop_scoring_l_3, teleop_scoring_l_4: $teleop_scoring_l_4, net: $net, processor: $processor, foul_points: $foul_points, coopertition: $coopertition, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
+    return 'TeamStats2025(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, l_4_total: $l_4_total, l_3_total: $l_3_total, l_2_total: $l_2_total, l_1_total: $l_1_total, total_pieces: $total_pieces, algae_total: $algae_total, algae_points: $algae_points, coral_total: $coral_total, coral_points: $coral_points, teleop_coral_points: $teleop_coral_points, teleop_coral: $teleop_coral, auto_coral_points: $auto_coral_points, auto_coral: $auto_coral, shallow_climb_rate: $shallow_climb_rate, deep_climb_rate: $deep_climb_rate, climbing_points: $climbing_points, mobility: $mobility, death_rate: $death_rate, parking: $parking, auto_scoring_l_1: $auto_scoring_l_1, auto_scoring_l_2: $auto_scoring_l_2, auto_scoring_l_3: $auto_scoring_l_3, auto_scoring_l_4: $auto_scoring_l_4, teleop_scoring_l_1: $teleop_scoring_l_1, teleop_scoring_l_2: $teleop_scoring_l_2, teleop_scoring_l_3: $teleop_scoring_l_3, teleop_scoring_l_4: $teleop_scoring_l_4, net: $net, processor: $processor, foul_points: $foul_points, coopertition: $coopertition, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
   }
 
   @override
@@ -791,6 +807,7 @@ class _$TeamStats2025Impl implements _TeamStats2025 {
             (identical(other.match_count, match_count) ||
                 other.match_count == match_count) &&
             (identical(other.OPR, OPR) || other.OPR == OPR) &&
+            (identical(other.OPRRank, OPRRank) || other.OPRRank == OPRRank) &&
             (identical(other.endgame_points, endgame_points) ||
                 other.endgame_points == endgame_points) &&
             (identical(other.teleop_points, teleop_points) ||
@@ -873,6 +890,7 @@ class _$TeamStats2025Impl implements _TeamStats2025 {
         team_number,
         match_count,
         OPR,
+        OPRRank,
         endgame_points,
         teleop_points,
         auto_points,
@@ -935,6 +953,7 @@ abstract class _TeamStats2025 implements TeamStats2025 {
       required final String team_number,
       required final double match_count,
       required final double OPR,
+      final int? OPRRank,
       required final double endgame_points,
       required final double teleop_points,
       required final double auto_points,
@@ -987,6 +1006,8 @@ abstract class _TeamStats2025 implements TeamStats2025 {
   double get match_count;
   @override
   double get OPR;
+  @override
+  int? get OPRRank;
   @override
   double get endgame_points;
   @override

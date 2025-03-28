@@ -10,6 +10,7 @@ import 'package:scouting_app/models/team_stats_2025.dart';
 import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
+import 'models/global_rank.dart';
 import 'models/match_scouting_2025.dart';
 import 'models/pit_scouting_2025.dart';
 import 'models/tournament.dart';
@@ -770,5 +771,16 @@ class ApiService {
     if (request.statusCode != 200) {
       throw Exception(json.decode(request.body)['detail']);
     }
+  }
+
+  Future<List<GlobalRank>> fetch_global_rankings() async {
+    final cacheKey = 'global_rankings';
+    final url = '$APIURL/${DateTime.now().year}/GlobalRankings';
+    var data = await _fetchFromAPI(url, cacheKey, useCache: true);
+    List<GlobalRank> rankings = [];
+    for (var rank in data) {
+      rankings.add(GlobalRank.fromJson(rank));
+    }
+    return rankings;
   }
 }

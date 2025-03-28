@@ -140,6 +140,8 @@ GroupPitStatusCollection = testDB['GroupPitScoutingStatus']
 GroupPitStatusCollection.create_index(
     [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
 
+GlobalRankingsCollection = testDB['GlobalRankings']
+
 redisClient = get_redis_client()
 azureClient = get_blob_storage_client()
 try:
@@ -2095,6 +2097,28 @@ def get_user_join_requests(token: str = Depends(check_token_active)):
     return requests
 
 
+@app.get('/{year}/GlobalRankings')
+@cacheValue()
+def get_global_rankings() -> list[dict]:
+    data = list(GlobalRankingsCollection.find({}))
+    for x in data:
+        x.pop('_id')
+    return data
+
+
+@app.get('/{year}/{team}/GlobalRanking')
+@cacheValue()
+def get_team_global_rank(team: str) -> dict:
+    data = GlobalRankingsCollection.find_one({})
+    returnData = None
+    for x in data:
+        if x['key'] == team:
+            returnData = x
+    if returnData is None:
+        raise HTTPException(404, "Team Not Found In Global Rankings")
+    return returnData
+
+
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
@@ -2681,7 +2705,9 @@ def update_database():
     try:
         global numRuns
         etags = list(ETagCollection.find({}))
+        globalTeamsWithLatestFinishedEvent: list[dict] = []
         for event in etags:
+            print('global teams size', len(globalTeamsWithLatestFinishedEvent))
             headers = {"accept": "application/json",
                        "X-TBA-Auth-Key": TBA_API_KEY, "If-None-Match": event["etag"]}
             r = requests.get(TBA_API_URL+"event/" +
@@ -2709,6 +2735,23 @@ def update_database():
                           "picture_status": "Not Started", "follow_up_status": "Done"} for x in list(set(teams))]
                 groups = GroupCollection.find(
                     {"events.event_code": event["key"]})
+                # Add Teams to Global Rankings, with Event Timing
+                endDate = datetime.strptime(
+                    event['event']['end_date'], "%Y-%m-%d")
+                if datetime.now() >= endDate:
+                    for team in event['teams']:
+                        teamData = None
+                        for x in globalTeamsWithLatestFinishedEvent:
+                            if x['team'] == team:
+                                teamData = x
+                                break
+                        if teamData == None:
+                            teamData = {
+                                'team': team, 'eventDate': endDate, 'event': event['key']}
+                            globalTeamsWithLatestFinishedEvent.append(teamData)
+                        if teamData['eventDate'] < endDate:
+                            teamData['event'] = event['key']
+                            teamData['eventDate'] = endDate
                 for group in groups:
                     try:
                         groupExistingTeams = GroupPitStatusCollection.find_one(
@@ -2730,7 +2773,6 @@ def update_database():
                             "event_code": event["key"], "group_id": group["group_id"], "data": returnTeams})
             except Exception as e:
                 logging.error(e)
-
             # print("977")
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
@@ -2767,6 +2809,26 @@ def update_database():
                 except Exception as e:
                     print(e, event["key"])
                     pass
+        calculatedData = list(CalculatedDataCollection.find({}))
+        print('numEvents:', len(calculatedData))
+        for team in globalTeamsWithLatestFinishedEvent:
+            for x in calculatedData:
+                if x['event_code'] == team['event']:
+                    for i in range(1, len(x['data'])):
+                        y = x['data'][i]
+                        if y['key'] == team['team']:
+                            team['data'] = y
+                            break
+                    break
+        globalTeamsWithLatestFinishedEvent = [
+            x for x in globalTeamsWithLatestFinishedEvent if 'data' in x]
+        globalTeamsWithLatestFinishedEvent.sort(
+            key=lambda x: x['data']['OPR'], reverse=True)
+        for rank, team in enumerate(globalTeamsWithLatestFinishedEvent, start=1):
+            team['data']['OPRRank'] = rank
+        GlobalRankingsCollection.delete_many({})
+        GlobalRankingsCollection.insert_many(
+            globalTeamsWithLatestFinishedEvent)
         # print("trying to find groups")
         groupsToUpdate = [
             Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
