@@ -773,14 +773,28 @@ class ApiService {
     }
   }
 
-  Future<List<GlobalRank>> fetch_global_rankings() async {
-    final cacheKey = 'global_rankings';
-    final url = '$APIURL/${DateTime.now().year}/GlobalRankings';
-    var data = await _fetchFromAPI(url, cacheKey, useCache: true);
-    List<GlobalRank> rankings = [];
-    for (var rank in data) {
-      rankings.add(GlobalRank.fromJson(rank));
-    }
-    return rankings;
+  Future<(List<GlobalRank>, int)> fetch_global_rankings({
+    int limit = 100,
+    int offset = 0,
+    String sortBy = 'data.OPR',
+    String sortOrder = 'desc',
+    List<String>? filterTeams,
+  }) async {
+    final cacheKey =
+        'global_rankings_${limit}_${offset}_${sortBy}_${sortOrder}_${filterTeams?.join(",")}';
+    final queryParams = {
+      'limit': limit.toString(),
+      'offset': offset.toString(),
+      'sort_by': sortBy,
+      'sort_order': sortOrder,
+      if (filterTeams != null) 'filter_teams': filterTeams.join(','),
+    };
+    final url = Uri.parse('$APIURL/${DateTime.now().year}/GlobalRankings')
+        .replace(queryParameters: queryParams);
+    var data = await _fetchFromAPI(url.toString(), cacheKey, useCache: true);
+    return (
+      [for (var rank in data['data']) GlobalRank.fromJson(rank)],
+      data['max_data_query'] as int
+    );
   }
 }

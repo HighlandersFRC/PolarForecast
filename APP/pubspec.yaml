@@ -38,6 +38,7 @@ dependencies:
   url_launcher: ^6.3.1
   image_picker_for_web: ^3.0.6
   csv: ^6.0.0
+  syncfusion_flutter_core: ^26.2.14
 
 
 dev_dependencies:
