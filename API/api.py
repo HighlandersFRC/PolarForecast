@@ -2841,8 +2841,11 @@ def update_database():
         for rank, team in enumerate(globalTeamsWithLatestFinishedEvent, start=1):
             team['data']['OPRRank'] = rank
         GlobalRankingsCollection.delete_many({})
-        GlobalRankingsCollection.insert_many(
-            globalTeamsWithLatestFinishedEvent, ordered=False)
+        for x in globalTeamsWithLatestFinishedEvent:
+            try:
+                GlobalRankingsCollection.insert_one(x)
+            except:
+                pass
         # print("trying to find groups")
         groupsToUpdate = [
             Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
