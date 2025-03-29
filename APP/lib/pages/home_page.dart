@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,120 +15,187 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int numTeams = 0;
+  final int _limit = 100;
+  int pageNum = 0;
+  String _sortBy = 'data.OPR';
+  String _sortOrder = 'desc';
+  List<GlobalRank> rankings = [];
+  List<SortColumnDetails> sortColumns = [];
+  final columns = [
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'team',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('Team'),
+      ),
+    ),
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'OPR',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('OPR'),
+      ),
+    ),
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'OPRRank',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('OPR Rank'),
+      ),
+    ),
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'auto',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('Auto Points'),
+      ),
+    ),
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'teleop',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('Teleop Points'),
+      ),
+    ),
+    GridColumn(
+      allowFiltering: false,
+      columnName: 'endgame',
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        child: Text('Endgame Points'),
+      ),
+    ),
+  ];
+
+  final Map<String, String> sortMap = {
+    'team': 'data.team_number',
+    'OPR': 'data.OPR',
+    'OPRRank': 'data.OPRRank',
+    'auto': 'data.auto_points',
+    'teleop': 'data.teleop_points',
+    'endgame': 'data.endgame_points',
+  };
+  @override
+  void initState() {
+    super.initState();
+    _fetchRankings();
+  }
+
+  Future<void> _fetchRankings() async {
+    final _rankingsFuture = Provider.of<ApiService>(context, listen: false)
+        .fetch_global_rankings(
+            limit: _limit,
+            offset: _limit * pageNum,
+            sortBy: _sortBy,
+            sortOrder: _sortOrder);
+    final (_rankings, _numTeams) = await _rankingsFuture;
+    if (mounted)
+      setState(() {
+        rankings = _rankings;
+        numTeams = _numTeams;
+      });
+
+    rankings = _rankings;
+    numTeams = _numTeams;
+  }
+
+  Future<void> _sort(List<SortColumnDetails> sortColumns) async {
+    if (sortColumns.isEmpty) {
+      return;
+    }
+    for (final column in sortColumns)
+      setState(() {
+        if (_sortBy == sortMap[column.name]) {
+          _sortOrder = _sortOrder == 'asc' ? 'desc' : 'asc';
+        } else {
+          _sortBy = sortMap[column.name] ?? 'data.OPR';
+          _sortOrder = 'desc';
+        }
+        this.sortColumns = sortColumns;
+      });
+    _fetchRankings();
+  }
+
   @override
   Widget build(BuildContext context) {
+    const columnMinWidth = 95.0;
+    bool isWide =
+        MediaQuery.of(context).size.width >= columns.length * columnMinWidth;
     return Scaffold(
-      appBar: PolarForecastAppBar(
-        backButton: false,
-      ),
-      body: Stack(
+      appBar: PolarForecastAppBar(backButton: false),
+      body: Column(
         children: [
-          Center(
-              child: Column(children: [
-            Text(
-              'Global Rankings',
-              style: TextStyle(color: Colors.blue, fontSize: 24),
-            ),
-            GestureDetector(
-              onTap: () {
-                launchUrl(Uri.parse('https://www.thebluealliance.com'));
-              },
-              child: Text(
-                'Powered by The Blue Alliance',
-                style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontSize: 18,
-                  decoration: TextDecoration.underline,
-                ),
+          Text(
+            'Global Rankings',
+            style: TextStyle(color: Colors.blue, fontSize: 24),
+          ),
+          GestureDetector(
+            onTap: () {
+              launchUrl(Uri.parse('https://www.thebluealliance.com'));
+            },
+            child: Text(
+              'Powered by The Blue Alliance',
+              style: TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 18,
+                decoration: TextDecoration.underline,
               ),
             ),
-            FutureBuilder(
-              future: Provider.of<ApiService>(context, listen: false)
-                  .fetch_global_rankings(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (snapshot.hasData) {
-                  final rankings = snapshot.data as List<GlobalRank>;
-                  final maxOpr = rankings
-                      .map((rank) => rank.data.OPR)
-                      .reduce((a, b) => a > b ? a : b);
-                  final minOpr = rankings
-                      .map((rank) => rank.data.OPR)
-                      .reduce((a, b) => a < b ? a : b);
-                  return Expanded(
-                    child: SfDataGrid(
-                      source: GlobalRankDataSource(rankings, maxOpr, minOpr),
-                      allowSorting: true,
-                      columnWidthMode: ColumnWidthMode.fill,
-                      columns: [
-                        GridColumn(
-                          columnName: 'team',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('Team'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'event',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('Event'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'OPR',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('OPR'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'OPRRank',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('OPR Rank'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'auto',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('Auto Points'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'teleop',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('Teleop Points'),
-                          ),
-                        ),
-                        GridColumn(
-                          columnName: 'endgame',
-                          label: Container(
-                            padding: EdgeInsets.all(8.0),
-                            alignment: Alignment.center,
-                            child: Text('Endgame Points'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return Text('No data available');
-                }
+          ),
+          Expanded(
+              child: rankings.isEmpty
+                  ? Center(
+                      child: CircularProgressIndicator(
+                      color: Colors.blue,
+                    ))
+                  : Expanded(
+                      child: SfDataGrid(
+                        source: GlobalRankDataSource(
+                            rankings,
+                            rankings
+                                .map((rank) => rank.data.OPR)
+                                .reduce((a, b) => a > b ? a : b),
+                            rankings
+                                .map((rank) => rank.data.OPR)
+                                .reduce((a, b) => a < b ? a : b),
+                            _sort,
+                            sortColumns),
+                        showSortNumbers: true,
+                        allowFiltering: true,
+                        columnWidthMode: isWide
+                            ? ColumnWidthMode.fill
+                            : ColumnWidthMode.none,
+                        columns: columns,
+                        allowSorting: true,
+                      ),
+                    )),
+          if ((numTeams / _limit).ceil() != 0)
+            NumberPaginator(
+              numberPages: (numTeams / _limit).ceil(),
+              initialPage: min((numTeams / _limit).ceil() - 1, pageNum),
+              onPageChange: (newPage) {
+                setState(
+                  () {
+                    pageNum = newPage;
+                    _fetchRankings();
+                  },
+                );
               },
-            ),
-          ])),
+              config: NumberPaginatorUIConfig(
+                  buttonSelectedBackgroundColor: Colors.blue),
+            )
         ],
       ),
     );
@@ -133,12 +203,19 @@ class _HomePageState extends State<HomePage> {
 }
 
 class GlobalRankDataSource extends DataGridSource {
-  GlobalRankDataSource(this.globalRanks, this.maxOpr, this.minOpr) {
+  final Future<void> Function(List<SortColumnDetails>) onSort;
+  final List<SortColumnDetails> sortColumns;
+  GlobalRankDataSource(
+    this.globalRanks,
+    this.maxOpr,
+    this.minOpr,
+    this.onSort,
+    this.sortColumns,
+  ) {
     dataGridRows = globalRanks
         .map<DataGridRow>((rank) => DataGridRow(cells: [
               DataGridCell<String>(
                   columnName: 'team', value: rank.data.team_number),
-              DataGridCell<String>(columnName: 'event', value: rank.event),
               DataGridCell<double>(columnName: 'OPR', value: rank.data.OPR),
               DataGridCell<int>(
                   columnName: 'OPRRank', value: rank.data.OPRRank),
@@ -150,6 +227,8 @@ class GlobalRankDataSource extends DataGridSource {
                   columnName: 'endgame', value: rank.data.endgame_points),
             ]))
         .toList();
+    super.sortedColumns.clear();
+    super.sortedColumns.addAll(sortColumns);
   }
 
   Color? getHeatmapColor(String columnName, double value) {
@@ -188,8 +267,22 @@ class GlobalRankDataSource extends DataGridSource {
         return null;
     }
 
-    return Color.lerp(
-        Colors.red, Colors.green, (value - minValue) / (maxValue - minValue));
+    return _getGradientColor(value, minValue, maxValue, false);
+  }
+
+  Color _getGradientColor(num value, num minValue, num maxValue, bool flip) {
+    double normalizedValue = (value - minValue) / (maxValue - minValue);
+    normalizedValue = normalizedValue.clamp(0.0, 1.0);
+    if (flip) normalizedValue = 1 - normalizedValue;
+    if (normalizedValue > 0.5) {
+      return Color.lerp(Colors.yellow[700], Colors.green.shade800,
+              (normalizedValue - 0.5) * 2) ??
+          Colors.green.shade700;
+    } else {
+      return Color.lerp(
+              Colors.red.shade700, Colors.yellow[700], normalizedValue * 2) ??
+          Colors.red.shade700;
+    }
   }
 
   @override
@@ -199,7 +292,7 @@ class GlobalRankDataSource extends DataGridSource {
         (cell) {
           final isDoubleColumn =
               ['OPR', 'auto', 'teleop', 'endgame'].contains(cell.columnName);
-          final color = isDoubleColumn
+          final color = isDoubleColumn && !(cell.value as double).isNaN
               ? getHeatmapColor(cell.columnName, cell.value as double)
               : (dataGridRows.indexOf(row) % 2 == 0
                   ? Colors.blue.withOpacity(0.3)
@@ -216,6 +309,11 @@ class GlobalRankDataSource extends DataGridSource {
         },
       )
     ]);
+  }
+
+  @override
+  Future<void> performSorting(List<DataGridRow> rows) async {
+    await this.onSort(sortedColumns);
   }
 
   List<GlobalRank> globalRanks = [];

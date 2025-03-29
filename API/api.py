@@ -141,6 +141,8 @@ GroupPitStatusCollection.create_index(
     [("group_id", pymongo.ASCENDING), ("event_code", pymongo.ASCENDING)], unique=True)
 
 GlobalRankingsCollection = testDB['GlobalRankings']
+GlobalRankingsCollection.create_index(
+    [("team", pymongo.ASCENDING)], unique=True)
 
 redisClient = get_redis_client()
 azureClient = get_blob_storage_client()
@@ -2097,17 +2099,29 @@ def get_user_join_requests(token: str = Depends(check_token_active)):
     return requests
 
 
-@app.get('/{year}/GlobalRankings')
-@cacheValue()
-def get_global_rankings() -> list[dict]:
-    data = list(GlobalRankingsCollection.find({}))
-    for x in data:
-        x.pop('_id')
-    return data
+@app.get("/{year}/GlobalRankings", tags=["miscellaneous"])
+@cacheValue(30 * 60)  # Cache for 30 minutes
+def get_global_rankings(
+    year: int,
+    limit: int = 100,
+    offset: int = 0,
+    sort_by: str = "data.OPR",
+    sort_order: str = "desc",
+    filter_teams: None | list[str] = None
+):
+    sort_order = pymongo.DESCENDING if sort_order == "desc" else pymongo.ASCENDING
+    query = {}
+    if filter_teams:
+        query["team"] = {"$in": filter_teams}
+    rankings = list(GlobalRankingsCollection.find(query).sort(
+        sort_by, sort_order).skip(offset).limit(limit))
+    for rank in rankings:
+        rank.pop('_id')
+    return {'data': [rank for rank in rankings], 'max_data_query': GlobalRankingsCollection.count_documents(query)}
 
 
 @app.get('/{year}/{team}/GlobalRanking')
-@cacheValue()
+@cacheValue(30*60)
 def get_team_global_rank(team: str) -> dict:
     data = GlobalRankingsCollection.find_one({})
     returnData = None
@@ -2828,7 +2842,7 @@ def update_database():
             team['data']['OPRRank'] = rank
         GlobalRankingsCollection.delete_many({})
         GlobalRankingsCollection.insert_many(
-            globalTeamsWithLatestFinishedEvent)
+            globalTeamsWithLatestFinishedEvent, ordered=False)
         # print("trying to find groups")
         groupsToUpdate = [
             Group(**group) for group in list(GroupCollection.find({"events.up_to_date": False}))]
