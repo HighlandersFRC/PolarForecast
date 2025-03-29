@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +14,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  void safeSetState(VoidCallback callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(callback);
+      }
+    });
+  }
+
   int numTeams = 0;
   final int _limit = 100;
   int pageNum = 0;
@@ -101,14 +108,10 @@ class _HomePageState extends State<HomePage> {
             sortBy: _sortBy,
             sortOrder: _sortOrder);
     final (_rankings, _numTeams) = await _rankingsFuture;
-    if (mounted)
-      setState(() {
-        rankings = _rankings;
-        numTeams = _numTeams;
-      });
-
-    rankings = _rankings;
-    numTeams = _numTeams;
+    safeSetState(() {
+      rankings = _rankings;
+      numTeams = _numTeams;
+    });
   }
 
   Future<void> _sort(List<SortColumnDetails> sortColumns) async {
@@ -116,7 +119,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     for (final column in sortColumns)
-      setState(() {
+      safeSetState(() {
         if (_sortBy == sortMap[column.name]) {
           _sortOrder = _sortOrder == 'asc' ? 'desc' : 'asc';
         } else {
