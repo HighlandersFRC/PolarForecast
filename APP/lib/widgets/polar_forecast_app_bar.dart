@@ -650,7 +650,7 @@ _openDocumentationSheet(BuildContext context) {
                 Navigator.pop(context);
                 Navigator.pushNamed(
                   context,
-                  '/documentation/scouting_lead',
+                  '/documentation/groups',
                 );
               },
             ),
