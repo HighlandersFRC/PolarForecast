@@ -153,7 +153,7 @@ class MainApp extends StatelessWidget {
                       builder: (context) => ScouterDocumentation(),
                       settings: settings,
                     );
-                  } else if (pathSegments[2] == 'scouting_lead') {
+                  } else if (pathSegments[2] == 'groups') {
                     return MaterialPageRoute(
                       builder: (context) => GroupsDocumentation(),
                       settings: settings,
@@ -173,8 +173,7 @@ class MainApp extends StatelessWidget {
               case '':
                 return null;
               default:
-                return MaterialPageRoute(
-                    builder: (context) => HomePage(), settings: settings);
+                return MaterialPageRoute(builder: (context) => HomePage());
             }
           },
         );
