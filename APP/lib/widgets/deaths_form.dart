@@ -144,7 +144,7 @@ class _DeathsFormState extends State<DeathsForm> {
                   )
                 : SingleChildScrollView(
                     child: (deaths.deaths.isEmpty)
-                        ? Text('No Deaths Found',
+                        ? Text('No Deaths Reported',
                             style: TextStyle(fontSize: 24))
                         : Column(children: [
                             ...deaths.deaths.map((death) {

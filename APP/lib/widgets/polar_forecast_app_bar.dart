@@ -84,6 +84,10 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
             ),
       actions: [
         IconButton(
+          icon: Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () => _openDocumentationSheet(context),
+        ),
+        IconButton(
           key: _iconButtonKey,
           icon: Icon(token == null
               ? Icons.account_circle_outlined
@@ -179,7 +183,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
             _openSearch();
           },
@@ -215,6 +219,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   List<Tournament> tournaments = [];
   String? token;
   final GlobalKey _iconButtonKey = GlobalKey();
+  late final TournamentSearchDelegate search =
+      TournamentSearchDelegate(tournaments);
   @override
   void initState() {
     super.initState();
@@ -254,7 +260,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                     width: 8), // Add some spacing between image and text
                 Flexible(
                   child: Text(
-                    'Polar Forecast ${widget.extraText ?? ''}',
+                    widget.extraText ?? 'Polar Forecast',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: kToolbarHeight *
@@ -271,6 +277,10 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
               height: kToolbarHeight * 0.8, // Adjust size based on screen width
             ),
       actions: [
+        IconButton(
+          icon: Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () => _openDocumentationSheet(context),
+        ),
         IconButton(
           key: _iconButtonKey,
           icon: Icon(token == null
@@ -367,7 +377,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
             _openSearch();
           },
@@ -380,7 +390,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   void _openSearch() {
     showSearch(
       context: context,
-      delegate: TournamentSearchDelegate(tournaments),
+      delegate: search,
     );
   }
 }
@@ -623,4 +633,41 @@ _openJoinRequestsPopup(BuildContext context) async {
                   ],
                 ))));
       });
+}
+
+_openDocumentationSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.group),
+              title: const Text('How to use Groups'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/documentation/scouting_lead',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.remove_red_eye),
+              title: const Text('How to Scout'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/documentation/scout',
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }

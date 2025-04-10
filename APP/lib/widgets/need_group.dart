@@ -11,6 +11,11 @@ class NeedGroup extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(children: [
                 const Text('You must be part of a group to use this feature'),
+                IconButton(
+                    icon: Icon(Icons.help_outline),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/documentation/groups');
+                    })
               ]),
             )));
   }
