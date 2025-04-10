@@ -24,21 +24,15 @@ class PolarForecastSliverBar extends StatefulWidget
 }
 
 class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
-  List<Tournament> tournaments = [];
+  late final Future<List<Tournament>> tournaments;
   String? token;
   final GlobalKey _iconButtonKey = GlobalKey();
+  bool isSearching = false;
   @override
   void initState() {
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService.fetchTournaments().then((tournaments) {
-      if (mounted)
-        setState(() {
-          this.tournaments = tournaments;
-        });
-      else
-        this.tournaments = tournaments;
-    });
+    tournaments = apiService.fetchTournaments();
     apiService.token.then((token) {
       if (mounted)
         setState(() {
@@ -184,8 +178,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
         ),
         IconButton(
           icon: const Icon(Icons.search, color: Colors.white),
-          onPressed: () {
-            _openSearch();
+          onPressed: () async {
+            if (!isSearching) await _openSearch();
           },
         ),
       ],
@@ -193,9 +187,18 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
     );
   }
 
-  void _openSearch() {
+  Future<void> _openSearch() async {
+    setState(() {
+      isSearching = true;
+    });
+    final param = await tournaments;
+    setState(() {
+      isSearching = false;
+    });
     showSearch(
-        context: context, delegate: TournamentSearchDelegate(tournaments));
+      context: context,
+      delegate: TournamentSearchDelegate(param),
+    );
   }
 }
 
@@ -216,23 +219,15 @@ class PolarForecastAppBar extends StatefulWidget
 }
 
 class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
-  List<Tournament> tournaments = [];
+  late final Future<List<Tournament>> tournaments;
   String? token;
   final GlobalKey _iconButtonKey = GlobalKey();
-  late final TournamentSearchDelegate search =
-      TournamentSearchDelegate(tournaments);
+  bool isSearching = false;
   @override
   void initState() {
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
-    apiService.fetchTournaments().then((tournaments) {
-      if (mounted)
-        setState(() {
-          this.tournaments = tournaments;
-        });
-      else
-        this.tournaments = tournaments;
-    });
+    tournaments = apiService.fetchTournaments();
     apiService.token.then((token) {
       if (mounted)
         setState(() {
@@ -378,8 +373,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
         ),
         IconButton(
           icon: const Icon(Icons.search, color: Colors.white),
-          onPressed: () {
-            _openSearch();
+          onPressed: () async {
+            if (!isSearching) await _openSearch();
           },
         ),
       ],
@@ -387,10 +382,17 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
     );
   }
 
-  void _openSearch() {
+  Future<void> _openSearch() async {
+    setState(() {
+      isSearching = true;
+    });
+    final param = await tournaments;
+    setState(() {
+      isSearching = false;
+    });
     showSearch(
       context: context,
-      delegate: search,
+      delegate: TournamentSearchDelegate(param),
     );
   }
 }
