@@ -6,10 +6,9 @@ import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/group_page.dart';
 import 'package:scouting_app/pages/match_page.dart';
-import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/scouter_documentation.dart';
-import 'package:scouting_app/pages/scouting_lead_documentation.dart';
+import 'package:scouting_app/pages/group_documentation.dart';
 import 'package:scouting_app/pages/team_page.dart';
 import 'package:scouting_app/pages/home_page.dart';
 import 'package:scouting_app/pages/death_page.dart';
@@ -156,7 +155,7 @@ class MainApp extends StatelessWidget {
                     );
                   } else if (pathSegments[2] == 'scouting_lead') {
                     return MaterialPageRoute(
-                      builder: (context) => ScoutingLeadDocumentation(),
+                      builder: (context) => GroupsDocumentation(),
                       settings: settings,
                     );
                   }

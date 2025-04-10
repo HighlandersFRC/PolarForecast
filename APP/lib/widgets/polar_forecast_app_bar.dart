@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group_join_request.dart';
-import 'package:scouting_app/pages/scouter_documentation.dart';
 import '../models/tournament.dart';
 import '../api_service.dart';
-import '../pages/scouting_lead_documentation.dart';
 import '../utils.dart';
 
 class PolarForecastSliverBar extends StatefulWidget
@@ -185,7 +183,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
             _openSearch();
           },
@@ -221,6 +219,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   List<Tournament> tournaments = [];
   String? token;
   final GlobalKey _iconButtonKey = GlobalKey();
+  late final TournamentSearchDelegate search =
+      TournamentSearchDelegate(tournaments);
   @override
   void initState() {
     super.initState();
@@ -377,7 +377,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
             _openSearch();
           },
@@ -390,7 +390,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
   void _openSearch() {
     showSearch(
       context: context,
-      delegate: TournamentSearchDelegate(tournaments),
+      delegate: search,
     );
   }
 }
@@ -644,8 +644,8 @@ _openDocumentationSheet(BuildContext context) {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('Scouting Lead Documentation'),
+              leading: const Icon(Icons.group),
+              title: const Text('How to use Groups'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(
@@ -655,8 +655,8 @@ _openDocumentationSheet(BuildContext context) {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Scout Documentation'),
+              leading: const Icon(Icons.remove_red_eye),
+              title: const Text('How to Scout'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(
