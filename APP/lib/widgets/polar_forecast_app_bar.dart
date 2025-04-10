@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:scouting_app/pages/scouter_documentation.dart';
 import '../models/tournament.dart';
 import '../api_service.dart';
+import '../pages/scouting_lead_documentation.dart';
 import '../utils.dart';
 
 class PolarForecastSliverBar extends StatefulWidget
@@ -83,6 +85,10 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
               height: kToolbarHeight * 0.8, // Adjust size based on screen width
             ),
       actions: [
+        IconButton(
+          icon: Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () => _openDocumentationSheet(context),
+        ),
         IconButton(
           key: _iconButtonKey,
           icon: Icon(token == null
@@ -254,7 +260,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                     width: 8), // Add some spacing between image and text
                 Flexible(
                   child: Text(
-                    'Polar Forecast ${widget.extraText ?? ''}',
+                    widget.extraText ?? 'Polar Forecast',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: kToolbarHeight *
@@ -271,6 +277,10 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
               height: kToolbarHeight * 0.8, // Adjust size based on screen width
             ),
       actions: [
+        IconButton(
+          icon: Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () => _openDocumentationSheet(context),
+        ),
         IconButton(
           key: _iconButtonKey,
           icon: Icon(token == null
@@ -623,4 +633,41 @@ _openJoinRequestsPopup(BuildContext context) async {
                   ],
                 ))));
       });
+}
+
+_openDocumentationSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Scouting Lead Documentation'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/documentation/scouting_lead',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Scout Documentation'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/documentation/scout',
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
