@@ -231,12 +231,32 @@ class ScouterDocumentation extends StatelessWidget {
               ),
             ),
             Container(
+              key: sectionKeys['match-predictions'],
+              child: buildSection(
+                id: 'match-predictions',
+                title: 'Match Predictions',
+                content:
+                    'The match predictions can be found on each match\'s page. It shows a full breakdown of the match, including different scoring aspects, as well as RPs. The other two tabs can be used to analyze autonomous. The draw button in the bottom right opens a drawing board to help visualize match strategies.',
+                imagePath: 'assets/documentation/match_predictions.png',
+              ),
+            ),
+            Container(
               key: sectionKeys['team-comparisons'],
               child: buildSection(
                 id: 'team-comparisons',
                 title: 'Team Comparisons',
                 content:
                     'The team comparison tool allows you to compare two teams side-by-side by game pieces in a match. These graphs are generated purely from scouting data. It can be found in the charts tab of the event page.',
+                imagePath: 'assets/documentation/team_comparisons.png',
+              ),
+            ),
+            Container(
+              key: sectionKeys['charts'],
+              child: buildSection(
+                id: 'charts',
+                title: 'Charts',
+                content:
+                    'The charts tab of the event page contains a list of all the charts generated from scouting data. You can click on any chart to view it in detail.',
                 imagePath: 'assets/documentation/charts.png',
               ),
             ),

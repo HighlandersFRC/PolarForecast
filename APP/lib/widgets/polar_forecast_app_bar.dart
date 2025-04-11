@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/tournament.dart';
 import '../api_service.dart';
 import '../utils.dart';
@@ -435,11 +436,15 @@ class TournamentSearchDelegate extends SearchDelegate {
       itemCount: results.length,
       itemBuilder: (context, index) {
         return ListTile(
-          title: Text(results[index].display),
-          onTap: () {
-            Navigator.pushNamed(context, '/event/${results[index].key}');
-          },
-        );
+            title: Text(results[index].display),
+            onTap: () {
+              Navigator.pushNamed(context, '/event/${results[index].key}');
+            },
+            onLongPress: () {
+              launchUrl(Uri.parse(
+                  Provider.of<ApiService>(context, listen: false).APPURL +
+                      '/event/${results[index].key}'));
+            });
       },
     );
   }
