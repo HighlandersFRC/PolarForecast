@@ -36,6 +36,7 @@ class ScouterDocumentation extends StatelessWidget {
   Widget build(BuildContext context) {
     final ScrollController scrollController = ScrollController();
     final Map<String, GlobalKey> sectionKeys = {
+      'general': GlobalKey(),
       'pit': GlobalKey(),
       'pictures': GlobalKey(),
       'followups': GlobalKey(),
@@ -65,6 +66,10 @@ class ScouterDocumentation extends StatelessWidget {
     }
 
     final tableOfContents = [
+      ListTile(
+        title: const Text('General', style: TextStyle(color: Colors.white)),
+        onTap: () => scrollToSection('general'),
+      ),
       ListTile(
         title:
             const Text('Pit Scouting', style: TextStyle(color: Colors.white)),
@@ -160,6 +165,15 @@ class ScouterDocumentation extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
             ...tableOfContents,
+            Container(
+              key: sectionKeys['general'],
+              child: buildSection(
+                id: 'general',
+                title: 'General',
+                content:
+                    'To see event data, use the search button on the top right from any page. From there, here are a set of guidelines:\n\n    - Any blue underlined elements link to new pages.\n\n    - Tabs on any given page can be found on the bottom of the page.\n\n    - Many Features are locked behind an account. Create one by clicking on the profile icon in the top right, and clicking login. From there, you can click to create a new account, and go from there.\n\n    - Some locked behind Groups. Make sure to check out that documentation as well. (Question Mark icon in the top right)',
+              ),
+            ),
             Container(
               key: sectionKeys['pit'],
               child: buildSection(
