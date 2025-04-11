@@ -171,7 +171,7 @@ class ScouterDocumentation extends StatelessWidget {
                 id: 'general',
                 title: 'General',
                 content:
-                    'To see event data, use the search button on the top right from any page. From there, here are a set of guidelines:\n\n    - Any blue underlined elements link to new pages.\n\n    - Tabs on any given page can be found on the bottom of the page.\n\n    - Many Features are locked behind an account. Create one by clicking on the profile icon in the top right, and clicking login. From there, you can click to create a new account, and go from there.\n\n    -Some locked behind a group. Make sure to check out that documentation as well.(Question Mark icon in the top right)',
+                    'To see event data, use the search button on the top right from any page. From there, here are a set of guidelines:\n\n    - Any blue underlined elements link to new pages.\n\n    - Tabs on any given page can be found on the bottom of the page.\n\n    - Many Features are locked behind an account. Create one by clicking on the profile icon in the top right, and clicking login. From there, you can click to create a new account, and go from there.\n\n    - Some locked behind a group. Make sure to check out that documentation as well. (Question Mark icon in the top right)',
               ),
             ),
             Container(
