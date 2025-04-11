@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../api_service.dart';
 import '../models/tournament.dart';
 
 class DeathLink extends StatelessWidget {
@@ -15,6 +18,7 @@ class DeathLink extends StatelessWidget {
         child: TextButton(
           onPressed: () => Navigator.pushNamed(
               context, '/event/${tournament.key}/deaths/frc$number'),
+          onLongPress: () => _openInNewTab(context),
           child: Text(
             '${value}',
             textScaler: TextScaler.linear(1.25),
@@ -33,5 +37,12 @@ class DeathLink extends StatelessWidget {
             ),
           ),
         ));
+  }
+
+  void _openInNewTab(BuildContext context) {
+    final api = Provider.of<ApiService>(context, listen: false);
+    launchUrl(
+        Uri.parse(api.APPURL + '/event/${tournament.key}/deaths/frc$number'),
+        mode: LaunchMode.externalApplication);
   }
 }

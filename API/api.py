@@ -2752,7 +2752,7 @@ def update_database():
                 # Add Teams to Global Rankings, with Event Timing
                 endDate = datetime.strptime(
                     event['event']['end_date'], "%Y-%m-%d")
-                if datetime.now() >= endDate:
+                if datetime.now() >= endDate and (event['event']['event_type'] not in [2, 4] or (event['event']['event_type'] == 2 and event["event"]["division_keys"] == [])):
                     for team in event['teams']:
                         teamData = None
                         for x in globalTeamsWithLatestFinishedEvent:

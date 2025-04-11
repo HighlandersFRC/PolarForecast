@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../api_service.dart';
 import '../models/tournament.dart';
 
 class MatchLink extends StatelessWidget {
@@ -16,6 +19,7 @@ class MatchLink extends StatelessWidget {
         child: TextButton(
           onPressed: () => Navigator.pushNamed(
               context, '/event/${tournament.key}/match/${match_key}'),
+          onLongPress: () => _openInNewTab(context),
           child: Text(
             '${display}',
             textScaler: TextScaler.linear(1.25),
@@ -25,5 +29,12 @@ class MatchLink extends StatelessWidget {
                 decorationColor: theme.primaryColor),
           ),
         ));
+  }
+
+  void _openInNewTab(BuildContext context) {
+    final api = Provider.of<ApiService>(context, listen: false);
+    launchUrl(
+        Uri.parse(api.APPURL + '/event/${tournament.key}/match/${match_key}'),
+        mode: LaunchMode.externalApplication);
   }
 }

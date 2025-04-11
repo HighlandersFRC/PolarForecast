@@ -290,7 +290,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       thickness: 2.0,
                     ),
                     Counter(
-                        label: 'Driver Experience (# of Events)',
+                        label: '# of Events Driver has Driven',
                         value: pitScoutingData.data.driver_experience_events,
                         max: 500,
                         locked: widget.locked,
