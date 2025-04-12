@@ -2249,7 +2249,7 @@ def _getGroupMembers(group_id: str) -> tuple[list, list, list]:
     return owners, admins, members
 
 
-def updateData(event_code: str):
+def updateData(event_code: str, event_type: int):
     # print(event_code)
     TBAData = [TBAMatch2025(**match)
                for match in TBACollection.find({'event_key': event_code})]
@@ -2327,7 +2327,7 @@ def updateData(event_code: str):
                       }
                      for team in teams])
     try:
-        (data, predictions) = updatePredictions(TBAData, data)
+        (data, predictions) = updatePredictions(TBAData, data, eventType=event_type)
         try:
             PredictionCollection.insert_one(
                 {"event_code": event_code, "data": predictions})
@@ -2379,7 +2379,7 @@ def updateData(event_code: str):
             pass
 
 
-def updateGroupData(group: Group, event_code: str):
+def updateGroupData(group: Group, event_code: str, event_type: int):
     TBAData = [TBAMatch2025(**x)
                for x in TBACollection.find({'event_key': event_code})]
     for event in group.events:
@@ -2462,7 +2462,7 @@ def updateGroupData(group: Group, event_code: str):
                              for team in teams])
             try:
                 (data, predictions) = updatePredictions(
-                    TBAData, data)
+                    TBAData, data, eventType=event_type)
                 try:
                     GroupPredictionCollection.insert_one(
                         {"event_code": event_code, "group_id": group.group_id, "data": predictions})
@@ -2511,7 +2511,7 @@ def updateGroupData(group: Group, event_code: str):
             break
 
 
-def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
+def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: int):
     matchPredictions = []
     for match in TBAData:
         if match.score_breakdown is not None:
@@ -2641,11 +2641,12 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData):
             # print(matchPrediction[f"{alliance}_auto_rp"])
             levels_with_5_coral = 0
             for i in range(1, 5):
-                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= 4.5:
+                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= (6.5 if eventType in [4, 5]else 4.5):
                     levels_with_5_coral += 1
             matchPrediction[f"{alliance}_coral_rp"] = 1 if levels_with_5_coral >= 4 or (
                 matchPrediction[f"{alliance}_coopertition"] > 0.5 and levels_with_5_coral >= 3) else 0
-            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= 13.5 else 0
+            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= (
+                15.5 if eventType in [4, 5]else 6.5) else 0
             matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
                 matchPrediction[f"{alliance}_coral_rp"] + \
                 matchPrediction[f"{alliance}_barge_rp"] + \
@@ -2869,7 +2870,7 @@ def update_database():
                     {"key": event["key"]}, event)
                 # logging.error(e)
                 try:
-                    updateData(event["key"])
+                    updateData(event["key"], event["event"]["event_type"])
                     event["up_to_date"] = True
                     ETagCollection.find_one_and_replace(
                         {"key": event["key"]}, event)
@@ -2909,7 +2910,12 @@ def update_database():
                 # print(event)
                 if not event.up_to_date:
                     try:
-                        updateGroupData(group, event.event_code)
+                        for eventData in etags:
+                            if eventData["key"] == event.event_code:
+                                eventData = eventData
+                                break
+                        updateGroupData(group, event.event_code,
+                                        eventData["event"]["event_type"])
                         # print('updated calculated data')
                         updateGroupGridPitData(group, event.event_code)
                         GroupCollection.update_one(
