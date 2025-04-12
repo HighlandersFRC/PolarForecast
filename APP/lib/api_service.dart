@@ -797,4 +797,17 @@ class ApiService {
       data['max_data_query'] as int
     );
   }
+
+  Future<void> post_offline_match_scouting(MatchScouting2025 data) async {
+    final url = '$APIURL/MatchScouting/Offline/';
+    final request = await http.post(Uri.parse(url),
+        headers: {
+          'token': (await token) ?? '',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data.toJson()));
+    if (request.statusCode != 200) {
+      throw Exception(json.decode(request.body)['detail']);
+    }
+  }
 }

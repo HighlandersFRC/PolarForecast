@@ -749,6 +749,59 @@ def post_match_scouting(data: MatchScouting2025, token: str = Depends(check_toke
     return data.dict()
 
 
+@app.post("/MatchScouting/Offline/", tags=["scouting"])
+def post_offline_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
+    user_info = get_user_info(token)
+    # Check if the user is part of the same group
+    user_groups = [group['id'] for group in get_user_groups(token)]
+    scout_groups = [group['id']
+                    for group in find_user_groups(user_id=data.scout_info.user_id)]
+    if not any(group in user_groups for group in scout_groups):
+        raise HTTPException(
+            403, "You can only submit match scouting data for members of your group")
+    # Perform the same checks as in post_match_scouting
+    eventCode = data.event_code
+    matchNumber = data.match_number
+    teamNumber = data.team_number
+    match = TBACollection.find_one(
+        {"key": f"{eventCode}_qm{str(matchNumber)}"})
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments)
+    if match is None:
+        raise HTTPException(400, "Check Your Match Number")
+    exists = False
+    for i in range(2):
+        allianceStr = "blue" if i == 0 else "red"
+        if match["alliances"][allianceStr]["team_keys"].__contains__("frc" + str(teamNumber)):
+            exists = True
+    if not exists:
+        eventTeams = getEventTeams(eventCode)
+        if str(teamNumber) in [team[3:] for team in eventTeams]:
+            raise HTTPException(400, "Check Your Match And Team Number")
+        else:
+            raise HTTPException(400, "Check Your Team Number")
+    # Insert the match scouting data into the database
+    try:
+        MatchScoutingCollection.insert_one(data.dict())
+    except pymongo.errors.DuplicateKeyError:
+        MatchScoutingCollection.find_one_and_replace(
+            {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id, "match_number": data.match_number}, data.dict())
+    # Update group data and status
+    groups = [Group(**group)
+              for group in get_user_groups_detailed(token=token)]
+    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
+        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
+    if data.data.miscellaneous.died:
+        for group in groupsNeedingUpdate:
+            try:
+                updateGroupStatus(group, data.event_code)
+            except:
+                pass
+    for group in groupsNeedingUpdate:
+        primeGroupForAnalysis(group=group, event_code=data.event_code)
+    return data.dict()
+
+
 @app.get("/Group/{group_name}/AllianceRequests", tags=["groups", "alliances"])
 def get_group_alliance_requests(group_name: str, token: str = Depends(check_token_active)):
     if group_name == None:
