@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/group_join_request.dart';
+import 'package:scouting_app/models/match_scouting_2025.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 
 import '../models/alliance_request.dart';
@@ -129,6 +132,7 @@ class _GroupPageState extends State<GroupPage> {
         group: groupData,
         membership: membershipData,
       ),
+      _OfflineScoutingTab(),
       if (membershipData == 'owner')
         _SettingsTab(
           this,
@@ -154,6 +158,10 @@ class _GroupPageState extends State<GroupPage> {
               icon: Icon(Icons.person_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.person, color: theme.primaryColor),
               label: 'Members'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.wifi_off_outlined, color: theme.primaryColor),
+              activeIcon: Icon(Icons.wifi_off, color: theme.primaryColor),
+              label: 'Offline'),
           if (membershipData == 'owner')
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings_outlined, color: theme.primaryColor),
@@ -1411,5 +1419,115 @@ class _SettingsTabState extends State<_SettingsTab> {
         );
       },
     );
+  }
+}
+
+class _OfflineScoutingTab extends StatefulWidget {
+  @override
+  _OfflineScoutingTabState createState() => _OfflineScoutingTabState();
+}
+
+class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  TextEditingController _textController = TextEditingController();
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _onSubmit() async {
+    this.controller = controller;
+    try {
+      final jsonData = jsonDecode(_textController.text);
+      final matchData = MatchScouting2025.fromJson(jsonData);
+
+      // Submit the scanned data
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      await apiService.post_offline_match_scouting(matchData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Match data submitted successfully!')),
+      );
+      setState(() {
+        _textController.clear();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (context, constraints) => Column(
+              children: [
+                Container(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight - 96,
+                    child: Card(
+                        child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: QRView(
+                        key: qrKey,
+                        onQRViewCreated: (QRViewController controller) {
+                          this.controller = controller;
+                          controller.scannedDataStream.listen((scanData) {
+                            try {
+                              final jsonData = jsonDecode(scanData.code!);
+                              final matchData =
+                                  MatchScouting2025.fromJson(jsonData);
+
+                              // Update the text field with the scanned data
+                              final prevText = _textController.text;
+                              setState(() {
+                                setState(() {
+                                  _textController.text =
+                                      jsonEncode(matchData.toJson());
+                                });
+                              });
+                              if (prevText != _textController.text) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Scan Successful')),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('Error: ${e.toString()}')),
+                              );
+                            }
+                          });
+                        },
+                      ),
+                    ))),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _textController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Data Manually',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setState(() {});
+                        },
+                      ),
+                      // SizedBox(height: 10),
+                      ElevatedButton(
+                          onPressed:
+                              _textController.text.isEmpty ? null : _onSubmit,
+                          child: Text('Submit'))
+                    ],
+                  ),
+                ),
+              ],
+            ));
   }
 }

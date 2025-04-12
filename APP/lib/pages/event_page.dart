@@ -6,6 +6,7 @@ import 'package:flat/flat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/match_scouting_2025.dart';
@@ -1337,6 +1338,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     super.initState();
     eventCodeController =
         TextEditingController(text: widget.widget.tournament.key);
+
+    // Add a listener to display a QR code if submission fails
     teamNumberController =
         TextEditingController(text: data.team_number.toString());
     matchNumberController =
@@ -1469,6 +1472,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(error.toString())));
+        showQR(error.toString());
       }
     });
   }
@@ -1516,6 +1520,42 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     getNewMatchDetails(data.match_number);
     scrollController.animateTo(-scrollController.offset,
         duration: Duration(seconds: 3), curve: Curves.easeOut);
+  }
+
+  void showQR(String errorText) {
+    Clipboard.setData(ClipboardData(text: jsonEncode(data.toJson())));
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.all(20),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Column(
+              children: [
+                Text(
+                  errorText,
+                  style: TextStyle(color: Colors.red),
+                ),
+                SizedBox(height: 10),
+                Text('Match Data Copied To Clipboard. Save to upload later.'),
+                SizedBox(height: 10),
+                QrImageView(
+                  size: min(constraints.maxWidth, (constraints.maxHeight - 60)),
+                  data: jsonEncode(data.toJson()),
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                      color: Colors.black, eyeShape: QrEyeShape.square),
+                  dataModuleStyle: QrDataModuleStyle(
+                    color: Colors.black,
+                    dataModuleShape: QrDataModuleShape.square,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
