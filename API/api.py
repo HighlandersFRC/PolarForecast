@@ -20,6 +20,7 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
+from API.models.match_prediction_2025 import AllianceData2025, MatchPrediction2025
 from models.tba_match_2025 import TBAMatch2025
 from models.match_scouting_2025 import MatchScouting2025
 from models.death_scouting_form import Death, DeathScoutingForm
@@ -2327,7 +2328,8 @@ def updateData(event_code: str, event_type: int):
                       }
                      for team in teams])
     try:
-        (data, predictions) = updatePredictions(TBAData, data, eventType=event_type)
+        (data, predictions) = updatePredictions(
+            TBAData, data, eventType=event_type)
         try:
             PredictionCollection.insert_one(
                 {"event_code": event_code, "data": predictions})
@@ -2511,157 +2513,189 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
             break
 
 
-def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: int):
-    matchPredictions = []
+def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: int) -> tuple[list, list[MatchPrediction2025]]:
+    matchPredictions: list[MatchPrediction2025] = []
     for match in TBAData:
         if match.score_breakdown is not None:
-            matchPrediction = {
-                "comp_level": match.comp_level,
-                "key": match.key,
-                "match_number": match.match_number,
-                "set_number": match.set_number,
-                "blue_teams": match.alliances['blue'].team_keys,
-                "blue_human_player": 0,
-                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
-                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
-                "blue_mobility": 0,
-                "blue_score": 0,
-                "blue_climbing": 0,
-                "blue_auto_points": 0,
-                "blue_teleop_points": 0,
-                "blue_endgame_points": 0,
-                "blue_coopertition": 0,
-                "blue_actual_score": match.score_breakdown["blue"].totalPoints,
-                "blue_coral_l_1": 0,
-                "blue_coral_l_2": 0,
-                "blue_coral_l_3": 0,
-                "blue_coral_l_4": 0,
-                "blue_processor": 0,
-                "blue_net": 0,
-                "blue_auto_coral": 0,
-                "red_teams": match.alliances['red'].team_keys,
-                "red_human_player": 0,
-                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
-                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
-                "red_mobility": 0,
-                "red_score": 0,
-                "red_climbing": 0,
-                "red_auto_points": 0,
-                "red_teleop_points": 0,
-                "red_endgame_points": 0,
-                "red_coopertition": 0,
-                "red_coral_l_1": 0,
-                "red_coral_l_2": 0,
-                "red_coral_l_3": 0,
-                "red_coral_l_4": 0,
-                "red_processor": 0,
-                "red_net": 0,
-                "red_auto_coral": 0,
-                "red_actual_score": match.score_breakdown["red"].totalPoints,
-                "predicted": False,
-            }
+            matchPrediction = MatchPrediction2025(
+                comp_level=match.comp_level,
+                key=match.key,
+                match_number=match.match_number,
+                set_number=match.set_number,
+                blue=AllianceData2025(
+                    teams=match.alliances['blue'].team_keys,
+                    human_player=0,
+                    dq_team_keys=match.alliances['blue'].dq_team_keys,
+                    surrogate_team_keys=match.alliances['blue'].surrogate_team_keys,
+                    mobility=0,
+                    score=0,
+                    climbing=0,
+                    auto_points=0,
+                    teleop_points=0,
+                    endgame_points=0,
+                    coopertition=0,
+                    actual_score=match.score_breakdown["blue"].totalPoints,
+                    coral_l_1=0,
+                    coral_l_2=0,
+                    coral_l_3=0,
+                    coral_l_4=0,
+                    processor=0,
+                    net=0,
+                    auto_coral=0,
+                    win_rp=0,
+                    auto_rp=0,
+                    coral_rp=0,
+                    barge_rp=0,
+                    total_rp=0,
+                    display_rp=0,
+                ),
+                red=AllianceData2025(
+                    teams=match.alliances['red'].team_keys,
+                    human_player=0,
+                    dq_team_keys=match.alliances['red'].dq_team_keys,
+                    surrogate_team_keys=match.alliances['red'].surrogate_team_keys,
+                    mobility=0,
+                    score=0,
+                    climbing=0,
+                    auto_points=0,
+                    teleop_points=0,
+                    endgame_points=0,
+                    coopertition=0,
+                    actual_score=match.score_breakdown["red"].totalPoints,
+                    coral_l_1=0,
+                    coral_l_2=0,
+                    coral_l_3=0,
+                    coral_l_4=0,
+                    processor=0,
+                    net=0,
+                    auto_coral=0,
+                    win_rp=0,
+                    auto_rp=0,
+                    coral_rp=0,
+                    barge_rp=0,
+                    total_rp=0,
+                    display_rp=0,
+                ),
+                predicted=False,
+            )
         else:
-            matchPrediction = {
-                "comp_level": match.comp_level,
-                "key": match.key,
-                "match_number": match.match_number,
-                "set_number": match.set_number,
-                "blue_teams": match.alliances["blue"].team_keys,
-                "blue_human_player": 0,
-                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
-                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
-                "blue_mobility": 0,
-                "blue_score": 0,
-                "blue_climbing": 0,
-                "blue_auto_points": 0,
-                "blue_teleop_points": 0,
-                "blue_endgame_points": 0,
-                "blue_coopertition": 0,
-                "blue_coral_l_1": 0,
-                "blue_coral_l_2": 0,
-                "blue_coral_l_3": 0,
-                "blue_coral_l_4": 0,
-                "blue_processor": 0,
-                "blue_net": 0,
-                "blue_auto_coral": 0,
-                "red_teams": match.alliances["red"].team_keys,
-                "red_human_player": 0,
-                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
-                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
-                "red_mobility": 0,
-                "red_score": 0,
-                "red_climbing": 0,
-                "red_auto_points": 0,
-                "red_teleop_points": 0,
-                "red_endgame_points": 0,
-                "red_coopertition": 0,
-                "red_coral_l_1": 0,
-                "red_coral_l_2": 0,
-                "red_coral_l_3": 0,
-                "red_coral_l_4": 0,
-                "red_processor": 0,
-                "red_net": 0,
-                "red_auto_coral": 0,
-                "predicted": True,
-            }
+            matchPrediction = MatchPrediction2025(
+                comp_level=match.comp_level,
+                key=match.key,
+                match_number=match.match_number,
+                set_number=match.set_number,
+                blue=AllianceData2025(
+                    teams=match.alliances['blue'].team_keys,
+                    human_player=0,
+                    dq_team_keys=match.alliances['blue'].dq_team_keys,
+                    surrogate_team_keys=match.alliances['blue'].surrogate_team_keys,
+                    mobility=0,
+                    score=0,
+                    climbing=0,
+                    auto_points=0,
+                    teleop_points=0,
+                    endgame_points=0,
+                    coopertition=0,
+                    coral_l_1=0,
+                    coral_l_2=0,
+                    coral_l_3=0,
+                    coral_l_4=0,
+                    processor=0,
+                    net=0,
+                    auto_coral=0,
+                    win_rp=0,
+                    auto_rp=0,
+                    coral_rp=0,
+                    barge_rp=0,
+                    total_rp=0,
+                    display_rp=0,
+                ),
+                red=AllianceData2025(
+                    teams=match.alliances['red'].team_keys,
+                    human_player=0,
+                    dq_team_keys=match.alliances['red'].dq_team_keys,
+                    surrogate_team_keys=match.alliances['red'].surrogate_team_keys,
+                    mobility=0,
+                    score=0,
+                    climbing=0,
+                    auto_points=0,
+                    teleop_points=0,
+                    endgame_points=0,
+                    coopertition=0,
+                    coral_l_1=0,
+                    coral_l_2=0,
+                    coral_l_3=0,
+                    coral_l_4=0,
+                    processor=0,
+                    net=0,
+                    auto_coral=0,
+                    win_rp=0,
+                    auto_rp=0,
+                    coral_rp=0,
+                    barge_rp=0,
+                    total_rp=0,
+                    display_rp=0,
+                ),
+                predicted=False,
+            )
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
                 for i in range(1, len(calculatedData)):
                     teamData = {}
                     if calculatedData[i]["key"] == team:
                         teamData = calculatedData[i]
+                    if alliance == "red":
+                        predAlliance = matchPrediction.blue
                     if teamData != {}:
-                        matchPrediction[f"{alliance}_score"] += teamData["OPR"]
-                        matchPrediction[f"{alliance}_climbing"] += teamData["climbing_points"]
-                        matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
-                        matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
-                        matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                        matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
-                        matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
-                        matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
-                        matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
-                        matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
-                        matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
-                        matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
-                        matchPrediction[f"{alliance}_net"] += teamData["net"]
-                        matchPrediction[f"{alliance}_processor"] += teamData["processor"]
+                        predAlliance.score += teamData["OPR"]
+                        predAlliance.climbing += teamData["climbing_points"]
+                        predAlliance.auto_points += teamData["auto_points"]
+                        predAlliance.teleop_points += teamData["teleop_points"]
+                        predAlliance.endgame_points += teamData["endgame_points"]
+                        predAlliance.coral_l_1 += teamData["l_1_total"]
+                        predAlliance.coral_l_2 += teamData["l_2_total"]
+                        predAlliance.coral_l_3 += teamData["l_3_total"]
+                        predAlliance.coral_l_4 += teamData["l_4_total"]
+                        predAlliance.auto_coral += teamData["auto_coral"]
+                        predAlliance.coopertition += teamData["coopertition"]
+                        predAlliance.mobility += teamData["mobility"]
+                        predAlliance.net += teamData["net"]
+                        predAlliance.processor += teamData["processor"]
         for alliance in match.alliances:
             if alliance == "red":
-                opponent = "blue"
+                predAlliance = matchPrediction.red
+                predOpponent = matchPrediction.blue
             else:
-                opponent = "red"
-            matchPrediction[f"{alliance}_human_player"] = matchPrediction[f'{opponent}_processor']*4
-            matchPrediction[f"{alliance}_score"] += matchPrediction[f"{alliance}_human_player"]
-            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
-                f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            # print('auto_coral', matchPrediction[f"{alliance}_auto_coral"], 'mobility', round(
-            #     matchPrediction[f"{alliance}_mobility"]))
-            matchPrediction[f"{alliance}_auto_rp"] = 1 if round(matchPrediction[f"{alliance}_auto_coral"]) >= 1 and round(
-                matchPrediction[f"{alliance}_mobility"]) == 3 else 0
-            # print(matchPrediction[f"{alliance}_auto_rp"])
+                predAlliance = matchPrediction.blue
+                predOpponent = matchPrediction.red
+            predAlliance.human_player = predOpponent.processor*4
+            predAlliance.score += predAlliance.human_player
+            predAlliance.win_rp = 3 if predOpponent.score < predAlliance.score else 1 if predOpponent.score == predAlliance.score else 0
+            predAlliance.auto_rp = 1 if round(predAlliance.auto_coral) >= 1 and round(
+                predAlliance.mobility) == 3 else 0
             levels_with_5_coral = 0
             for i in range(1, 5):
-                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= (6.5 if eventType in [4, 5]else 4.5):
+                if (predAlliance["coral_l_" + str(i)]) >= (6.5 if eventType in [4, 5]else 4.5):
                     levels_with_5_coral += 1
-            matchPrediction[f"{alliance}_coral_rp"] = 1 if levels_with_5_coral >= 4 or (
-                matchPrediction[f"{alliance}_coopertition"] > 0.5 and levels_with_5_coral >= 3) else 0
-            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= (
+            predAlliance.coral_rp = 1 if levels_with_5_coral >= 4 or (
+                predAlliance.coopertition > 0.5 and levels_with_5_coral >= 3) else 0
+            predAlliance.barge_rp = 1 if predAlliance.endgame_points >= (
                 15.5 if eventType in [4, 5]else 6.5) else 0
-            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
-                matchPrediction[f"{alliance}_coral_rp"] + \
-                matchPrediction[f"{alliance}_barge_rp"] + \
-                matchPrediction[f"{alliance}_auto_rp"]
-            if not matchPrediction["predicted"]:
-                matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
+            predAlliance.total_rp = predAlliance.win_rp + \
+                predAlliance.coral_rp + \
+                predAlliance.barge_rp + \
+                predAlliance.auto_rp
+            if not matchPrediction.predicted:
+                predAlliance.display_rp = match.score_breakdown[alliance].rp
             else:
-                matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
+                predAlliance.display_rp = predAlliance.total_rp
         matchPredictions.append(matchPrediction)
     for i in range(1, len(calculatedData)):
         calculatedData[i]["simulated_rp"] = 0
         calculatedData[i]["simulated_rank"] = int(0)
     for matchPrediction in matchPredictions:
-        for alliance in ["red", "blue"]:
-            for team in [x for x in matchPrediction[f"{alliance}_teams"] if x not in matchPrediction[f"{alliance}_dq_team_keys"] and x not in matchPrediction[f"{alliance}_surrogate_team_keys"]]:
+        for alliance in [matchPrediction.red, matchPrediction.blue]:
+            for team in [x for x in alliance.teams if x not in alliance.dq_team_keys and x not in alliance.surrogate_team_keys]:
                 dataTeam = {}
                 idx = 0
                 try:
@@ -2670,12 +2704,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
                             dataTeam = calculatedData[i]
                             idx = i
                             break
-                    if matchPrediction["predicted"] and matchPrediction["comp_level"] == "qm":
-                        dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
-                    else:
-                        for match in TBAData:
-                            if match.key == matchPrediction["key"] and matchPrediction["comp_level"] == "qm":
-                                dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
+                    dataTeam["simulated_rp"] += alliance.display_rp
                     calculatedData[idx] = dataTeam
                 except Exception as e:
                     # logging.error(e)
