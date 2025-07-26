@@ -24,51 +24,9 @@ mixin _$MatchPrediction2025 {
   String get key => throw _privateConstructorUsedError;
   int get match_number => throw _privateConstructorUsedError;
   int get set_number => throw _privateConstructorUsedError;
-  List<String> get blue_teams => throw _privateConstructorUsedError;
-  double get blue_mobility => throw _privateConstructorUsedError;
-  double get blue_score => throw _privateConstructorUsedError;
-  double get blue_climbing => throw _privateConstructorUsedError;
-  double get blue_auto_points => throw _privateConstructorUsedError;
-  double get blue_teleop_points => throw _privateConstructorUsedError;
-  double get blue_endgame_points => throw _privateConstructorUsedError;
-  double get blue_coopertition => throw _privateConstructorUsedError;
-  double get blue_coral_l_1 => throw _privateConstructorUsedError;
-  double get blue_coral_l_2 => throw _privateConstructorUsedError;
-  double get blue_coral_l_3 => throw _privateConstructorUsedError;
-  double get blue_coral_l_4 => throw _privateConstructorUsedError;
-  double get blue_processor => throw _privateConstructorUsedError;
-  double get blue_net => throw _privateConstructorUsedError;
-  double get blue_auto_coral => throw _privateConstructorUsedError;
-  int? get blue_actual_score => throw _privateConstructorUsedError;
-  List<String> get red_teams => throw _privateConstructorUsedError;
-  double get red_mobility => throw _privateConstructorUsedError;
-  double get red_score => throw _privateConstructorUsedError;
-  double get red_climbing => throw _privateConstructorUsedError;
-  double get red_auto_points => throw _privateConstructorUsedError;
-  double get red_teleop_points => throw _privateConstructorUsedError;
-  double get red_endgame_points => throw _privateConstructorUsedError;
-  double get red_coopertition => throw _privateConstructorUsedError;
-  double get red_coral_l_1 => throw _privateConstructorUsedError;
-  double get red_coral_l_2 => throw _privateConstructorUsedError;
-  double get red_coral_l_3 => throw _privateConstructorUsedError;
-  double get red_coral_l_4 => throw _privateConstructorUsedError;
-  double get red_processor => throw _privateConstructorUsedError;
-  double get red_net => throw _privateConstructorUsedError;
-  double get red_auto_coral => throw _privateConstructorUsedError;
-  int? get red_actual_score => throw _privateConstructorUsedError;
+  AlliancePrediction2025 get red => throw _privateConstructorUsedError;
+  AlliancePrediction2025 get blue => throw _privateConstructorUsedError;
   bool get predicted => throw _privateConstructorUsedError;
-  int get blue_win_rp => throw _privateConstructorUsedError;
-  int get blue_auto_rp => throw _privateConstructorUsedError;
-  int get blue_barge_rp => throw _privateConstructorUsedError;
-  int get blue_coral_rp => throw _privateConstructorUsedError;
-  int get blue_total_rp => throw _privateConstructorUsedError;
-  int get blue_display_rp => throw _privateConstructorUsedError;
-  int get red_win_rp => throw _privateConstructorUsedError;
-  int get red_auto_rp => throw _privateConstructorUsedError;
-  int get red_barge_rp => throw _privateConstructorUsedError;
-  int get red_coral_rp => throw _privateConstructorUsedError;
-  int get red_total_rp => throw _privateConstructorUsedError;
-  int get red_display_rp => throw _privateConstructorUsedError;
 
   /// Serializes this MatchPrediction2025 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -91,51 +49,12 @@ abstract class $MatchPrediction2025CopyWith<$Res> {
       String key,
       int match_number,
       int set_number,
-      List<String> blue_teams,
-      double blue_mobility,
-      double blue_score,
-      double blue_climbing,
-      double blue_auto_points,
-      double blue_teleop_points,
-      double blue_endgame_points,
-      double blue_coopertition,
-      double blue_coral_l_1,
-      double blue_coral_l_2,
-      double blue_coral_l_3,
-      double blue_coral_l_4,
-      double blue_processor,
-      double blue_net,
-      double blue_auto_coral,
-      int? blue_actual_score,
-      List<String> red_teams,
-      double red_mobility,
-      double red_score,
-      double red_climbing,
-      double red_auto_points,
-      double red_teleop_points,
-      double red_endgame_points,
-      double red_coopertition,
-      double red_coral_l_1,
-      double red_coral_l_2,
-      double red_coral_l_3,
-      double red_coral_l_4,
-      double red_processor,
-      double red_net,
-      double red_auto_coral,
-      int? red_actual_score,
-      bool predicted,
-      int blue_win_rp,
-      int blue_auto_rp,
-      int blue_barge_rp,
-      int blue_coral_rp,
-      int blue_total_rp,
-      int blue_display_rp,
-      int red_win_rp,
-      int red_auto_rp,
-      int red_barge_rp,
-      int red_coral_rp,
-      int red_total_rp,
-      int red_display_rp});
+      AlliancePrediction2025 red,
+      AlliancePrediction2025 blue,
+      bool predicted});
+
+  $AlliancePrediction2025CopyWith<$Res> get red;
+  $AlliancePrediction2025CopyWith<$Res> get blue;
 }
 
 /// @nodoc
@@ -157,51 +76,9 @@ class _$MatchPrediction2025CopyWithImpl<$Res, $Val extends MatchPrediction2025>
     Object? key = null,
     Object? match_number = null,
     Object? set_number = null,
-    Object? blue_teams = null,
-    Object? blue_mobility = null,
-    Object? blue_score = null,
-    Object? blue_climbing = null,
-    Object? blue_auto_points = null,
-    Object? blue_teleop_points = null,
-    Object? blue_endgame_points = null,
-    Object? blue_coopertition = null,
-    Object? blue_coral_l_1 = null,
-    Object? blue_coral_l_2 = null,
-    Object? blue_coral_l_3 = null,
-    Object? blue_coral_l_4 = null,
-    Object? blue_processor = null,
-    Object? blue_net = null,
-    Object? blue_auto_coral = null,
-    Object? blue_actual_score = freezed,
-    Object? red_teams = null,
-    Object? red_mobility = null,
-    Object? red_score = null,
-    Object? red_climbing = null,
-    Object? red_auto_points = null,
-    Object? red_teleop_points = null,
-    Object? red_endgame_points = null,
-    Object? red_coopertition = null,
-    Object? red_coral_l_1 = null,
-    Object? red_coral_l_2 = null,
-    Object? red_coral_l_3 = null,
-    Object? red_coral_l_4 = null,
-    Object? red_processor = null,
-    Object? red_net = null,
-    Object? red_auto_coral = null,
-    Object? red_actual_score = freezed,
+    Object? red = null,
+    Object? blue = null,
     Object? predicted = null,
-    Object? blue_win_rp = null,
-    Object? blue_auto_rp = null,
-    Object? blue_barge_rp = null,
-    Object? blue_coral_rp = null,
-    Object? blue_total_rp = null,
-    Object? blue_display_rp = null,
-    Object? red_win_rp = null,
-    Object? red_auto_rp = null,
-    Object? red_barge_rp = null,
-    Object? red_coral_rp = null,
-    Object? red_total_rp = null,
-    Object? red_display_rp = null,
   }) {
     return _then(_value.copyWith(
       comp_level: null == comp_level
@@ -220,187 +97,39 @@ class _$MatchPrediction2025CopyWithImpl<$Res, $Val extends MatchPrediction2025>
           ? _value.set_number
           : set_number // ignore: cast_nullable_to_non_nullable
               as int,
-      blue_teams: null == blue_teams
-          ? _value.blue_teams
-          : blue_teams // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      blue_mobility: null == blue_mobility
-          ? _value.blue_mobility
-          : blue_mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_score: null == blue_score
-          ? _value.blue_score
-          : blue_score // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_climbing: null == blue_climbing
-          ? _value.blue_climbing
-          : blue_climbing // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_auto_points: null == blue_auto_points
-          ? _value.blue_auto_points
-          : blue_auto_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_teleop_points: null == blue_teleop_points
-          ? _value.blue_teleop_points
-          : blue_teleop_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_endgame_points: null == blue_endgame_points
-          ? _value.blue_endgame_points
-          : blue_endgame_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coopertition: null == blue_coopertition
-          ? _value.blue_coopertition
-          : blue_coopertition // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_1: null == blue_coral_l_1
-          ? _value.blue_coral_l_1
-          : blue_coral_l_1 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_2: null == blue_coral_l_2
-          ? _value.blue_coral_l_2
-          : blue_coral_l_2 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_3: null == blue_coral_l_3
-          ? _value.blue_coral_l_3
-          : blue_coral_l_3 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_4: null == blue_coral_l_4
-          ? _value.blue_coral_l_4
-          : blue_coral_l_4 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_processor: null == blue_processor
-          ? _value.blue_processor
-          : blue_processor // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_net: null == blue_net
-          ? _value.blue_net
-          : blue_net // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_auto_coral: null == blue_auto_coral
-          ? _value.blue_auto_coral
-          : blue_auto_coral // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_actual_score: freezed == blue_actual_score
-          ? _value.blue_actual_score
-          : blue_actual_score // ignore: cast_nullable_to_non_nullable
-              as int?,
-      red_teams: null == red_teams
-          ? _value.red_teams
-          : red_teams // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      red_mobility: null == red_mobility
-          ? _value.red_mobility
-          : red_mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_score: null == red_score
-          ? _value.red_score
-          : red_score // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_climbing: null == red_climbing
-          ? _value.red_climbing
-          : red_climbing // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_auto_points: null == red_auto_points
-          ? _value.red_auto_points
-          : red_auto_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_teleop_points: null == red_teleop_points
-          ? _value.red_teleop_points
-          : red_teleop_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_endgame_points: null == red_endgame_points
-          ? _value.red_endgame_points
-          : red_endgame_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coopertition: null == red_coopertition
-          ? _value.red_coopertition
-          : red_coopertition // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_1: null == red_coral_l_1
-          ? _value.red_coral_l_1
-          : red_coral_l_1 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_2: null == red_coral_l_2
-          ? _value.red_coral_l_2
-          : red_coral_l_2 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_3: null == red_coral_l_3
-          ? _value.red_coral_l_3
-          : red_coral_l_3 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_4: null == red_coral_l_4
-          ? _value.red_coral_l_4
-          : red_coral_l_4 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_processor: null == red_processor
-          ? _value.red_processor
-          : red_processor // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_net: null == red_net
-          ? _value.red_net
-          : red_net // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_auto_coral: null == red_auto_coral
-          ? _value.red_auto_coral
-          : red_auto_coral // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_actual_score: freezed == red_actual_score
-          ? _value.red_actual_score
-          : red_actual_score // ignore: cast_nullable_to_non_nullable
-              as int?,
+      red: null == red
+          ? _value.red
+          : red // ignore: cast_nullable_to_non_nullable
+              as AlliancePrediction2025,
+      blue: null == blue
+          ? _value.blue
+          : blue // ignore: cast_nullable_to_non_nullable
+              as AlliancePrediction2025,
       predicted: null == predicted
           ? _value.predicted
           : predicted // ignore: cast_nullable_to_non_nullable
               as bool,
-      blue_win_rp: null == blue_win_rp
-          ? _value.blue_win_rp
-          : blue_win_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_auto_rp: null == blue_auto_rp
-          ? _value.blue_auto_rp
-          : blue_auto_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_barge_rp: null == blue_barge_rp
-          ? _value.blue_barge_rp
-          : blue_barge_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_coral_rp: null == blue_coral_rp
-          ? _value.blue_coral_rp
-          : blue_coral_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_total_rp: null == blue_total_rp
-          ? _value.blue_total_rp
-          : blue_total_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_display_rp: null == blue_display_rp
-          ? _value.blue_display_rp
-          : blue_display_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_win_rp: null == red_win_rp
-          ? _value.red_win_rp
-          : red_win_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_auto_rp: null == red_auto_rp
-          ? _value.red_auto_rp
-          : red_auto_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_barge_rp: null == red_barge_rp
-          ? _value.red_barge_rp
-          : red_barge_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_coral_rp: null == red_coral_rp
-          ? _value.red_coral_rp
-          : red_coral_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_total_rp: null == red_total_rp
-          ? _value.red_total_rp
-          : red_total_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_display_rp: null == red_display_rp
-          ? _value.red_display_rp
-          : red_display_rp // ignore: cast_nullable_to_non_nullable
-              as int,
     ) as $Val);
+  }
+
+  /// Create a copy of MatchPrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AlliancePrediction2025CopyWith<$Res> get red {
+    return $AlliancePrediction2025CopyWith<$Res>(_value.red, (value) {
+      return _then(_value.copyWith(red: value) as $Val);
+    });
+  }
+
+  /// Create a copy of MatchPrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AlliancePrediction2025CopyWith<$Res> get blue {
+    return $AlliancePrediction2025CopyWith<$Res>(_value.blue, (value) {
+      return _then(_value.copyWith(blue: value) as $Val);
+    });
   }
 }
 
@@ -417,51 +146,14 @@ abstract class _$$MatchPrediction2025ImplCopyWith<$Res>
       String key,
       int match_number,
       int set_number,
-      List<String> blue_teams,
-      double blue_mobility,
-      double blue_score,
-      double blue_climbing,
-      double blue_auto_points,
-      double blue_teleop_points,
-      double blue_endgame_points,
-      double blue_coopertition,
-      double blue_coral_l_1,
-      double blue_coral_l_2,
-      double blue_coral_l_3,
-      double blue_coral_l_4,
-      double blue_processor,
-      double blue_net,
-      double blue_auto_coral,
-      int? blue_actual_score,
-      List<String> red_teams,
-      double red_mobility,
-      double red_score,
-      double red_climbing,
-      double red_auto_points,
-      double red_teleop_points,
-      double red_endgame_points,
-      double red_coopertition,
-      double red_coral_l_1,
-      double red_coral_l_2,
-      double red_coral_l_3,
-      double red_coral_l_4,
-      double red_processor,
-      double red_net,
-      double red_auto_coral,
-      int? red_actual_score,
-      bool predicted,
-      int blue_win_rp,
-      int blue_auto_rp,
-      int blue_barge_rp,
-      int blue_coral_rp,
-      int blue_total_rp,
-      int blue_display_rp,
-      int red_win_rp,
-      int red_auto_rp,
-      int red_barge_rp,
-      int red_coral_rp,
-      int red_total_rp,
-      int red_display_rp});
+      AlliancePrediction2025 red,
+      AlliancePrediction2025 blue,
+      bool predicted});
+
+  @override
+  $AlliancePrediction2025CopyWith<$Res> get red;
+  @override
+  $AlliancePrediction2025CopyWith<$Res> get blue;
 }
 
 /// @nodoc
@@ -481,51 +173,9 @@ class __$$MatchPrediction2025ImplCopyWithImpl<$Res>
     Object? key = null,
     Object? match_number = null,
     Object? set_number = null,
-    Object? blue_teams = null,
-    Object? blue_mobility = null,
-    Object? blue_score = null,
-    Object? blue_climbing = null,
-    Object? blue_auto_points = null,
-    Object? blue_teleop_points = null,
-    Object? blue_endgame_points = null,
-    Object? blue_coopertition = null,
-    Object? blue_coral_l_1 = null,
-    Object? blue_coral_l_2 = null,
-    Object? blue_coral_l_3 = null,
-    Object? blue_coral_l_4 = null,
-    Object? blue_processor = null,
-    Object? blue_net = null,
-    Object? blue_auto_coral = null,
-    Object? blue_actual_score = freezed,
-    Object? red_teams = null,
-    Object? red_mobility = null,
-    Object? red_score = null,
-    Object? red_climbing = null,
-    Object? red_auto_points = null,
-    Object? red_teleop_points = null,
-    Object? red_endgame_points = null,
-    Object? red_coopertition = null,
-    Object? red_coral_l_1 = null,
-    Object? red_coral_l_2 = null,
-    Object? red_coral_l_3 = null,
-    Object? red_coral_l_4 = null,
-    Object? red_processor = null,
-    Object? red_net = null,
-    Object? red_auto_coral = null,
-    Object? red_actual_score = freezed,
+    Object? red = null,
+    Object? blue = null,
     Object? predicted = null,
-    Object? blue_win_rp = null,
-    Object? blue_auto_rp = null,
-    Object? blue_barge_rp = null,
-    Object? blue_coral_rp = null,
-    Object? blue_total_rp = null,
-    Object? blue_display_rp = null,
-    Object? red_win_rp = null,
-    Object? red_auto_rp = null,
-    Object? red_barge_rp = null,
-    Object? red_coral_rp = null,
-    Object? red_total_rp = null,
-    Object? red_display_rp = null,
   }) {
     return _then(_$MatchPrediction2025Impl(
       comp_level: null == comp_level
@@ -544,186 +194,18 @@ class __$$MatchPrediction2025ImplCopyWithImpl<$Res>
           ? _value.set_number
           : set_number // ignore: cast_nullable_to_non_nullable
               as int,
-      blue_teams: null == blue_teams
-          ? _value._blue_teams
-          : blue_teams // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      blue_mobility: null == blue_mobility
-          ? _value.blue_mobility
-          : blue_mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_score: null == blue_score
-          ? _value.blue_score
-          : blue_score // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_climbing: null == blue_climbing
-          ? _value.blue_climbing
-          : blue_climbing // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_auto_points: null == blue_auto_points
-          ? _value.blue_auto_points
-          : blue_auto_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_teleop_points: null == blue_teleop_points
-          ? _value.blue_teleop_points
-          : blue_teleop_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_endgame_points: null == blue_endgame_points
-          ? _value.blue_endgame_points
-          : blue_endgame_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coopertition: null == blue_coopertition
-          ? _value.blue_coopertition
-          : blue_coopertition // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_1: null == blue_coral_l_1
-          ? _value.blue_coral_l_1
-          : blue_coral_l_1 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_2: null == blue_coral_l_2
-          ? _value.blue_coral_l_2
-          : blue_coral_l_2 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_3: null == blue_coral_l_3
-          ? _value.blue_coral_l_3
-          : blue_coral_l_3 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_coral_l_4: null == blue_coral_l_4
-          ? _value.blue_coral_l_4
-          : blue_coral_l_4 // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_processor: null == blue_processor
-          ? _value.blue_processor
-          : blue_processor // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_net: null == blue_net
-          ? _value.blue_net
-          : blue_net // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_auto_coral: null == blue_auto_coral
-          ? _value.blue_auto_coral
-          : blue_auto_coral // ignore: cast_nullable_to_non_nullable
-              as double,
-      blue_actual_score: freezed == blue_actual_score
-          ? _value.blue_actual_score
-          : blue_actual_score // ignore: cast_nullable_to_non_nullable
-              as int?,
-      red_teams: null == red_teams
-          ? _value._red_teams
-          : red_teams // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      red_mobility: null == red_mobility
-          ? _value.red_mobility
-          : red_mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_score: null == red_score
-          ? _value.red_score
-          : red_score // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_climbing: null == red_climbing
-          ? _value.red_climbing
-          : red_climbing // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_auto_points: null == red_auto_points
-          ? _value.red_auto_points
-          : red_auto_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_teleop_points: null == red_teleop_points
-          ? _value.red_teleop_points
-          : red_teleop_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_endgame_points: null == red_endgame_points
-          ? _value.red_endgame_points
-          : red_endgame_points // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coopertition: null == red_coopertition
-          ? _value.red_coopertition
-          : red_coopertition // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_1: null == red_coral_l_1
-          ? _value.red_coral_l_1
-          : red_coral_l_1 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_2: null == red_coral_l_2
-          ? _value.red_coral_l_2
-          : red_coral_l_2 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_3: null == red_coral_l_3
-          ? _value.red_coral_l_3
-          : red_coral_l_3 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_coral_l_4: null == red_coral_l_4
-          ? _value.red_coral_l_4
-          : red_coral_l_4 // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_processor: null == red_processor
-          ? _value.red_processor
-          : red_processor // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_net: null == red_net
-          ? _value.red_net
-          : red_net // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_auto_coral: null == red_auto_coral
-          ? _value.red_auto_coral
-          : red_auto_coral // ignore: cast_nullable_to_non_nullable
-              as double,
-      red_actual_score: freezed == red_actual_score
-          ? _value.red_actual_score
-          : red_actual_score // ignore: cast_nullable_to_non_nullable
-              as int?,
+      red: null == red
+          ? _value.red
+          : red // ignore: cast_nullable_to_non_nullable
+              as AlliancePrediction2025,
+      blue: null == blue
+          ? _value.blue
+          : blue // ignore: cast_nullable_to_non_nullable
+              as AlliancePrediction2025,
       predicted: null == predicted
           ? _value.predicted
           : predicted // ignore: cast_nullable_to_non_nullable
               as bool,
-      blue_win_rp: null == blue_win_rp
-          ? _value.blue_win_rp
-          : blue_win_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_auto_rp: null == blue_auto_rp
-          ? _value.blue_auto_rp
-          : blue_auto_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_barge_rp: null == blue_barge_rp
-          ? _value.blue_barge_rp
-          : blue_barge_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_coral_rp: null == blue_coral_rp
-          ? _value.blue_coral_rp
-          : blue_coral_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_total_rp: null == blue_total_rp
-          ? _value.blue_total_rp
-          : blue_total_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      blue_display_rp: null == blue_display_rp
-          ? _value.blue_display_rp
-          : blue_display_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_win_rp: null == red_win_rp
-          ? _value.red_win_rp
-          : red_win_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_auto_rp: null == red_auto_rp
-          ? _value.red_auto_rp
-          : red_auto_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_barge_rp: null == red_barge_rp
-          ? _value.red_barge_rp
-          : red_barge_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_coral_rp: null == red_coral_rp
-          ? _value.red_coral_rp
-          : red_coral_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_total_rp: null == red_total_rp
-          ? _value.red_total_rp
-          : red_total_rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      red_display_rp: null == red_display_rp
-          ? _value.red_display_rp
-          : red_display_rp // ignore: cast_nullable_to_non_nullable
-              as int,
     ));
   }
 }
@@ -736,53 +218,9 @@ class _$MatchPrediction2025Impl implements _MatchPrediction2025 {
       required this.key,
       required this.match_number,
       required this.set_number,
-      required final List<String> blue_teams,
-      required this.blue_mobility,
-      required this.blue_score,
-      required this.blue_climbing,
-      required this.blue_auto_points,
-      required this.blue_teleop_points,
-      required this.blue_endgame_points,
-      required this.blue_coopertition,
-      required this.blue_coral_l_1,
-      required this.blue_coral_l_2,
-      required this.blue_coral_l_3,
-      required this.blue_coral_l_4,
-      required this.blue_processor,
-      required this.blue_net,
-      required this.blue_auto_coral,
-      this.blue_actual_score,
-      required final List<String> red_teams,
-      required this.red_mobility,
-      required this.red_score,
-      required this.red_climbing,
-      required this.red_auto_points,
-      required this.red_teleop_points,
-      required this.red_endgame_points,
-      required this.red_coopertition,
-      required this.red_coral_l_1,
-      required this.red_coral_l_2,
-      required this.red_coral_l_3,
-      required this.red_coral_l_4,
-      required this.red_processor,
-      required this.red_net,
-      required this.red_auto_coral,
-      this.red_actual_score,
-      required this.predicted,
-      required this.blue_win_rp,
-      required this.blue_auto_rp,
-      required this.blue_barge_rp,
-      required this.blue_coral_rp,
-      required this.blue_total_rp,
-      required this.blue_display_rp,
-      required this.red_win_rp,
-      required this.red_auto_rp,
-      required this.red_barge_rp,
-      required this.red_coral_rp,
-      required this.red_total_rp,
-      required this.red_display_rp})
-      : _blue_teams = blue_teams,
-        _red_teams = red_teams;
+      required this.red,
+      required this.blue,
+      required this.predicted});
 
   factory _$MatchPrediction2025Impl.fromJson(Map<String, dynamic> json) =>
       _$$MatchPrediction2025ImplFromJson(json);
@@ -795,112 +233,16 @@ class _$MatchPrediction2025Impl implements _MatchPrediction2025 {
   final int match_number;
   @override
   final int set_number;
-  final List<String> _blue_teams;
   @override
-  List<String> get blue_teams {
-    if (_blue_teams is EqualUnmodifiableListView) return _blue_teams;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_blue_teams);
-  }
-
+  final AlliancePrediction2025 red;
   @override
-  final double blue_mobility;
-  @override
-  final double blue_score;
-  @override
-  final double blue_climbing;
-  @override
-  final double blue_auto_points;
-  @override
-  final double blue_teleop_points;
-  @override
-  final double blue_endgame_points;
-  @override
-  final double blue_coopertition;
-  @override
-  final double blue_coral_l_1;
-  @override
-  final double blue_coral_l_2;
-  @override
-  final double blue_coral_l_3;
-  @override
-  final double blue_coral_l_4;
-  @override
-  final double blue_processor;
-  @override
-  final double blue_net;
-  @override
-  final double blue_auto_coral;
-  @override
-  final int? blue_actual_score;
-  final List<String> _red_teams;
-  @override
-  List<String> get red_teams {
-    if (_red_teams is EqualUnmodifiableListView) return _red_teams;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_red_teams);
-  }
-
-  @override
-  final double red_mobility;
-  @override
-  final double red_score;
-  @override
-  final double red_climbing;
-  @override
-  final double red_auto_points;
-  @override
-  final double red_teleop_points;
-  @override
-  final double red_endgame_points;
-  @override
-  final double red_coopertition;
-  @override
-  final double red_coral_l_1;
-  @override
-  final double red_coral_l_2;
-  @override
-  final double red_coral_l_3;
-  @override
-  final double red_coral_l_4;
-  @override
-  final double red_processor;
-  @override
-  final double red_net;
-  @override
-  final double red_auto_coral;
-  @override
-  final int? red_actual_score;
+  final AlliancePrediction2025 blue;
   @override
   final bool predicted;
-  @override
-  final int blue_win_rp;
-  @override
-  final int blue_auto_rp;
-  @override
-  final int blue_barge_rp;
-  @override
-  final int blue_coral_rp;
-  @override
-  final int blue_total_rp;
-  @override
-  final int blue_display_rp;
-  @override
-  final int red_win_rp;
-  @override
-  final int red_auto_rp;
-  @override
-  final int red_barge_rp;
-  @override
-  final int red_coral_rp;
-  @override
-  final int red_total_rp;
-  @override
-  final int red_display_rp;
 
   @override
   String toString() {
-    return 'MatchPrediction2025(comp_level: $comp_level, key: $key, match_number: $match_number, set_number: $set_number, blue_teams: $blue_teams, blue_mobility: $blue_mobility, blue_score: $blue_score, blue_climbing: $blue_climbing, blue_auto_points: $blue_auto_points, blue_teleop_points: $blue_teleop_points, blue_endgame_points: $blue_endgame_points, blue_coopertition: $blue_coopertition, blue_coral_l_1: $blue_coral_l_1, blue_coral_l_2: $blue_coral_l_2, blue_coral_l_3: $blue_coral_l_3, blue_coral_l_4: $blue_coral_l_4, blue_processor: $blue_processor, blue_net: $blue_net, blue_auto_coral: $blue_auto_coral, blue_actual_score: $blue_actual_score, red_teams: $red_teams, red_mobility: $red_mobility, red_score: $red_score, red_climbing: $red_climbing, red_auto_points: $red_auto_points, red_teleop_points: $red_teleop_points, red_endgame_points: $red_endgame_points, red_coopertition: $red_coopertition, red_coral_l_1: $red_coral_l_1, red_coral_l_2: $red_coral_l_2, red_coral_l_3: $red_coral_l_3, red_coral_l_4: $red_coral_l_4, red_processor: $red_processor, red_net: $red_net, red_auto_coral: $red_auto_coral, red_actual_score: $red_actual_score, predicted: $predicted, blue_win_rp: $blue_win_rp, blue_auto_rp: $blue_auto_rp, blue_barge_rp: $blue_barge_rp, blue_coral_rp: $blue_coral_rp, blue_total_rp: $blue_total_rp, blue_display_rp: $blue_display_rp, red_win_rp: $red_win_rp, red_auto_rp: $red_auto_rp, red_barge_rp: $red_barge_rp, red_coral_rp: $red_coral_rp, red_total_rp: $red_total_rp, red_display_rp: $red_display_rp)';
+    return 'MatchPrediction2025(comp_level: $comp_level, key: $key, match_number: $match_number, set_number: $set_number, red: $red, blue: $blue, predicted: $predicted)';
   }
 
   @override
@@ -915,147 +257,16 @@ class _$MatchPrediction2025Impl implements _MatchPrediction2025 {
                 other.match_number == match_number) &&
             (identical(other.set_number, set_number) ||
                 other.set_number == set_number) &&
-            const DeepCollectionEquality()
-                .equals(other._blue_teams, _blue_teams) &&
-            (identical(other.blue_mobility, blue_mobility) ||
-                other.blue_mobility == blue_mobility) &&
-            (identical(other.blue_score, blue_score) ||
-                other.blue_score == blue_score) &&
-            (identical(other.blue_climbing, blue_climbing) ||
-                other.blue_climbing == blue_climbing) &&
-            (identical(other.blue_auto_points, blue_auto_points) ||
-                other.blue_auto_points == blue_auto_points) &&
-            (identical(other.blue_teleop_points, blue_teleop_points) ||
-                other.blue_teleop_points == blue_teleop_points) &&
-            (identical(other.blue_endgame_points, blue_endgame_points) ||
-                other.blue_endgame_points == blue_endgame_points) &&
-            (identical(other.blue_coopertition, blue_coopertition) ||
-                other.blue_coopertition == blue_coopertition) &&
-            (identical(other.blue_coral_l_1, blue_coral_l_1) ||
-                other.blue_coral_l_1 == blue_coral_l_1) &&
-            (identical(other.blue_coral_l_2, blue_coral_l_2) ||
-                other.blue_coral_l_2 == blue_coral_l_2) &&
-            (identical(other.blue_coral_l_3, blue_coral_l_3) ||
-                other.blue_coral_l_3 == blue_coral_l_3) &&
-            (identical(other.blue_coral_l_4, blue_coral_l_4) ||
-                other.blue_coral_l_4 == blue_coral_l_4) &&
-            (identical(other.blue_processor, blue_processor) ||
-                other.blue_processor == blue_processor) &&
-            (identical(other.blue_net, blue_net) ||
-                other.blue_net == blue_net) &&
-            (identical(other.blue_auto_coral, blue_auto_coral) ||
-                other.blue_auto_coral == blue_auto_coral) &&
-            (identical(other.blue_actual_score, blue_actual_score) ||
-                other.blue_actual_score == blue_actual_score) &&
-            const DeepCollectionEquality()
-                .equals(other._red_teams, _red_teams) &&
-            (identical(other.red_mobility, red_mobility) ||
-                other.red_mobility == red_mobility) &&
-            (identical(other.red_score, red_score) ||
-                other.red_score == red_score) &&
-            (identical(other.red_climbing, red_climbing) ||
-                other.red_climbing == red_climbing) &&
-            (identical(other.red_auto_points, red_auto_points) ||
-                other.red_auto_points == red_auto_points) &&
-            (identical(other.red_teleop_points, red_teleop_points) ||
-                other.red_teleop_points == red_teleop_points) &&
-            (identical(other.red_endgame_points, red_endgame_points) ||
-                other.red_endgame_points == red_endgame_points) &&
-            (identical(other.red_coopertition, red_coopertition) ||
-                other.red_coopertition == red_coopertition) &&
-            (identical(other.red_coral_l_1, red_coral_l_1) ||
-                other.red_coral_l_1 == red_coral_l_1) &&
-            (identical(other.red_coral_l_2, red_coral_l_2) ||
-                other.red_coral_l_2 == red_coral_l_2) &&
-            (identical(other.red_coral_l_3, red_coral_l_3) ||
-                other.red_coral_l_3 == red_coral_l_3) &&
-            (identical(other.red_coral_l_4, red_coral_l_4) ||
-                other.red_coral_l_4 == red_coral_l_4) &&
-            (identical(other.red_processor, red_processor) ||
-                other.red_processor == red_processor) &&
-            (identical(other.red_net, red_net) || other.red_net == red_net) &&
-            (identical(other.red_auto_coral, red_auto_coral) ||
-                other.red_auto_coral == red_auto_coral) &&
-            (identical(other.red_actual_score, red_actual_score) ||
-                other.red_actual_score == red_actual_score) &&
+            (identical(other.red, red) || other.red == red) &&
+            (identical(other.blue, blue) || other.blue == blue) &&
             (identical(other.predicted, predicted) ||
-                other.predicted == predicted) &&
-            (identical(other.blue_win_rp, blue_win_rp) ||
-                other.blue_win_rp == blue_win_rp) &&
-            (identical(other.blue_auto_rp, blue_auto_rp) ||
-                other.blue_auto_rp == blue_auto_rp) &&
-            (identical(other.blue_barge_rp, blue_barge_rp) ||
-                other.blue_barge_rp == blue_barge_rp) &&
-            (identical(other.blue_coral_rp, blue_coral_rp) ||
-                other.blue_coral_rp == blue_coral_rp) &&
-            (identical(other.blue_total_rp, blue_total_rp) ||
-                other.blue_total_rp == blue_total_rp) &&
-            (identical(other.blue_display_rp, blue_display_rp) ||
-                other.blue_display_rp == blue_display_rp) &&
-            (identical(other.red_win_rp, red_win_rp) ||
-                other.red_win_rp == red_win_rp) &&
-            (identical(other.red_auto_rp, red_auto_rp) ||
-                other.red_auto_rp == red_auto_rp) &&
-            (identical(other.red_barge_rp, red_barge_rp) || other.red_barge_rp == red_barge_rp) &&
-            (identical(other.red_coral_rp, red_coral_rp) || other.red_coral_rp == red_coral_rp) &&
-            (identical(other.red_total_rp, red_total_rp) || other.red_total_rp == red_total_rp) &&
-            (identical(other.red_display_rp, red_display_rp) || other.red_display_rp == red_display_rp));
+                other.predicted == predicted));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        comp_level,
-        key,
-        match_number,
-        set_number,
-        const DeepCollectionEquality().hash(_blue_teams),
-        blue_mobility,
-        blue_score,
-        blue_climbing,
-        blue_auto_points,
-        blue_teleop_points,
-        blue_endgame_points,
-        blue_coopertition,
-        blue_coral_l_1,
-        blue_coral_l_2,
-        blue_coral_l_3,
-        blue_coral_l_4,
-        blue_processor,
-        blue_net,
-        blue_auto_coral,
-        blue_actual_score,
-        const DeepCollectionEquality().hash(_red_teams),
-        red_mobility,
-        red_score,
-        red_climbing,
-        red_auto_points,
-        red_teleop_points,
-        red_endgame_points,
-        red_coopertition,
-        red_coral_l_1,
-        red_coral_l_2,
-        red_coral_l_3,
-        red_coral_l_4,
-        red_processor,
-        red_net,
-        red_auto_coral,
-        red_actual_score,
-        predicted,
-        blue_win_rp,
-        blue_auto_rp,
-        blue_barge_rp,
-        blue_coral_rp,
-        blue_total_rp,
-        blue_display_rp,
-        red_win_rp,
-        red_auto_rp,
-        red_barge_rp,
-        red_coral_rp,
-        red_total_rp,
-        red_display_rp
-      ]);
+  int get hashCode => Object.hash(runtimeType, comp_level, key, match_number,
+      set_number, red, blue, predicted);
 
   /// Create a copy of MatchPrediction2025
   /// with the given fields replaced by the non-null parameter values.
@@ -1080,51 +291,9 @@ abstract class _MatchPrediction2025 implements MatchPrediction2025 {
       required final String key,
       required final int match_number,
       required final int set_number,
-      required final List<String> blue_teams,
-      required final double blue_mobility,
-      required final double blue_score,
-      required final double blue_climbing,
-      required final double blue_auto_points,
-      required final double blue_teleop_points,
-      required final double blue_endgame_points,
-      required final double blue_coopertition,
-      required final double blue_coral_l_1,
-      required final double blue_coral_l_2,
-      required final double blue_coral_l_3,
-      required final double blue_coral_l_4,
-      required final double blue_processor,
-      required final double blue_net,
-      required final double blue_auto_coral,
-      final int? blue_actual_score,
-      required final List<String> red_teams,
-      required final double red_mobility,
-      required final double red_score,
-      required final double red_climbing,
-      required final double red_auto_points,
-      required final double red_teleop_points,
-      required final double red_endgame_points,
-      required final double red_coopertition,
-      required final double red_coral_l_1,
-      required final double red_coral_l_2,
-      required final double red_coral_l_3,
-      required final double red_coral_l_4,
-      required final double red_processor,
-      required final double red_net,
-      required final double red_auto_coral,
-      final int? red_actual_score,
-      required final bool predicted,
-      required final int blue_win_rp,
-      required final int blue_auto_rp,
-      required final int blue_barge_rp,
-      required final int blue_coral_rp,
-      required final int blue_total_rp,
-      required final int blue_display_rp,
-      required final int red_win_rp,
-      required final int red_auto_rp,
-      required final int red_barge_rp,
-      required final int red_coral_rp,
-      required final int red_total_rp,
-      required final int red_display_rp}) = _$MatchPrediction2025Impl;
+      required final AlliancePrediction2025 red,
+      required final AlliancePrediction2025 blue,
+      required final bool predicted}) = _$MatchPrediction2025Impl;
 
   factory _MatchPrediction2025.fromJson(Map<String, dynamic> json) =
       _$MatchPrediction2025Impl.fromJson;
@@ -1138,95 +307,11 @@ abstract class _MatchPrediction2025 implements MatchPrediction2025 {
   @override
   int get set_number;
   @override
-  List<String> get blue_teams;
+  AlliancePrediction2025 get red;
   @override
-  double get blue_mobility;
-  @override
-  double get blue_score;
-  @override
-  double get blue_climbing;
-  @override
-  double get blue_auto_points;
-  @override
-  double get blue_teleop_points;
-  @override
-  double get blue_endgame_points;
-  @override
-  double get blue_coopertition;
-  @override
-  double get blue_coral_l_1;
-  @override
-  double get blue_coral_l_2;
-  @override
-  double get blue_coral_l_3;
-  @override
-  double get blue_coral_l_4;
-  @override
-  double get blue_processor;
-  @override
-  double get blue_net;
-  @override
-  double get blue_auto_coral;
-  @override
-  int? get blue_actual_score;
-  @override
-  List<String> get red_teams;
-  @override
-  double get red_mobility;
-  @override
-  double get red_score;
-  @override
-  double get red_climbing;
-  @override
-  double get red_auto_points;
-  @override
-  double get red_teleop_points;
-  @override
-  double get red_endgame_points;
-  @override
-  double get red_coopertition;
-  @override
-  double get red_coral_l_1;
-  @override
-  double get red_coral_l_2;
-  @override
-  double get red_coral_l_3;
-  @override
-  double get red_coral_l_4;
-  @override
-  double get red_processor;
-  @override
-  double get red_net;
-  @override
-  double get red_auto_coral;
-  @override
-  int? get red_actual_score;
+  AlliancePrediction2025 get blue;
   @override
   bool get predicted;
-  @override
-  int get blue_win_rp;
-  @override
-  int get blue_auto_rp;
-  @override
-  int get blue_barge_rp;
-  @override
-  int get blue_coral_rp;
-  @override
-  int get blue_total_rp;
-  @override
-  int get blue_display_rp;
-  @override
-  int get red_win_rp;
-  @override
-  int get red_auto_rp;
-  @override
-  int get red_barge_rp;
-  @override
-  int get red_coral_rp;
-  @override
-  int get red_total_rp;
-  @override
-  int get red_display_rp;
 
   /// Create a copy of MatchPrediction2025
   /// with the given fields replaced by the non-null parameter values.
@@ -1234,4 +319,631 @@ abstract class _MatchPrediction2025 implements MatchPrediction2025 {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MatchPrediction2025ImplCopyWith<_$MatchPrediction2025Impl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+AlliancePrediction2025 _$AlliancePrediction2025FromJson(
+    Map<String, dynamic> json) {
+  return _AlliancePrediction2025.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AlliancePrediction2025 {
+  List<String> get teams => throw _privateConstructorUsedError;
+  double get mobility => throw _privateConstructorUsedError;
+  double get score => throw _privateConstructorUsedError;
+  double get climbing => throw _privateConstructorUsedError;
+  double get auto_points => throw _privateConstructorUsedError;
+  double get teleop_points => throw _privateConstructorUsedError;
+  double get endgame_points => throw _privateConstructorUsedError;
+  double get coopertition => throw _privateConstructorUsedError;
+  double get coral_l_1 => throw _privateConstructorUsedError;
+  double get coral_l_2 => throw _privateConstructorUsedError;
+  double get coral_l_3 => throw _privateConstructorUsedError;
+  double get coral_l_4 => throw _privateConstructorUsedError;
+  double get processor => throw _privateConstructorUsedError;
+  double get net => throw _privateConstructorUsedError;
+  double get auto_coral => throw _privateConstructorUsedError;
+  int get win_rp => throw _privateConstructorUsedError;
+  int get auto_rp => throw _privateConstructorUsedError;
+  int get barge_rp => throw _privateConstructorUsedError;
+  int get coral_rp => throw _privateConstructorUsedError;
+  int get total_rp => throw _privateConstructorUsedError;
+  int get display_rp => throw _privateConstructorUsedError;
+  int? get actual_score => throw _privateConstructorUsedError;
+
+  /// Serializes this AlliancePrediction2025 to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AlliancePrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AlliancePrediction2025CopyWith<AlliancePrediction2025> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AlliancePrediction2025CopyWith<$Res> {
+  factory $AlliancePrediction2025CopyWith(AlliancePrediction2025 value,
+          $Res Function(AlliancePrediction2025) then) =
+      _$AlliancePrediction2025CopyWithImpl<$Res, AlliancePrediction2025>;
+  @useResult
+  $Res call(
+      {List<String> teams,
+      double mobility,
+      double score,
+      double climbing,
+      double auto_points,
+      double teleop_points,
+      double endgame_points,
+      double coopertition,
+      double coral_l_1,
+      double coral_l_2,
+      double coral_l_3,
+      double coral_l_4,
+      double processor,
+      double net,
+      double auto_coral,
+      int win_rp,
+      int auto_rp,
+      int barge_rp,
+      int coral_rp,
+      int total_rp,
+      int display_rp,
+      int? actual_score});
+}
+
+/// @nodoc
+class _$AlliancePrediction2025CopyWithImpl<$Res,
+        $Val extends AlliancePrediction2025>
+    implements $AlliancePrediction2025CopyWith<$Res> {
+  _$AlliancePrediction2025CopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AlliancePrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? teams = null,
+    Object? mobility = null,
+    Object? score = null,
+    Object? climbing = null,
+    Object? auto_points = null,
+    Object? teleop_points = null,
+    Object? endgame_points = null,
+    Object? coopertition = null,
+    Object? coral_l_1 = null,
+    Object? coral_l_2 = null,
+    Object? coral_l_3 = null,
+    Object? coral_l_4 = null,
+    Object? processor = null,
+    Object? net = null,
+    Object? auto_coral = null,
+    Object? win_rp = null,
+    Object? auto_rp = null,
+    Object? barge_rp = null,
+    Object? coral_rp = null,
+    Object? total_rp = null,
+    Object? display_rp = null,
+    Object? actual_score = freezed,
+  }) {
+    return _then(_value.copyWith(
+      teams: null == teams
+          ? _value.teams
+          : teams // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      mobility: null == mobility
+          ? _value.mobility
+          : mobility // ignore: cast_nullable_to_non_nullable
+              as double,
+      score: null == score
+          ? _value.score
+          : score // ignore: cast_nullable_to_non_nullable
+              as double,
+      climbing: null == climbing
+          ? _value.climbing
+          : climbing // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_points: null == auto_points
+          ? _value.auto_points
+          : auto_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_points: null == teleop_points
+          ? _value.teleop_points
+          : teleop_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      endgame_points: null == endgame_points
+          ? _value.endgame_points
+          : endgame_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      coopertition: null == coopertition
+          ? _value.coopertition
+          : coopertition // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_1: null == coral_l_1
+          ? _value.coral_l_1
+          : coral_l_1 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_2: null == coral_l_2
+          ? _value.coral_l_2
+          : coral_l_2 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_3: null == coral_l_3
+          ? _value.coral_l_3
+          : coral_l_3 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_4: null == coral_l_4
+          ? _value.coral_l_4
+          : coral_l_4 // ignore: cast_nullable_to_non_nullable
+              as double,
+      processor: null == processor
+          ? _value.processor
+          : processor // ignore: cast_nullable_to_non_nullable
+              as double,
+      net: null == net
+          ? _value.net
+          : net // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_coral: null == auto_coral
+          ? _value.auto_coral
+          : auto_coral // ignore: cast_nullable_to_non_nullable
+              as double,
+      win_rp: null == win_rp
+          ? _value.win_rp
+          : win_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      auto_rp: null == auto_rp
+          ? _value.auto_rp
+          : auto_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      barge_rp: null == barge_rp
+          ? _value.barge_rp
+          : barge_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      coral_rp: null == coral_rp
+          ? _value.coral_rp
+          : coral_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      total_rp: null == total_rp
+          ? _value.total_rp
+          : total_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      display_rp: null == display_rp
+          ? _value.display_rp
+          : display_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      actual_score: freezed == actual_score
+          ? _value.actual_score
+          : actual_score // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AlliancePrediction2025ImplCopyWith<$Res>
+    implements $AlliancePrediction2025CopyWith<$Res> {
+  factory _$$AlliancePrediction2025ImplCopyWith(
+          _$AlliancePrediction2025Impl value,
+          $Res Function(_$AlliancePrediction2025Impl) then) =
+      __$$AlliancePrediction2025ImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {List<String> teams,
+      double mobility,
+      double score,
+      double climbing,
+      double auto_points,
+      double teleop_points,
+      double endgame_points,
+      double coopertition,
+      double coral_l_1,
+      double coral_l_2,
+      double coral_l_3,
+      double coral_l_4,
+      double processor,
+      double net,
+      double auto_coral,
+      int win_rp,
+      int auto_rp,
+      int barge_rp,
+      int coral_rp,
+      int total_rp,
+      int display_rp,
+      int? actual_score});
+}
+
+/// @nodoc
+class __$$AlliancePrediction2025ImplCopyWithImpl<$Res>
+    extends _$AlliancePrediction2025CopyWithImpl<$Res,
+        _$AlliancePrediction2025Impl>
+    implements _$$AlliancePrediction2025ImplCopyWith<$Res> {
+  __$$AlliancePrediction2025ImplCopyWithImpl(
+      _$AlliancePrediction2025Impl _value,
+      $Res Function(_$AlliancePrediction2025Impl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AlliancePrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? teams = null,
+    Object? mobility = null,
+    Object? score = null,
+    Object? climbing = null,
+    Object? auto_points = null,
+    Object? teleop_points = null,
+    Object? endgame_points = null,
+    Object? coopertition = null,
+    Object? coral_l_1 = null,
+    Object? coral_l_2 = null,
+    Object? coral_l_3 = null,
+    Object? coral_l_4 = null,
+    Object? processor = null,
+    Object? net = null,
+    Object? auto_coral = null,
+    Object? win_rp = null,
+    Object? auto_rp = null,
+    Object? barge_rp = null,
+    Object? coral_rp = null,
+    Object? total_rp = null,
+    Object? display_rp = null,
+    Object? actual_score = freezed,
+  }) {
+    return _then(_$AlliancePrediction2025Impl(
+      teams: null == teams
+          ? _value._teams
+          : teams // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      mobility: null == mobility
+          ? _value.mobility
+          : mobility // ignore: cast_nullable_to_non_nullable
+              as double,
+      score: null == score
+          ? _value.score
+          : score // ignore: cast_nullable_to_non_nullable
+              as double,
+      climbing: null == climbing
+          ? _value.climbing
+          : climbing // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_points: null == auto_points
+          ? _value.auto_points
+          : auto_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_points: null == teleop_points
+          ? _value.teleop_points
+          : teleop_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      endgame_points: null == endgame_points
+          ? _value.endgame_points
+          : endgame_points // ignore: cast_nullable_to_non_nullable
+              as double,
+      coopertition: null == coopertition
+          ? _value.coopertition
+          : coopertition // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_1: null == coral_l_1
+          ? _value.coral_l_1
+          : coral_l_1 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_2: null == coral_l_2
+          ? _value.coral_l_2
+          : coral_l_2 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_3: null == coral_l_3
+          ? _value.coral_l_3
+          : coral_l_3 // ignore: cast_nullable_to_non_nullable
+              as double,
+      coral_l_4: null == coral_l_4
+          ? _value.coral_l_4
+          : coral_l_4 // ignore: cast_nullable_to_non_nullable
+              as double,
+      processor: null == processor
+          ? _value.processor
+          : processor // ignore: cast_nullable_to_non_nullable
+              as double,
+      net: null == net
+          ? _value.net
+          : net // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_coral: null == auto_coral
+          ? _value.auto_coral
+          : auto_coral // ignore: cast_nullable_to_non_nullable
+              as double,
+      win_rp: null == win_rp
+          ? _value.win_rp
+          : win_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      auto_rp: null == auto_rp
+          ? _value.auto_rp
+          : auto_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      barge_rp: null == barge_rp
+          ? _value.barge_rp
+          : barge_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      coral_rp: null == coral_rp
+          ? _value.coral_rp
+          : coral_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      total_rp: null == total_rp
+          ? _value.total_rp
+          : total_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      display_rp: null == display_rp
+          ? _value.display_rp
+          : display_rp // ignore: cast_nullable_to_non_nullable
+              as int,
+      actual_score: freezed == actual_score
+          ? _value.actual_score
+          : actual_score // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AlliancePrediction2025Impl implements _AlliancePrediction2025 {
+  const _$AlliancePrediction2025Impl(
+      {required final List<String> teams,
+      required this.mobility,
+      required this.score,
+      required this.climbing,
+      required this.auto_points,
+      required this.teleop_points,
+      required this.endgame_points,
+      required this.coopertition,
+      required this.coral_l_1,
+      required this.coral_l_2,
+      required this.coral_l_3,
+      required this.coral_l_4,
+      required this.processor,
+      required this.net,
+      required this.auto_coral,
+      required this.win_rp,
+      required this.auto_rp,
+      required this.barge_rp,
+      required this.coral_rp,
+      required this.total_rp,
+      required this.display_rp,
+      this.actual_score})
+      : _teams = teams;
+
+  factory _$AlliancePrediction2025Impl.fromJson(Map<String, dynamic> json) =>
+      _$$AlliancePrediction2025ImplFromJson(json);
+
+  final List<String> _teams;
+  @override
+  List<String> get teams {
+    if (_teams is EqualUnmodifiableListView) return _teams;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_teams);
+  }
+
+  @override
+  final double mobility;
+  @override
+  final double score;
+  @override
+  final double climbing;
+  @override
+  final double auto_points;
+  @override
+  final double teleop_points;
+  @override
+  final double endgame_points;
+  @override
+  final double coopertition;
+  @override
+  final double coral_l_1;
+  @override
+  final double coral_l_2;
+  @override
+  final double coral_l_3;
+  @override
+  final double coral_l_4;
+  @override
+  final double processor;
+  @override
+  final double net;
+  @override
+  final double auto_coral;
+  @override
+  final int win_rp;
+  @override
+  final int auto_rp;
+  @override
+  final int barge_rp;
+  @override
+  final int coral_rp;
+  @override
+  final int total_rp;
+  @override
+  final int display_rp;
+  @override
+  final int? actual_score;
+
+  @override
+  String toString() {
+    return 'AlliancePrediction2025(teams: $teams, mobility: $mobility, score: $score, climbing: $climbing, auto_points: $auto_points, teleop_points: $teleop_points, endgame_points: $endgame_points, coopertition: $coopertition, coral_l_1: $coral_l_1, coral_l_2: $coral_l_2, coral_l_3: $coral_l_3, coral_l_4: $coral_l_4, processor: $processor, net: $net, auto_coral: $auto_coral, win_rp: $win_rp, auto_rp: $auto_rp, barge_rp: $barge_rp, coral_rp: $coral_rp, total_rp: $total_rp, display_rp: $display_rp, actual_score: $actual_score)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AlliancePrediction2025Impl &&
+            const DeepCollectionEquality().equals(other._teams, _teams) &&
+            (identical(other.mobility, mobility) ||
+                other.mobility == mobility) &&
+            (identical(other.score, score) || other.score == score) &&
+            (identical(other.climbing, climbing) ||
+                other.climbing == climbing) &&
+            (identical(other.auto_points, auto_points) ||
+                other.auto_points == auto_points) &&
+            (identical(other.teleop_points, teleop_points) ||
+                other.teleop_points == teleop_points) &&
+            (identical(other.endgame_points, endgame_points) ||
+                other.endgame_points == endgame_points) &&
+            (identical(other.coopertition, coopertition) ||
+                other.coopertition == coopertition) &&
+            (identical(other.coral_l_1, coral_l_1) ||
+                other.coral_l_1 == coral_l_1) &&
+            (identical(other.coral_l_2, coral_l_2) ||
+                other.coral_l_2 == coral_l_2) &&
+            (identical(other.coral_l_3, coral_l_3) ||
+                other.coral_l_3 == coral_l_3) &&
+            (identical(other.coral_l_4, coral_l_4) ||
+                other.coral_l_4 == coral_l_4) &&
+            (identical(other.processor, processor) ||
+                other.processor == processor) &&
+            (identical(other.net, net) || other.net == net) &&
+            (identical(other.auto_coral, auto_coral) ||
+                other.auto_coral == auto_coral) &&
+            (identical(other.win_rp, win_rp) || other.win_rp == win_rp) &&
+            (identical(other.auto_rp, auto_rp) || other.auto_rp == auto_rp) &&
+            (identical(other.barge_rp, barge_rp) ||
+                other.barge_rp == barge_rp) &&
+            (identical(other.coral_rp, coral_rp) ||
+                other.coral_rp == coral_rp) &&
+            (identical(other.total_rp, total_rp) ||
+                other.total_rp == total_rp) &&
+            (identical(other.display_rp, display_rp) ||
+                other.display_rp == display_rp) &&
+            (identical(other.actual_score, actual_score) ||
+                other.actual_score == actual_score));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        const DeepCollectionEquality().hash(_teams),
+        mobility,
+        score,
+        climbing,
+        auto_points,
+        teleop_points,
+        endgame_points,
+        coopertition,
+        coral_l_1,
+        coral_l_2,
+        coral_l_3,
+        coral_l_4,
+        processor,
+        net,
+        auto_coral,
+        win_rp,
+        auto_rp,
+        barge_rp,
+        coral_rp,
+        total_rp,
+        display_rp,
+        actual_score
+      ]);
+
+  /// Create a copy of AlliancePrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AlliancePrediction2025ImplCopyWith<_$AlliancePrediction2025Impl>
+      get copyWith => __$$AlliancePrediction2025ImplCopyWithImpl<
+          _$AlliancePrediction2025Impl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AlliancePrediction2025ImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AlliancePrediction2025 implements AlliancePrediction2025 {
+  const factory _AlliancePrediction2025(
+      {required final List<String> teams,
+      required final double mobility,
+      required final double score,
+      required final double climbing,
+      required final double auto_points,
+      required final double teleop_points,
+      required final double endgame_points,
+      required final double coopertition,
+      required final double coral_l_1,
+      required final double coral_l_2,
+      required final double coral_l_3,
+      required final double coral_l_4,
+      required final double processor,
+      required final double net,
+      required final double auto_coral,
+      required final int win_rp,
+      required final int auto_rp,
+      required final int barge_rp,
+      required final int coral_rp,
+      required final int total_rp,
+      required final int display_rp,
+      final int? actual_score}) = _$AlliancePrediction2025Impl;
+
+  factory _AlliancePrediction2025.fromJson(Map<String, dynamic> json) =
+      _$AlliancePrediction2025Impl.fromJson;
+
+  @override
+  List<String> get teams;
+  @override
+  double get mobility;
+  @override
+  double get score;
+  @override
+  double get climbing;
+  @override
+  double get auto_points;
+  @override
+  double get teleop_points;
+  @override
+  double get endgame_points;
+  @override
+  double get coopertition;
+  @override
+  double get coral_l_1;
+  @override
+  double get coral_l_2;
+  @override
+  double get coral_l_3;
+  @override
+  double get coral_l_4;
+  @override
+  double get processor;
+  @override
+  double get net;
+  @override
+  double get auto_coral;
+  @override
+  int get win_rp;
+  @override
+  int get auto_rp;
+  @override
+  int get barge_rp;
+  @override
+  int get coral_rp;
+  @override
+  int get total_rp;
+  @override
+  int get display_rp;
+  @override
+  int? get actual_score;
+
+  /// Create a copy of AlliancePrediction2025
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AlliancePrediction2025ImplCopyWith<_$AlliancePrediction2025Impl>
+      get copyWith => throw _privateConstructorUsedError;
 }

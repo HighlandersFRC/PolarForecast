@@ -32,7 +32,7 @@ class ReefData(BaseModel):
 
 
 class ScoreBreakdown2025(BaseModel):
-    adjustPoints: int
+    adjustPoints: int = 0
     algaePoints: int
     autoBonusAchieved: bool
     autoCoralCount: int
