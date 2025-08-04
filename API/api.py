@@ -1233,7 +1233,7 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
     return [Group(**group).dict(exclude={"join_code", "settings", "events", "owner_group_id", "admin_group_id", "member_group_id", "group_id"}) for group in eventGroups]
 
 
-@app.get("/group/{group_name}/{event_code}/ScoutingReport", tags=["groups"])
+@app.get("/Group/{group_name}/{event_code}/ScoutingReport", tags=["groups"])
 def get_group_event_scouting_report(group_name: str, event_code: str):
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
