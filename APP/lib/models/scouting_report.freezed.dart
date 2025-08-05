@@ -215,7 +215,7 @@ ScoutingReportEntry _$ScoutingReportEntryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ScoutingReportEntry {
-  List<ScoutingReportScout> get scouts => throw _privateConstructorUsedError;
+  ScoutInfo get scout => throw _privateConstructorUsedError;
   String get eventCode => throw _privateConstructorUsedError;
   String get groupId => throw _privateConstructorUsedError;
   double get trustRatings => throw _privateConstructorUsedError;
@@ -239,12 +239,14 @@ abstract class $ScoutingReportEntryCopyWith<$Res> {
       _$ScoutingReportEntryCopyWithImpl<$Res, ScoutingReportEntry>;
   @useResult
   $Res call(
-      {List<ScoutingReportScout> scouts,
+      {ScoutInfo scout,
       String eventCode,
       String groupId,
       double trustRatings,
       double entries,
       double contribution});
+
+  $ScoutInfoCopyWith<$Res> get scout;
 }
 
 /// @nodoc
@@ -262,7 +264,7 @@ class _$ScoutingReportEntryCopyWithImpl<$Res, $Val extends ScoutingReportEntry>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? scouts = null,
+    Object? scout = null,
     Object? eventCode = null,
     Object? groupId = null,
     Object? trustRatings = null,
@@ -270,10 +272,10 @@ class _$ScoutingReportEntryCopyWithImpl<$Res, $Val extends ScoutingReportEntry>
     Object? contribution = null,
   }) {
     return _then(_value.copyWith(
-      scouts: null == scouts
-          ? _value.scouts
-          : scouts // ignore: cast_nullable_to_non_nullable
-              as List<ScoutingReportScout>,
+      scout: null == scout
+          ? _value.scout
+          : scout // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       eventCode: null == eventCode
           ? _value.eventCode
           : eventCode // ignore: cast_nullable_to_non_nullable
@@ -296,6 +298,16 @@ class _$ScoutingReportEntryCopyWithImpl<$Res, $Val extends ScoutingReportEntry>
               as double,
     ) as $Val);
   }
+
+  /// Create a copy of ScoutingReportEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ScoutInfoCopyWith<$Res> get scout {
+    return $ScoutInfoCopyWith<$Res>(_value.scout, (value) {
+      return _then(_value.copyWith(scout: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -307,12 +319,15 @@ abstract class _$$ScoutingReportEntryImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {List<ScoutingReportScout> scouts,
+      {ScoutInfo scout,
       String eventCode,
       String groupId,
       double trustRatings,
       double entries,
       double contribution});
+
+  @override
+  $ScoutInfoCopyWith<$Res> get scout;
 }
 
 /// @nodoc
@@ -328,7 +343,7 @@ class __$$ScoutingReportEntryImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? scouts = null,
+    Object? scout = null,
     Object? eventCode = null,
     Object? groupId = null,
     Object? trustRatings = null,
@@ -336,10 +351,10 @@ class __$$ScoutingReportEntryImplCopyWithImpl<$Res>
     Object? contribution = null,
   }) {
     return _then(_$ScoutingReportEntryImpl(
-      scouts: null == scouts
-          ? _value._scouts
-          : scouts // ignore: cast_nullable_to_non_nullable
-              as List<ScoutingReportScout>,
+      scout: null == scout
+          ? _value.scout
+          : scout // ignore: cast_nullable_to_non_nullable
+              as ScoutInfo,
       eventCode: null == eventCode
           ? _value.eventCode
           : eventCode // ignore: cast_nullable_to_non_nullable
@@ -368,25 +383,18 @@ class __$$ScoutingReportEntryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ScoutingReportEntryImpl implements _ScoutingReportEntry {
   const _$ScoutingReportEntryImpl(
-      {required final List<ScoutingReportScout> scouts,
+      {required this.scout,
       required this.eventCode,
       required this.groupId,
       required this.trustRatings,
       required this.entries,
-      required this.contribution})
-      : _scouts = scouts;
+      required this.contribution});
 
   factory _$ScoutingReportEntryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ScoutingReportEntryImplFromJson(json);
 
-  final List<ScoutingReportScout> _scouts;
   @override
-  List<ScoutingReportScout> get scouts {
-    if (_scouts is EqualUnmodifiableListView) return _scouts;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_scouts);
-  }
-
+  final ScoutInfo scout;
   @override
   final String eventCode;
   @override
@@ -400,7 +408,7 @@ class _$ScoutingReportEntryImpl implements _ScoutingReportEntry {
 
   @override
   String toString() {
-    return 'ScoutingReportEntry(scouts: $scouts, eventCode: $eventCode, groupId: $groupId, trustRatings: $trustRatings, entries: $entries, contribution: $contribution)';
+    return 'ScoutingReportEntry(scout: $scout, eventCode: $eventCode, groupId: $groupId, trustRatings: $trustRatings, entries: $entries, contribution: $contribution)';
   }
 
   @override
@@ -408,7 +416,7 @@ class _$ScoutingReportEntryImpl implements _ScoutingReportEntry {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ScoutingReportEntryImpl &&
-            const DeepCollectionEquality().equals(other._scouts, _scouts) &&
+            (identical(other.scout, scout) || other.scout == scout) &&
             (identical(other.eventCode, eventCode) ||
                 other.eventCode == eventCode) &&
             (identical(other.groupId, groupId) || other.groupId == groupId) &&
@@ -421,14 +429,8 @@ class _$ScoutingReportEntryImpl implements _ScoutingReportEntry {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_scouts),
-      eventCode,
-      groupId,
-      trustRatings,
-      entries,
-      contribution);
+  int get hashCode => Object.hash(runtimeType, scout, eventCode, groupId,
+      trustRatings, entries, contribution);
 
   /// Create a copy of ScoutingReportEntry
   /// with the given fields replaced by the non-null parameter values.
@@ -449,7 +451,7 @@ class _$ScoutingReportEntryImpl implements _ScoutingReportEntry {
 
 abstract class _ScoutingReportEntry implements ScoutingReportEntry {
   const factory _ScoutingReportEntry(
-      {required final List<ScoutingReportScout> scouts,
+      {required final ScoutInfo scout,
       required final String eventCode,
       required final String groupId,
       required final double trustRatings,
@@ -460,7 +462,7 @@ abstract class _ScoutingReportEntry implements ScoutingReportEntry {
       _$ScoutingReportEntryImpl.fromJson;
 
   @override
-  List<ScoutingReportScout> get scouts;
+  ScoutInfo get scout;
   @override
   String get eventCode;
   @override
@@ -477,383 +479,5 @@ abstract class _ScoutingReportEntry implements ScoutingReportEntry {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ScoutingReportEntryImplCopyWith<_$ScoutingReportEntryImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-ScoutingReportScout _$ScoutingReportScoutFromJson(Map<String, dynamic> json) {
-  return _ScoutingReportScout.fromJson(json);
-}
-
-/// @nodoc
-mixin _$ScoutingReportScout {
-  ScoutingReportUser get name => throw _privateConstructorUsedError;
-
-  /// Serializes this ScoutingReportScout to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ScoutingReportScoutCopyWith<ScoutingReportScout> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ScoutingReportScoutCopyWith<$Res> {
-  factory $ScoutingReportScoutCopyWith(
-          ScoutingReportScout value, $Res Function(ScoutingReportScout) then) =
-      _$ScoutingReportScoutCopyWithImpl<$Res, ScoutingReportScout>;
-  @useResult
-  $Res call({ScoutingReportUser name});
-
-  $ScoutingReportUserCopyWith<$Res> get name;
-}
-
-/// @nodoc
-class _$ScoutingReportScoutCopyWithImpl<$Res, $Val extends ScoutingReportScout>
-    implements $ScoutingReportScoutCopyWith<$Res> {
-  _$ScoutingReportScoutCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = null,
-  }) {
-    return _then(_value.copyWith(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as ScoutingReportUser,
-    ) as $Val);
-  }
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ScoutingReportUserCopyWith<$Res> get name {
-    return $ScoutingReportUserCopyWith<$Res>(_value.name, (value) {
-      return _then(_value.copyWith(name: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$ScoutingReportScoutImplCopyWith<$Res>
-    implements $ScoutingReportScoutCopyWith<$Res> {
-  factory _$$ScoutingReportScoutImplCopyWith(_$ScoutingReportScoutImpl value,
-          $Res Function(_$ScoutingReportScoutImpl) then) =
-      __$$ScoutingReportScoutImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({ScoutingReportUser name});
-
-  @override
-  $ScoutingReportUserCopyWith<$Res> get name;
-}
-
-/// @nodoc
-class __$$ScoutingReportScoutImplCopyWithImpl<$Res>
-    extends _$ScoutingReportScoutCopyWithImpl<$Res, _$ScoutingReportScoutImpl>
-    implements _$$ScoutingReportScoutImplCopyWith<$Res> {
-  __$$ScoutingReportScoutImplCopyWithImpl(_$ScoutingReportScoutImpl _value,
-      $Res Function(_$ScoutingReportScoutImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = null,
-  }) {
-    return _then(_$ScoutingReportScoutImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as ScoutingReportUser,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ScoutingReportScoutImpl implements _ScoutingReportScout {
-  const _$ScoutingReportScoutImpl({required this.name});
-
-  factory _$ScoutingReportScoutImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ScoutingReportScoutImplFromJson(json);
-
-  @override
-  final ScoutingReportUser name;
-
-  @override
-  String toString() {
-    return 'ScoutingReportScout(name: $name)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ScoutingReportScoutImpl &&
-            (identical(other.name, name) || other.name == name));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, name);
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ScoutingReportScoutImplCopyWith<_$ScoutingReportScoutImpl> get copyWith =>
-      __$$ScoutingReportScoutImplCopyWithImpl<_$ScoutingReportScoutImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ScoutingReportScoutImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _ScoutingReportScout implements ScoutingReportScout {
-  const factory _ScoutingReportScout({required final ScoutingReportUser name}) =
-      _$ScoutingReportScoutImpl;
-
-  factory _ScoutingReportScout.fromJson(Map<String, dynamic> json) =
-      _$ScoutingReportScoutImpl.fromJson;
-
-  @override
-  ScoutingReportUser get name;
-
-  /// Create a copy of ScoutingReportScout
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ScoutingReportScoutImplCopyWith<_$ScoutingReportScoutImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-ScoutingReportUser _$ScoutingReportUserFromJson(Map<String, dynamic> json) {
-  return _ScoutingReportUser.fromJson(json);
-}
-
-/// @nodoc
-mixin _$ScoutingReportUser {
-  String get user_id => throw _privateConstructorUsedError;
-  String? get first_name => throw _privateConstructorUsedError;
-  String? get username => throw _privateConstructorUsedError;
-  int get team_number => throw _privateConstructorUsedError;
-
-  /// Serializes this ScoutingReportUser to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ScoutingReportUser
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ScoutingReportUserCopyWith<ScoutingReportUser> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ScoutingReportUserCopyWith<$Res> {
-  factory $ScoutingReportUserCopyWith(
-          ScoutingReportUser value, $Res Function(ScoutingReportUser) then) =
-      _$ScoutingReportUserCopyWithImpl<$Res, ScoutingReportUser>;
-  @useResult
-  $Res call(
-      {String user_id, String? first_name, String? username, int team_number});
-}
-
-/// @nodoc
-class _$ScoutingReportUserCopyWithImpl<$Res, $Val extends ScoutingReportUser>
-    implements $ScoutingReportUserCopyWith<$Res> {
-  _$ScoutingReportUserCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ScoutingReportUser
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? user_id = null,
-    Object? first_name = freezed,
-    Object? username = freezed,
-    Object? team_number = null,
-  }) {
-    return _then(_value.copyWith(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
-      first_name: freezed == first_name
-          ? _value.first_name
-          : first_name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      username: freezed == username
-          ? _value.username
-          : username // ignore: cast_nullable_to_non_nullable
-              as String?,
-      team_number: null == team_number
-          ? _value.team_number
-          : team_number // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ScoutingReportUserImplCopyWith<$Res>
-    implements $ScoutingReportUserCopyWith<$Res> {
-  factory _$$ScoutingReportUserImplCopyWith(_$ScoutingReportUserImpl value,
-          $Res Function(_$ScoutingReportUserImpl) then) =
-      __$$ScoutingReportUserImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String user_id, String? first_name, String? username, int team_number});
-}
-
-/// @nodoc
-class __$$ScoutingReportUserImplCopyWithImpl<$Res>
-    extends _$ScoutingReportUserCopyWithImpl<$Res, _$ScoutingReportUserImpl>
-    implements _$$ScoutingReportUserImplCopyWith<$Res> {
-  __$$ScoutingReportUserImplCopyWithImpl(_$ScoutingReportUserImpl _value,
-      $Res Function(_$ScoutingReportUserImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ScoutingReportUser
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? user_id = null,
-    Object? first_name = freezed,
-    Object? username = freezed,
-    Object? team_number = null,
-  }) {
-    return _then(_$ScoutingReportUserImpl(
-      user_id: null == user_id
-          ? _value.user_id
-          : user_id // ignore: cast_nullable_to_non_nullable
-              as String,
-      first_name: freezed == first_name
-          ? _value.first_name
-          : first_name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      username: freezed == username
-          ? _value.username
-          : username // ignore: cast_nullable_to_non_nullable
-              as String?,
-      team_number: null == team_number
-          ? _value.team_number
-          : team_number // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ScoutingReportUserImpl implements _ScoutingReportUser {
-  const _$ScoutingReportUserImpl(
-      {required this.user_id,
-      this.first_name,
-      this.username,
-      required this.team_number});
-
-  factory _$ScoutingReportUserImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ScoutingReportUserImplFromJson(json);
-
-  @override
-  final String user_id;
-  @override
-  final String? first_name;
-  @override
-  final String? username;
-  @override
-  final int team_number;
-
-  @override
-  String toString() {
-    return 'ScoutingReportUser(user_id: $user_id, first_name: $first_name, username: $username, team_number: $team_number)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ScoutingReportUserImpl &&
-            (identical(other.user_id, user_id) || other.user_id == user_id) &&
-            (identical(other.first_name, first_name) ||
-                other.first_name == first_name) &&
-            (identical(other.username, username) ||
-                other.username == username) &&
-            (identical(other.team_number, team_number) ||
-                other.team_number == team_number));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, user_id, first_name, username, team_number);
-
-  /// Create a copy of ScoutingReportUser
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ScoutingReportUserImplCopyWith<_$ScoutingReportUserImpl> get copyWith =>
-      __$$ScoutingReportUserImplCopyWithImpl<_$ScoutingReportUserImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ScoutingReportUserImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _ScoutingReportUser implements ScoutingReportUser {
-  const factory _ScoutingReportUser(
-      {required final String user_id,
-      final String? first_name,
-      final String? username,
-      required final int team_number}) = _$ScoutingReportUserImpl;
-
-  factory _ScoutingReportUser.fromJson(Map<String, dynamic> json) =
-      _$ScoutingReportUserImpl.fromJson;
-
-  @override
-  String get user_id;
-  @override
-  String? get first_name;
-  @override
-  String? get username;
-  @override
-  int get team_number;
-
-  /// Create a copy of ScoutingReportUser
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ScoutingReportUserImplCopyWith<_$ScoutingReportUserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

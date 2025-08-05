@@ -16,7 +16,6 @@ import '../models/group.dart';
 import '../models/tournament.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import 'package:intl/intl.dart';
-import 'scouting_report_page.dart';
 
 class GroupPage extends StatefulWidget {
   final String group;
@@ -912,18 +911,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                               Colors.white,
                                                         ),
                                                         onPressed: () {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (_) =>
-                                                                  ScoutingReportPage(
-                                                                group:
-                                                                    '${widget.group?.name}',
-                                                                event:
-                                                                    '${widget.group!.events[event_index].event_code}',
-                                                              ),
-                                                            ),
-                                                          );
+                                                          Navigator.of(context)
+                                                              .pushNamed(
+                                                                  '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/scouting_report');
                                                         },
                                                         child: Text(
                                                             'View Scouting Report'),

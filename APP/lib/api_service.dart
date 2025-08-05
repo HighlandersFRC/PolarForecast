@@ -14,6 +14,7 @@ import 'models/global_rank.dart';
 import 'models/match_scouting_2025.dart';
 import 'models/pit_scouting_2025.dart';
 import 'models/tournament.dart';
+import 'models/scouting_report.dart';
 
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
@@ -808,6 +809,21 @@ class ApiService {
         body: json.encode(data.toJson()));
     if (request.statusCode != 200) {
       throw Exception(json.decode(request.body)['detail']);
+    }
+  }
+
+  Future<ScoutingReport> fetchReport({
+    required String group,
+    required String event,
+  }) async {
+    final url = Uri.parse('$APIURL/Group/$group/Event/$event/ScoutingReport');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      return ScoutingReport.fromJson(decoded);
+    } else {
+      throw Exception('Failed to load scouting report: ${response.statusCode}');
     }
   }
 }
