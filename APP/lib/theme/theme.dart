@@ -49,12 +49,6 @@ ThemeData darkTheme() {
         buttonColor: Colors.blue,
         textTheme: ButtonTextTheme.primary,
       ),
-      // cardTheme: CardTheme(
-      //   elevation: 5,
-      //   shape: RoundedRectangleBorder(
-      //     borderRadius: BorderRadius.circular(20),
-      //   ),
-      // ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/scouting_report.dart';
-import 'scouting_report_service.dart';
 
 class ScoutingReportPage extends StatefulWidget {
   final String group;
@@ -18,12 +19,12 @@ class ScoutingReportPage extends StatefulWidget {
 
 class _ScoutingReportPageState extends State<ScoutingReportPage> {
   late Future<ScoutingReport> futureReport;
-  final _service = ScoutingReportService(apiUrl: 'http://localhost:8000');
 
   @override
   void initState() {
     super.initState();
-    futureReport = _service.fetchReport(
+    final service = Provider.of<ApiService>(context, listen: false);
+    futureReport = service.fetchReport(
       group: widget.group,
       event: widget.event,
     );
@@ -49,7 +50,7 @@ class _ScoutingReportPageState extends State<ScoutingReportPage> {
                   DataColumn(label: Text('Contribution')),
                 ],
                 rows: reportList.map((entry) {
-                  final scout = entry.scouts.first.name;
+                  final scout = entry.scout;
                   return DataRow(cells: [
                     DataCell(Text(scout.username ?? '')),
                     DataCell(Text(scout.first_name ?? '')),

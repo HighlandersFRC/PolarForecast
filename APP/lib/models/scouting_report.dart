@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scouting_app/models/scout_info.dart';
 
 part 'scouting_report.freezed.dart';
 part 'scouting_report.g.dart';
@@ -18,7 +19,7 @@ class ScoutingReport with _$ScoutingReport {
 @freezed
 class ScoutingReportEntry with _$ScoutingReportEntry {
   const factory ScoutingReportEntry({
-    required List<ScoutingReportScout> scouts,
+    required ScoutInfo scout,
     required String eventCode,
     required String groupId,
     required double trustRatings,
@@ -28,27 +29,4 @@ class ScoutingReportEntry with _$ScoutingReportEntry {
 
   factory ScoutingReportEntry.fromJson(Map<String, dynamic> json) =>
       _$ScoutingReportEntryFromJson(json);
-}
-
-@freezed
-class ScoutingReportScout with _$ScoutingReportScout {
-  const factory ScoutingReportScout({
-    required ScoutingReportUser name,
-  }) = _ScoutingReportScout;
-
-  factory ScoutingReportScout.fromJson(Map<String, dynamic> json) =>
-      _$ScoutingReportScoutFromJson(json);
-}
-
-@freezed
-class ScoutingReportUser with _$ScoutingReportUser {
-  const factory ScoutingReportUser({
-    required String user_id,
-    String? first_name,
-    String? username,
-    required int team_number,
-  }) = _ScoutingReportUser;
-
-  factory ScoutingReportUser.fromJson(Map<String, dynamic> json) =>
-      _$ScoutingReportUserFromJson(json);
 }

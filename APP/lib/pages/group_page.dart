@@ -912,18 +912,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                               Colors.white,
                                                         ),
                                                         onPressed: () {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (_) =>
-                                                                  ScoutingReportPage(
-                                                                group:
-                                                                    '${widget.group?.name}',
-                                                                event:
-                                                                    '${widget.group!.events[event_index].event_code}',
-                                                              ),
-                                                            ),
-                                                          );
+                                                          Navigator.of(context)
+                                                              .pushNamed(
+                                                                  '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/scouting_report');
                                                         },
                                                         child: Text(
                                                             'View Scouting Report'),

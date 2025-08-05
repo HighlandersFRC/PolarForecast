@@ -26,9 +26,7 @@ Map<String, dynamic> _$$ScoutingReportImplToJson(
 _$ScoutingReportEntryImpl _$$ScoutingReportEntryImplFromJson(
         Map<String, dynamic> json) =>
     _$ScoutingReportEntryImpl(
-      scouts: (json['scouts'] as List<dynamic>)
-          .map((e) => ScoutingReportScout.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      scout: ScoutInfo.fromJson(json['scout'] as Map<String, dynamic>),
       eventCode: json['eventCode'] as String,
       groupId: json['groupId'] as String,
       trustRatings: (json['trustRatings'] as num).toDouble(),
@@ -39,40 +37,10 @@ _$ScoutingReportEntryImpl _$$ScoutingReportEntryImplFromJson(
 Map<String, dynamic> _$$ScoutingReportEntryImplToJson(
         _$ScoutingReportEntryImpl instance) =>
     <String, dynamic>{
-      'scouts': instance.scouts.map((e) => e.toJson()).toList(),
+      'scout': instance.scout.toJson(),
       'eventCode': instance.eventCode,
       'groupId': instance.groupId,
       'trustRatings': instance.trustRatings,
       'entries': instance.entries,
       'contribution': instance.contribution,
-    };
-
-_$ScoutingReportScoutImpl _$$ScoutingReportScoutImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ScoutingReportScoutImpl(
-      name: ScoutingReportUser.fromJson(json['name'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$$ScoutingReportScoutImplToJson(
-        _$ScoutingReportScoutImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name.toJson(),
-    };
-
-_$ScoutingReportUserImpl _$$ScoutingReportUserImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ScoutingReportUserImpl(
-      user_id: json['user_id'] as String,
-      first_name: json['first_name'] as String?,
-      username: json['username'] as String?,
-      team_number: (json['team_number'] as num).toInt(),
-    );
-
-Map<String, dynamic> _$$ScoutingReportUserImplToJson(
-        _$ScoutingReportUserImpl instance) =>
-    <String, dynamic>{
-      'user_id': instance.user_id,
-      'first_name': instance.first_name,
-      'username': instance.username,
-      'team_number': instance.team_number,
     };
