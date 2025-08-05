@@ -16,7 +16,6 @@ import '../models/group.dart';
 import '../models/tournament.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import 'package:intl/intl.dart';
-import 'scouting_report_page.dart';
 
 class GroupPage extends StatefulWidget {
   final String group;
