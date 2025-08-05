@@ -9,6 +9,7 @@ import 'package:scouting_app/pages/match_page.dart';
 import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/scouter_documentation.dart';
 import 'package:scouting_app/pages/group_documentation.dart';
+import 'package:scouting_app/pages/scouting_report_page.dart';
 import 'package:scouting_app/pages/team_page.dart';
 import 'package:scouting_app/pages/home_page.dart';
 import 'package:scouting_app/pages/death_page.dart';
@@ -71,6 +72,7 @@ class MainApp extends StatelessWidget {
           theme: themeNotifier.themeData,
           navigatorObservers: [observer],
           onGenerateRoute: (RouteSettings settings) {
+            print("routing");
             var query = null;
             try {
               query = settings.name?.split('?')[1];
@@ -137,15 +139,27 @@ class MainApp extends StatelessWidget {
                 if (pathSegments.length > 2) {
                   final groupKey = pathSegments[2];
                   String? code;
-                  if (pathSegments.length > 4 && pathSegments[3] == 'join') {
+                  if (pathSegments.length == 5 && pathSegments[3] == 'join') {
                     code = pathSegments[4];
-                  }
-                  return MaterialPageRoute(
-                    builder: (context) => GroupPage(groupKey, code),
-                    settings: settings,
-                  );
+                  } else if (pathSegments.length > 5 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'scouting_report') {
+                    print("scouting Report");
+                    return MaterialPageRoute(
+                      builder: (context) => ScoutingReportPage(
+                        group: groupKey,
+                        event: pathSegments[4],
+                      ),
+                      settings: settings,
+                    );
+                  } else
+                    return MaterialPageRoute(
+                      builder: (context) => GroupPage(groupKey, code),
+                      settings: settings,
+                    );
                 }
               }
+
               if (pathSegments[1] == 'documentation') {
                 if (pathSegments.length > 2) {
                   if (pathSegments[2] == 'scout') {
