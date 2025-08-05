@@ -23,7 +23,7 @@ class _ScoutingReportPageState extends State<ScoutingReportPage> {
   @override
   void initState() {
     super.initState();
-    final service = Provider.of<ApiService>(context, listen: false);
+    final service = Provider.of<ApiService>(context);
     futureReport = service.fetchReport(
       group: widget.group,
       event: widget.event,
