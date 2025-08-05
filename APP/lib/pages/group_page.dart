@@ -16,6 +16,7 @@ import '../models/group.dart';
 import '../models/tournament.dart';
 import '../widgets/polar_forecast_app_bar.dart';
 import 'package:intl/intl.dart';
+import 'scouting_report_page.dart';
 
 class GroupPage extends StatefulWidget {
   final String group;
@@ -886,6 +887,59 @@ class _EventsTabState extends State<_EventsTab> {
                                                       ),
                                                     ),
                                                   ]),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'Scouting Report',
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Card(
+                                                    child: Padding(
+                                                      padding:
+                                                          EdgeInsets.all(20.0),
+                                                      child: ElevatedButton(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              Colors.blue,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  ScoutingReportPage(
+                                                                group:
+                                                                    '${widget.group?.name}',
+                                                                event:
+                                                                    '${widget.group!.events[event_index].event_code}',
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                            'View Scouting Report'),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Text(
+                                                    'Tap to see detailed scouting data for this event.',
+                                                    style: TextStyle(
+                                                        fontSize: 14,
+                                                        color:
+                                                            Colors.grey[700]),
+                                                  ),
+                                                ],
+                                              ),
                                               Card(
                                                 child: Padding(
                                                   padding: EdgeInsets.all(20.0),

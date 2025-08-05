@@ -1233,6 +1233,109 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
     return [Group(**group).dict(exclude={"join_code", "settings", "events", "owner_group_id", "admin_group_id", "member_group_id", "group_id"}) for group in eventGroups]
 
 
+@app.get("/Group/{group_name}/{event_code}/ScoutingReport", tags=["groups"])
+def get_group_event_scouting_report(group_name: str, event_code: str):
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+
+    group_reports = GroupDataCollection.find({
+        "group_id": DB_group.group_id,
+        "event_code": event_code
+    })
+
+    report_entries = []
+
+    for report in group_reports:
+        scout_ratings = report.get("scout_ratings", {})
+        scouts = scout_ratings.get("scouts", [])
+        trust = scout_ratings.get("trustRatings", [])
+        entries = scout_ratings.get("entries", [])
+        contribution = scout_ratings.get("contribution", [])
+
+        for i in range(len(scouts)):
+            if str(scouts[i]["team_number"]) == DB_group.affiliation[3:]:
+                report_entries.append({
+                    "scouts": [{"name": scouts[i]}],
+                    "eventCode": report.get("event_code", ""),
+                    "groupId": report.get("group_id", ""),
+                    "trustRatings": trust[i] if i < len(trust) else 0.0,
+                    "entries": entries[i] if i < len(entries) else 0,
+                    "contribution": contribution[i] if i < len(contribution) else 0.0
+                })
+
+    return {
+        "group": group_name,
+        "event": event_code,
+        "report": report_entries
+    }
+
+
+
+# @app.get("/group/{group_name}/{event_code}/ScoutingReport", tags=["groups"])
+# def get_group_event_scouting_report(group_name: str, event_code: str, token: str = Depends(check_token_active)):
+#     try:
+#         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
+#     except Exception:
+#         raise HTTPException(404, f"Group Not Found")
+
+#     groups = get_user_groups(token)
+
+#     KCgroup = {}
+#     for group in groups:
+#         if group['id'] == DBgroup.group_id:
+#             KCgroup = group
+#             break
+#     if KCgroup == {}:
+#         raise HTTPException(403, f"You are not part of group '{group_name}'")
+
+#     retval = {}
+#     for group in groups:
+#         if group['id'] == DBgroup.owner_group_id:
+#             retval = {'group': DBgroup.dict(), 'group_role': 'owner'}
+#             break
+#         if group['id'] == DBgroup.admin_group_id:
+#             retval = {'group': DBgroup.dict(), 'group_role': 'admin'}
+#         if group['id'] == DBgroup.member_group_id:
+#             if retval == {}:
+#                 retval = {'group': DBgroup.dict(exclude={'join_code'}), 'group_role': 'member'}
+
+#     if retval == {} or retval['group_role'] not in ('owner', 'admin'):
+#         raise HTTPException(403, "Admin or Owner access required")
+
+#     DB_Report = GroupDataCollection
+#     group_reports = DB_Report.find({
+#         "group_id": DBgroup.group_id,
+#         "event_code": event_code
+#     })
+
+#     report_entries = []
+#     for report in group_reports:
+#         scout_ratings = report.get("scout_ratings", {})
+#         scouts = scout_ratings.get("scouts", [])
+#         trust = scout_ratings.get("trustRatings", [])
+#         entries = scout_ratings.get("entries", [])
+#         contribution = scout_ratings.get("contribution", [])
+
+#         for i in range(len(scouts)):
+#             report_entries.append({
+#                 "scouts": [{"name": scouts[i]}],
+#                 "eventCode": report.get("event_code", ""),
+#                 "groupId": report.get("group_id", ""),
+#                 "trustRatings": trust[i] if i < len(trust) else 0.0,
+#                 "entries": entries[i] if i < len(entries) else 0,
+#                 "contribution": contribution[i] if i < len(contribution) else 0.0
+#             })
+
+#     return {
+#         "group": group_name,
+#         "event": event_code,
+#         "report": report_entries
+#     }
+
+
+
 @app.get("/Group/{group_name}", tags=["groups"])
 def get_group(group_name: str, token: str = Depends(check_token_active)):
     try:
