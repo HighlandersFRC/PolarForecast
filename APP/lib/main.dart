@@ -141,6 +141,10 @@ class MainApp extends StatelessWidget {
                   String? code;
                   if (pathSegments.length == 5 && pathSegments[3] == 'join') {
                     code = pathSegments[4];
+                    return MaterialPageRoute(
+                      builder: (context) => GroupPage(groupKey, code),
+                      settings: settings,
+                    );
                   } else if (pathSegments.length > 5 &&
                       pathSegments[3] == 'events' &&
                       pathSegments[5] == 'scouting_report') {
