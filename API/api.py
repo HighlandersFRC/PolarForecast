@@ -1234,12 +1234,20 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
 
 
 @app.get("/Group/{group_name}/Event/{event_code}/ScoutingReport", tags=["groups"])
-def get_group_event_scouting_report(group_name: str, event_code: str):
+def get_group_event_scouting_report(group_name: str, event_code: str, token: str = Depends(check_token_active)):
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
     except:
         raise HTTPException(404, "This group does not exist")
-
+    kc_groups = get_user_groups(token=token)
+    isMember = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.member_group_id:
+            isMember = True
+            break
+    if not isMember:
+        raise HTTPException(
+            403, "You are not part of this group")
     group_reports = GroupDataCollection.find({
         "group_id": DB_group.group_id,
         "event_code": event_code
