@@ -23,6 +23,7 @@ mixin _$GlobalRank {
   String get team => throw _privateConstructorUsedError;
   DateTime get eventDate => throw _privateConstructorUsedError;
   String get event => throw _privateConstructorUsedError;
+  List<String> get all_events => throw _privateConstructorUsedError;
   TeamStats2025 get data => throw _privateConstructorUsedError;
 
   /// Serializes this GlobalRank to a JSON map.
@@ -42,7 +43,11 @@ abstract class $GlobalRankCopyWith<$Res> {
       _$GlobalRankCopyWithImpl<$Res, GlobalRank>;
   @useResult
   $Res call(
-      {String team, DateTime eventDate, String event, TeamStats2025 data});
+      {String team,
+      DateTime eventDate,
+      String event,
+      List<String> all_events,
+      TeamStats2025 data});
 
   $TeamStats2025CopyWith<$Res> get data;
 }
@@ -65,6 +70,7 @@ class _$GlobalRankCopyWithImpl<$Res, $Val extends GlobalRank>
     Object? team = null,
     Object? eventDate = null,
     Object? event = null,
+    Object? all_events = null,
     Object? data = null,
   }) {
     return _then(_value.copyWith(
@@ -80,6 +86,10 @@ class _$GlobalRankCopyWithImpl<$Res, $Val extends GlobalRank>
           ? _value.event
           : event // ignore: cast_nullable_to_non_nullable
               as String,
+      all_events: null == all_events
+          ? _value.all_events
+          : all_events // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -107,7 +117,11 @@ abstract class _$$GlobalRankImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String team, DateTime eventDate, String event, TeamStats2025 data});
+      {String team,
+      DateTime eventDate,
+      String event,
+      List<String> all_events,
+      TeamStats2025 data});
 
   @override
   $TeamStats2025CopyWith<$Res> get data;
@@ -129,6 +143,7 @@ class __$$GlobalRankImplCopyWithImpl<$Res>
     Object? team = null,
     Object? eventDate = null,
     Object? event = null,
+    Object? all_events = null,
     Object? data = null,
   }) {
     return _then(_$GlobalRankImpl(
@@ -144,6 +159,10 @@ class __$$GlobalRankImplCopyWithImpl<$Res>
           ? _value.event
           : event // ignore: cast_nullable_to_non_nullable
               as String,
+      all_events: null == all_events
+          ? _value._all_events
+          : all_events // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -159,7 +178,9 @@ class _$GlobalRankImpl implements _GlobalRank {
       {required this.team,
       required this.eventDate,
       required this.event,
-      required this.data});
+      final List<String> all_events = const [],
+      required this.data})
+      : _all_events = all_events;
 
   factory _$GlobalRankImpl.fromJson(Map<String, dynamic> json) =>
       _$$GlobalRankImplFromJson(json);
@@ -170,12 +191,21 @@ class _$GlobalRankImpl implements _GlobalRank {
   final DateTime eventDate;
   @override
   final String event;
+  final List<String> _all_events;
+  @override
+  @JsonKey()
+  List<String> get all_events {
+    if (_all_events is EqualUnmodifiableListView) return _all_events;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_all_events);
+  }
+
   @override
   final TeamStats2025 data;
 
   @override
   String toString() {
-    return 'GlobalRank(team: $team, eventDate: $eventDate, event: $event, data: $data)';
+    return 'GlobalRank(team: $team, eventDate: $eventDate, event: $event, all_events: $all_events, data: $data)';
   }
 
   @override
@@ -187,12 +217,15 @@ class _$GlobalRankImpl implements _GlobalRank {
             (identical(other.eventDate, eventDate) ||
                 other.eventDate == eventDate) &&
             (identical(other.event, event) || other.event == event) &&
+            const DeepCollectionEquality()
+                .equals(other._all_events, _all_events) &&
             (identical(other.data, data) || other.data == data));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, team, eventDate, event, data);
+  int get hashCode => Object.hash(runtimeType, team, eventDate, event,
+      const DeepCollectionEquality().hash(_all_events), data);
 
   /// Create a copy of GlobalRank
   /// with the given fields replaced by the non-null parameter values.
@@ -215,6 +248,7 @@ abstract class _GlobalRank implements GlobalRank {
       {required final String team,
       required final DateTime eventDate,
       required final String event,
+      final List<String> all_events,
       required final TeamStats2025 data}) = _$GlobalRankImpl;
 
   factory _GlobalRank.fromJson(Map<String, dynamic> json) =
@@ -226,6 +260,8 @@ abstract class _GlobalRank implements GlobalRank {
   DateTime get eventDate;
   @override
   String get event;
+  @override
+  List<String> get all_events;
   @override
   TeamStats2025 get data;
 

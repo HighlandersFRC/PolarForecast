@@ -1234,12 +1234,20 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
 
 
 @app.get("/Group/{group_name}/Event/{event_code}/ScoutingReport", tags=["groups"])
-def get_group_event_scouting_report(group_name: str, event_code: str):
+def get_group_event_scouting_report(group_name: str, event_code: str, token: str = Depends(check_token_active)):
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
     except:
         raise HTTPException(404, "This group does not exist")
-
+    kc_groups = get_user_groups(token=token)
+    member = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.member_group_id:
+            member = True
+            break
+    if not member:
+        raise HTTPException(
+            403, "You are not a member of this group")
     group_reports = GroupDataCollection.find({
         "group_id": DB_group.group_id,
         "event_code": event_code
@@ -2867,8 +2875,9 @@ def update_database():
                                 break
                         if teamData == None:
                             teamData = {
-                                'team': team, 'eventDate': endDate, 'event': event['key']}
+                                'team': team, 'eventDate': endDate, 'event': event['key'], 'all_events': []}
                             globalTeamsWithLatestFinishedEvent.append(teamData)
+                        teamData['all_events'].append(event['key'])
                         if teamData['eventDate'] < endDate:
                             teamData['event'] = event['key']
                             teamData['eventDate'] = endDate

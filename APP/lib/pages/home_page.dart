@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../api_service.dart';
 import '../models/global_rank.dart';
 import '../widgets/polar_forecast_app_bar.dart';
+import '../widgets/events_visited.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -114,6 +115,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _showTeamEventsDialog(String teamNumber) async {
+    try {
+      List<String> events = [];
+      for (var rank in rankings) {
+        if (rank.data.team_number == teamNumber) {
+          events = rank.all_events;
+          break;
+        }
+      }
+
+      showDialog(
+        context: context,
+        builder: (context) => EventsVisited(
+          teamNumber: teamNumber,
+          events: events,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching events: $e')),
+      );
+    }
+  }
+
   Future<void> _sort(List<SortColumnDetails> sortColumns) async {
     if (sortColumns.isEmpty) {
       return;
@@ -166,15 +191,18 @@ class _HomePageState extends State<HomePage> {
                   : Expanded(
                       child: SfDataGrid(
                         source: GlobalRankDataSource(
-                            rankings,
-                            rankings
-                                .map((rank) => rank.data.OPR)
-                                .reduce((a, b) => a > b ? a : b),
-                            rankings
-                                .map((rank) => rank.data.OPR)
-                                .reduce((a, b) => a < b ? a : b),
-                            _sort,
-                            sortColumns),
+                          rankings,
+                          rankings
+                              .map((rank) => rank.data.OPR)
+                              .reduce((a, b) => a > b ? a : b),
+                          rankings
+                              .map((rank) => rank.data.OPR)
+                              .reduce((a, b) => a < b ? a : b),
+                          _sort,
+                          sortColumns,
+                          (team) =>
+                              _showTeamEventsDialog(team), // Pass callback
+                        ),
                         showSortNumbers: true,
                         allowFiltering: true,
                         columnWidthMode: isWide
@@ -207,6 +235,7 @@ class _HomePageState extends State<HomePage> {
 
 class GlobalRankDataSource extends DataGridSource {
   final Future<void> Function(List<SortColumnDetails>) onSort;
+  final void Function(String team) onTeamTap;
   final List<SortColumnDetails> sortColumns;
   GlobalRankDataSource(
     this.globalRanks,
@@ -214,6 +243,7 @@ class GlobalRankDataSource extends DataGridSource {
     this.minOpr,
     this.onSort,
     this.sortColumns,
+    this.onTeamTap,
   ) {
     dataGridRows = globalRanks
         .map<DataGridRow>((rank) => DataGridRow(cells: [
@@ -291,26 +321,50 @@ class GlobalRankDataSource extends DataGridSource {
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(cells: [
-      ...row.getCells().map(
-        (cell) {
-          final isDoubleColumn =
-              ['OPR', 'auto', 'teleop', 'endgame'].contains(cell.columnName);
-          final color = isDoubleColumn && !(cell.value as double).isNaN
-              ? getHeatmapColor(cell.columnName, cell.value as double)
-              : (dataGridRows.indexOf(row) % 2 == 0
-                  ? Colors.blue.withOpacity(0.3)
-                  : Colors.transparent);
+      ...row.getCells().asMap().entries.map((entry) {
+        final index = entry.key;
+        final cell = entry.value;
 
-          return Container(
-            padding: EdgeInsets.all(8.0),
-            alignment: Alignment.center,
-            color: color,
-            child: Text(cell.value.runtimeType == double
-                ? (cell.value as double).toStringAsFixed(1)
-                : cell.value.toString()),
+        if (index == 0) {
+          final isEvenRow = dataGridRows.indexOf(row) % 2 == 0;
+          final backgroundColor = isEvenRow
+              ? Colors.blue.withOpacity(0.3)
+              : Colors.black.withOpacity(0.1);
+
+          return GestureDetector(
+            onTap: () => onTeamTap(cell.value.toString()),
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              alignment: Alignment.center,
+              color: backgroundColor,
+              child: Text(
+                cell.value.toString(),
+                style: TextStyle(
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
           );
-        },
-      )
+        }
+
+        final isDoubleColumn =
+            ['OPR', 'auto', 'teleop', 'endgame'].contains(cell.columnName);
+        final color = isDoubleColumn && !(cell.value as double).isNaN
+            ? getHeatmapColor(cell.columnName, cell.value as double)
+            : (dataGridRows.indexOf(row) % 2 == 0
+                ? Colors.blue.withOpacity(0.3)
+                : Colors.transparent);
+
+        return Container(
+          padding: EdgeInsets.all(8.0),
+          alignment: Alignment.center,
+          color: color,
+          child: Text(cell.value.runtimeType == double
+              ? (cell.value as double).toStringAsFixed(1)
+              : cell.value.toString()),
+        );
+      })
     ]);
   }
 
