@@ -145,6 +145,7 @@ class MainApp extends StatelessWidget {
                       builder: (context) => GroupPage(groupKey, code),
                       settings: settings,
                     );
+                    //Join Group
                   } else if (pathSegments.length > 5 &&
                       pathSegments[3] == 'events' &&
                       pathSegments[5] == 'scouting_report') {
@@ -156,6 +157,7 @@ class MainApp extends StatelessWidget {
                       ),
                       settings: settings,
                     );
+                    //ScoutingReport
                   } else
                     return MaterialPageRoute(
                       builder: (context) => GroupPage(groupKey, code),

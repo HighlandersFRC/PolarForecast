@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'event_codes.dart';
+import 'package:provider/provider.dart';
+import '../api_service.dart';
+import '../models/tournament.dart';
 
-class EventsVisited extends StatelessWidget {
+class EventsVisited extends StatefulWidget {
   final String teamNumber;
   final List<String> events;
 
@@ -12,24 +14,59 @@ class EventsVisited extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<EventsVisited> createState() => _EventsVisitedState();
+}
+
+class _EventsVisitedState extends State<EventsVisited> {
+  late Future<List<Tournament>> tournamentsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final api = Provider.of<ApiService>(context, listen: false);
+    tournamentsFuture = api.fetchTournaments();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Team ${teamNumber} visited'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: events.map((code) {
-            final name = eventNames[code] ?? code;
-            return ListTile(
-              leading: const Icon(Icons.event),
-              title: Text(name),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/event/$code');
-              },
+      title: Text('Team ${widget.teamNumber} visited'),
+      content: FutureBuilder<List<Tournament>>(
+        future: tournamentsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            final tournaments = snapshot.data ?? [];
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.events.map((code) {
+                  final tournament = tournaments.firstWhere(
+                    (t) => t.key == code,
+                    orElse: () => Tournament(
+                      key: code,
+                      display: 'Unknown',
+                      page: '',
+                      start: '',
+                      end: '',
+                    ),
+                  );
+                  return ListTile(
+                    leading: const Icon(Icons.event),
+                    title: Text(tournament.display),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/event/$code');
+                    },
+                  );
+                }).toList(),
+              ),
             );
-          }).toList(),
-        ),
+          }
+        },
       ),
       actions: [
         TextButton(

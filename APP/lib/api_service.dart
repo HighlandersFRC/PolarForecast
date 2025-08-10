@@ -816,7 +816,7 @@ class ApiService {
     required String group,
     required String event,
   }) async {
-    final cacheKey = 'scouting_report';
+    final cacheKey = '${group}_${event}_scouting_report';
     final url = Uri.parse('$APIURL/Group/$group/Event/$event/ScoutingReport');
 
     final decoded =
