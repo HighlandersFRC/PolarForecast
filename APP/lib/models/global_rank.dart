@@ -11,6 +11,7 @@ class GlobalRank with _$GlobalRank {
     required String team,
     required DateTime eventDate,
     required String event,
+    @Default([]) List<String> all_events,
     required TeamStats2025 data,
   }) = _GlobalRank;
 

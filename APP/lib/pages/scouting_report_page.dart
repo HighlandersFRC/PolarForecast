@@ -107,15 +107,25 @@ class _ScoutingReportPageState extends State<ScoutingReportPage> {
 class ScoutingReportDataSource extends DataGridSource {
   List<DataGridRow> _rows = [];
   late double maxEntries;
+  late double minEntries;
   late double maxContribution;
+  late double minContribution;
   late double maxTrust;
+  late double minTrust;
 
   ScoutingReportDataSource(List<ScoutingReportEntry> entries) {
-    maxEntries = entries.map((e) => e.entries).fold(0, (a, b) => a > b ? a : b);
+    maxEntries = entries.map((e) => e.entries).reduce((a, b) => a > b ? a : b);
+    minEntries = entries.map((e) => e.entries).reduce((a, b) => a < b ? a : b);
+
     maxContribution =
-        entries.map((e) => e.contribution).fold(0, (a, b) => a > b ? a : b);
+        entries.map((e) => e.contribution).reduce((a, b) => a > b ? a : b);
+    minContribution =
+        entries.map((e) => e.contribution).reduce((a, b) => a < b ? a : b);
+
     maxTrust =
-        entries.map((e) => e.trustRatings).fold(0, (a, b) => a > b ? a : b);
+        entries.map((e) => e.trustRatings).reduce((a, b) => a > b ? a : b);
+    minTrust =
+        entries.map((e) => e.trustRatings).reduce((a, b) => a < b ? a : b);
 
     _rows = entries.map<DataGridRow>((entry) {
       return DataGridRow(cells: [
@@ -135,9 +145,19 @@ class ScoutingReportDataSource extends DataGridSource {
   @override
   List<DataGridRow> get rows => _rows;
 
-  Color getCellColor(double value, double max) {
-    final t = (max == 0) ? 0.0 : (value / max).clamp(0.0, 1.0);
-    return Color.lerp(Colors.white, Colors.green, t)!;
+  Color getCellColor(num value, num minValue, num maxValue, bool flip) {
+    double normalizedValue = (value - minValue) / (maxValue - minValue);
+    normalizedValue = normalizedValue.clamp(0.0, 1.0);
+    if (flip) normalizedValue = 1 - normalizedValue;
+    if (normalizedValue > 0.5) {
+      return Color.lerp(Colors.yellow[700], Colors.green.shade800,
+              (normalizedValue - 0.5) * 2) ??
+          Colors.green.shade700;
+    } else {
+      return Color.lerp(
+              Colors.red.shade700, Colors.yellow[700], normalizedValue * 2) ??
+          Colors.red.shade700;
+    }
   }
 
   @override
@@ -146,120 +166,43 @@ class ScoutingReportDataSource extends DataGridSource {
     final entries = row.getCells()[3].value as double;
     final contribution = row.getCells()[4].value as double;
 
-    final trustColor = getCellColor(trust, maxTrust);
-    final entriesColor = getCellColor(entries, maxEntries);
-    final contributionColor = getCellColor(contribution, maxContribution);
-
-    final trustSame = maxTrust == trust;
-    final entriesSame = maxEntries == entries;
-    final contributionSame = maxContribution == contribution;
+    final Color usernameColor = Colors.black;
+    final Color firstNameColor = const Color.fromARGB(255, 10, 93, 161);
 
     return DataGridRowAdapter(cells: [
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        child: Text(row.getCells()[0].value.toString()),
+        color: usernameColor,
+        child: Text(row.getCells()[0].value.toString(),
+            style: const TextStyle(color: Colors.white)),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        child: Text(row.getCells()[1].value.toString()),
+        color: firstNameColor,
+        child: Text(row.getCells()[1].value.toString(),
+            style: const TextStyle(color: Colors.white)),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color: trustColor,
-        child: Text(
-          trust.toStringAsFixed(2),
-          style: TextStyle(
-            color:
-                maxTrust == 0 || _allEqualTrust() ? Colors.black : Colors.white,
-          ),
-        ),
+        color: getCellColor(trust, minTrust, maxTrust, false),
+        child: Text(trust.toStringAsFixed(2)),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color: entriesColor,
-        child: Text(
-          entries.toStringAsFixed(1),
-          style: TextStyle(
-            color: maxEntries == 0 || _allEqualEntries()
-                ? Colors.black
-                : Colors.white,
-          ),
-        ),
+        color: getCellColor(entries, minEntries, maxEntries, false),
+        child: Text(entries.toStringAsFixed(1)),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color: contributionColor,
-        child: Text(
-          contribution.toStringAsFixed(2),
-          style: TextStyle(
-            color: maxContribution == 0 || _allEqualContribution()
-                ? Colors.black
-                : Colors.white,
-          ),
-        ),
+        color:
+            getCellColor(contribution, minContribution, maxContribution, false),
+        child: Text(contribution.toStringAsFixed(2)),
       ),
     ]);
-  }
-
-  bool _allEqualTrust() {
-    final values = _rows
-        .map((r) => r
-            .getCells()
-            .firstWhere((c) => c.columnName == 'trustRatings')
-            .value)
-        .toSet();
-    return values.length == 1;
-  }
-
-  bool _allEqualEntries() {
-    final values = _rows
-        .map((r) =>
-            r.getCells().firstWhere((c) => c.columnName == 'entries').value)
-        .toSet();
-    return values.length == 1;
-  }
-
-  bool _allEqualContribution() {
-    final values = _rows
-        .map((r) => r
-            .getCells()
-            .firstWhere((c) => c.columnName == 'contribution')
-            .value)
-        .toSet();
-    return values.length == 1;
-  }
-
-  @override
-  Future<void> handleSort() async {
-    _rows.sort((a, b) {
-      for (final sortColumn in sortedColumns) {
-        final sortName = sortColumn.name;
-        final ascending =
-            sortColumn.sortDirection == DataGridSortDirection.ascending;
-        final aValue = a
-            .getCells()
-            .firstWhere((cell) => cell.columnName == sortName)
-            .value;
-        final bValue = b
-            .getCells()
-            .firstWhere((cell) => cell.columnName == sortName)
-            .value;
-
-        int compare;
-        if (aValue is Comparable && bValue is Comparable) {
-          compare = aValue.compareTo(bValue);
-          if (compare != 0) {
-            return ascending ? compare : -compare;
-          }
-        }
-      }
-      return 0;
-    });
-    notifyListeners();
   }
 }
