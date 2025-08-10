@@ -816,14 +816,12 @@ class ApiService {
     required String group,
     required String event,
   }) async {
+    final cacheKey = '${group}_${event}_scouting_report';
     final url = Uri.parse('$APIURL/Group/$group/Event/$event/ScoutingReport');
-    final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final decoded = json.decode(response.body);
-      return ScoutingReport.fromJson(decoded);
-    } else {
-      throw Exception('Failed to load scouting report: ${response.statusCode}');
-    }
+    final decoded =
+        await _fetchFromAPI(url.toString(), cacheKey, useCache: false);
+
+    return ScoutingReport.fromJson(decoded);
   }
 }
