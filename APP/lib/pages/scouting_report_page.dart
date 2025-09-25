@@ -130,9 +130,11 @@ class ScoutingReportDataSource extends DataGridSource {
     _rows = entries.map<DataGridRow>((entry) {
       return DataGridRow(cells: [
         DataGridCell<String>(
-            columnName: 'username', value: entry.scout.username ?? ''),
+            columnName: 'username',
+            value: entry.scout.username ?? 'Scout from'),
         DataGridCell<String>(
-            columnName: 'first_name', value: entry.scout.first_name ?? ''),
+            columnName: 'first_name',
+            value: entry.scout.first_name ?? '${entry.scout.team_number}'),
         DataGridCell<double>(
             columnName: 'trustRatings', value: entry.trustRatings),
         DataGridCell<double>(columnName: 'entries', value: entry.entries),
