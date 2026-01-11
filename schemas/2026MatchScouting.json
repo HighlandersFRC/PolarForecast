@@ -17,7 +17,8 @@
                 "blue"
             ],
             "preload": true,
-            "climb": true
+            "climb": true,
+            "contacts_robot": false
         },
         "auto_scoring": {
             "feed_amount": 0,
@@ -29,7 +30,9 @@
         },
         "teleop_scoring": {
             "cycles_completed": 0,
-            "shoots_from": 0
+            "shoots_from_X": 0,
+            "shoots_from_Y": 0,
+            "shoot_amount": 0
         },
         "miscellaneous": {
             "died": 0,
