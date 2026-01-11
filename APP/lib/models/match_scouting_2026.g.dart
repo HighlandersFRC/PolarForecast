@@ -85,7 +85,7 @@ Map<String, dynamic> _$$TeleopScoringImplToJson(_$TeleopScoringImpl instance) =>
 
 _$MiscellaneousImpl _$$MiscellaneousImplFromJson(Map<String, dynamic> json) =>
     _$MiscellaneousImpl(
-      died: (json['died'] as num).toInt(),
+      died: json['died'] as bool,
       comments: json['comments'] as String,
     );
 

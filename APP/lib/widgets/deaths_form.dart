@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/deaths_form.dart';
-import 'package:scouting_app/models/match_scouting_2025.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/scout_info.dart';
 import '../api_service.dart';
 
@@ -32,7 +32,7 @@ class _DeathsFormState extends State<DeathsForm> {
       team_key: widget.teamNumber.toString(),
       total: 0,
       time: 0);
-  List<MatchScouting2025> matchScouting = [];
+  List<MatchScouting2026> matchScouting = [];
   List<TextEditingController> controllers = [];
   bool formSubmitted = false;
   bool loading = true, commentsLoading = true;
@@ -66,7 +66,7 @@ class _DeathsFormState extends State<DeathsForm> {
                   .then(
                 (value) {
                   setState(() {
-                    matchScouting = value;
+                    matchScouting = value.cast<MatchScouting2026>();
                     commentsLoading = false;
                   });
                 },

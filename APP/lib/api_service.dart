@@ -4,15 +4,15 @@ import 'package:http/http.dart' as http;
 import 'package:scouting_app/models/deaths_form.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/group_join_request.dart';
-import 'package:scouting_app/models/match_details_2025.dart';
+import 'package:scouting_app/models/match_details_2026.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import 'package:scouting_app/models/team_stats_2025.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'auth/auth_service.dart';
 import 'models/alliance_request.dart';
 import 'models/global_rank.dart';
-import 'models/match_scouting_2025.dart';
-import 'models/pit_scouting_2025.dart';
+import 'models/match_scouting_2026.dart';
+import 'models/pit_scouting_2026.dart';
 import 'models/tournament.dart';
 import 'models/scouting_report.dart';
 
@@ -104,14 +104,14 @@ class ApiService {
     return await _fetchFromAPI(url, cacheKey) as Map<String, dynamic>;
   }
 
-  Future<List<TeamStats2025>> fetchEventRankings(int year, String event) async {
+  Future<List<TeamStats2026>> fetchEventRankings(int year, String event) async {
     final cacheKey = '${year}_${event}_rankings';
     final url = '${APIURL}/${year}/${event}/stats';
     var data = (await _fetchFromAPI(url, cacheKey))['data'];
     data = [...data];
     data.removeAt(0);
     data = data.where((x) => x != null);
-    return [for (var x in data) TeamStats2025.fromJson(x)];
+    return [for (var x in data) TeamStats2026.fromJson(x)];
   }
 
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {
@@ -122,40 +122,46 @@ class ApiService {
     return data;
   }
 
-  Future<PitScouting2025> fetchTeamPitScouting(
+  Future<PitScouting2026> fetchTeamPitScouting(
       String year, String event, String team) async {
     try {
       final storageName = '${year}${event}_${team}_PitScouting';
       final endpoint = '$APIURL/$year/$event/$team/PitScouting';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return PitScouting2025.fromJson(data);
+      return PitScouting2026.fromJson(data);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
-      return PitScouting2025(
+      return PitScouting2026(
           scout_info: get_scout_info(await token ?? ''),
           team_number: int.tryParse(team.substring(3)) ?? 0,
           time: 0,
           event_code: '${year}${event}',
-          data: PitData2025(
+          data: PitData2026(
               driver_experience_events: 0,
               drive_train: '',
-              can_score_coral: false,
-              coral_levels: [],
-              can_score_processor: false,
-              can_score_net: false,
-              ground_coral_pickup: false,
-              feeder_coral_pickup: false,
-              ground_algae_pickup: false,
-              reef_algae_pickup: false,
               climbing: [],
               spare_parts: 0,
               favorite_color: '',
-              autos: []));
+              autos: [],
+              can_feed_human_player: false,
+              can_pick_up_from_ground: false,
+              distance_to_shoot: 0,
+              cycles_in_25_seconds: 0,
+              cycle_time: 0,
+              go_over_bump: false,
+              go_under_trench: false,
+              can_climb: false,
+              can_climb_in_autonomous: false,
+              can_climb_with_others: false,
+              automatically_shooting: false,
+              shooting_while_moving: false,
+              main_strategy: ''),
+          user_id: '');
     }
   }
 
   Future<int> postPitScouting(
-      PitScouting2025 data, String year, String event, String team) async {
+      PitScouting2026 data, String year, String event, String team) async {
     try {
       final endpoint = '$APIURL/PitScouting/';
       final response = await http.post(
@@ -195,29 +201,29 @@ class ApiService {
     return data;
   }
 
-  Future<List<MatchScouting2025>> fetchEventScouting(
+  Future<List<MatchScouting2026>> fetchEventScouting(
       int year, String event) async {
     final cacheKey = '${year}_${event}_scout_entries';
     final url = '${APIURL}/${year}/${event}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey, useCache: true));
     data = [...data];
-    List<MatchScouting2025> retVal = [];
+    List<MatchScouting2026> retVal = [];
     for (var x in data) {
       try {
-        retVal.add(MatchScouting2025.fromJson(x));
+        retVal.add(MatchScouting2026.fromJson(x));
       } catch (e) {}
     }
     return retVal;
   }
 
-  Future<List<MatchScouting2025>> fetchTeamMatchScouting(
+  Future<List<MatchScouting2026>> fetchTeamMatchScouting(
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_match_scout_entries';
     final url = '${APIURL}/${year}/${event}/${team}/ScoutEntries';
     var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
-    var returnValue = <MatchScouting2025>[];
+    var returnValue = <MatchScouting2026>[];
     for (var matchData in data) {
-      returnValue.add(MatchScouting2025.fromJson(matchData));
+      returnValue.add(MatchScouting2026.fromJson(matchData));
     }
     return returnValue;
   }
@@ -262,12 +268,12 @@ class ApiService {
     }
   }
 
-  Future<MatchDetails2025> fetchMatchDetails(
+  Future<MatchDetails2026> fetchMatchDetails(
       int year, String event, String match_key) async {
     final cacheKey = '${year}_${event}_${match_key}_details';
     final url = '${APIURL}/${year}/${event}/${match_key}/match_details';
     var data = (await _fetchFromAPI(url, cacheKey));
-    return MatchDetails2025.fromJson(data);
+    return MatchDetails2026.fromJson(data);
   }
 
   Future<void> login(String redirectPath) async {
@@ -733,7 +739,7 @@ class ApiService {
     }
   }
 
-  Future<void> post_match_scouting(MatchScouting2025 data) async {
+  Future<void> post_match_scouting(MatchScouting2026 data) async {
     final url = '$APIURL/MatchScouting/';
     final request = await http.post(Uri.parse(url),
         headers: {
@@ -748,7 +754,7 @@ class ApiService {
     }
   }
 
-  Future<void> update_match_scouting(MatchScouting2025 data) async {
+  Future<void> update_match_scouting(MatchScouting2026 data) async {
     final url = '$APIURL/MatchScouting/';
     final request = await http.put(Uri.parse(url),
         headers: {
@@ -761,7 +767,7 @@ class ApiService {
     }
   }
 
-  Future<void> delete_match_scouting(MatchScouting2025 data) async {
+  Future<void> delete_match_scouting(MatchScouting2026 data) async {
     final url = '$APIURL/MatchScouting/Delete';
     final request = await http.delete(Uri.parse(url),
         headers: {
@@ -799,7 +805,7 @@ class ApiService {
     );
   }
 
-  Future<void> post_offline_match_scouting(MatchScouting2025 data) async {
+  Future<void> post_offline_match_scouting(MatchScouting2026 data) async {
     final url = '$APIURL/MatchScouting/Offline/';
     final request = await http.post(Uri.parse(url),
         headers: {

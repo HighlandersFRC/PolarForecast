@@ -63,7 +63,7 @@ class TeleopScoring with _$TeleopScoring {
 @freezed
 class Miscellaneous with _$Miscellaneous {
   factory Miscellaneous({
-    required int died,
+    required bool died,
     required String comments,
   }) = _Miscellaneous;
 

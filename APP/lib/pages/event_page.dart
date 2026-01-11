@@ -9,14 +9,14 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
-import 'package:scouting_app/models/match_scouting_2025.dart';
-import 'package:scouting_app/models/team_stats_2025.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/auto_pieces_2025.dart';
+import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
-import '../models/match_details_2025.dart';
-import '../models/pit_scouting_2025.dart';
+import '../models/match_details_2026.dart';
+import '../models/pit_scouting_2026.dart';
 import '../widgets/bar_chart_with_weights.dart';
 import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
@@ -150,7 +150,7 @@ class _RankingsTab extends StatefulWidget {
 }
 
 class _RankingsTabState extends State<_RankingsTab> {
-  List<TeamStats2025> rankings = [];
+  List<TeamStats2026> rankings = [];
   bool isLoading = true;
   List<int> teams = [];
   String? token;
@@ -228,7 +228,7 @@ class _RankingsTabState extends State<_RankingsTab> {
     'climbing_points': true,
     'death_rate': true,
   };
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   Map<String, num> minValues = {};
   Map<String, num> maxValues = {};
   List<DataGridRow> dataRows = [];
@@ -410,8 +410,8 @@ class _TeamDataSource extends DataGridSource {
   final List<DataGridRow> rows;
   final BuildContext context;
   final Tournament tournament;
-  final List<MatchScouting2025> scouting;
-  final List<TeamStats2025> rankings;
+  final List<MatchScouting2026> scouting;
+  final List<TeamStats2026> rankings;
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
@@ -502,7 +502,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
   final double opr;
   final Color color;
   final GlobalKey key = GlobalKey();
-  final List<MatchScouting2025> scouting;
+  final List<MatchScouting2026> scouting;
   _OvertimeChartOnClick(
       {required this.teamNumber,
       required this.color,
@@ -549,7 +549,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
         for (var series in seriesLabels) {
           seriesData[series] = [];
         }
-        List<MatchScouting2025> teamScoutingData = [];
+        List<MatchScouting2026> teamScoutingData = [];
         for (var entry in scouting) {
           if (entry.team_number == teamNumber) {
             teamScoutingData.add(entry);
@@ -656,7 +656,7 @@ class _CoralMenuOnClick extends StatelessWidget {
   final int teamNumber;
   final Color color;
   final double coralOPR;
-  final List<TeamStats2025> rankings;
+  final List<TeamStats2026> rankings;
   _CoralMenuOnClick(
       {required this.auto,
       required this.teamNumber,
@@ -679,7 +679,7 @@ class _CoralMenuOnClick extends StatelessWidget {
                   decorationThickness: 2,
                 ))),
         onTap: () {
-          TeamStats2025 stats = rankings.firstWhere(
+          TeamStats2026 stats = rankings.firstWhere(
               (element) => element.team_number == teamNumber.toString());
           showMenu(
               context: context,
@@ -694,53 +694,7 @@ class _CoralMenuOnClick extends StatelessWidget {
                             as RenderBox)
                         .size,
               ),
-              items: [
-                PopupMenuItem(
-                  enabled: false,
-                  child: Text(
-                    'Team ${teamNumber}',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                  value:
-                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
-                ),
-                PopupMenuItem(
-                  enabled: false,
-                  child: Text(
-                    '#${auto ? 'A' : 'T'}4: ${auto ? stats.auto_scoring_l_4.toStringAsFixed(1) : stats.teleop_scoring_l_4.toStringAsFixed(1)}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value:
-                      auto ? stats.auto_scoring_l_4 : stats.teleop_scoring_l_4,
-                ),
-                PopupMenuItem(
-                  enabled: false,
-                  child: Text(
-                    '#${auto ? 'A' : 'T'}3: ${auto ? stats.auto_scoring_l_3.toStringAsFixed(1) : stats.teleop_scoring_l_3.toStringAsFixed(1)}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value:
-                      auto ? stats.auto_scoring_l_3 : stats.teleop_scoring_l_3,
-                ),
-                PopupMenuItem(
-                  enabled: false,
-                  child: Text(
-                    '#${auto ? 'A' : 'T'}2: ${auto ? stats.auto_scoring_l_2.toStringAsFixed(1) : stats.teleop_scoring_l_2.toStringAsFixed(1)}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value:
-                      auto ? stats.auto_scoring_l_2 : stats.teleop_scoring_l_2,
-                ),
-                PopupMenuItem(
-                  enabled: false,
-                  child: Text(
-                    '#${auto ? 'A' : 'T'}1: ${auto ? stats.auto_scoring_l_1.toStringAsFixed(1) : stats.teleop_scoring_l_1.toStringAsFixed(1)}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value:
-                      auto ? stats.auto_scoring_l_1 : stats.teleop_scoring_l_1,
-                ),
-              ]);
+              items: []);
         });
   }
 }
@@ -756,9 +710,9 @@ class _ChartsTab extends StatefulWidget {
 }
 
 class _ChartsTabState extends State<_ChartsTab> {
-  List<TeamStats2025> rankings = [];
+  List<TeamStats2026> rankings = [];
   bool isLoading = true;
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   List<int> teams = [];
   String? token;
   int selectedTeam = 0;
@@ -842,7 +796,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                 // Reset flag if needed for landscape changes
                 _hasAdjustedForLandscape = false;
               }
-              List<MatchScouting2025> teamScoutingData = [];
+              List<MatchScouting2026> teamScoutingData = [];
               if (selectedTeam != 0)
                 for (var entry in scouting) {
                   if (entry.team_number == teams[selectedTeam - 1]) {
@@ -909,7 +863,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                       .map((val) => val.$2 / entries[val.$1])
                 ];
               }
-              List<MatchScouting2025> secondTeamScoutingData = [];
+              List<MatchScouting2026> secondTeamScoutingData = [];
               if (secondTeam != 0)
                 for (var entry in scouting) {
                   if (entry.team_number == teams[secondTeam - 1]) {
@@ -1216,69 +1170,15 @@ class _ChartsTabState extends State<_ChartsTab> {
                   number: 24,
                   startingFields: [
                     new Field(
-                        name: 'AC1',
-                        key: 'auto_scoring_l_1',
-                        enabled: true,
-                        weight: 3),
-                    new Field(
-                        name: 'AC2',
-                        key: 'auto_scoring_l_2',
-                        enabled: true,
-                        weight: 4),
-                    new Field(
-                        name: 'AC3',
-                        key: 'auto_scoring_l_3',
-                        enabled: true,
-                        weight: 6),
-                    new Field(
-                        name: 'AC4',
-                        key: 'auto_scoring_l_4',
-                        enabled: true,
-                        weight: 7),
-                    new Field(
-                        name: 'TC1',
-                        key: 'teleop_scoring_l_1',
-                        enabled: true,
-                        weight: 2),
-                    new Field(
-                        name: 'TC2',
-                        key: 'teleop_scoring_l_2',
-                        enabled: true,
-                        weight: 3),
-                    new Field(
-                        name: 'TC3',
-                        key: 'teleop_scoring_l_3',
-                        enabled: true,
-                        weight: 4),
-                    new Field(
-                        name: 'TC4',
-                        key: 'teleop_scoring_l_4',
-                        enabled: true,
-                        weight: 5),
-                    new Field(
-                        name: 'Net', key: 'net', enabled: true, weight: 4),
-                    new Field(
-                        name: 'Processor',
-                        key: 'processor',
-                        enabled: true,
-                        weight: 2),
-                    new Field(
                         name: 'Mobility',
                         key: 'mobility',
                         enabled: true,
                         weight: 3),
                     new Field(
-                        name: 'Park', key: 'parking', enabled: true, weight: 2),
-                    new Field(
                         name: 'Shallow Climb',
                         key: 'shallow_climb_rate',
                         enabled: true,
                         weight: 6),
-                    new Field(
-                        name: 'Deep Climb',
-                        key: 'deep_climb_rate',
-                        enabled: true,
-                        weight: 12),
                     Field(
                         name: 'Deathrate',
                         key: 'death_rate',
@@ -1309,27 +1209,34 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   int driverStationIndex = -1;
   String? token;
   List<String> selectedPieces = [];
-  MatchDetails2025? matchDetails = null;
+  MatchDetails2026? matchDetails = null;
   List<Group>? groups;
   bool loading = true, submitted = false;
-  late MatchScouting2025 data = MatchScouting2025(
+  late MatchScouting2026 data = MatchScouting2026(
       event_code: widget.widget.tournament.key,
       team_number: 0,
       match_number: 0,
       scout_info: get_scout_info(token ?? ''),
       data: Data(
-          auto: Auto2025(
-            starting_position_meters_from_processor: 0,
-            steps: [],
-            field_side: ['red', 'blue'],
-            exit: false,
-            preload: false,
-            both_sides: false,
-          ),
-          auto_scoring:
-              AutoScoring(l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+          auto: Auto2026(
+              starting_position_meters_from_hub_center: 0,
+              steps: [],
+              field_side: [],
+              preload: false,
+              climb: false,
+              contacts_robot: false),
+          auto_scoring: AutoScoring(
+              feed_amount: 0,
+              intake_amount: 0,
+              shoot_amount: 0,
+              goes_under_trench: 0,
+              goes_over_bump: 0,
+              climb_side: 0),
           teleop_scoring: TeleopScoring(
-              l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+              cycles_completed: 0,
+              shoots_from_X: 0,
+              shoots_from_Y: 0,
+              shoot_amount: 0),
           miscellaneous: Miscellaneous(died: false, comments: '')),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
 
@@ -1494,23 +1401,29 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _reset() {
     HapticFeedback.mediumImpact();
-    MatchScouting2025 reset = data.copyWith(
+    MatchScouting2026 reset = data.copyWith(
         match_number: data.match_number + 1,
         data: Data(
-            auto: Auto2025(
-              starting_position_meters_from_processor: 0,
-              steps: [],
-              field_side: ['red', 'blue'],
-              exit: false,
-              preload: false,
-              both_sides: false,
-            ),
+            auto: Auto2026(
+                starting_position_meters_from_hub_center: 0,
+                steps: [],
+                field_side: [],
+                preload: false,
+                climb: false,
+                contacts_robot: false),
             auto_scoring: AutoScoring(
-                l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
+                feed_amount: 0,
+                intake_amount: 0,
+                shoot_amount: 0,
+                goes_under_trench: 0,
+                goes_over_bump: 0,
+                climb_side: 0),
             teleop_scoring: TeleopScoring(
-                l_1: 0, l_2: 0, l_3: 0, l_4: 0, net: 0, processor: 0),
-            miscellaneous: Miscellaneous(died: false, comments: '')),
-        time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
+                cycles_completed: 0,
+                shoots_from_X: 0,
+                shoots_from_Y: 0,
+                shoot_amount: 0),
+            miscellaneous: Miscellaneous(died: false, comments: '')));
     setState(() {
       data = reset;
       submitted = false;
@@ -1710,7 +1623,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
                         Divider(color: Colors.blue),
-                        AutoPieces2025(
+                        AutoPieces2026(
                           auto: data.data.auto,
                           onChanged: (newAuto) {
                             setState(() {
@@ -1748,12 +1661,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                   data: data.data.copyWith(
                                       auto: newAuto,
                                       auto_scoring: AutoScoring(
-                                          l_1: l1,
-                                          l_2: l2,
-                                          l_3: l3,
-                                          l_4: l4,
-                                          net: net,
-                                          processor: processor)));
+                                          feed_amount: 0,
+                                          intake_amount: 0,
+                                          shoot_amount: 0,
+                                          goes_under_trench: 0,
+                                          goes_over_bump: 0,
+                                          climb_side: 0)));
                             });
                           },
                           matchScouting: true,
@@ -1764,78 +1677,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
                         Divider(color: Colors.blue),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L4',
-                          value: data.data.teleop_scoring.l_4,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(l_4: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L3',
-                          value: data.data.teleop_scoring.l_3,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(l_3: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L2',
-                          value: data.data.teleop_scoring.l_2,
-                          max: 12,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(l_2: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'L1',
-                          value: data.data.teleop_scoring.l_1,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(l_1: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Net',
-                          value: data.data.teleop_scoring.net,
-                          max: 18,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(net: value)));
-                          }),
-                        ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Processor',
-                          value: data.data.teleop_scoring.processor,
-                          max: 60,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(processor: value)));
-                          }),
-                        ),
                         SizedBox(height: 20),
                         Text(
                           'Miscellaneous',

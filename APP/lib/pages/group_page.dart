@@ -8,7 +8,7 @@ import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/group_join_request.dart';
-import 'package:scouting_app/models/match_scouting_2025.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 
 import '../models/alliance_request.dart';
@@ -1485,7 +1485,7 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
     this.controller = controller;
     try {
       final jsonData = jsonDecode(_textController.text);
-      final matchData = MatchScouting2025.fromJson(jsonData);
+      final matchData = MatchScouting2026.fromJson(jsonData);
 
       // Submit the scanned data
       final apiService = Provider.of<ApiService>(context, listen: false);
@@ -1523,7 +1523,7 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
                             try {
                               final jsonData = jsonDecode(scanData.code!);
                               final matchData =
-                                  MatchScouting2025.fromJson(jsonData);
+                                  MatchScouting2026.fromJson(jsonData);
 
                               // Update the text field with the scanned data
                               final prevText = _textController.text;

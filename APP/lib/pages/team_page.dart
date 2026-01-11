@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import 'package:scouting_app/widgets/auto_display_2025.dart';
+import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/pit_scouting_form.dart';
-import '../models/match_scouting_2025.dart';
+import '../models/match_scouting_2026.dart';
 import '../widgets/deaths_form.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../widgets/login_widget.dart';
@@ -903,7 +903,7 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   List<DataGridRow> rows = [];
   List<GridColumn> columns = [];
   late ScrollController scrollController;
@@ -990,42 +990,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   'Scout from ${entry.scout_info.team_number}'),
           DataGridCell(columnName: 'match_number', value: entry.match_number),
           DataGridCell(
-              columnName: 'auto_scoring_l_1',
-              value: entry.data.auto_scoring.l_1),
-          DataGridCell(
-              columnName: 'auto_scoring_l_2',
-              value: entry.data.auto_scoring.l_2),
-          DataGridCell(
-              columnName: 'auto_scoring_l_3',
-              value: entry.data.auto_scoring.l_3),
-          DataGridCell(
-              columnName: 'auto_scoring_l_4',
-              value: entry.data.auto_scoring.l_4),
-          DataGridCell(
-              columnName: 'auto_scoring_net',
-              value: entry.data.auto_scoring.net),
-          DataGridCell(
-              columnName: 'auto_scoring_processor',
-              value: entry.data.auto_scoring.processor),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_1',
-              value: entry.data.teleop_scoring.l_1),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_2',
-              value: entry.data.teleop_scoring.l_2),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_3',
-              value: entry.data.teleop_scoring.l_3),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_4',
-              value: entry.data.teleop_scoring.l_4),
-          DataGridCell(
-              columnName: 'teleop_scoring_net',
-              value: entry.data.teleop_scoring.net),
-          DataGridCell(
-              columnName: 'teleop_scoring_processor',
-              value: entry.data.teleop_scoring.processor),
-          DataGridCell(
               columnName: 'died', value: entry.data.miscellaneous.died),
           DataGridCell(
               columnName: 'comments', value: entry.data.miscellaneous.comments),
@@ -1077,7 +1041,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
 class _MatchScoutingSource extends DataGridSource {
   final List<DataGridRow> rows;
-  final List<MatchScouting2025> scoutingData;
+  final List<MatchScouting2026> scoutingData;
   final void Function(int) onDelete;
   _MatchScoutingSource(
       List<DataGridRow> this.rows, this.scoutingData, this.onDelete);
@@ -1108,7 +1072,7 @@ class _MatchScoutingSource extends DataGridSource {
 }
 
 class DeleteButton extends StatefulWidget {
-  final MatchScouting2025 data;
+  final MatchScouting2026 data;
   final void Function() onDelete;
   DeleteButton({Key? key, required this.data, required this.onDelete})
       : super(key: key);
@@ -1177,7 +1141,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
@@ -1226,7 +1190,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2025> pageData = scouting.sublist(
+    List<MatchScouting2026> pageData = scouting.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -1264,7 +1228,7 @@ class _AutosTabState extends State<_AutosTab> {
                                       int index =
                                           rowIndex * numColumns + colIndex;
                                       if (index < pageData.length) {
-                                        return AutoDisplay2025(
+                                        return AutoDisplay2026(
                                           scoutingData: pageData[index],
                                         );
                                       }

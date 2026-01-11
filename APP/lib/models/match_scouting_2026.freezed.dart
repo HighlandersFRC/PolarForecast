@@ -1051,7 +1051,7 @@ Miscellaneous _$MiscellaneousFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Miscellaneous {
-  int get died => throw _privateConstructorUsedError;
+  bool get died => throw _privateConstructorUsedError;
   String get comments => throw _privateConstructorUsedError;
 
   /// Serializes this Miscellaneous to a JSON map.
@@ -1070,7 +1070,7 @@ abstract class $MiscellaneousCopyWith<$Res> {
           Miscellaneous value, $Res Function(Miscellaneous) then) =
       _$MiscellaneousCopyWithImpl<$Res, Miscellaneous>;
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, String comments});
 }
 
 /// @nodoc
@@ -1095,7 +1095,7 @@ class _$MiscellaneousCopyWithImpl<$Res, $Val extends Miscellaneous>
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1112,7 +1112,7 @@ abstract class _$$MiscellaneousImplCopyWith<$Res>
       __$$MiscellaneousImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, String comments});
 }
 
 /// @nodoc
@@ -1135,7 +1135,7 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1153,7 +1153,7 @@ class _$MiscellaneousImpl implements _Miscellaneous {
       _$$MiscellaneousImplFromJson(json);
 
   @override
-  final int died;
+  final bool died;
   @override
   final String comments;
 
@@ -1194,14 +1194,14 @@ class _$MiscellaneousImpl implements _Miscellaneous {
 
 abstract class _Miscellaneous implements Miscellaneous {
   factory _Miscellaneous(
-      {required final int died,
+      {required final bool died,
       required final String comments}) = _$MiscellaneousImpl;
 
   factory _Miscellaneous.fromJson(Map<String, dynamic> json) =
       _$MiscellaneousImpl.fromJson;
 
   @override
-  int get died;
+  bool get died;
   @override
   String get comments;
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:scouting_app/models/pit_scouting_2025.dart';
+import 'package:scouting_app/models/pit_scouting_2026.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/auto_pieces_2025.dart';
+import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
@@ -29,28 +29,33 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   final TextEditingController favoriteColorController = TextEditingController();
   bool formSubmitted = false;
   bool loading = true;
-  late PitScouting2025 pitScoutingData = PitScouting2025(
+  late PitScouting2026 pitScoutingData = PitScouting2026(
     scout_info:
         ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
     team_number: widget.teamNumber,
     event_code: widget.tournament.key,
-    data: PitData2025(
-      driver_experience_events: 0,
-      drive_train: '',
-      can_score_coral: false,
-      coral_levels: [],
-      can_score_processor: false,
-      can_score_net: false,
-      ground_coral_pickup: false,
-      feeder_coral_pickup: false,
-      ground_algae_pickup: false,
-      reef_algae_pickup: false,
-      climbing: [],
-      spare_parts: 0,
-      favorite_color: '',
-      autos: [],
-    ),
+    data: PitData2026(
+        driver_experience_events: 0,
+        drive_train: '',
+        climbing: [],
+        spare_parts: 0,
+        favorite_color: '',
+        autos: [],
+        can_feed_human_player: false,
+        can_pick_up_from_ground: false,
+        distance_to_shoot: 0,
+        cycles_in_25_seconds: 0,
+        cycle_time: 0,
+        go_over_bump: false,
+        go_under_trench: false,
+        can_climb: false,
+        can_climb_in_autonomous: false,
+        can_climb_with_others: false,
+        automatically_shooting: false,
+        shooting_while_moving: false,
+        main_strategy: ''),
     time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+    user_id: '',
   );
   final TextEditingController sparePartsController = TextEditingController();
 
@@ -111,44 +116,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(drive_train: value),
           );
           break;
-        case 'can_score_coral':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_score_coral: value),
-          );
-          if (value == false)
-            pitScoutingData = pitScoutingData.copyWith(
-                data: pitScoutingData.data.copyWith(coral_levels: []));
-          break;
-        case 'can_score_processor':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_score_processor: value),
-          );
-          break;
-        case 'can_score_net':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_score_net: value),
-          );
-          break;
-        case 'ground_coral_pickup':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(ground_coral_pickup: value),
-          );
-          break;
-        case 'feeder_coral_pickup':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(feeder_coral_pickup: value),
-          );
-          break;
-        case 'ground_algae_pickup':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(ground_algae_pickup: value),
-          );
-          break;
-        case 'reef_algae_pickup':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(reef_algae_pickup: value),
-          );
-          break;
         case 'spare_parts':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(spare_parts: value),
@@ -170,14 +137,13 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         data: pitScoutingData.data.copyWith(
           autos: List.from(pitScoutingData.data.autos)
             ..add(
-              Auto2025(
-                starting_position_meters_from_processor: 0,
-                steps: [],
-                field_side: ['red', 'blue'],
-                exit: false,
-                preload: false,
-                both_sides: false,
-              ),
+              Auto2026(
+                  starting_position_meters_from_hub_center: 0,
+                  steps: [],
+                  field_side: ['red', 'blue'],
+                  preload: false,
+                  climb: false,
+                  contacts_robot: false),
             ),
         ),
       );
@@ -259,441 +225,84 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
-                            style: TextStyle(fontSize: 30, color: Colors.blue),
-                          ),
-                        ],
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
+                              style:
+                                  TextStyle(fontSize: 30, color: Colors.blue),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Questions',
-                            style: TextStyle(fontSize: 30, color: Colors.blue),
-                          ),
-                        ],
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Questions',
+                              style:
+                                  TextStyle(fontSize: 30, color: Colors.blue),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Divider(
-                      color: Colors.blue,
-                      thickness: 2.0,
-                    ),
-                    Counter(
-                        label: '# of Events Driver has Driven',
-                        value: pitScoutingData.data.driver_experience_events,
-                        max: 500,
-                        locked: widget.locked,
-                        onChanged: (experience) {
-                          setState(() {
-                            pitScoutingData = pitScoutingData.copyWith(
-                                data: pitScoutingData.data.copyWith(
-                                    driver_experience_events: experience));
-                          });
-                        }),
-                    Text('Drive Train'),
-                    DropdownButton<String>(
-                      isExpanded: true,
-                      items: [
-                        DropdownMenuItem(
-                            value: '',
-                            child: Text(
-                              'Choose...',
-                            )),
-                        DropdownMenuItem(
-                            value: 'Tank',
-                            child: Text(
-                              'Tank',
-                            )),
-                        DropdownMenuItem(
-                            value: 'Swerve',
-                            child: Text(
-                              'Swerve',
-                            )),
-                        DropdownMenuItem(
-                            value: 'Mecanum',
-                            child: Text(
-                              'Mecanum',
-                            )),
-                      ],
-                      value: pitScoutingData.data.drive_train,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) {
-                              if (value != null)
-                                handleChange('drive_train', value);
-                            },
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Can Score Coral'),
-                      value: pitScoutingData.data.can_score_coral,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) => handleChange('can_score_coral', value),
-                    ),
-                    AnimatedSwitcher(
-                        duration: Duration(milliseconds: 250),
-                        child: !pitScoutingData.data.can_score_coral
-                            ? SizedBox.shrink()
-                            : Row(key: ValueKey('coral_levels_row'), children: [
-                                Column(children: [
-                                  Text('L1'),
-                                  Switch(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    value: pitScoutingData.data.coral_levels
-                                        .contains(1),
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) {
-                                            setState(() {
-                                              List<int> updatedCoralLevels =
-                                                  List.from(pitScoutingData
-                                                      .data.coral_levels);
-                                              if (updatedCoralLevels
-                                                  .contains(1)) {
-                                                updatedCoralLevels.remove(1);
-                                              } else {
-                                                updatedCoralLevels.add(1);
-                                              }
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                  coral_levels:
-                                                      updatedCoralLevels,
-                                                ),
-                                              );
-                                            });
-                                          },
-                                  ),
-                                ]),
-                                Column(children: [
-                                  Text('L2'),
-                                  Switch(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    value: pitScoutingData.data.coral_levels
-                                        .contains(2),
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) {
-                                            setState(() {
-                                              List<int> updatedCoralLevels =
-                                                  List.from(pitScoutingData
-                                                      .data.coral_levels);
-                                              if (updatedCoralLevels
-                                                  .contains(2)) {
-                                                updatedCoralLevels.remove(2);
-                                              } else {
-                                                updatedCoralLevels.add(2);
-                                              }
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                  coral_levels:
-                                                      updatedCoralLevels,
-                                                ),
-                                              );
-                                            });
-                                          },
-                                  ),
-                                ]),
-                                Column(children: [
-                                  Text('L3'),
-                                  Switch(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    value: pitScoutingData.data.coral_levels
-                                        .contains(3),
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) {
-                                            setState(() {
-                                              List<int> updatedCoralLevels =
-                                                  List.from(pitScoutingData
-                                                      .data.coral_levels);
-                                              if (updatedCoralLevels
-                                                  .contains(3)) {
-                                                updatedCoralLevels.remove(3);
-                                              } else {
-                                                updatedCoralLevels.add(3);
-                                              }
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                  coral_levels:
-                                                      updatedCoralLevels,
-                                                ),
-                                              );
-                                            });
-                                          },
-                                  ),
-                                ]),
-                                Column(children: [
-                                  Text('L4'),
-                                  Switch(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    value: pitScoutingData.data.coral_levels
-                                        .contains(4),
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) {
-                                            setState(() {
-                                              List<int> updatedCoralLevels =
-                                                  List.from(pitScoutingData
-                                                      .data.coral_levels);
-                                              if (updatedCoralLevels
-                                                  .contains(4)) {
-                                                updatedCoralLevels.remove(4);
-                                              } else {
-                                                updatedCoralLevels.add(4);
-                                              }
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                  coral_levels:
-                                                      updatedCoralLevels,
-                                                ),
-                                              );
-                                            });
-                                          },
-                                  )
-                                ]),
-                              ])),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Can Score Processor'),
-                      value: pitScoutingData.data.can_score_processor,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) =>
-                              handleChange('can_score_processor', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Can Score Net'),
-                      value: pitScoutingData.data.can_score_net,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) => handleChange('can_score_net', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Ground Coral Pickup'),
-                      value: pitScoutingData.data.ground_coral_pickup,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) =>
-                              handleChange('ground_coral_pickup', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Feeder Coral Pickup'),
-                      value: pitScoutingData.data.feeder_coral_pickup,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) =>
-                              handleChange('feeder_coral_pickup', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Ground Algae Pickup'),
-                      value: pitScoutingData.data.ground_algae_pickup,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) =>
-                              handleChange('ground_algae_pickup', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Reef Algae Pickup'),
-                      value: pitScoutingData.data.reef_algae_pickup,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) => handleChange('reef_algae_pickup', value),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Can Shallow Climb'),
-                      value: pitScoutingData.data.climbing.contains('shallow'),
-                      onChanged: widget.locked
-                          ? null
-                          : (value) {
-                              setState(() {
-                                List<String> updatedClimbing =
-                                    List.from(pitScoutingData.data.climbing);
-                                if (value) {
-                                  updatedClimbing.add('shallow');
-                                } else {
-                                  updatedClimbing.remove('shallow');
-                                }
-                                pitScoutingData = pitScoutingData.copyWith(
+                      Divider(
+                        color: Colors.blue,
+                        thickness: 2.0,
+                      ),
+                      Counter(
+                          label: '# of Events Driver has Driven',
+                          value: pitScoutingData.data.driver_experience_events,
+                          max: 500,
+                          locked: widget.locked,
+                          onChanged: (experience) {
+                            setState(() {
+                              pitScoutingData = pitScoutingData.copyWith(
                                   data: pitScoutingData.data.copyWith(
-                                    climbing: updatedClimbing,
-                                  ),
-                                );
-                              });
-                            },
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blue,
-                      inactiveThumbColor: Colors.blue,
-                      title: Text('Can Deep Climb'),
-                      value: pitScoutingData.data.climbing.contains('deep'),
-                      onChanged: widget.locked
-                          ? null
-                          : (value) {
-                              setState(() {
-                                List<String> updatedClimbing =
-                                    List.from(pitScoutingData.data.climbing);
-                                if (value) {
-                                  updatedClimbing.add('deep');
-                                } else {
-                                  updatedClimbing.remove('deep');
-                                }
-                                pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data.copyWith(
-                                    climbing: updatedClimbing,
-                                  ),
-                                );
-                              });
-                            },
-                    ),
-                    Text('Spare Parts'),
-                    DropdownButton<int>(
-                      isExpanded: true,
-                      items: [
-                        DropdownMenuItem(
-                            value: 0,
-                            child: Text(
-                              'No Spare Parts',
-                              style: TextStyle(color: Colors.red),
-                            )),
-                        DropdownMenuItem(
-                            value: 1,
-                            child: Text('Some Spare Parts',
-                                style: TextStyle(color: Colors.orange))),
-                        DropdownMenuItem(
-                            value: 2,
-                            child: Text('Some Spare Mechanisms',
-                                style: TextStyle(color: Colors.yellow))),
-                        DropdownMenuItem(
-                            value: 3,
-                            child: Text('Spare Everything',
-                                style: TextStyle(color: Colors.green))),
-                      ],
-                      value: pitScoutingData.data.spare_parts,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) => handleChange('spare_parts', value ?? 0),
-                    ),
-                    Text('Favorite Color'),
-                    TextField(
-                      enabled: !widget.locked,
-                      onChanged: widget.locked
-                          ? null
-                          : (value) => handleChange('favorite_color', value),
-                      controller: favoriteColorController,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Autos',
-                            style: TextStyle(fontSize: 30, color: Colors.blue),
-                          ),
+                                      driver_experience_events: experience));
+                            });
+                          }),
+                      Text('Drive Train'),
+                      DropdownButton<String>(
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem(
+                              value: '',
+                              child: Text(
+                                'Choose...',
+                              )),
+                          DropdownMenuItem(
+                              value: 'Tank',
+                              child: Text(
+                                'Tank',
+                              )),
+                          DropdownMenuItem(
+                              value: 'Swerve',
+                              child: Text(
+                                'Swerve',
+                              )),
+                          DropdownMenuItem(
+                              value: 'Mecanum',
+                              child: Text(
+                                'Mecanum',
+                              )),
                         ],
+                        value: pitScoutingData.data.drive_train,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) {
+                                if (value != null)
+                                  handleChange('drive_train', value);
+                              },
                       ),
-                    ),
-                    Divider(
-                      color: Colors.blue,
-                      thickness: 2.0,
-                    ),
-                    SizedBox(height: 20),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: pitScoutingData.data.autos.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Card(
-                                child: Column(children: [
-                              AutoPieces2025(
-                                auto: pitScoutingData.data.autos[index],
-                                onChanged: (newAuto) {
-                                  setState(() {
-                                    List<Auto2025> newAutos =
-                                        pitScoutingData.data.autos.toList();
-                                    newAutos[index] = newAuto;
-                                    pitScoutingData = pitScoutingData.copyWith(
-                                        data: pitScoutingData.data
-                                            .copyWith(autos: newAutos));
-                                  });
-                                },
-                                locked: widget.locked,
-                              ),
-                              SizedBox(
-                                height: 8,
-                              ),
-                              if (!widget.locked)
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      pitScoutingData =
-                                          pitScoutingData.copyWith(
-                                        data: pitScoutingData.data.copyWith(
-                                          autos: List.from(
-                                              pitScoutingData.data.autos)
-                                            ..removeAt(index),
-                                        ),
-                                      );
-                                    });
-                                  },
-                                ),
-                            ])));
-                      },
-                    ),
-                    if (!widget.locked)
-                      ElevatedButton(
-                        onPressed: widget.locked ? () {} : handleAddAuto,
-                        child: Text('Add Auto'),
-                      ),
-                    SizedBox(height: 20),
-                    if (!widget.locked)
-                      ElevatedButton(
-                        onPressed: widget.locked ? () {} : handleSubmit,
-                        child: Text('Submit'),
-                      ),
-                  ],
-                ),
+                    ]),
               ),
             ),
     );
