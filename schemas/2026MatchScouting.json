@@ -1,0 +1,40 @@
+{
+    "event_code": "eventCode",
+    "team_number": 0,
+    "match_number": 0,
+    "scout_info": {
+        "user_id": "id",
+        "first_name": "Iceberg",
+        "username": "Iceberg101",
+        "team_number": 9999
+    },
+    "data": {
+        "auto": {
+            "starting_position_meters_from_hub_center": 0,
+            "steps": [],
+            "field_side": [
+                "red",
+                "blue"
+            ],
+            "preload": true,
+            "climb": true
+        },
+        "auto_scoring": {
+            "feed_amount": 0,
+            "intake_amount": 0,
+            "shoot_amount": 0,
+            "goes_under_trench": 0,
+            "goes_over_bump": 0,
+            "climb_side": 0
+        },
+        "teleop_scoring": {
+            "cycles_completed": 0,
+            "shoots_from": 0
+        },
+        "miscellaneous": {
+            "died": 0,
+            "comments": "Yo this bot is trash"
+        }
+    },
+    "time": 0
+}
