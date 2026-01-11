@@ -307,6 +307,7 @@ Data _$DataFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Data {
+  Auto2026 get auto => throw _privateConstructorUsedError;
   AutoScoring get auto_scoring => throw _privateConstructorUsedError;
   TeleopScoring get teleop_scoring => throw _privateConstructorUsedError;
   Miscellaneous get miscellaneous => throw _privateConstructorUsedError;
@@ -326,10 +327,12 @@ abstract class $DataCopyWith<$Res> {
       _$DataCopyWithImpl<$Res, Data>;
   @useResult
   $Res call(
-      {AutoScoring auto_scoring,
+      {Auto2026 auto,
+      AutoScoring auto_scoring,
       TeleopScoring teleop_scoring,
       Miscellaneous miscellaneous});
 
+  $Auto2026CopyWith<$Res> get auto;
   $AutoScoringCopyWith<$Res> get auto_scoring;
   $TeleopScoringCopyWith<$Res> get teleop_scoring;
   $MiscellaneousCopyWith<$Res> get miscellaneous;
@@ -350,11 +353,16 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? auto = null,
     Object? auto_scoring = null,
     Object? teleop_scoring = null,
     Object? miscellaneous = null,
   }) {
     return _then(_value.copyWith(
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
       auto_scoring: null == auto_scoring
           ? _value.auto_scoring
           : auto_scoring // ignore: cast_nullable_to_non_nullable
@@ -368,6 +376,16 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
           : miscellaneous // ignore: cast_nullable_to_non_nullable
               as Miscellaneous,
     ) as $Val);
+  }
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Auto2026CopyWith<$Res> get auto {
+    return $Auto2026CopyWith<$Res>(_value.auto, (value) {
+      return _then(_value.copyWith(auto: value) as $Val);
+    });
   }
 
   /// Create a copy of Data
@@ -409,10 +427,13 @@ abstract class _$$DataImplCopyWith<$Res> implements $DataCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {AutoScoring auto_scoring,
+      {Auto2026 auto,
+      AutoScoring auto_scoring,
       TeleopScoring teleop_scoring,
       Miscellaneous miscellaneous});
 
+  @override
+  $Auto2026CopyWith<$Res> get auto;
   @override
   $AutoScoringCopyWith<$Res> get auto_scoring;
   @override
@@ -433,11 +454,16 @@ class __$$DataImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? auto = null,
     Object? auto_scoring = null,
     Object? teleop_scoring = null,
     Object? miscellaneous = null,
   }) {
     return _then(_$DataImpl(
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
       auto_scoring: null == auto_scoring
           ? _value.auto_scoring
           : auto_scoring // ignore: cast_nullable_to_non_nullable
@@ -458,13 +484,16 @@ class __$$DataImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$DataImpl implements _Data {
   _$DataImpl(
-      {required this.auto_scoring,
+      {required this.auto,
+      required this.auto_scoring,
       required this.teleop_scoring,
       required this.miscellaneous});
 
   factory _$DataImpl.fromJson(Map<String, dynamic> json) =>
       _$$DataImplFromJson(json);
 
+  @override
+  final Auto2026 auto;
   @override
   final AutoScoring auto_scoring;
   @override
@@ -474,7 +503,7 @@ class _$DataImpl implements _Data {
 
   @override
   String toString() {
-    return 'Data(auto_scoring: $auto_scoring, teleop_scoring: $teleop_scoring, miscellaneous: $miscellaneous)';
+    return 'Data(auto: $auto, auto_scoring: $auto_scoring, teleop_scoring: $teleop_scoring, miscellaneous: $miscellaneous)';
   }
 
   @override
@@ -482,6 +511,7 @@ class _$DataImpl implements _Data {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$DataImpl &&
+            (identical(other.auto, auto) || other.auto == auto) &&
             (identical(other.auto_scoring, auto_scoring) ||
                 other.auto_scoring == auto_scoring) &&
             (identical(other.teleop_scoring, teleop_scoring) ||
@@ -492,8 +522,8 @@ class _$DataImpl implements _Data {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, auto_scoring, teleop_scoring, miscellaneous);
+  int get hashCode => Object.hash(
+      runtimeType, auto, auto_scoring, teleop_scoring, miscellaneous);
 
   /// Create a copy of Data
   /// with the given fields replaced by the non-null parameter values.
@@ -513,12 +543,15 @@ class _$DataImpl implements _Data {
 
 abstract class _Data implements Data {
   factory _Data(
-      {required final AutoScoring auto_scoring,
+      {required final Auto2026 auto,
+      required final AutoScoring auto_scoring,
       required final TeleopScoring teleop_scoring,
       required final Miscellaneous miscellaneous}) = _$DataImpl;
 
   factory _Data.fromJson(Map<String, dynamic> json) = _$DataImpl.fromJson;
 
+  @override
+  Auto2026 get auto;
   @override
   AutoScoring get auto_scoring;
   @override

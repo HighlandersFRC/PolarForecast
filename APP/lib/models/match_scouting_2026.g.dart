@@ -30,6 +30,7 @@ Map<String, dynamic> _$$MatchScouting2026ImplToJson(
     };
 
 _$DataImpl _$$DataImplFromJson(Map<String, dynamic> json) => _$DataImpl(
+      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       auto_scoring:
           AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
       teleop_scoring: TeleopScoring.fromJson(
@@ -40,6 +41,7 @@ _$DataImpl _$$DataImplFromJson(Map<String, dynamic> json) => _$DataImpl(
 
 Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
     <String, dynamic>{
+      'auto': instance.auto.toJson(),
       'auto_scoring': instance.auto_scoring.toJson(),
       'teleop_scoring': instance.teleop_scoring.toJson(),
       'miscellaneous': instance.miscellaneous.toJson(),

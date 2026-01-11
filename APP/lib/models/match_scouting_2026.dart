@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'scout_info.dart';
+import 'pit_scouting_2026.dart';
 
 part 'match_scouting_2026.freezed.dart';
 part 'match_scouting_2026.g.dart';
@@ -22,6 +23,7 @@ class MatchScouting2026 with _$MatchScouting2026 {
 @freezed
 class Data with _$Data {
   factory Data({
+    required Auto2026 auto,
     required AutoScoring auto_scoring,
     required TeleopScoring teleop_scoring,
     required Miscellaneous miscellaneous,
