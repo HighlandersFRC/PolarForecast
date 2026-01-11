@@ -1,0 +1,85 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'scout_info.dart';
+
+part 'match_scouting_2026.freezed.dart';
+part 'match_scouting_2026.g.dart';
+
+@freezed
+class MatchScouting2026 with _$MatchScouting2026 {
+  factory MatchScouting2026({
+    required String event_code,
+    required int team_number,
+    required int match_number,
+    required ScoutInfo scout_info,
+    required Data data,
+    required int time,
+  }) = _MatchScouting2026;
+
+  factory MatchScouting2026.fromJson(Map<String, dynamic> json) =>
+      _$MatchScouting2026FromJson(json);
+}
+
+@freezed
+class Data with _$Data {
+  factory Data({
+    required Auto auto,
+    required AutoScoring auto_scoring,
+    required TeleopScoring teleop_scoring,
+    required Miscellaneous miscellaneous,
+  }) = _Data;
+
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
+}
+
+@freezed
+class Auto with _$Auto {
+  factory Auto({
+    required double starting_position_meters_from_hub_center,
+    required List<dynamic> steps,
+    required List<String> field_side,
+    required bool preload,
+    required bool climb,
+    required bool contacts_robot,
+  }) = _Auto;
+
+  factory Auto.fromJson(Map<String, dynamic> json) => _$AutoFromJson(json);
+}
+
+@freezed
+class AutoScoring with _$AutoScoring {
+  factory AutoScoring({
+    required int feed_amount,
+    required int intake_amount,
+    required int shoot_amount,
+    required int goes_under_trench,
+    required int goes_over_bump,
+    required int climb_side,
+  }) = _AutoScoring;
+
+  factory AutoScoring.fromJson(Map<String, dynamic> json) =>
+      _$AutoScoringFromJson(json);
+}
+
+@freezed
+class TeleopScoring with _$TeleopScoring {
+  factory TeleopScoring({
+    required int cycles_completed,
+    required int shoots_from_X,
+    required int shoots_from_Y,
+    required int shoot_amount,
+  }) = _TeleopScoring;
+
+  factory TeleopScoring.fromJson(Map<String, dynamic> json) =>
+      _$TeleopScoringFromJson(json);
+}
+
+@freezed
+class Miscellaneous with _$Miscellaneous {
+  factory Miscellaneous({
+    required int died,
+    required String comments,
+  }) = _Miscellaneous;
+
+  factory Miscellaneous.fromJson(Map<String, dynamic> json) =>
+      _$MiscellaneousFromJson(json);
+}
