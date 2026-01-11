@@ -82,26 +82,24 @@ _$Auto2026Impl _$$Auto2026ImplFromJson(Map<String, dynamic> json) =>
     _$Auto2026Impl(
       starting_position_meters_from_hub_center:
           (json['starting_position_meters_from_hub_center'] as num).toDouble(),
-      steps: (json['steps'] as List<dynamic>)
-          .map((e) => AutoStep2026.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      steps: json['steps'] as List<dynamic>,
       field_side: (json['field_side'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
       preload: json['preload'] as bool,
-      preload_amount: (json['preload_amount'] as num).toInt(),
-      both_sides: json['both_sides'] as bool? ?? false,
+      climb: json['climb'] as bool,
+      contacts_robot: json['contacts_robot'] as bool,
     );
 
 Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
     <String, dynamic>{
       'starting_position_meters_from_hub_center':
           instance.starting_position_meters_from_hub_center,
-      'steps': instance.steps.map((e) => e.toJson()).toList(),
+      'steps': instance.steps,
       'field_side': instance.field_side,
       'preload': instance.preload,
-      'preload_amount': instance.preload_amount,
-      'both_sides': instance.both_sides,
+      'climb': instance.climb,
+      'contacts_robot': instance.contacts_robot,
     };
 
 _$AutoStep2026Impl _$$AutoStep2026ImplFromJson(Map<String, dynamic> json) =>

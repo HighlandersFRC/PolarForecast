@@ -47,13 +47,13 @@ class PitData2026 with _$PitData2026 {
 
 @freezed
 class Auto2026 with _$Auto2026 {
-  const factory Auto2026({
+  factory Auto2026({
     required double starting_position_meters_from_hub_center,
-    required List<AutoStep2026> steps,
+    required List<dynamic> steps,
     required List<String> field_side,
     required bool preload,
-    required int preload_amount,
-    @Default(false) bool both_sides,
+    required bool climb,
+    required bool contacts_robot,
   }) = _Auto2026;
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>
