@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 AllianceRequest _$AllianceRequestFromJson(Map<String, dynamic> json) {
   return _AllianceRequest.fromJson(json);
-}
+}  
 
 /// @nodoc
 mixin _$AllianceRequest {
