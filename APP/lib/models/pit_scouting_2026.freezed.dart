@@ -884,6 +884,7 @@ mixin _$Auto2026 {
   bool get preload => throw _privateConstructorUsedError;
   bool get climb => throw _privateConstructorUsedError;
   bool get contacts_robot => throw _privateConstructorUsedError;
+  bool get both_sides => throw _privateConstructorUsedError;
 
   /// Serializes this Auto2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -906,7 +907,8 @@ abstract class $Auto2026CopyWith<$Res> {
       List<String> field_side,
       bool preload,
       bool climb,
-      bool contacts_robot});
+      bool contacts_robot,
+      bool both_sides});
 }
 
 /// @nodoc
@@ -930,6 +932,7 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
     Object? preload = null,
     Object? climb = null,
     Object? contacts_robot = null,
+    Object? both_sides = null,
   }) {
     return _then(_value.copyWith(
       starting_position_meters_from_hub_center: null ==
@@ -957,6 +960,10 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
           ? _value.contacts_robot
           : contacts_robot // ignore: cast_nullable_to_non_nullable
               as bool,
+      both_sides: null == both_sides
+          ? _value.both_sides
+          : both_sides // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -975,7 +982,8 @@ abstract class _$$Auto2026ImplCopyWith<$Res>
       List<String> field_side,
       bool preload,
       bool climb,
-      bool contacts_robot});
+      bool contacts_robot,
+      bool both_sides});
 }
 
 /// @nodoc
@@ -997,6 +1005,7 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
     Object? preload = null,
     Object? climb = null,
     Object? contacts_robot = null,
+    Object? both_sides = null,
   }) {
     return _then(_$Auto2026Impl(
       starting_position_meters_from_hub_center: null ==
@@ -1024,6 +1033,10 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
           ? _value.contacts_robot
           : contacts_robot // ignore: cast_nullable_to_non_nullable
               as bool,
+      both_sides: null == both_sides
+          ? _value.both_sides
+          : both_sides // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -1037,7 +1050,8 @@ class _$Auto2026Impl implements _Auto2026 {
       required final List<String> field_side,
       required this.preload,
       required this.climb,
-      required this.contacts_robot})
+      required this.contacts_robot,
+      this.both_sides = false})
       : _steps = steps,
         _field_side = field_side;
 
@@ -1068,10 +1082,13 @@ class _$Auto2026Impl implements _Auto2026 {
   final bool climb;
   @override
   final bool contacts_robot;
+  @override
+  @JsonKey()
+  final bool both_sides;
 
   @override
   String toString() {
-    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot)';
+    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides)';
   }
 
   @override
@@ -1089,7 +1106,9 @@ class _$Auto2026Impl implements _Auto2026 {
             (identical(other.preload, preload) || other.preload == preload) &&
             (identical(other.climb, climb) || other.climb == climb) &&
             (identical(other.contacts_robot, contacts_robot) ||
-                other.contacts_robot == contacts_robot));
+                other.contacts_robot == contacts_robot) &&
+            (identical(other.both_sides, both_sides) ||
+                other.both_sides == both_sides));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1101,7 +1120,8 @@ class _$Auto2026Impl implements _Auto2026 {
       const DeepCollectionEquality().hash(_field_side),
       preload,
       climb,
-      contacts_robot);
+      contacts_robot,
+      both_sides);
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.
@@ -1126,7 +1146,8 @@ abstract class _Auto2026 implements Auto2026 {
       required final List<String> field_side,
       required final bool preload,
       required final bool climb,
-      required final bool contacts_robot}) = _$Auto2026Impl;
+      required final bool contacts_robot,
+      final bool both_sides}) = _$Auto2026Impl;
 
   factory _Auto2026.fromJson(Map<String, dynamic> json) =
       _$Auto2026Impl.fromJson;
@@ -1143,6 +1164,8 @@ abstract class _Auto2026 implements Auto2026 {
   bool get climb;
   @override
   bool get contacts_robot;
+  @override
+  bool get both_sides;
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.

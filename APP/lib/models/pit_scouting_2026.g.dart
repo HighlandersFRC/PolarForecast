@@ -89,6 +89,7 @@ _$Auto2026Impl _$$Auto2026ImplFromJson(Map<String, dynamic> json) =>
       preload: json['preload'] as bool,
       climb: json['climb'] as bool,
       contacts_robot: json['contacts_robot'] as bool,
+      both_sides: json['both_sides'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
@@ -100,6 +101,7 @@ Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
       'preload': instance.preload,
       'climb': instance.climb,
       'contacts_robot': instance.contacts_robot,
+      'both_sides': instance.both_sides,
     };
 
 _$AutoStep2026Impl _$$AutoStep2026ImplFromJson(Map<String, dynamic> json) =>

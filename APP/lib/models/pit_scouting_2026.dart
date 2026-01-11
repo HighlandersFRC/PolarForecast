@@ -54,6 +54,7 @@ class Auto2026 with _$Auto2026 {
     required bool preload,
     required bool climb,
     required bool contacts_robot,
+    @Default(false) bool both_sides,
   }) = _Auto2026;
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>
