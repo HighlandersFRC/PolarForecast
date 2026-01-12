@@ -55,6 +55,9 @@ class Auto2026 with _$Auto2026 {
     required bool climb,
     required bool contacts_robot,
     @Default(false) bool both_sides,
+    @Default(0) int autoPieces, // <-- NEW COUNTER FIELD
+    @Default(0) int fuelShotsInAuto, // NEW: fuel shots
+    @Default(0) int intakedAmountInAuto,
   }) = _Auto2026;
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>

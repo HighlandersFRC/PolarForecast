@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scouting_app/widgets/counter.dart';
 
 import '../models/pit_scouting_2026.dart';
 
@@ -159,8 +160,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             double overlayWidthBumpR = displayedImageWidth * 0.16;
             double overlayHeightBumpR = displayedImageHeight * 0.15;
 
-            double overlayWidthDropdown = displayedImageWidth * 0.25;
-            double overlayHeightDropdown = displayedImageHeight * 0.16;
+            double overlayWidthDropdown = displayedImageWidth * 0.23;
+            double overlayHeightDropdown = displayedImageHeight * 0.06;
 
             double overlayWidthNeutralZone = displayedImageWidth * 0.55;
             double overlayHeightNeutralZone = displayedImageHeight * 0.12;
@@ -170,7 +171,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
 
             robotPosition ??= Offset(
               displayedImageWidth * 0.45, // middle horizontally
-              displayedImageHeight * 0.5, // middle of lower half vertically
+              displayedImageHeight * 0.65, // middle of lower half vertically
             );
 
             return Column(
@@ -253,9 +254,10 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                               width: squareSize,
                               height: squareSize,
                               decoration: BoxDecoration(
-                                color: Colors.orangeAccent,
-                                border:
-                                    Border.all(color: Colors.white, width: 2),
+                                color: const Color.fromARGB(91, 0, 0, 0),
+                                border: Border.all(
+                                    color: const Color.fromARGB(255, 0, 255, 4),
+                                    width: 2.5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(Icons.smart_toy, color: Colors.white),
@@ -675,14 +677,16 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                 children: [
                                   Icon(
                                     Icons.sports_score, // depot-style icon
-                                    color: const Color.fromARGB(255, 0, 0, 0),
+                                    color: const Color.fromARGB(
+                                        255, 255, 255, 255),
                                     size: 18 * scaleFactor,
                                   ),
                                   SizedBox(height: 4),
                                   Text(
                                     'The Hub',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(
+                                          255, 255, 255, 255),
                                       fontSize: 11 * (scaleFactor - 0.4),
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -903,6 +907,31 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                 buildStepsUI(),
                 SizedBox(
                   height: 8,
+                ),
+                Counter(
+                  label: 'Fuel Shot in Auto (Approximate)',
+                  value: widget.auto.fuelShotsInAuto,
+                  max: 1000000,
+                  locked: widget.locked,
+                  onChanged: (newValue) {
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(
+                          widget.auto.copyWith(fuelShotsInAuto: newValue));
+                    }
+                  },
+                ),
+                SizedBox(height: 16),
+                Counter(
+                  label: 'Intaked amount in Auto (Approximate)',
+                  value: widget.auto.intakedAmountInAuto,
+                  max: 1000000,
+                  locked: widget.locked,
+                  onChanged: (newValue) {
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(
+                          widget.auto.copyWith(intakedAmountInAuto: newValue));
+                    }
+                  },
                 ),
                 if (!widget.matchScouting)
                   Text('Field Side',

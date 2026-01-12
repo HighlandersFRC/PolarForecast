@@ -885,6 +885,11 @@ mixin _$Auto2026 {
   bool get climb => throw _privateConstructorUsedError;
   bool get contacts_robot => throw _privateConstructorUsedError;
   bool get both_sides => throw _privateConstructorUsedError;
+  int get autoPieces =>
+      throw _privateConstructorUsedError; // <-- NEW COUNTER FIELD
+  int get fuelShotsInAuto =>
+      throw _privateConstructorUsedError; // NEW: fuel shots
+  int get intakedAmountInAuto => throw _privateConstructorUsedError;
 
   /// Serializes this Auto2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -908,7 +913,10 @@ abstract class $Auto2026CopyWith<$Res> {
       bool preload,
       bool climb,
       bool contacts_robot,
-      bool both_sides});
+      bool both_sides,
+      int autoPieces,
+      int fuelShotsInAuto,
+      int intakedAmountInAuto});
 }
 
 /// @nodoc
@@ -933,6 +941,9 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
     Object? climb = null,
     Object? contacts_robot = null,
     Object? both_sides = null,
+    Object? autoPieces = null,
+    Object? fuelShotsInAuto = null,
+    Object? intakedAmountInAuto = null,
   }) {
     return _then(_value.copyWith(
       starting_position_meters_from_hub_center: null ==
@@ -964,6 +975,18 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
           ? _value.both_sides
           : both_sides // ignore: cast_nullable_to_non_nullable
               as bool,
+      autoPieces: null == autoPieces
+          ? _value.autoPieces
+          : autoPieces // ignore: cast_nullable_to_non_nullable
+              as int,
+      fuelShotsInAuto: null == fuelShotsInAuto
+          ? _value.fuelShotsInAuto
+          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
+              as int,
+      intakedAmountInAuto: null == intakedAmountInAuto
+          ? _value.intakedAmountInAuto
+          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -983,7 +1006,10 @@ abstract class _$$Auto2026ImplCopyWith<$Res>
       bool preload,
       bool climb,
       bool contacts_robot,
-      bool both_sides});
+      bool both_sides,
+      int autoPieces,
+      int fuelShotsInAuto,
+      int intakedAmountInAuto});
 }
 
 /// @nodoc
@@ -1006,6 +1032,9 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
     Object? climb = null,
     Object? contacts_robot = null,
     Object? both_sides = null,
+    Object? autoPieces = null,
+    Object? fuelShotsInAuto = null,
+    Object? intakedAmountInAuto = null,
   }) {
     return _then(_$Auto2026Impl(
       starting_position_meters_from_hub_center: null ==
@@ -1037,6 +1066,18 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
           ? _value.both_sides
           : both_sides // ignore: cast_nullable_to_non_nullable
               as bool,
+      autoPieces: null == autoPieces
+          ? _value.autoPieces
+          : autoPieces // ignore: cast_nullable_to_non_nullable
+              as int,
+      fuelShotsInAuto: null == fuelShotsInAuto
+          ? _value.fuelShotsInAuto
+          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
+              as int,
+      intakedAmountInAuto: null == intakedAmountInAuto
+          ? _value.intakedAmountInAuto
+          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -1051,7 +1092,10 @@ class _$Auto2026Impl implements _Auto2026 {
       required this.preload,
       required this.climb,
       required this.contacts_robot,
-      this.both_sides = false})
+      this.both_sides = false,
+      this.autoPieces = 0,
+      this.fuelShotsInAuto = 0,
+      this.intakedAmountInAuto = 0})
       : _steps = steps,
         _field_side = field_side;
 
@@ -1085,10 +1129,21 @@ class _$Auto2026Impl implements _Auto2026 {
   @override
   @JsonKey()
   final bool both_sides;
+  @override
+  @JsonKey()
+  final int autoPieces;
+// <-- NEW COUNTER FIELD
+  @override
+  @JsonKey()
+  final int fuelShotsInAuto;
+// NEW: fuel shots
+  @override
+  @JsonKey()
+  final int intakedAmountInAuto;
 
   @override
   String toString() {
-    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides)';
+    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides, autoPieces: $autoPieces, fuelShotsInAuto: $fuelShotsInAuto, intakedAmountInAuto: $intakedAmountInAuto)';
   }
 
   @override
@@ -1108,7 +1163,13 @@ class _$Auto2026Impl implements _Auto2026 {
             (identical(other.contacts_robot, contacts_robot) ||
                 other.contacts_robot == contacts_robot) &&
             (identical(other.both_sides, both_sides) ||
-                other.both_sides == both_sides));
+                other.both_sides == both_sides) &&
+            (identical(other.autoPieces, autoPieces) ||
+                other.autoPieces == autoPieces) &&
+            (identical(other.fuelShotsInAuto, fuelShotsInAuto) ||
+                other.fuelShotsInAuto == fuelShotsInAuto) &&
+            (identical(other.intakedAmountInAuto, intakedAmountInAuto) ||
+                other.intakedAmountInAuto == intakedAmountInAuto));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1121,7 +1182,10 @@ class _$Auto2026Impl implements _Auto2026 {
       preload,
       climb,
       contacts_robot,
-      both_sides);
+      both_sides,
+      autoPieces,
+      fuelShotsInAuto,
+      intakedAmountInAuto);
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.
@@ -1147,7 +1211,10 @@ abstract class _Auto2026 implements Auto2026 {
       required final bool preload,
       required final bool climb,
       required final bool contacts_robot,
-      final bool both_sides}) = _$Auto2026Impl;
+      final bool both_sides,
+      final int autoPieces,
+      final int fuelShotsInAuto,
+      final int intakedAmountInAuto}) = _$Auto2026Impl;
 
   factory _Auto2026.fromJson(Map<String, dynamic> json) =
       _$Auto2026Impl.fromJson;
@@ -1166,6 +1233,12 @@ abstract class _Auto2026 implements Auto2026 {
   bool get contacts_robot;
   @override
   bool get both_sides;
+  @override
+  int get autoPieces; // <-- NEW COUNTER FIELD
+  @override
+  int get fuelShotsInAuto; // NEW: fuel shots
+  @override
+  int get intakedAmountInAuto;
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.

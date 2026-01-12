@@ -1,22 +1,54 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class Counter extends StatelessWidget {
+class Counter extends StatefulWidget {
   final String label;
   final int value;
   final int max;
   final ValueChanged<int> onChanged;
   final bool locked;
 
-  Counter({
+  const Counter({
+    Key? key,
     required this.label,
     required this.value,
     required this.max,
     required this.onChanged,
     this.locked = false,
-  });
+  }) : super(key: key);
+
+  @override
+  _CounterState createState() => _CounterState();
+}
+
+class _CounterState extends State<Counter> {
+  Timer? _holdTimer;
+
+  void _startHoldTimer(int step) {
+    _holdTimer?.cancel();
+    _holdTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      _updateValue(step * 5); // increment/decrement by 5 while holding
+    });
+  }
+
+  void _stopHoldTimer() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+  }
+
+  void _updateValue(int delta) {
+    int newValue = math.max(0, math.min(widget.value + delta, widget.max));
+    widget.onChanged(newValue);
+  }
+
+  @override
+  void dispose() {
+    _holdTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +56,9 @@ class Counter extends StatelessWidget {
       children: [
         Expanded(
           child: TextField(
-            readOnly: locked,
+            readOnly: widget.locked,
             decoration: InputDecoration(
-              labelText: label,
+              labelText: widget.label,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
@@ -34,54 +66,56 @@ class Counter extends StatelessWidget {
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            controller: TextEditingController(text: '$value'),
+            controller: TextEditingController(text: '${widget.value}'),
             onSubmitted: (newValue) {
-              int? newIntValue = int.tryParse(newValue);
-              if (newIntValue != null) {
-                onChanged(math.max(math.min(newIntValue, max), 0));
+              int? newInt = int.tryParse(newValue);
+              if (newInt != null) {
+                widget.onChanged(math.max(0, math.min(newInt, widget.max)));
               }
             },
           ),
         ),
         SizedBox(width: 8),
-        IconButton.filled(
-          style: IconButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                side: BorderSide(style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              fixedSize: Size(50, 50)),
-          icon: Icon(Icons.remove),
-          onPressed: value > 0
-              ? locked
-                  ? null
-                  : () {
-                      onChanged(value - 1);
-                      HapticFeedback.lightImpact();
-                    }
-              : null,
+        GestureDetector(
+          onTap: widget.locked || widget.value == 0
+              ? null
+              : () => _updateValue(-1),
+          onLongPressStart: widget.locked || widget.value == 0
+              ? null
+              : (_) => _startHoldTimer(-1),
+          onLongPressEnd: (_) => _stopHoldTimer(),
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: widget.value == 0 || widget.locked
+                  ? Colors.grey
+                  : Colors.blue,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.remove, color: Colors.white),
+          ),
         ),
         SizedBox(width: 8),
-        IconButton.filled(
-          style: IconButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                side: BorderSide(style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              fixedSize: Size(50, 50)),
-          icon: Icon(Icons.add),
-          onPressed: value < max
-              ? locked
-                  ? null
-                  : () {
-                      onChanged(value + 1);
-                      HapticFeedback.lightImpact();
-                    }
-              : null,
+        GestureDetector(
+          onTap: widget.locked || widget.value >= widget.max
+              ? null
+              : () => _updateValue(1),
+          onLongPressStart: widget.locked || widget.value >= widget.max
+              ? null
+              : (_) => _startHoldTimer(1),
+          onLongPressEnd: (_) => _stopHoldTimer(),
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: widget.value >= widget.max || widget.locked
+                  ? Colors.grey
+                  : Colors.blue,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.add, color: Colors.white),
+          ),
         ),
       ],
     );
