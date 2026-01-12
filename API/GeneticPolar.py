@@ -4,8 +4,8 @@ from types import TracebackType
 import pandas as pd
 import numpy as np
 import warnings
-from models.match_scouting_2025 import MatchScouting2025
-from models.tba_match_2025 import ReefLevel, TBAMatch2025
+from models.match_scouting_2026 import MatchScouting2026
+from models.tba_match_2026 import TBAMatch2026
 from GeneticAlg import geneticAlg
 
 from RemoveBadData import (
@@ -13,7 +13,6 @@ from RemoveBadData import (
 )
 
 warnings.filterwarnings("ignore")
-NET_ALGAE_COMPLETION_RATE = 0.9
 
 
 def flatten_dict(dd, separator="_", prefix=""):
@@ -52,51 +51,16 @@ def getPieceScored(
     return retval
 
 
-def getLevelScoringCount(level: ReefLevel, autoLevel: ReefLevel = ReefLevel(nodeA=False, nodeB=False, nodeC=False, nodeD=False, nodeE=False, nodeF=False, nodeG=False, nodeH=False, nodeI=False, nodeJ=False, nodeK=False, nodeL=False)):
-    count = 0
-    if level.nodeA and not autoLevel.nodeA:
-        count += 1
-    if level.nodeB and not autoLevel.nodeB:
-        count += 1
-    if level.nodeC and not autoLevel.nodeC:
-        count += 1
-    if level.nodeD and not autoLevel.nodeD:
-        count += 1
-    if level.nodeE and not autoLevel.nodeE:
-        count += 1
-    if level.nodeF and not autoLevel.nodeF:
-        count += 1
-    if level.nodeG and not autoLevel.nodeG:
-        count += 1
-    if level.nodeH and not autoLevel.nodeH:
-        count += 1
-    if level.nodeI and not autoLevel.nodeI:
-        count += 1
-    if level.nodeJ and not autoLevel.nodeJ:
-        count += 1
-    if level.nodeK and not autoLevel.nodeK:
-        count += 1
-    if level.nodeL and not autoLevel.nodeL:
-        count += 1
-    return count
 
 
-def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting2025]):
+
+def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting2026]):
     data = copy.deepcopy(TBAdata)
     scoutingBaseData = scoutingData
     oprMatchList = []
     # Isolating Data Related to OPR
     blankOprEntry = {
-        "auto_scoring_l_1": 0,
-        "auto_scoring_l_2": 0,
-        "auto_scoring_l_3": 0,
-        "auto_scoring_l_4": 0,
-        "net": 0,
-        "processor": 0,
-        "teleop_scoring_l_1": 0,
-        "teleop_scoring_l_2": 0,
-        "teleop_scoring_l_3": 0,
-        "teleop_scoring_l_4": 0,
+        "fuel_count": 0,
         "foul_points": 0,
         "station1": 0,
         "station2": 0,
@@ -126,25 +90,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                 oprMatchEntry["station1_mobility"] = row.score_breakdown[allianceStr].autoLineRobot1
                 oprMatchEntry["station2_mobility"] = row.score_breakdown[allianceStr].autoLineRobot2
                 oprMatchEntry["station3_mobility"] = row.score_breakdown[allianceStr].autoLineRobot3
-                oprMatchEntry["auto_scoring_l_1"] = row.score_breakdown[allianceStr].autoReef.trough
-                oprMatchEntry["auto_scoring_l_2"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.botRow)
-                oprMatchEntry["auto_scoring_l_3"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.midRow)
-                oprMatchEntry["auto_scoring_l_4"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.topRow)
-                oprMatchEntry["teleop_scoring_l_1"] = row.score_breakdown[allianceStr].teleopReef.trough
-                oprMatchEntry["teleop_scoring_l_2"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.botRow, autoLevel=row.score_breakdown[allianceStr].autoReef.botRow)
-                oprMatchEntry["teleop_scoring_l_3"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.midRow, autoLevel=row.score_breakdown[allianceStr].autoReef.midRow)
-                oprMatchEntry["teleop_scoring_l_4"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.topRow, autoLevel=row.score_breakdown[allianceStr].autoReef.topRow)
-                oprMatchEntry["processor"] = row.score_breakdown[allianceStr].wallAlgaeCount
-                oprMatchEntry["net"] = row.score_breakdown[allianceStr].netAlgaeCount - \
-                    (row.score_breakdown[opponentStr].wallAlgaeCount *
-                     NET_ALGAE_COMPLETION_RATE)
-                oprMatchEntry["coopertition"] = 1 if row.score_breakdown[allianceStr].coopertitionCriteriaMet else 0
+                oprMatchEntry["fuel_count"] = row.score_breakdown[allianceStr].intake_amount
                 oprMatchEntry['foul_points'] = row.score_breakdown[allianceStr].foulPoints
                 oprMatchList.append(copy.deepcopy(oprMatchEntry))
     oprMatchDataFrame = pd.DataFrame(oprMatchList)
@@ -165,8 +111,6 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     teamDeep = np.zeros(len(teams))
     teamMobility = np.zeros(len(teams))
     piecesScored = np.zeros(len(teams))
-    autoCoral = np.zeros(len(teams))
-    teleopCoral = np.zeros(len(teams))
     autoPoints = np.zeros(len(teams))
     teleopPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
@@ -205,16 +149,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # All of the keys, maxs, and mins
     ScoutingDataKeys = [
-        "auto_scoring_l_1",
-        "auto_scoring_l_2",
-        "auto_scoring_l_3",
-        "auto_scoring_l_4",
-        "teleop_scoring_l_1",
-        "teleop_scoring_l_2",
-        "teleop_scoring_l_3",
-        "teleop_scoring_l_4",
-        "net",
-        "processor"
+        "fuel_count",
     ]
     ScoutingDataMins = [
         0,
@@ -289,7 +224,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
-    teamMatchesList: dict[str, dict[int, list[MatchScouting2025]]] = {
+    teamMatchesList: dict[str, dict[int, list[MatchScouting2026]]] = {
         team: {} for team in blankAEntry}
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
@@ -334,16 +269,7 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                     and entry.match_number == teamMatch
                 ):
                     newY = [
-                        entry.data.auto_scoring.l_1,
-                        entry.data.auto_scoring.l_2,
-                        entry.data.auto_scoring.l_3,
-                        entry.data.auto_scoring.l_4,
-                        entry.data.teleop_scoring.l_1,
-                        entry.data.teleop_scoring.l_2,
-                        entry.data.teleop_scoring.l_3,
-                        entry.data.teleop_scoring.l_4,
-                        entry.data.auto_scoring.net + entry.data.teleop_scoring.net,
-                        entry.data.auto_scoring.processor + entry.data.teleop_scoring.processor,
+                        entry.data.auto_scoring.fuel_count
                     ]
                     teamYEntry = [
                         teamYEntry[i]
@@ -440,18 +366,11 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         # print(result)
         array = np.array(result).ravel()
         XMatrix[dataKeys[i]] = result
-        if i < 4:
-            autoPoints += array*OPRWeights[i]
-            autoCoral += array
-        elif i < 8:
-            teleopPoints += array*OPRWeights[i]
-            teleopCoral += array
-        elif i < 10:
+        if i < 10:
             teleopPoints += array*OPRWeights[i]
         # except Exception as e:
         #     print(i, e)
     # print("looped through results")
-    teamCoopertition = XMatrix["coopertition"]
     teamParking /= teamMatchCount
     teamMobility /= teamMatchCount
     teamDeep /= teamMatchCount
@@ -461,46 +380,18 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         if math.isnan(teamDeaths[i]):
             teamDeaths[i] = 0
     autoPoints += teamMobility * 3
-    algaeTotal = XMatrix["net"] + XMatrix["processor"]
-    algaePoints = XMatrix["net"] * 4 + \
-        XMatrix["processor"]*2
-    coralTotal = autoCoral + teleopCoral
-    teleopCoralPoints = np.zeros(len(teams))
-    for i, x in enumerate([XMatrix[f'teleop_scoring_l_{i}'] for i in range(1, 5)]):
-        teleopCoralPoints += (x * OPRWeights[4+i])
-    autoCoralPoints = np.zeros(len(teams))
-    for i, x in enumerate([XMatrix[f'auto_scoring_l_{i}'] for i in range(1, 5)]):
-        autoCoralPoints += (x * OPRWeights[i])
-    coralPoints = autoCoralPoints+teleopCoralPoints
-    l_1 = XMatrix['auto_scoring_l_1'] + XMatrix['teleop_scoring_l_1']
-    l_2 = XMatrix['auto_scoring_l_2'] + XMatrix['teleop_scoring_l_2']
-    l_3 = XMatrix['auto_scoring_l_3'] + XMatrix['teleop_scoring_l_3']
-    l_4 = XMatrix['auto_scoring_l_4'] + XMatrix['teleop_scoring_l_4']
-    piecesScored = coralTotal + algaeTotal
+    fuel_count = XMatrix["fuel_count"]
     endgamePoints = teamDeep * 12 + teamParking * 2 + teamShallow*6
     teamClimbingPoints = teamDeep * 12 + teamShallow * 6
     # teleopPoints += teamFeeding
     teamOPR = endgamePoints + autoPoints + teleopPoints
 
+    XMatrix.insert(0, 'fuel_count', pd.Series(XMatrix['fuel_count']))
     XMatrix.insert(0, 'parking', pd.Series(teamParking))
     XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))
     XMatrix.insert(0, 'mobility', pd.Series(teamMobility))
     XMatrix.insert(0, 'climbing_points', pd.Series(teamClimbingPoints))
-    XMatrix.insert(0, 'deep_climb_rate', pd.Series(teamDeep))
-    XMatrix.insert(0, 'shallow_climb_rate', pd.Series(teamShallow))
-    XMatrix.insert(0, 'auto_coral', pd.Series(autoCoral))
-    XMatrix.insert(0, 'auto_coral_points', pd.Series(autoCoralPoints))
-    XMatrix.insert(0, 'teleop_coral', pd.Series(teleopCoral))
-    XMatrix.insert(0, 'teleop_coral_points', pd.Series(teleopCoralPoints))
-    XMatrix.insert(0, 'coral_total', pd.Series(coralTotal))
-    XMatrix.insert(0, 'coral_points', pd.Series(coralPoints))
-    XMatrix.insert(0, 'algae_total', pd.Series(algaeTotal))
-    XMatrix.insert(0, 'algae_points', pd.Series(algaePoints))
     XMatrix.insert(0, 'total_pieces', pd.Series(piecesScored))
-    XMatrix.insert(0, 'l_1_total', pd.Series(l_1))
-    XMatrix.insert(0, 'l_2_total', pd.Series(l_2))
-    XMatrix.insert(0, 'l_3_total', pd.Series(l_3))
-    XMatrix.insert(0, 'l_4_total', pd.Series(l_4))
     XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
     XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))
     XMatrix.insert(0, 'endgame_points', pd.Series(endgamePoints))

@@ -1694,7 +1694,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                     miscellaneous: data.data.miscellaneous
                                         .copyWith(died: value)));
                           }),
-                          activeColor: Colors.blue,
+                          activeThumbColor: Colors.blue,
                         ),
                         SizedBox(height: 8),
                         TextField(

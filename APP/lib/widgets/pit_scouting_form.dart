@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';

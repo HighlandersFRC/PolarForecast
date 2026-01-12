@@ -267,7 +267,7 @@ class _DeathsFormState extends State<DeathsForm> {
                                           labelText: 'Severity',
                                           border: OutlineInputBorder(),
                                         ),
-                                        value: death.severity,
+                                        initialValue: death.severity,
                                         onChanged: widget.locked
                                             ? null
                                             : (value) => setState(() {

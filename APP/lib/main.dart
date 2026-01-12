@@ -72,7 +72,7 @@ class MainApp extends StatelessWidget {
           theme: themeNotifier.themeData,
           navigatorObservers: [observer],
           onGenerateRoute: (RouteSettings settings) {
-            print("routing");
+            print('routing');
             var query = null;
             try {
               query = settings.name?.split('?')[1];
@@ -149,7 +149,7 @@ class MainApp extends StatelessWidget {
                   } else if (pathSegments.length > 5 &&
                       pathSegments[3] == 'events' &&
                       pathSegments[5] == 'scouting_report') {
-                    print("scouting Report");
+                    print('scouting Report');
                     return MaterialPageRoute(
                       builder: (context) => ScoutingReportPage(
                         group: groupKey,
