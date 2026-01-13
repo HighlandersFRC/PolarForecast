@@ -16,7 +16,7 @@ import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2026.dart';
-import '../models/pit_scouting_2026.dart';
+import '../models/pit_scouting_2026.dart' hide Data;
 import '../widgets/bar_chart_with_weights.dart';
 import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
@@ -1224,7 +1224,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               field_side: [],
               preload: false,
               climb: false,
-              contacts_robot: false),
+              contacts_robot: false,
+              fuelShotsInAuto: 0, // Make sure this exists
+              intakedAmountInAuto: 0),
           auto_scoring: AutoScoring(
               feed_amount: 0,
               intake_amount: 0,
@@ -1627,50 +1629,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           auto: data.data.auto,
                           onChanged: (newAuto) {
                             setState(() {
-                              int l1 = newAuto.steps.where((item) {
-                                return item.name == 'place_coral' &&
-                                    item.extra_data['position']
-                                        .toString()
-                                        .contains('1');
-                              }).length;
-                              int l2 = newAuto.steps.where((item) {
-                                return item.name == 'place_coral' &&
-                                    item.extra_data['position']
-                                        .toString()
-                                        .contains('2');
-                              }).length;
-                              int l3 = newAuto.steps.where((item) {
-                                return item.name == 'place_coral' &&
-                                    item.extra_data['position']
-                                        .toString()
-                                        .contains('3');
-                              }).length;
-                              int l4 = newAuto.steps.where((item) {
-                                return item.name == 'place_coral' &&
-                                    item.extra_data['position']
-                                        .toString()
-                                        .contains('4');
-                              }).length;
-                              int net = newAuto.steps.where((item) {
-                                return item.name == 'net_algae';
-                              }).length;
-                              int processor = newAuto.steps.where((item) {
-                                return item.name == 'processor';
-                              }).length;
                               data = data.copyWith(
-                                  data: data.data.copyWith(
-                                      auto: newAuto,
-                                      auto_scoring: AutoScoring(
-                                          feed_amount: 0,
-                                          intake_amount: 0,
-                                          shoot_amount: 0,
-                                          goes_under_trench: 0,
-                                          goes_over_bump: 0,
-                                          climb_side: 0)));
+                                data: data.data.copyWith(auto: newAuto),
+                              );
                             });
                           },
+                          locked: false,
                           matchScouting: true,
                         ),
+                        SizedBox(height: 20),
                         SizedBox(height: 20),
                         Text(
                           'Teleop',

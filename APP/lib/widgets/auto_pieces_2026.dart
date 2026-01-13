@@ -145,7 +145,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             if (squareLeft > displayedImageWidth - squareSize)
               squareLeft = displayedImageWidth - squareSize;
 
-            double overlayWidth = displayedImageWidth * 0.11;
+            double overlayWidth = displayedImageWidth * 0.14;
             double overlayHeight = displayedImageHeight * 0.07;
 
             double overlayWidthTrussR = displayedImageWidth * 0.16;
@@ -160,7 +160,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             double overlayWidthBumpR = displayedImageWidth * 0.16;
             double overlayHeightBumpR = displayedImageHeight * 0.15;
 
-            double overlayWidthDropdown = displayedImageWidth * 0.23;
+            double overlayWidthDropdown = displayedImageWidth * 0.25;
             double overlayHeightDropdown = displayedImageHeight * 0.06;
 
             double overlayWidthNeutralZone = displayedImageWidth * 0.55;
@@ -192,7 +192,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                           ),
                         ),
                         Positioned(
-                          bottom: displayedImageHeight * 0.48,
+                          bottom: displayedImageHeight * 0.45,
                           left: squareLeft,
                           child: Container(
                             width: squareSize,
@@ -254,7 +254,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                               width: squareSize,
                               height: squareSize,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(91, 0, 0, 0),
+                                color: const Color.fromARGB(145, 0, 0, 0),
                                 border: Border.all(
                                     color: const Color.fromARGB(255, 0, 255, 4),
                                     width: 2.5),
@@ -300,7 +300,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeight * 1.1
                                   : overlayHeight,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(218, 255, 238, 203),
+                                color: const Color.fromARGB(145, 255, 238, 203),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -354,7 +354,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightTrussR * 1.1
                                   : overlayHeightTrussR,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(82, 0, 0, 0),
+                                color: const Color.fromARGB(145, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -417,7 +417,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightTrussL * 1.1
                                   : overlayHeightTrussL,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(82, 0, 0, 0),
+                                color: const Color.fromARGB(142, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -480,7 +480,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightBumpL * 1.1
                                   : overlayHeightBumpL,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(82, 0, 0, 0),
+                                color: const Color.fromARGB(142, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -543,7 +543,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightBumpR * 1.1
                                   : overlayHeightBumpR,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(82, 0, 0, 0),
+                                color: const Color.fromARGB(142, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
@@ -606,7 +606,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightNeutralZone * 1.1
                                   : overlayHeightNeutralZone,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(82, 0, 0, 0),
+                                color: const Color.fromARGB(142, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -670,7 +670,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   : overlayHeightHub,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                color: const Color.fromARGB(129, 1, 57, 126),
+                                color: const Color.fromARGB(142, 1, 57, 126),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

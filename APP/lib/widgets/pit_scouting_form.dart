@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
+
+import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import '../api_service.dart';
@@ -29,33 +31,46 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2026 pitScoutingData = PitScouting2026(
-    scout_info:
-        ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
-    team_number: widget.teamNumber,
-    event_code: widget.tournament.key,
-    data: PitData2026(
-        driver_experience_events: 0,
-        drive_train: '',
-        climbing: [],
-        spare_parts: 0,
-        favorite_color: '',
-        autos: [],
-        can_feed_human_player: false,
-        can_pick_up_from_ground: false,
-        distance_to_shoot: 0,
-        cycles_in_25_seconds: 0,
-        cycle_time: 0,
-        go_over_bump: false,
-        go_under_trench: false,
-        can_climb: false,
-        can_climb_in_autonomous: false,
-        can_climb_with_others: false,
-        automatically_shooting: false,
-        shooting_while_moving: false,
-        main_strategy: ''),
-    time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
-    user_id: '',
-  );
+      scout_info:
+          ScoutInfo(team_number: 0, first_name: '', user_id: '', username: ''),
+      team_number: widget.teamNumber,
+      event_code: widget.tournament.key,
+      data: PitData2026(
+          driver_experience_events: 0,
+          drive_train: '',
+          climbing: [],
+          spare_parts: 0,
+          favorite_color: '',
+          autos: [],
+          can_feed_human_player: false,
+          can_pick_up_from_ground: false,
+          distance_to_shoot: 0,
+          cycles_in_25_seconds: 0,
+          cycle_time: 0,
+          go_over_bump: false,
+          go_under_trench: false,
+          can_climb: false,
+          can_climb_in_autonomous: false,
+          can_climb_with_others: false,
+          automatically_shooting: false,
+          shooting_while_moving: false,
+          auto: Auto2026(
+              starting_position_meters_from_hub_center: 0,
+              steps: [],
+              field_side: [],
+              preload: false,
+              climb: false,
+              contacts_robot: false),
+          main_strategy: ''),
+      time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      user_id: '',
+      auto: Auto2026(
+          starting_position_meters_from_hub_center: 0,
+          steps: [],
+          field_side: [],
+          preload: false,
+          climb: false,
+          contacts_robot: false));
   final TextEditingController sparePartsController = TextEditingController();
 
   @override
@@ -301,6 +316,82 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   handleChange('drive_train', value);
                               },
                       ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Autos',
+                              style:
+                                  TextStyle(fontSize: 30, color: Colors.blue),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: Colors.blue,
+                        thickness: 2.0,
+                      ),
+                      SizedBox(height: 20),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: pitScoutingData.data.autos.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Card(
+                                  child: Column(children: [
+                                AutoPieces2026(
+                                  auto: pitScoutingData.data.autos[index],
+                                  onChanged: (newAuto) {
+                                    setState(() {
+                                      List<dynamic> newAutos =
+                                          pitScoutingData.data.autos.toList();
+                                      newAutos[index] = newAuto;
+                                      pitScoutingData =
+                                          pitScoutingData.copyWith(
+                                              data: pitScoutingData.data
+                                                  .copyWith(autos: newAutos));
+                                    });
+                                  },
+                                  locked: widget.locked,
+                                ),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                if (!widget.locked)
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () {
+                                      setState(() {
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                            autos: List.from(
+                                                pitScoutingData.data.autos)
+                                              ..removeAt(index),
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  ),
+                              ])));
+                        },
+                      ),
+                      if (!widget.locked)
+                        ElevatedButton(
+                          onPressed: widget.locked ? () {} : handleAddAuto,
+                          child: Text('Add Auto'),
+                        ),
+                      SizedBox(height: 20),
+                      if (!widget.locked)
+                        ElevatedButton(
+                          onPressed: widget.locked ? () {} : handleSubmit,
+                          child: Text('Submit'),
+                        ),
                     ]),
               ),
             ),

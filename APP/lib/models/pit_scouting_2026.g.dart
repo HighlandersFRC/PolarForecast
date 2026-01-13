@@ -16,6 +16,7 @@ _$PitScouting2026Impl _$$PitScouting2026ImplFromJson(
       event_code: json['event_code'] as String,
       time: (json['time'] as num).toInt(),
       data: PitData2026.fromJson(json['data'] as Map<String, dynamic>),
+      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PitScouting2026ImplToJson(
@@ -27,6 +28,7 @@ Map<String, dynamic> _$$PitScouting2026ImplToJson(
       'event_code': instance.event_code,
       'time': instance.time,
       'data': instance.data.toJson(),
+      'auto': instance.auto.toJson(),
     };
 
 _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
@@ -52,6 +54,7 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
       main_strategy: json['main_strategy'] as String,
       spare_parts: (json['spare_parts'] as num).toInt(),
       favorite_color: json['favorite_color'] as String,
+      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       autos: json['autos'] as List<dynamic>,
     );
 
@@ -75,6 +78,7 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'main_strategy': instance.main_strategy,
       'spare_parts': instance.spare_parts,
       'favorite_color': instance.favorite_color,
+      'auto': instance.auto.toJson(),
       'autos': instance.autos,
     };
 
@@ -120,4 +124,16 @@ Map<String, dynamic> _$$AutoStep2026ImplToJson(_$AutoStep2026Impl instance) =>
     <String, dynamic>{
       'name': instance.name,
       'extra_data': instance.extra_data,
+    };
+
+_$DataImpl _$$DataImplFromJson(Map<String, dynamic> json) => _$DataImpl(
+      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
+      auto_scoring:
+          AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
+    <String, dynamic>{
+      'auto': instance.auto.toJson(),
+      'auto_scoring': instance.auto_scoring.toJson(),
     };

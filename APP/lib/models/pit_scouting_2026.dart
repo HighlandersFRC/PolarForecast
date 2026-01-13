@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/scout_info.dart';
 part 'pit_scouting_2026.freezed.dart';
 part 'pit_scouting_2026.g.dart';
@@ -12,6 +13,7 @@ class PitScouting2026 with _$PitScouting2026 {
     required String event_code,
     required int time,
     required PitData2026 data,
+    required Auto2026 auto,
   }) = _PitScouting2026;
   factory PitScouting2026.fromJson(Map<String, dynamic> json) =>
       _$PitScouting2026FromJson(json);
@@ -38,6 +40,8 @@ class PitData2026 with _$PitData2026 {
     required String main_strategy,
     required int spare_parts,
     required String favorite_color,
+    required Auto2026 auto,
+
     // keep autos dynamic to avoid type-mismatch with other code/widgets
     required List<dynamic> autos,
   }) = _PitData2026;
@@ -62,6 +66,8 @@ class Auto2026 with _$Auto2026 {
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>
       _$Auto2026FromJson(json);
+
+  void operator []=(int other, Auto2026 value) {}
 }
 
 @freezed
@@ -72,4 +78,14 @@ class AutoStep2026 with _$AutoStep2026 {
   }) = _AutoStep2026;
   factory AutoStep2026.fromJson(Map<String, dynamic> json) =>
       _$AutoStep2026FromJson(json);
+}
+
+@freezed
+class Data with _$Data {
+  factory Data({
+    required Auto2026 auto,
+    required AutoScoring auto_scoring,
+  }) = _Data;
+
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 }

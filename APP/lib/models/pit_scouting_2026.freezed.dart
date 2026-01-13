@@ -26,6 +26,7 @@ mixin _$PitScouting2026 {
   String get event_code => throw _privateConstructorUsedError;
   int get time => throw _privateConstructorUsedError;
   PitData2026 get data => throw _privateConstructorUsedError;
+  Auto2026 get auto => throw _privateConstructorUsedError;
 
   /// Serializes this PitScouting2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,10 +50,12 @@ abstract class $PitScouting2026CopyWith<$Res> {
       int team_number,
       String event_code,
       int time,
-      PitData2026 data});
+      PitData2026 data,
+      Auto2026 auto});
 
   $ScoutInfoCopyWith<$Res> get scout_info;
   $PitData2026CopyWith<$Res> get data;
+  $Auto2026CopyWith<$Res> get auto;
 }
 
 /// @nodoc
@@ -76,6 +79,7 @@ class _$PitScouting2026CopyWithImpl<$Res, $Val extends PitScouting2026>
     Object? event_code = null,
     Object? time = null,
     Object? data = null,
+    Object? auto = null,
   }) {
     return _then(_value.copyWith(
       user_id: null == user_id
@@ -102,6 +106,10 @@ class _$PitScouting2026CopyWithImpl<$Res, $Val extends PitScouting2026>
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
               as PitData2026,
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
     ) as $Val);
   }
 
@@ -124,6 +132,16 @@ class _$PitScouting2026CopyWithImpl<$Res, $Val extends PitScouting2026>
       return _then(_value.copyWith(data: value) as $Val);
     });
   }
+
+  /// Create a copy of PitScouting2026
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Auto2026CopyWith<$Res> get auto {
+    return $Auto2026CopyWith<$Res>(_value.auto, (value) {
+      return _then(_value.copyWith(auto: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -140,12 +158,15 @@ abstract class _$$PitScouting2026ImplCopyWith<$Res>
       int team_number,
       String event_code,
       int time,
-      PitData2026 data});
+      PitData2026 data,
+      Auto2026 auto});
 
   @override
   $ScoutInfoCopyWith<$Res> get scout_info;
   @override
   $PitData2026CopyWith<$Res> get data;
+  @override
+  $Auto2026CopyWith<$Res> get auto;
 }
 
 /// @nodoc
@@ -167,6 +188,7 @@ class __$$PitScouting2026ImplCopyWithImpl<$Res>
     Object? event_code = null,
     Object? time = null,
     Object? data = null,
+    Object? auto = null,
   }) {
     return _then(_$PitScouting2026Impl(
       user_id: null == user_id
@@ -193,6 +215,10 @@ class __$$PitScouting2026ImplCopyWithImpl<$Res>
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
               as PitData2026,
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
     ));
   }
 }
@@ -206,7 +232,8 @@ class _$PitScouting2026Impl implements _PitScouting2026 {
       required this.team_number,
       required this.event_code,
       required this.time,
-      required this.data});
+      required this.data,
+      required this.auto});
 
   factory _$PitScouting2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$PitScouting2026ImplFromJson(json);
@@ -223,10 +250,12 @@ class _$PitScouting2026Impl implements _PitScouting2026 {
   final int time;
   @override
   final PitData2026 data;
+  @override
+  final Auto2026 auto;
 
   @override
   String toString() {
-    return 'PitScouting2026(user_id: $user_id, scout_info: $scout_info, team_number: $team_number, event_code: $event_code, time: $time, data: $data)';
+    return 'PitScouting2026(user_id: $user_id, scout_info: $scout_info, team_number: $team_number, event_code: $event_code, time: $time, data: $data, auto: $auto)';
   }
 
   @override
@@ -242,13 +271,14 @@ class _$PitScouting2026Impl implements _PitScouting2026 {
             (identical(other.event_code, event_code) ||
                 other.event_code == event_code) &&
             (identical(other.time, time) || other.time == time) &&
-            (identical(other.data, data) || other.data == data));
+            (identical(other.data, data) || other.data == data) &&
+            (identical(other.auto, auto) || other.auto == auto));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, user_id, scout_info, team_number, event_code, time, data);
+  int get hashCode => Object.hash(runtimeType, user_id, scout_info, team_number,
+      event_code, time, data, auto);
 
   /// Create a copy of PitScouting2026
   /// with the given fields replaced by the non-null parameter values.
@@ -274,7 +304,8 @@ abstract class _PitScouting2026 implements PitScouting2026 {
       required final int team_number,
       required final String event_code,
       required final int time,
-      required final PitData2026 data}) = _$PitScouting2026Impl;
+      required final PitData2026 data,
+      required final Auto2026 auto}) = _$PitScouting2026Impl;
 
   factory _PitScouting2026.fromJson(Map<String, dynamic> json) =
       _$PitScouting2026Impl.fromJson;
@@ -291,6 +322,8 @@ abstract class _PitScouting2026 implements PitScouting2026 {
   int get time;
   @override
   PitData2026 get data;
+  @override
+  Auto2026 get auto;
 
   /// Create a copy of PitScouting2026
   /// with the given fields replaced by the non-null parameter values.
@@ -323,7 +356,8 @@ mixin _$PitData2026 {
   bool get shooting_while_moving => throw _privateConstructorUsedError;
   String get main_strategy => throw _privateConstructorUsedError;
   int get spare_parts => throw _privateConstructorUsedError;
-  String get favorite_color =>
+  String get favorite_color => throw _privateConstructorUsedError;
+  Auto2026 get auto =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<dynamic> get autos => throw _privateConstructorUsedError;
 
@@ -362,7 +396,10 @@ abstract class $PitData2026CopyWith<$Res> {
       String main_strategy,
       int spare_parts,
       String favorite_color,
+      Auto2026 auto,
       List<dynamic> autos});
+
+  $Auto2026CopyWith<$Res> get auto;
 }
 
 /// @nodoc
@@ -398,6 +435,7 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
+    Object? auto = null,
     Object? autos = null,
   }) {
     return _then(_value.copyWith(
@@ -473,11 +511,25 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.favorite_color
           : favorite_color // ignore: cast_nullable_to_non_nullable
               as String,
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
       autos: null == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
               as List<dynamic>,
     ) as $Val);
+  }
+
+  /// Create a copy of PitData2026
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Auto2026CopyWith<$Res> get auto {
+    return $Auto2026CopyWith<$Res>(_value.auto, (value) {
+      return _then(_value.copyWith(auto: value) as $Val);
+    });
   }
 }
 
@@ -508,7 +560,11 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       String main_strategy,
       int spare_parts,
       String favorite_color,
+      Auto2026 auto,
       List<dynamic> autos});
+
+  @override
+  $Auto2026CopyWith<$Res> get auto;
 }
 
 /// @nodoc
@@ -542,6 +598,7 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
+    Object? auto = null,
     Object? autos = null,
   }) {
     return _then(_$PitData2026Impl(
@@ -617,6 +674,10 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.favorite_color
           : favorite_color // ignore: cast_nullable_to_non_nullable
               as String,
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
       autos: null == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -647,6 +708,7 @@ class _$PitData2026Impl implements _PitData2026 {
       required this.main_strategy,
       required this.spare_parts,
       required this.favorite_color,
+      required this.auto,
       required final List<dynamic> autos})
       : _climbing = climbing,
         _autos = autos;
@@ -696,6 +758,8 @@ class _$PitData2026Impl implements _PitData2026 {
   final int spare_parts;
   @override
   final String favorite_color;
+  @override
+  final Auto2026 auto;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<dynamic> _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
@@ -708,7 +772,7 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, cycles_in_25_seconds: $cycles_in_25_seconds, cycle_time: $cycle_time, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, can_climb_with_others: $can_climb_with_others, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, autos: $autos)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, cycles_in_25_seconds: $cycles_in_25_seconds, cycle_time: $cycle_time, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, can_climb_with_others: $can_climb_with_others, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, autos: $autos)';
   }
 
   @override
@@ -754,6 +818,7 @@ class _$PitData2026Impl implements _PitData2026 {
                 other.spare_parts == spare_parts) &&
             (identical(other.favorite_color, favorite_color) ||
                 other.favorite_color == favorite_color) &&
+            (identical(other.auto, auto) || other.auto == auto) &&
             const DeepCollectionEquality().equals(other._autos, _autos));
   }
 
@@ -779,6 +844,7 @@ class _$PitData2026Impl implements _PitData2026 {
         main_strategy,
         spare_parts,
         favorite_color,
+        auto,
         const DeepCollectionEquality().hash(_autos)
       ]);
 
@@ -818,6 +884,7 @@ abstract class _PitData2026 implements PitData2026 {
       required final String main_strategy,
       required final int spare_parts,
       required final String favorite_color,
+      required final Auto2026 auto,
       required final List<dynamic> autos}) = _$PitData2026Impl;
 
   factory _PitData2026.fromJson(Map<String, dynamic> json) =
@@ -858,8 +925,10 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   int get spare_parts;
   @override
-  String
-      get favorite_color; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  String get favorite_color;
+  @override
+  Auto2026
+      get auto; // keep autos dynamic to avoid type-mismatch with other code/widgets
   @override
   List<dynamic> get autos;
 
@@ -1201,6 +1270,11 @@ class _$Auto2026Impl implements _Auto2026 {
       this,
     );
   }
+
+  @override
+  void operator []=(int other, Auto2026 value) {
+    // TODO: implement []=
+  }
 }
 
 abstract class _Auto2026 implements Auto2026 {
@@ -1421,5 +1495,196 @@ abstract class _AutoStep2026 implements AutoStep2026 {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AutoStep2026ImplCopyWith<_$AutoStep2026Impl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Data _$DataFromJson(Map<String, dynamic> json) {
+  return _Data.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Data {
+  Auto2026 get auto => throw _privateConstructorUsedError;
+  AutoScoring get auto_scoring => throw _privateConstructorUsedError;
+
+  /// Serializes this Data to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $DataCopyWith<Data> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DataCopyWith<$Res> {
+  factory $DataCopyWith(Data value, $Res Function(Data) then) =
+      _$DataCopyWithImpl<$Res, Data>;
+  @useResult
+  $Res call({Auto2026 auto, AutoScoring auto_scoring});
+
+  $Auto2026CopyWith<$Res> get auto;
+  $AutoScoringCopyWith<$Res> get auto_scoring;
+}
+
+/// @nodoc
+class _$DataCopyWithImpl<$Res, $Val extends Data>
+    implements $DataCopyWith<$Res> {
+  _$DataCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? auto = null,
+    Object? auto_scoring = null,
+  }) {
+    return _then(_value.copyWith(
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
+      auto_scoring: null == auto_scoring
+          ? _value.auto_scoring
+          : auto_scoring // ignore: cast_nullable_to_non_nullable
+              as AutoScoring,
+    ) as $Val);
+  }
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Auto2026CopyWith<$Res> get auto {
+    return $Auto2026CopyWith<$Res>(_value.auto, (value) {
+      return _then(_value.copyWith(auto: value) as $Val);
+    });
+  }
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AutoScoringCopyWith<$Res> get auto_scoring {
+    return $AutoScoringCopyWith<$Res>(_value.auto_scoring, (value) {
+      return _then(_value.copyWith(auto_scoring: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$DataImplCopyWith<$Res> implements $DataCopyWith<$Res> {
+  factory _$$DataImplCopyWith(
+          _$DataImpl value, $Res Function(_$DataImpl) then) =
+      __$$DataImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({Auto2026 auto, AutoScoring auto_scoring});
+
+  @override
+  $Auto2026CopyWith<$Res> get auto;
+  @override
+  $AutoScoringCopyWith<$Res> get auto_scoring;
+}
+
+/// @nodoc
+class __$$DataImplCopyWithImpl<$Res>
+    extends _$DataCopyWithImpl<$Res, _$DataImpl>
+    implements _$$DataImplCopyWith<$Res> {
+  __$$DataImplCopyWithImpl(_$DataImpl _value, $Res Function(_$DataImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? auto = null,
+    Object? auto_scoring = null,
+  }) {
+    return _then(_$DataImpl(
+      auto: null == auto
+          ? _value.auto
+          : auto // ignore: cast_nullable_to_non_nullable
+              as Auto2026,
+      auto_scoring: null == auto_scoring
+          ? _value.auto_scoring
+          : auto_scoring // ignore: cast_nullable_to_non_nullable
+              as AutoScoring,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$DataImpl implements _Data {
+  _$DataImpl({required this.auto, required this.auto_scoring});
+
+  factory _$DataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$DataImplFromJson(json);
+
+  @override
+  final Auto2026 auto;
+  @override
+  final AutoScoring auto_scoring;
+
+  @override
+  String toString() {
+    return 'Data(auto: $auto, auto_scoring: $auto_scoring)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DataImpl &&
+            (identical(other.auto, auto) || other.auto == auto) &&
+            (identical(other.auto_scoring, auto_scoring) ||
+                other.auto_scoring == auto_scoring));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, auto, auto_scoring);
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DataImplCopyWith<_$DataImpl> get copyWith =>
+      __$$DataImplCopyWithImpl<_$DataImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$DataImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Data implements Data {
+  factory _Data(
+      {required final Auto2026 auto,
+      required final AutoScoring auto_scoring}) = _$DataImpl;
+
+  factory _Data.fromJson(Map<String, dynamic> json) = _$DataImpl.fromJson;
+
+  @override
+  Auto2026 get auto;
+  @override
+  AutoScoring get auto_scoring;
+
+  /// Create a copy of Data
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DataImplCopyWith<_$DataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

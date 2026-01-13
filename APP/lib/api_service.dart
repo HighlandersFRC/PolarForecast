@@ -137,6 +137,13 @@ class ApiService {
           time: 0,
           event_code: '${year}${event}',
           data: PitData2026(
+              auto: Auto2026(
+                  starting_position_meters_from_hub_center: 0,
+                  steps: [],
+                  field_side: [],
+                  preload: false,
+                  climb: false,
+                  contacts_robot: false),
               driver_experience_events: 0,
               drive_train: '',
               climbing: [],
@@ -156,7 +163,14 @@ class ApiService {
               automatically_shooting: false,
               shooting_while_moving: false,
               main_strategy: ''),
-          user_id: '');
+          user_id: '',
+          auto: Auto2026(
+              starting_position_meters_from_hub_center: 0,
+              steps: [],
+              field_side: [],
+              preload: false,
+              climb: false,
+              contacts_robot: false));
     }
   }
 
