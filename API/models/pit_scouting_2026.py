@@ -16,11 +16,13 @@ class PitAutoStep2026(BaseModel):
 
 class Auto2026(BaseModel):
     starting_position_meters_from_processor: float
+    starting_position_meters_from_processor: Optional[float] = 0 
     steps: List[PitAutoStep2026]
     field_side: List[str]
     exit: bool
     preload: bool
     both_sides: bool = False
+    exit: Optional[bool] = False 
 
 
 class PitData2026(BaseModel):

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+// ignore: deprecated_member_use
 import 'dart:html' as html;
 import 'package:csv/csv.dart';
 import 'package:flat/flat.dart';
@@ -18,7 +19,6 @@ import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2026.dart';
 import '../models/pit_scouting_2026.dart' hide Data;
 import '../widgets/bar_chart_with_weights.dart';
-import '../widgets/counter.dart';
 import '../widgets/death_link.dart';
 import '../widgets/login_widget.dart';
 import '../widgets/match_link.dart';
@@ -679,7 +679,7 @@ class _CoralMenuOnClick extends StatelessWidget {
                   decorationThickness: 2,
                 ))),
         onTap: () {
-          TeamStats2026 stats = rankings.firstWhere(
+          rankings.firstWhere(
               (element) => element.team_number == teamNumber.toString());
           showMenu(
               context: context,
