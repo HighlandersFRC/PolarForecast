@@ -58,8 +58,8 @@ class ScoreBreakdown2026(BaseModel):
     goes_over_bump: Optional[bool] = False
     climb_side: Optional[int] = 0
     cycles_completed: Optional[int] = 0
-    shoots_from_X: Optional[int] = 0
-    shoot_from_Y: Optional[int] = 0
+    shoots_from_X: Optional[float] = 0
+    shoot_from_Y: Optional[float] = 0
     
     class Config:
         extra = "allow"  # Allow TBA to send additional fields

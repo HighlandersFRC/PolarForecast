@@ -1237,9 +1237,9 @@ def request_alliance(group_name: str | None = None, token: str = Depends(check_t
         if _event.event_code == event:
             m_event = _event
             break
-    if m_event is None:
-        raise HTTPException(
-            400, f"Your Group is not part of event '{event}'")
+    # if m_event is None:
+    #     raise HTTPException(
+    #         400, f"Your Group is not part of event '{event}'")
     try:
         m_other_group = Group(
             **GroupCollection.find_one({'name': other_group}))
@@ -2850,7 +2850,7 @@ def updateData(event_code: str, event_type: int):
             "shoot_amount": 0,
             "cycles_completed": 0,
             "shoots_from_X": 0,
-            "shoot_from_Y": 0,
+            "shoots_from_Y": 0,
             "auto": {},  # empty Auto2026 object
             "miscellaneous": {"died": False, "comments": ""}
         }

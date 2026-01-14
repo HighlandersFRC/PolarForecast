@@ -55,6 +55,8 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
       spare_parts: (json['spare_parts'] as num).toInt(),
       favorite_color: json['favorite_color'] as String,
       auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
+      auto_scoring:
+          AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
       autos: json['autos'] as List<dynamic>,
     );
 
@@ -79,6 +81,7 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'spare_parts': instance.spare_parts,
       'favorite_color': instance.favorite_color,
       'auto': instance.auto.toJson(),
+      'auto_scoring': instance.auto_scoring.toJson(),
       'autos': instance.autos,
     };
 

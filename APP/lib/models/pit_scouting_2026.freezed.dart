@@ -357,7 +357,8 @@ mixin _$PitData2026 {
   String get main_strategy => throw _privateConstructorUsedError;
   int get spare_parts => throw _privateConstructorUsedError;
   String get favorite_color => throw _privateConstructorUsedError;
-  Auto2026 get auto =>
+  Auto2026 get auto => throw _privateConstructorUsedError;
+  AutoScoring get auto_scoring =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<dynamic> get autos => throw _privateConstructorUsedError;
 
@@ -397,9 +398,11 @@ abstract class $PitData2026CopyWith<$Res> {
       int spare_parts,
       String favorite_color,
       Auto2026 auto,
+      AutoScoring auto_scoring,
       List<dynamic> autos});
 
   $Auto2026CopyWith<$Res> get auto;
+  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -436,6 +439,7 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? spare_parts = null,
     Object? favorite_color = null,
     Object? auto = null,
+    Object? auto_scoring = null,
     Object? autos = null,
   }) {
     return _then(_value.copyWith(
@@ -515,6 +519,10 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026,
+      auto_scoring: null == auto_scoring
+          ? _value.auto_scoring
+          : auto_scoring // ignore: cast_nullable_to_non_nullable
+              as AutoScoring,
       autos: null == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -529,6 +537,16 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
   $Auto2026CopyWith<$Res> get auto {
     return $Auto2026CopyWith<$Res>(_value.auto, (value) {
       return _then(_value.copyWith(auto: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PitData2026
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AutoScoringCopyWith<$Res> get auto_scoring {
+    return $AutoScoringCopyWith<$Res>(_value.auto_scoring, (value) {
+      return _then(_value.copyWith(auto_scoring: value) as $Val);
     });
   }
 }
@@ -561,10 +579,13 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       int spare_parts,
       String favorite_color,
       Auto2026 auto,
+      AutoScoring auto_scoring,
       List<dynamic> autos});
 
   @override
   $Auto2026CopyWith<$Res> get auto;
+  @override
+  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -599,6 +620,7 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? spare_parts = null,
     Object? favorite_color = null,
     Object? auto = null,
+    Object? auto_scoring = null,
     Object? autos = null,
   }) {
     return _then(_$PitData2026Impl(
@@ -678,6 +700,10 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026,
+      auto_scoring: null == auto_scoring
+          ? _value.auto_scoring
+          : auto_scoring // ignore: cast_nullable_to_non_nullable
+              as AutoScoring,
       autos: null == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -709,6 +735,7 @@ class _$PitData2026Impl implements _PitData2026 {
       required this.spare_parts,
       required this.favorite_color,
       required this.auto,
+      required this.auto_scoring,
       required final List<dynamic> autos})
       : _climbing = climbing,
         _autos = autos;
@@ -760,6 +787,8 @@ class _$PitData2026Impl implements _PitData2026 {
   final String favorite_color;
   @override
   final Auto2026 auto;
+  @override
+  final AutoScoring auto_scoring;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<dynamic> _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
@@ -772,7 +801,7 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, cycles_in_25_seconds: $cycles_in_25_seconds, cycle_time: $cycle_time, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, can_climb_with_others: $can_climb_with_others, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, autos: $autos)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, cycles_in_25_seconds: $cycles_in_25_seconds, cycle_time: $cycle_time, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, can_climb_with_others: $can_climb_with_others, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, auto_scoring: $auto_scoring, autos: $autos)';
   }
 
   @override
@@ -819,6 +848,8 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.favorite_color, favorite_color) ||
                 other.favorite_color == favorite_color) &&
             (identical(other.auto, auto) || other.auto == auto) &&
+            (identical(other.auto_scoring, auto_scoring) ||
+                other.auto_scoring == auto_scoring) &&
             const DeepCollectionEquality().equals(other._autos, _autos));
   }
 
@@ -845,6 +876,7 @@ class _$PitData2026Impl implements _PitData2026 {
         spare_parts,
         favorite_color,
         auto,
+        auto_scoring,
         const DeepCollectionEquality().hash(_autos)
       ]);
 
@@ -885,6 +917,7 @@ abstract class _PitData2026 implements PitData2026 {
       required final int spare_parts,
       required final String favorite_color,
       required final Auto2026 auto,
+      required final AutoScoring auto_scoring,
       required final List<dynamic> autos}) = _$PitData2026Impl;
 
   factory _PitData2026.fromJson(Map<String, dynamic> json) =
@@ -927,8 +960,10 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   String get favorite_color;
   @override
-  Auto2026
-      get auto; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  Auto2026 get auto;
+  @override
+  AutoScoring
+      get auto_scoring; // keep autos dynamic to avoid type-mismatch with other code/widgets
   @override
   List<dynamic> get autos;
 

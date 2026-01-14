@@ -26,6 +26,28 @@ class Counter extends StatefulWidget {
 
 class _CounterState extends State<Counter> {
   Timer? _holdTimer;
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.value}');
+  }
+
+  @override
+  void didUpdateWidget(Counter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _controller.text = '${widget.value}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _holdTimer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   void _startHoldTimer(int step) {
     _holdTimer?.cancel();
@@ -40,14 +62,9 @@ class _CounterState extends State<Counter> {
   }
 
   void _updateValue(int delta) {
+    HapticFeedback.lightImpact();
     int newValue = math.max(0, math.min(widget.value + delta, widget.max));
     widget.onChanged(newValue);
-  }
-
-  @override
-  void dispose() {
-    _holdTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -66,7 +83,7 @@ class _CounterState extends State<Counter> {
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            controller: TextEditingController(text: '${widget.value}'),
+            controller: _controller,
             onSubmitted: (newValue) {
               int? newInt = int.tryParse(newValue);
               if (newInt != null) {

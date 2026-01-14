@@ -8,8 +8,8 @@ from models.pit_scouting_2026 import Auto2026
 class Scoring2026(BaseModel):
     shoot_amount: int = 0
     cycles_completed: int = 0
-    shoots_from_X: int = 0
-    shoot_from_Y: int = 0
+    shoots_from_X: float = 0
+    shoots_from_Y: float = 0
     # Optional fields with defaults for backward compatibility
     feed_amount: Optional[int] = 0
     intake_amount: Optional[int] = 0

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
 
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
@@ -61,6 +62,15 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               preload: false,
               climb: false,
               contacts_robot: false),
+          auto_scoring: AutoScoring(
+              feed_amount: 0,
+              intake_amount: 0,
+              shoot_amount: 0,
+              goes_under_trench: 0,
+              goes_over_bump: 0,
+              shoots_from_X: 0,
+              shoots_from_Y: 0,
+              climb_side: 0),
           main_strategy: ''),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       user_id: '',
@@ -358,6 +368,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     });
                                   },
                                   locked: widget.locked,
+                                  autoScoring:
+                                      pitScoutingData.data.auto_scoring,
                                 ),
                                 SizedBox(
                                   height: 8,

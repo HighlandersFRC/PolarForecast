@@ -40,11 +40,16 @@ class AutoScoring with _$AutoScoring {
     required int shoot_amount,
     required int goes_under_trench,
     required int goes_over_bump,
+    required double shoots_from_X,
+    required double shoots_from_Y,
     required int climb_side,
+    @Default(0) int fuelShotsInAuto,
+    @Default(0) int intakedAmountInAuto,
   }) = _AutoScoring;
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>
       _$AutoScoringFromJson(json);
+  void operator []=(int other, Auto2026 value) {}
 }
 
 @freezed

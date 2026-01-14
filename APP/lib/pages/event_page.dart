@@ -1233,7 +1233,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               shoot_amount: 0,
               goes_under_trench: 0,
               goes_over_bump: 0,
-              climb_side: 0),
+              climb_side: 0,
+              shoots_from_X: 0,
+              shoots_from_Y: 0),
           teleop_scoring: TeleopScoring(
               cycles_completed: 0,
               shoots_from_X: 0,
@@ -1419,7 +1421,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 shoot_amount: 0,
                 goes_under_trench: 0,
                 goes_over_bump: 0,
-                climb_side: 0),
+                climb_side: 0,
+                shoots_from_X: 0,
+                shoots_from_Y: 0),
             teleop_scoring: TeleopScoring(
                 cycles_completed: 0,
                 shoots_from_X: 0,
@@ -1627,10 +1631,19 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         Divider(color: Colors.blue),
                         AutoPieces2026(
                           auto: data.data.auto,
+                          autoScoring: data.data.auto_scoring,
                           onChanged: (newAuto) {
                             setState(() {
                               data = data.copyWith(
                                 data: data.data.copyWith(auto: newAuto),
+                              );
+                            });
+                          },
+                          onAutoScoringChanged: (newAutoScoring) {
+                            setState(() {
+                              data = data.copyWith(
+                                data: data.data
+                                    .copyWith(auto_scoring: newAutoScoring),
                               );
                             });
                           },

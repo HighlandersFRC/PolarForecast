@@ -125,52 +125,63 @@ class ApiService {
   Future<PitScouting2026> fetchTeamPitScouting(
       String year, String event, String team) async {
     try {
-      final storageName = '${year}${event}_${team}_PitScouting';
+      final storageName = '${year}/${event}_${team}_PitScouting';
       final endpoint = '$APIURL/$year/$event/$team/PitScouting';
       final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
       return PitScouting2026.fromJson(data);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
       return PitScouting2026(
-          scout_info: get_scout_info(await token ?? ''),
-          team_number: int.tryParse(team.substring(3)) ?? 0,
-          time: 0,
-          event_code: '${year}${event}',
-          data: PitData2026(
-              auto: Auto2026(
-                  starting_position_meters_from_hub_center: 0,
-                  steps: [],
-                  field_side: [],
-                  preload: false,
-                  climb: false,
-                  contacts_robot: false),
-              driver_experience_events: 0,
-              drive_train: '',
-              climbing: [],
-              spare_parts: 0,
-              favorite_color: '',
-              autos: [],
-              can_feed_human_player: false,
-              can_pick_up_from_ground: false,
-              distance_to_shoot: 0,
-              cycles_in_25_seconds: 0,
-              cycle_time: 0,
-              go_over_bump: false,
-              go_under_trench: false,
-              can_climb: false,
-              can_climb_in_autonomous: false,
-              can_climb_with_others: false,
-              automatically_shooting: false,
-              shooting_while_moving: false,
-              main_strategy: ''),
-          user_id: '',
-          auto: Auto2026(
-              starting_position_meters_from_hub_center: 0,
-              steps: [],
-              field_side: [],
-              preload: false,
-              climb: false,
-              contacts_robot: false));
+        scout_info: get_scout_info(await token ?? ''),
+        team_number: int.tryParse(team.substring(3)) ?? 0,
+        time: 0,
+        event_code: '${year}${event}',
+        data: PitData2026(
+            auto: Auto2026(
+                starting_position_meters_from_hub_center: 0,
+                steps: [],
+                field_side: [],
+                preload: false,
+                climb: false,
+                contacts_robot: false),
+            driver_experience_events: 0,
+            drive_train: '',
+            climbing: [],
+            spare_parts: 0,
+            favorite_color: '',
+            autos: [],
+            can_feed_human_player: false,
+            can_pick_up_from_ground: false,
+            distance_to_shoot: 0,
+            cycles_in_25_seconds: 0,
+            cycle_time: 0,
+            go_over_bump: false,
+            go_under_trench: false,
+            can_climb: false,
+            can_climb_in_autonomous: false,
+            can_climb_with_others: false,
+            automatically_shooting: false,
+            shooting_while_moving: false,
+            main_strategy: '',
+            auto_scoring: AutoScoring(
+                feed_amount: 0,
+                intake_amount: 0,
+                shoot_amount: 0,
+                goes_under_trench: 0,
+                goes_over_bump: 0,
+                shoots_from_X: 0,
+                shoots_from_Y: 0,
+                climb_side: 0)),
+        user_id: '',
+        auto: Auto2026(
+          starting_position_meters_from_hub_center: 0,
+          steps: [],
+          field_side: [],
+          preload: false,
+          climb: false,
+          contacts_robot: false,
+        ),
+      );
     }
   }
 

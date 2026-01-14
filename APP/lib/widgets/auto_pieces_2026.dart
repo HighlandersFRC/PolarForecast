@@ -3,21 +3,26 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/widgets/counter.dart';
 
 import '../models/pit_scouting_2026.dart';
 
 class AutoPieces2026 extends StatefulWidget {
   final Auto2026 auto;
+  final AutoScoring autoScoring;
   final Function(Auto2026)? onChanged;
+  final Function(AutoScoring)? onAutoScoringChanged;
   final bool matchScouting, locked;
 
   const AutoPieces2026(
       {Key? key,
       required this.auto,
+      required this.autoScoring,
       this.onChanged,
       this.matchScouting = false,
-      this.locked = false})
+      this.locked = false,
+      this.onAutoScoringChanged})
       : super(key: key);
 
   @override
@@ -25,6 +30,190 @@ class AutoPieces2026 extends StatefulWidget {
 }
 
 class _AutoPieces2026State extends State<AutoPieces2026> {
+  Widget buildOpenFieldButton({
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required VoidCallback onPressed,
+    required bool isAnimating,
+    double scaleFactor = 1.0,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
+        child: AnimatedContainer(
+          duration: Durations.medium1,
+          curve: Curves.easeInOutQuad,
+          width: isAnimating ? width * 1.1 : width,
+          height: isAnimating ? height * 1.1 : height,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(142, 0, 0, 0),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.place,
+                color: Colors.white,
+                size: 18 * scaleFactor,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Relative Shot Location',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11 * (scaleFactor - 0.4),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openShotLocationDialog(
+    BuildContext context,
+    double width,
+    double height,
+    String imagePath,
+    double imageRotation,
+    double pixelsPerMeter,
+    double squareSize,
+  ) {
+    Offset? tappedPosition;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.black,
+              title: const Text(
+                "Shoot Location",
+                style: TextStyle(color: Colors.white),
+              ),
+              content: SizedBox(
+                width: width,
+                height: height,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (details) {
+                    final local = details.localPosition;
+
+                    // Restrict to lower half
+                    if (local.dy < height * 0.5) return;
+
+                    setDialogState(() {
+                      final centeredX = local.dx - squareSize / 2;
+                      final centeredY = local.dy - squareSize / 2;
+
+                      tappedPosition = Offset(
+                        centeredX.clamp(0.0, width - squareSize),
+                        centeredY.clamp(height * 0.5, height - squareSize),
+                      );
+                    });
+
+                    HapticFeedback.selectionClick();
+                  },
+                  child: Stack(
+                    children: [
+                      Transform.rotate(
+                        angle: imageRotation,
+                        child: Image.asset(
+                          imagePath,
+                          width: width,
+                          height: height,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+
+                      /// --- Robot marker ---
+                      if (tappedPosition != null)
+                        Positioned(
+                          left: tappedPosition!.dx,
+                          top: tappedPosition!.dy,
+                          child: Container(
+                            width: squareSize,
+                            height: squareSize,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              border: Border.all(
+                                color: Colors.greenAccent,
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.smart_toy,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                ElevatedButton(
+                  onPressed: tappedPosition == null
+                      ? null
+                      : () {
+                          final xMeters = tappedPosition!.dx / pixelsPerMeter;
+                          final yMeters = tappedPosition!.dy / pixelsPerMeter;
+
+                          HapticFeedback.lightImpact();
+
+                          widget.onAutoScoringChanged!(
+                            widget.autoScoring.copyWith(
+                              shoots_from_X: xMeters,
+                              shoots_from_Y: yMeters,
+                            ),
+                          );
+
+                          final autoSteps = widget.auto.steps.toList();
+                          autoSteps.add(
+                            AutoStep2026(
+                              name:
+                                  "Robot Shot at X: ${xMeters.toStringAsFixed(2)}m, "
+                                  "Y: ${yMeters.toStringAsFixed(2)}m",
+                              extra_data: {
+                                "x": xMeters,
+                                "y": yMeters,
+                              },
+                            ),
+                          );
+
+                          widget.onChanged!(
+                            widget.auto.copyWith(steps: autoSteps),
+                          );
+
+                          Navigator.pop(context);
+                        },
+                  child: const Text("Confirm Shot"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   bool isFlipped = false;
   List<double> pickupBallScales = [1.0, 1.0, 1.0];
   int formRotation = 0;
@@ -145,7 +334,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             if (squareLeft > displayedImageWidth - squareSize)
               squareLeft = displayedImageWidth - squareSize;
 
-            double overlayWidth = displayedImageWidth * 0.14;
+            double overlayWidth = displayedImageWidth * 0.12;
             double overlayHeight = displayedImageHeight * 0.07;
 
             double overlayWidthTrussR = displayedImageWidth * 0.16;
@@ -160,8 +349,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             double overlayWidthBumpR = displayedImageWidth * 0.16;
             double overlayHeightBumpR = displayedImageHeight * 0.15;
 
-            double overlayWidthDropdown = displayedImageWidth * 0.25;
-            double overlayHeightDropdown = displayedImageHeight * 0.06;
+            double overlayWidthDropdown = displayedImageWidth * 0.15;
+            double overlayHeightDropdown = displayedImageHeight * 0.1;
 
             double overlayWidthNeutralZone = displayedImageWidth * 0.55;
             double overlayHeightNeutralZone = displayedImageHeight * 0.12;
@@ -206,62 +395,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                             ),
                             child: Icon(Icons.smart_toy,
                                 size: 15 * scaleFactor, color: Colors.white),
-                          ),
-                        ),
-                        Positioned(
-                          left: robotPosition?.dx,
-                          top: robotPosition?.dy,
-                          child: GestureDetector(
-                            onPanStart: (_) => HapticFeedback.selectionClick(),
-                            onPanUpdate: (details) {
-                              setState(() {
-                                double newX = (robotPosition!.dx +
-                                        details.delta.dx)
-                                    .clamp(
-                                        0.0, displayedImageWidth - squareSize);
-                                double newY =
-                                    (robotPosition!.dy + details.delta.dy)
-                                        .clamp(
-                                            displayedImageHeight *
-                                                0.5, // top of lower half
-                                            displayedImageHeight -
-                                                squareSize); // bottom of field
-                                robotPosition = Offset(newX, newY);
-                                robotPlaced = true;
-                              });
-                            },
-                            onPanEnd: (_) {
-                              double xMeters =
-                                  robotPosition!.dx / pixelsPerMeter;
-                              double yMeters =
-                                  robotPosition!.dy / pixelsPerMeter;
-
-                              HapticFeedback.lightImpact();
-                              var autoSteps = widget.auto.steps.toList();
-                              autoSteps.add(AutoStep2026(
-                                name: 'Robot Shot at: X: ' +
-                                    xMeters.toStringAsFixed(2) +
-                                    'm, Y: ' +
-                                    yMeters.toStringAsFixed(2) +
-                                    'm',
-                                extra_data: {},
-                              ));
-                              var newAuto =
-                                  widget.auto.copyWith(steps: autoSteps);
-                              widget.onChanged!(newAuto);
-                            },
-                            child: Container(
-                              width: squareSize,
-                              height: squareSize,
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(145, 0, 0, 0),
-                                border: Border.all(
-                                    color: const Color.fromARGB(255, 0, 255, 4),
-                                    width: 2.5),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(Icons.smart_toy, color: Colors.white),
-                            ),
                           ),
                         ),
                         Positioned(
@@ -696,6 +829,25 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                             ),
                           ),
                         ),
+                        buildOpenFieldButton(
+                          left: displayedImageWidth * 0.23,
+                          top: displayedImageHeight * 0.6,
+                          width: 250,
+                          height: 50,
+                          isAnimating: true,
+                          scaleFactor: scaleFactor,
+                          onPressed: () {
+                            _openShotLocationDialog(
+                              context,
+                              displayedImageWidth,
+                              displayedImageHeight,
+                              imagePath,
+                              imageRotation,
+                              pixelsPerMeter,
+                              squareSize,
+                            );
+                          },
+                        ),
                         Positioned(
                           left: displayedImageWidth * 0.46,
                           bottom: displayedImageHeight * 0.12,
@@ -837,9 +989,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.arrow_drop_down,
-                                      color: Colors.white,
-                                      size: (28) * scaleFactor),
                                   SizedBox(height: 4),
                                   Text('Climb',
                                       style: TextStyle(
@@ -905,31 +1054,42 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     '${widget.auto.starting_position_meters_from_hub_center.toStringAsFixed(2)} meters',
                     style: TextStyle(color: Colors.white)),
                 buildStepsUI(),
-                SizedBox(
-                  height: 8,
-                ),
+                SizedBox(height: 8),
                 Counter(
                   label: 'Fuel Shot in Auto (Approximate)',
-                  value: widget.auto.fuelShotsInAuto,
+                  value: widget.autoScoring.shoot_amount,
                   max: 1000000,
                   locked: widget.locked,
                   onChanged: (newValue) {
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(
-                          widget.auto.copyWith(fuelShotsInAuto: newValue));
+                    if (widget.onAutoScoringChanged != null) {
+                      widget.onAutoScoringChanged!(
+                          widget.autoScoring.copyWith(shoot_amount: newValue));
                     }
                   },
                 ),
                 SizedBox(height: 16),
                 Counter(
                   label: 'Intaked amount in Auto (Approximate)',
-                  value: widget.auto.intakedAmountInAuto,
+                  value: widget.autoScoring.intake_amount,
                   max: 1000000,
                   locked: widget.locked,
                   onChanged: (newValue) {
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(
-                          widget.auto.copyWith(intakedAmountInAuto: newValue));
+                    if (widget.onAutoScoringChanged != null) {
+                      widget.onAutoScoringChanged!(
+                          widget.autoScoring.copyWith(intake_amount: newValue));
+                    }
+                  },
+                ),
+                SizedBox(height: 16),
+                Counter(
+                  label: 'Feed amount in Auto (Approximate)',
+                  value: widget.autoScoring.feed_amount,
+                  max: 1000000,
+                  locked: widget.locked,
+                  onChanged: (newValue) {
+                    if (widget.onAutoScoringChanged != null) {
+                      widget.onAutoScoringChanged!(
+                          widget.autoScoring.copyWith(feed_amount: newValue));
                     }
                   },
                 ),

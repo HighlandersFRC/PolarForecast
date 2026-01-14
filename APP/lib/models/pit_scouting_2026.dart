@@ -41,7 +41,7 @@ class PitData2026 with _$PitData2026 {
     required int spare_parts,
     required String favorite_color,
     required Auto2026 auto,
-
+    required AutoScoring auto_scoring,
     // keep autos dynamic to avoid type-mismatch with other code/widgets
     required List<dynamic> autos,
   }) = _PitData2026;
