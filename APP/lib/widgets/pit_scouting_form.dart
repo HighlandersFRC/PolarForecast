@@ -29,6 +29,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
 
   final TextEditingController favoriteColorController = TextEditingController();
+  final TextEditingController mainStrategyController = TextEditingController();
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2026 pitScoutingData = PitScouting2026(
@@ -66,11 +67,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               feed_amount: 0,
               intake_amount: 0,
               shoot_amount: 0,
-              goes_under_trench: 0,
-              goes_over_bump: 0,
-              shoots_from_X: 0,
-              shoots_from_Y: 0,
-              climb_side: 0),
+              cycles_completed: 0,
+              climb_side: 'Did not Climb'),
           main_strategy: ''),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       user_id: '',
@@ -143,6 +141,76 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'spare_parts':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(spare_parts: value),
+          );
+          break;
+        case 'main_strategy':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(main_strategy: value),
+          );
+          break;
+        case 'can_feed_human_player':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(can_feed_human_player: value),
+          );
+          break;
+        case 'can_pick_up_from_ground':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(can_pick_up_from_ground: value),
+          );
+          break;
+        case 'distance_to_shoot':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(distance_to_shoot: value),
+          );
+          break;
+        case 'cycles_in_25_seconds':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(cycles_in_25_seconds: value),
+          );
+          break;
+        case 'cycle_time':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(cycle_time: value),
+          );
+          break;
+        case 'go_over_bump':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(go_over_bump: value),
+          );
+          break;
+        case 'go_under_trench':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(go_under_trench: value),
+          );
+          break;
+        case 'can_climb':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(can_climb: value),
+          );
+          break;
+        case 'climbing':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(climbing: value),
+          );
+          break;
+        case 'can_climb_in_autonomous':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(can_climb_in_autonomous: value),
+          );
+          break;
+        case 'can_climb_with_others':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(can_climb_with_others: value),
+          );
+          break;
+        case 'automatically_shooting':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(automatically_shooting: value),
+          );
+          break;
+        case 'shooting_while_moving':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(shooting_while_moving: value),
           );
           break;
         case 'favorite_color':
@@ -293,6 +361,161 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                       driver_experience_events: experience));
                             });
                           }),
+                      Text('Main Strategy'),
+                      TextField(
+                        enabled: !widget.locked,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) => handleChange('main_strategy', value),
+                        controller: mainStrategyController,
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Can Feed Human Player'),
+                        value: pitScoutingData.data.can_feed_human_player,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) =>
+                                handleChange('can_feed_human_player', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Can Pick Up From Ground'),
+                        value: pitScoutingData.data.can_pick_up_from_ground,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) =>
+                                handleChange('can_pick_up_from_ground', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Can Go Under Trench'),
+                        value: pitScoutingData.data.go_under_trench,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) => handleChange('go_under_trench', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Can Go Over Bump'),
+                        value: pitScoutingData.data.go_over_bump,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) => handleChange('go_over_bump', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Automatically Shooting'),
+                        value: pitScoutingData.data.automatically_shooting,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) =>
+                                handleChange('automatically_shooting', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: Text('Can shoot while moving'),
+                        value: pitScoutingData.data.shooting_while_moving,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) =>
+                                handleChange('shooting_while_moving', value),
+                      ),
+                      SwitchListTile(
+                        activeColor: Colors.blue,
+                        inactiveThumbColor: Colors.blue,
+                        title: const Text('Can Climb'),
+                        value: pitScoutingData.data.can_climb,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) => handleChange('can_climb', value),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: !pitScoutingData.data.can_climb
+                            ? const SizedBox.shrink()
+                            : Column(
+                                key: const ValueKey('climb_options'),
+                                children: [
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: const Text(
+                                        'Can Climb With Other Robots'),
+                                    value: pitScoutingData
+                                        .data.can_climb_with_others,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'can_climb_with_others', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title:
+                                        const Text('Can Climb in Autonomous'),
+                                    value: pitScoutingData
+                                        .data.can_climb_in_autonomous,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'can_climb_in_autonomous', value),
+                                  ),
+                                ],
+                              ),
+                      ),
+                      Counter(
+                          label: 'Distance to Shoot (meters)',
+                          value: pitScoutingData.data.distance_to_shoot,
+                          max: 500,
+                          locked: widget.locked,
+                          onChanged: (distance) {
+                            setState(() {
+                              pitScoutingData = pitScoutingData.copyWith(
+                                  data: pitScoutingData.data
+                                      .copyWith(distance_to_shoot: distance));
+                            });
+                          }),
+                      SizedBox(height: 8),
+                      Counter(
+                          label: 'Cycles in 25 Seconds',
+                          value: pitScoutingData.data.cycles_in_25_seconds,
+                          max: 500,
+                          locked: widget.locked,
+                          onChanged: (cycles) {
+                            setState(() {
+                              pitScoutingData = pitScoutingData.copyWith(
+                                  data: pitScoutingData.data
+                                      .copyWith(cycles_in_25_seconds: cycles));
+                            });
+                          }),
+                      SizedBox(height: 8),
+                      Counter(
+                          label: 'Cycle Time (seconds)',
+                          value: pitScoutingData.data.cycle_time,
+                          max: 500,
+                          locked: widget.locked,
+                          onChanged: (cycleTime) {
+                            setState(() {
+                              pitScoutingData = pitScoutingData.copyWith(
+                                  data: pitScoutingData.data
+                                      .copyWith(cycle_time: cycleTime));
+                            });
+                          }),
+                      Text('Favorite Color'),
+                      TextField(
+                        enabled: !widget.locked,
+                        onChanged: widget.locked
+                            ? null
+                            : (value) => handleChange('favorite_color', value),
+                        controller: favoriteColorController,
+                      ),
                       Text('Drive Train'),
                       DropdownButton<String>(
                         isExpanded: true,

@@ -15,6 +15,7 @@ import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
+import 'package:scouting_app/widgets/counter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2026.dart';
 import '../models/pit_scouting_2026.dart' hide Data;
@@ -37,6 +38,7 @@ class EventPage extends StatefulWidget {
   static Widget fromEventKey(BuildContext context, String eventKey) {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final tournaments = apiService.fetchTournaments();
+
     // print(eventKey);
     return FutureBuilder(
         future: tournaments,
@@ -1193,6 +1195,7 @@ class _ChartsTabState extends State<_ChartsTab> {
 
 class _MatchScoutingTab extends StatefulWidget {
   final EventPage widget;
+
   const _MatchScoutingTab(this.widget);
 
   @override
@@ -1231,16 +1234,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               feed_amount: 0,
               intake_amount: 0,
               shoot_amount: 0,
-              goes_under_trench: 0,
-              goes_over_bump: 0,
-              climb_side: 0,
-              shoots_from_X: 0,
-              shoots_from_Y: 0),
-          teleop_scoring: TeleopScoring(
               cycles_completed: 0,
-              shoots_from_X: 0,
-              shoots_from_Y: 0,
-              shoot_amount: 0),
+              climb_side: 'Did not Climb'),
+          teleop_scoring: TeleopScoring(cycles_completed: 0, shoot_amount: 0),
           miscellaneous: Miscellaneous(died: false, comments: '')),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
 
@@ -1419,16 +1415,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 feed_amount: 0,
                 intake_amount: 0,
                 shoot_amount: 0,
-                goes_under_trench: 0,
-                goes_over_bump: 0,
-                climb_side: 0,
-                shoots_from_X: 0,
-                shoots_from_Y: 0),
-            teleop_scoring: TeleopScoring(
                 cycles_completed: 0,
-                shoots_from_X: 0,
-                shoots_from_Y: 0,
-                shoot_amount: 0),
+                climb_side: 'Did not Climb'),
+            teleop_scoring: TeleopScoring(cycles_completed: 0, shoot_amount: 0),
             miscellaneous: Miscellaneous(died: false, comments: '')));
     setState(() {
       data = reset;
@@ -1656,7 +1645,31 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           'Teleop',
                           style: TextStyle(color: Colors.blue, fontSize: 24),
                         ),
-                        Divider(color: Colors.blue),
+                        SizedBox(height: 8),
+                        Divider(color: const Color.fromRGBO(33, 150, 243, 1)),
+                        Counter(
+                          label: 'Fuel Shot Completed',
+                          value: data.data.teleop_scoring.shoot_amount,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(shoot_amount: value)));
+                          }),
+                        ),
+                        SizedBox(height: 8),
+                        Counter(
+                          label: 'Cycles Completed',
+                          value: data.data.teleop_scoring.cycles_completed,
+                          max: 12,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    teleop_scoring: data.data.teleop_scoring
+                                        .copyWith(cycles_completed: value)));
+                          }),
+                        ),
                         SizedBox(height: 20),
                         Text(
                           'Miscellaneous',

@@ -576,13 +576,8 @@ mixin _$AutoScoring {
   int get feed_amount => throw _privateConstructorUsedError;
   int get intake_amount => throw _privateConstructorUsedError;
   int get shoot_amount => throw _privateConstructorUsedError;
-  int get goes_under_trench => throw _privateConstructorUsedError;
-  int get goes_over_bump => throw _privateConstructorUsedError;
-  double get shoots_from_X => throw _privateConstructorUsedError;
-  double get shoots_from_Y => throw _privateConstructorUsedError;
-  int get climb_side => throw _privateConstructorUsedError;
-  int get fuelShotsInAuto => throw _privateConstructorUsedError;
-  int get intakedAmountInAuto => throw _privateConstructorUsedError;
+  int get cycles_completed => throw _privateConstructorUsedError;
+  String get climb_side => throw _privateConstructorUsedError;
 
   /// Serializes this AutoScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -604,13 +599,8 @@ abstract class $AutoScoringCopyWith<$Res> {
       {int feed_amount,
       int intake_amount,
       int shoot_amount,
-      int goes_under_trench,
-      int goes_over_bump,
-      double shoots_from_X,
-      double shoots_from_Y,
-      int climb_side,
-      int fuelShotsInAuto,
-      int intakedAmountInAuto});
+      int cycles_completed,
+      String climb_side});
 }
 
 /// @nodoc
@@ -631,13 +621,8 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
     Object? feed_amount = null,
     Object? intake_amount = null,
     Object? shoot_amount = null,
-    Object? goes_under_trench = null,
-    Object? goes_over_bump = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
+    Object? cycles_completed = null,
     Object? climb_side = null,
-    Object? fuelShotsInAuto = null,
-    Object? intakedAmountInAuto = null,
   }) {
     return _then(_value.copyWith(
       feed_amount: null == feed_amount
@@ -652,34 +637,14 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
           ? _value.shoot_amount
           : shoot_amount // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_under_trench: null == goes_under_trench
-          ? _value.goes_under_trench
-          : goes_under_trench // ignore: cast_nullable_to_non_nullable
+      cycles_completed: null == cycles_completed
+          ? _value.cycles_completed
+          : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_over_bump: null == goes_over_bump
-          ? _value.goes_over_bump
-          : goes_over_bump // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as double,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
-              as double,
       climb_side: null == climb_side
           ? _value.climb_side
           : climb_side // ignore: cast_nullable_to_non_nullable
-              as int,
-      fuelShotsInAuto: null == fuelShotsInAuto
-          ? _value.fuelShotsInAuto
-          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
-      intakedAmountInAuto: null == intakedAmountInAuto
-          ? _value.intakedAmountInAuto
-          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
     ) as $Val);
   }
 }
@@ -696,13 +661,8 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
       {int feed_amount,
       int intake_amount,
       int shoot_amount,
-      int goes_under_trench,
-      int goes_over_bump,
-      double shoots_from_X,
-      double shoots_from_Y,
-      int climb_side,
-      int fuelShotsInAuto,
-      int intakedAmountInAuto});
+      int cycles_completed,
+      String climb_side});
 }
 
 /// @nodoc
@@ -721,13 +681,8 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
     Object? feed_amount = null,
     Object? intake_amount = null,
     Object? shoot_amount = null,
-    Object? goes_under_trench = null,
-    Object? goes_over_bump = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
+    Object? cycles_completed = null,
     Object? climb_side = null,
-    Object? fuelShotsInAuto = null,
-    Object? intakedAmountInAuto = null,
   }) {
     return _then(_$AutoScoringImpl(
       feed_amount: null == feed_amount
@@ -742,34 +697,14 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
           ? _value.shoot_amount
           : shoot_amount // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_under_trench: null == goes_under_trench
-          ? _value.goes_under_trench
-          : goes_under_trench // ignore: cast_nullable_to_non_nullable
+      cycles_completed: null == cycles_completed
+          ? _value.cycles_completed
+          : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_over_bump: null == goes_over_bump
-          ? _value.goes_over_bump
-          : goes_over_bump // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as double,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
-              as double,
       climb_side: null == climb_side
           ? _value.climb_side
           : climb_side // ignore: cast_nullable_to_non_nullable
-              as int,
-      fuelShotsInAuto: null == fuelShotsInAuto
-          ? _value.fuelShotsInAuto
-          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
-      intakedAmountInAuto: null == intakedAmountInAuto
-          ? _value.intakedAmountInAuto
-          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
     ));
   }
 }
@@ -781,13 +716,8 @@ class _$AutoScoringImpl implements _AutoScoring {
       {required this.feed_amount,
       required this.intake_amount,
       required this.shoot_amount,
-      required this.goes_under_trench,
-      required this.goes_over_bump,
-      required this.shoots_from_X,
-      required this.shoots_from_Y,
-      required this.climb_side,
-      this.fuelShotsInAuto = 0,
-      this.intakedAmountInAuto = 0});
+      required this.cycles_completed,
+      required this.climb_side});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
@@ -799,25 +729,13 @@ class _$AutoScoringImpl implements _AutoScoring {
   @override
   final int shoot_amount;
   @override
-  final int goes_under_trench;
+  final int cycles_completed;
   @override
-  final int goes_over_bump;
-  @override
-  final double shoots_from_X;
-  @override
-  final double shoots_from_Y;
-  @override
-  final int climb_side;
-  @override
-  @JsonKey()
-  final int fuelShotsInAuto;
-  @override
-  @JsonKey()
-  final int intakedAmountInAuto;
+  final String climb_side;
 
   @override
   String toString() {
-    return 'AutoScoring(feed_amount: $feed_amount, intake_amount: $intake_amount, shoot_amount: $shoot_amount, goes_under_trench: $goes_under_trench, goes_over_bump: $goes_over_bump, shoots_from_X: $shoots_from_X, shoots_from_Y: $shoots_from_Y, climb_side: $climb_side, fuelShotsInAuto: $fuelShotsInAuto, intakedAmountInAuto: $intakedAmountInAuto)';
+    return 'AutoScoring(feed_amount: $feed_amount, intake_amount: $intake_amount, shoot_amount: $shoot_amount, cycles_completed: $cycles_completed, climb_side: $climb_side)';
   }
 
   @override
@@ -831,36 +749,16 @@ class _$AutoScoringImpl implements _AutoScoring {
                 other.intake_amount == intake_amount) &&
             (identical(other.shoot_amount, shoot_amount) ||
                 other.shoot_amount == shoot_amount) &&
-            (identical(other.goes_under_trench, goes_under_trench) ||
-                other.goes_under_trench == goes_under_trench) &&
-            (identical(other.goes_over_bump, goes_over_bump) ||
-                other.goes_over_bump == goes_over_bump) &&
-            (identical(other.shoots_from_X, shoots_from_X) ||
-                other.shoots_from_X == shoots_from_X) &&
-            (identical(other.shoots_from_Y, shoots_from_Y) ||
-                other.shoots_from_Y == shoots_from_Y) &&
+            (identical(other.cycles_completed, cycles_completed) ||
+                other.cycles_completed == cycles_completed) &&
             (identical(other.climb_side, climb_side) ||
-                other.climb_side == climb_side) &&
-            (identical(other.fuelShotsInAuto, fuelShotsInAuto) ||
-                other.fuelShotsInAuto == fuelShotsInAuto) &&
-            (identical(other.intakedAmountInAuto, intakedAmountInAuto) ||
-                other.intakedAmountInAuto == intakedAmountInAuto));
+                other.climb_side == climb_side));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      feed_amount,
-      intake_amount,
-      shoot_amount,
-      goes_under_trench,
-      goes_over_bump,
-      shoots_from_X,
-      shoots_from_Y,
-      climb_side,
-      fuelShotsInAuto,
-      intakedAmountInAuto);
+  int get hashCode => Object.hash(runtimeType, feed_amount, intake_amount,
+      shoot_amount, cycles_completed, climb_side);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -876,7 +774,7 @@ class _$AutoScoringImpl implements _AutoScoring {
       this,
     );
   }
-  
+
   @override
   void operator []=(int other, Auto2026 value) {
     // TODO: implement []=
@@ -888,13 +786,8 @@ abstract class _AutoScoring implements AutoScoring {
       {required final int feed_amount,
       required final int intake_amount,
       required final int shoot_amount,
-      required final int goes_under_trench,
-      required final int goes_over_bump,
-      required final double shoots_from_X,
-      required final double shoots_from_Y,
-      required final int climb_side,
-      final int fuelShotsInAuto,
-      final int intakedAmountInAuto}) = _$AutoScoringImpl;
+      required final int cycles_completed,
+      required final String climb_side}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
@@ -906,19 +799,9 @@ abstract class _AutoScoring implements AutoScoring {
   @override
   int get shoot_amount;
   @override
-  int get goes_under_trench;
+  int get cycles_completed;
   @override
-  int get goes_over_bump;
-  @override
-  double get shoots_from_X;
-  @override
-  double get shoots_from_Y;
-  @override
-  int get climb_side;
-  @override
-  int get fuelShotsInAuto;
-  @override
-  int get intakedAmountInAuto;
+  String get climb_side;
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -935,8 +818,6 @@ TeleopScoring _$TeleopScoringFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$TeleopScoring {
   int get cycles_completed => throw _privateConstructorUsedError;
-  int get shoots_from_X => throw _privateConstructorUsedError;
-  int get shoots_from_Y => throw _privateConstructorUsedError;
   int get shoot_amount => throw _privateConstructorUsedError;
 
   /// Serializes this TeleopScoring to a JSON map.
@@ -955,11 +836,7 @@ abstract class $TeleopScoringCopyWith<$Res> {
           TeleopScoring value, $Res Function(TeleopScoring) then) =
       _$TeleopScoringCopyWithImpl<$Res, TeleopScoring>;
   @useResult
-  $Res call(
-      {int cycles_completed,
-      int shoots_from_X,
-      int shoots_from_Y,
-      int shoot_amount});
+  $Res call({int cycles_completed, int shoot_amount});
 }
 
 /// @nodoc
@@ -978,22 +855,12 @@ class _$TeleopScoringCopyWithImpl<$Res, $Val extends TeleopScoring>
   @override
   $Res call({
     Object? cycles_completed = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
     Object? shoot_amount = null,
   }) {
     return _then(_value.copyWith(
       cycles_completed: null == cycles_completed
           ? _value.cycles_completed
           : cycles_completed // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
               as int,
       shoot_amount: null == shoot_amount
           ? _value.shoot_amount
@@ -1011,11 +878,7 @@ abstract class _$$TeleopScoringImplCopyWith<$Res>
       __$$TeleopScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {int cycles_completed,
-      int shoots_from_X,
-      int shoots_from_Y,
-      int shoot_amount});
+  $Res call({int cycles_completed, int shoot_amount});
 }
 
 /// @nodoc
@@ -1032,22 +895,12 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? cycles_completed = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
     Object? shoot_amount = null,
   }) {
     return _then(_$TeleopScoringImpl(
       cycles_completed: null == cycles_completed
           ? _value.cycles_completed
           : cycles_completed // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
               as int,
       shoot_amount: null == shoot_amount
           ? _value.shoot_amount
@@ -1061,10 +914,7 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
-      {required this.cycles_completed,
-      required this.shoots_from_X,
-      required this.shoots_from_Y,
-      required this.shoot_amount});
+      {required this.cycles_completed, required this.shoot_amount});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$TeleopScoringImplFromJson(json);
@@ -1072,15 +922,11 @@ class _$TeleopScoringImpl implements _TeleopScoring {
   @override
   final int cycles_completed;
   @override
-  final int shoots_from_X;
-  @override
-  final int shoots_from_Y;
-  @override
   final int shoot_amount;
 
   @override
   String toString() {
-    return 'TeleopScoring(cycles_completed: $cycles_completed, shoots_from_X: $shoots_from_X, shoots_from_Y: $shoots_from_Y, shoot_amount: $shoot_amount)';
+    return 'TeleopScoring(cycles_completed: $cycles_completed, shoot_amount: $shoot_amount)';
   }
 
   @override
@@ -1090,18 +936,13 @@ class _$TeleopScoringImpl implements _TeleopScoring {
             other is _$TeleopScoringImpl &&
             (identical(other.cycles_completed, cycles_completed) ||
                 other.cycles_completed == cycles_completed) &&
-            (identical(other.shoots_from_X, shoots_from_X) ||
-                other.shoots_from_X == shoots_from_X) &&
-            (identical(other.shoots_from_Y, shoots_from_Y) ||
-                other.shoots_from_Y == shoots_from_Y) &&
             (identical(other.shoot_amount, shoot_amount) ||
                 other.shoot_amount == shoot_amount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, cycles_completed, shoots_from_X,
-      shoots_from_Y, shoot_amount);
+  int get hashCode => Object.hash(runtimeType, cycles_completed, shoot_amount);
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1122,8 +963,6 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
       {required final int cycles_completed,
-      required final int shoots_from_X,
-      required final int shoots_from_Y,
       required final int shoot_amount}) = _$TeleopScoringImpl;
 
   factory _TeleopScoring.fromJson(Map<String, dynamic> json) =
@@ -1131,10 +970,6 @@ abstract class _TeleopScoring implements TeleopScoring {
 
   @override
   int get cycles_completed;
-  @override
-  int get shoots_from_X;
-  @override
-  int get shoots_from_Y;
   @override
   int get shoot_amount;
 

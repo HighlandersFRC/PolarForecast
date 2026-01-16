@@ -178,13 +178,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
 
                           HapticFeedback.lightImpact();
 
-                          widget.onAutoScoringChanged!(
-                            widget.autoScoring.copyWith(
-                              shoots_from_X: xMeters,
-                              shoots_from_Y: yMeters,
-                            ),
-                          );
-
                           final autoSteps = widget.auto.steps.toList();
                           autoSteps.add(
                             AutoStep2026(
@@ -192,8 +185,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   "Robot Shot at X: ${xMeters.toStringAsFixed(2)}m, "
                                   "Y: ${yMeters.toStringAsFixed(2)}m",
                               extra_data: {
-                                "x": xMeters,
-                                "y": yMeters,
+                                'shots_from_x': xMeters,
+                                'shots_from_y': yMeters,
                               },
                             ),
                           );
@@ -904,72 +897,56 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                                             as RenderBox)
                                                         .size,
                                               ),
-                                              items: [
+                                              items: const [
                                                 PopupMenuItem(
+                                                  value: 'left',
                                                   child: Text(
                                                       'Left Side Rung Climb',
                                                       style: TextStyle(
                                                           color: Colors.green)),
-                                                  value: 'option1',
                                                 ),
                                                 PopupMenuItem(
+                                                  value: 'center',
                                                   child: Text(
                                                       'Center Rung Climb',
                                                       style: TextStyle(
                                                           color: Colors.blue)),
-                                                  value: 'option2',
                                                 ),
                                                 PopupMenuItem(
+                                                  value: 'right',
                                                   child: Text(
                                                       'Right Side Rung Climb',
                                                       style: TextStyle(
                                                           color:
                                                               Colors.orange)),
-                                                  value: 'option3',
                                                 ),
                                               ],
                                             ).then((value) {
-                                              if (value != null) {
-                                                HapticFeedback.lightImpact();
-                                                if (value == 'option1') {
-                                                  setState(() {
-                                                    var autoSteps = widget
-                                                        .auto.steps
-                                                        .toList();
-                                                    autoSteps.add(AutoStep2026(
-                                                        name:
-                                                            'Left Side Rung Climb',
-                                                        extra_data: {}));
-                                                    var newAuto = widget.auto
-                                                        .copyWith(
-                                                            steps: autoSteps);
-                                                    widget.onChanged!(newAuto);
-                                                  });
-                                                } else if (value == 'option2') {
-                                                  var autoSteps = widget
-                                                      .auto.steps
-                                                      .toList();
-                                                  autoSteps.add(AutoStep2026(
-                                                      name: 'Center Rung Climb',
-                                                      extra_data: {}));
-                                                  var newAuto = widget.auto
-                                                      .copyWith(
-                                                          steps: autoSteps);
-                                                  widget.onChanged!(newAuto);
-                                                } else if (value == 'option3') {
-                                                  var autoSteps = widget
-                                                      .auto.steps
-                                                      .toList();
-                                                  autoSteps.add(AutoStep2026(
-                                                      name:
-                                                          'Right Side Rung Climb',
-                                                      extra_data: {}));
-                                                  var newAuto = widget.auto
-                                                      .copyWith(
-                                                          steps: autoSteps);
-                                                  widget.onChanged!(newAuto);
-                                                }
-                                              }
+                                              if (value == null) return;
+
+                                              HapticFeedback.lightImpact();
+
+                                              // 1️⃣ Update AUTO STEPS
+                                              final autoSteps =
+                                                  widget.auto.steps.toList();
+                                              autoSteps.add(
+                                                AutoStep2026(
+                                                  name:
+                                                      '${value[0].toUpperCase()}${value.substring(1)} Side Rung Climb',
+                                                  extra_data: {},
+                                                ),
+                                              );
+
+                                              widget.onChanged?.call(
+                                                widget.auto
+                                                    .copyWith(steps: autoSteps),
+                                              );
+
+                                              // 2️⃣ Update AUTO SCORING (STRING)
+                                              widget.onAutoScoringChanged?.call(
+                                                widget.autoScoring.copyWith(
+                                                    climb_side: value),
+                                              );
                                             });
                                           },
                             child: AnimatedContainer(
@@ -1067,7 +1044,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 8),
                 Counter(
                   label: 'Intaked amount in Auto (Approximate)',
                   value: widget.autoScoring.intake_amount,
@@ -1080,7 +1057,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 8),
                 Counter(
                   label: 'Feed amount in Auto (Approximate)',
                   value: widget.autoScoring.feed_amount,
@@ -1090,6 +1067,19 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     if (widget.onAutoScoringChanged != null) {
                       widget.onAutoScoringChanged!(
                           widget.autoScoring.copyWith(feed_amount: newValue));
+                    }
+                  },
+                ),
+                SizedBox(height: 8),
+                Counter(
+                  label: 'Cycles Completed',
+                  value: widget.autoScoring.cycles_completed,
+                  max: 1000000,
+                  locked: widget.locked,
+                  onChanged: (newValue) {
+                    if (widget.onAutoScoringChanged != null) {
+                      widget.onAutoScoringChanged!(widget.autoScoring
+                          .copyWith(cycles_completed: newValue));
                     }
                   },
                 ),

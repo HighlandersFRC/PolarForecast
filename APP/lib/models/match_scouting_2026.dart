@@ -38,13 +38,8 @@ class AutoScoring with _$AutoScoring {
     required int feed_amount,
     required int intake_amount,
     required int shoot_amount,
-    required int goes_under_trench,
-    required int goes_over_bump,
-    required double shoots_from_X,
-    required double shoots_from_Y,
-    required int climb_side,
-    @Default(0) int fuelShotsInAuto,
-    @Default(0) int intakedAmountInAuto,
+    required int cycles_completed,
+    required String climb_side,
   }) = _AutoScoring;
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>
@@ -56,8 +51,6 @@ class AutoScoring with _$AutoScoring {
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
     required int cycles_completed,
-    required int shoots_from_X,
-    required int shoots_from_Y,
     required int shoot_amount,
   }) = _TeleopScoring;
 

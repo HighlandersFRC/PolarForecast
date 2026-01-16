@@ -36,6 +36,10 @@ import requests
 from fastapi_utils.tasks import repeat_every
 from StatDescription import stat_description
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions, PublicAccess
+from fastapi.exceptions import RequestValidationError
+
+
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
@@ -76,6 +80,12 @@ app.add_middleware(
     allow_methods=["POST", "GET", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(RequestValidationError)
+async def handler(_, exc):
+    print(exc.errors())
+    raise
+
 
 # Set Up the Database
 client = MongoClient(MONGO_CONNECTION)
@@ -604,51 +614,96 @@ def post_pit_scouting_data(
             f"No team key '{data.team_number}' in {data.event_code}"
         )
 
-    # ---- Insert or replace user's entry ----
-    try:
-        PitScoutingCollection.insert_one(data.dict())
-    except Exception:
-        PitScoutingCollection.find_one_and_replace(
+    # ---- Debug: Print what we're trying to insert ----
+    print(f"Attempting to insert/update pit scouting data:")
+    print(f"Event: {data.event_code}")
+    print(f"Team: {data.team_number}")
+    print(f"User ID: {data.scout_info.user_id}")
+    
+    # Convert to dict for MongoDB
+    data_dict = data.dict()
+    print(f"Data to insert: {data_dict}")
+
+    # ---- Check if entry already exists ----
+    existing_entry = PitScoutingCollection.find_one({
+        "event_code": data.event_code,
+        "team_number": data.team_number,
+        "scout_info.user_id": data.scout_info.user_id
+    })
+    
+    if existing_entry:
+        print(f"Entry exists, updating...")
+        # Update existing entry
+        result = PitScoutingCollection.update_one(
             {
                 "event_code": data.event_code,
                 "team_number": data.team_number,
-                "scout_info.user_id": data.scout_info.user_id,
+                "scout_info.user_id": data.scout_info.user_id
             },
-            data.dict(),
-            upsert=True
+            {"$set": data_dict}
         )
+        print(f"Update result: matched={result.matched_count}, modified={result.modified_count}")
+    else:
+        print(f"No existing entry, inserting new...")
+        # Insert new entry
+        try:
+            result = PitScoutingCollection.insert_one(data_dict)
+            print(f"Insert result: inserted_id={result.inserted_id}")
+        except pymongo.errors.DuplicateKeyError as e:
+            print(f"Duplicate key error: {e}")
+            # Try to update if duplicate (race condition)
+            result = PitScoutingCollection.update_one(
+                {
+                    "event_code": data.event_code,
+                    "team_number": data.team_number,
+                    "scout_info.user_id": data.scout_info.user_id
+                },
+                {"$set": data_dict},
+                upsert=True
+            )
+            print(f"Upsert after duplicate: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")
 
-    # ---- Update affected groups ----
+    # ---- Verify the data was saved ----
+    saved_data = PitScoutingCollection.find_one({
+        "event_code": data.event_code,
+        "team_number": data.team_number,
+        "scout_info.user_id": data.scout_info.user_id
+    })
+    
+    if saved_data:
+        print(f"✅ Data successfully saved: {saved_data.get('_id')}")
+    else:
+        print(f"❌ Data NOT saved - check MongoDB error logs")
+        raise HTTPException(500, "Failed to save data to database")
+
+    # ---- Get user's groups ----
     groups = [
         Group(**group)
         for group in get_user_groups_detailed(token=token)
     ]
+    
+    print(f"User belongs to {len(groups)} groups")
 
-    groupsNeedingUpdate = (
-        [
-            Group(**group)
-            for group in GroupCollection.find({
-                "events": {
-                    "$elemMatch": {
-                        "event_code": data.event_code,
-                        "alliance_groups.group_id": {
-                            "$in": [g.group_id for g in groups]
-                        }
-                    }
-                }
-            })
-        ]
-        + groups
-    )
-
-    for group in groupsNeedingUpdate:
+    # ---- Update groups ----
+    for group in groups:
+        print(f"Processing group: {group.name}")
         try:
-            updateGroupStatus(group, data.event_code)
-            updateGroupGridPitData(group, data.event_code)
-        except Exception:
-            pass
+            # Check if this group is tracking this event
+            for event in group.events:
+                if event.event_code == data.event_code:
+                    print(f"  Updating status for event: {event.event_code}")
+                    updateGroupStatus(group, data.event_code)
+                    updateGroupGridPitData(group, data.event_code)
+                    break
+            else:
+                print(f"  Group {group.name} is not tracking event {data.event_code}")
+        except Exception as e:
+            print(f"  Error updating group {group.name}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            continue
 
-    return {"message": "added it to the DB"}
+    return {"message": "Successfully saved pit scouting data"}
 
 
 
@@ -829,26 +884,47 @@ def updateGroupStatus(group: Group, event_code: str):
         )
     ]
 
-    followUpScoutingEntries = [
-        DeathScoutingForm(**entry)
-        for entry in FollowUpCollection.find(
-            {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
-        )
-    ]
+    # FIXED: Handle float time values for MatchScouting2026
+    matchScoutingEntries = []
+    for entry in MatchScoutingCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            matchScoutingEntries.append(MatchScouting2026(**entry))
+        except Exception as e:
+            print(f"Error parsing match scouting entry: {e}")
+            continue
 
-    pictures = [
-        PictureData(**entry)
-        for entry in PictureCollection.find(
-            {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
-        )
-    ]
+    # FIXED: Handle float time values for DeathScoutingForm
+    followUpScoutingEntries = []
+    for entry in FollowUpCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            followUpScoutingEntries.append(DeathScoutingForm(**entry))
+        except Exception as e:
+            print(f"Error parsing follow-up entry: {e}")
+            continue
 
-    matchScoutingEntries = [
-        MatchScouting2026(**entry)
-        for entry in MatchScoutingCollection.find(
-            {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
-        )
-    ]
+    # FIXED: Handle float time values for PictureData
+    pictures = []
+    for entry in PictureCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            pictures.append(PictureData(**entry))
+        except Exception as e:
+            print(f"Error parsing picture entry: {e}")
+            continue
 
     # ---- Compute status per team ----
     for status in statuses:

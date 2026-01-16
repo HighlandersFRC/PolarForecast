@@ -15,7 +15,7 @@ class Scoring2026(BaseModel):
     intake_amount: Optional[int] = 0
     goes_under_trench: Optional[int] = 0
     goes_over_bump: Optional[int] = 0
-    climb_side: Optional[int] = 0
+    climb_side: Optional[str] = "Does not climb"
     # Location-specific scoring fields (for charts)
     l_1: Optional[int] = 0
     l_2: Optional[int] = 0
