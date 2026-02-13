@@ -276,33 +276,43 @@ def join_code(group_name):
 def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None)):
     event_code = str(year) + event
     foundTeam = False
+    data = None # Initialize to None
+
     if (token == None):
         data = getEventCalculatedData(event_code)
     else:
         if get_token_active(token=token):
-            groups = [Group(**group)
-                      for group in get_user_groups_detailed(token=token)]
+            groups = [Group(**group) for group in get_user_groups_detailed(token=token)]
             foundGroup = False
             for group in groups:
                 if event_code in [x.event_code for x in group.events]:
                     data = getGroupCalculatedData(event_code, group.group_id)
                     if data != None:
                         foundGroup = True
-                    break
+                        break
             if not foundGroup:
                 data = getEventCalculatedData(event_code)
         else:
             data = getEventCalculatedData(event_code)
+
+    # --- ADD THIS CHECK HERE ---
+    if data is None or "data" not in data:
+        raise HTTPException(404, f"No data found for event {event_code}")
+    # ---------------------------
+
     i = 0
     for doc in data["data"]:
+        # Note: Your current logic skips the first item (i=1). 
+        # Ensure that is intentional for your data structure.
         i += 1
         if not i == 1:
             if doc["key"] == team:
                 foundTeam = True
                 break
+                
     if not foundTeam:
-        raise HTTPException(400, "No team key '"+team +
-                            "' in "+event_code)
+        raise HTTPException(400, "No team key '"+team +"' in "+event_code)
+        
     return doc
 
 
@@ -502,74 +512,25 @@ def get_pit_scouting_data(
     user_info = get_user_info(token=token)
     event_code = f"{year}{event}"
 
-    groups = [Group(**g) for g in get_user_groups_detailed(token=token)]
+    data = PitScoutingCollection.find_one({
+        "event_code": event_code,
+        "team_number": int(team[3:]),
+        "scout_info.user_id": user_info["sub"]
+    })
 
-    # ---- No groups: only return user's own data ----
-    if not groups:
-        data = PitScoutingCollection.find_one({
-            "event_code": event_code,
+    if not data:
+        # Instead of returning None, return an empty dict
+        return {
+            "scout_info": scout_info_from_token(token),
             "team_number": int(team[3:]),
-            "scout_info.user_id": user_info["sub"]
-        })
-
-        if not data:
-            raise HTTPException(404, "No pit scouting entry found")
-
-        return PitScouting2026(**data)
-
-    # ---- Group logic ----
-    group = groups[0]
-    members = fetch_group_members(group.group_id)
-    member_ids = [m["id"] for m in members]
-
-    alliance_members = []
-    for group_event in group.events:
-        if group_event.event_code == event_code:
-            for alliance in group_event.alliance_groups:
-                alliance_members.extend(fetch_group_members(alliance.group_id))
-
-    group_entries = [
-        PitScouting2026(**e) for e in PitScoutingCollection.find({
+            "time": 0,
             "event_code": event_code,
-            "team_number": int(team[3:]),
-            "scout_info.user_id": {"$in": member_ids}
-        })
-    ]
+            "data": {},  # empty PitData2026 placeholder
+            "user_id": "",
+            "auto": {}
+        }
 
-    alliance_entries = [
-        PitScouting2026(**e) for e in PitScoutingCollection.find({
-            "event_code": event_code,
-            "team_number": int(team[3:]),
-            "scout_info.user_id": {"$in": [m["id"] for m in alliance_members]}
-        })
-    ]
-
-    if not group_entries and not alliance_entries:
-        raise HTTPException(404, f"No entries for {team} at {event} in {year}")
-
-    # ---- Pick newest entry ----
-    latest = None
-    alliance = False
-
-    for entry in group_entries:
-        if latest is None or entry.time > latest.time:
-            latest = entry
-            alliance = False
-
-    for entry in alliance_entries:
-        if latest is None or entry.time > latest.time:
-            latest = entry
-            alliance = True
-
-    # ---- Hide scout identity if alliance-sourced ----
-    if alliance:
-        ret = latest.dict(exclude={"scout_info"})
-        ret["scout_info"] = latest.scout_info.dict(
-            exclude={"first_name", "username"}
-        )
-        return ret
-
-    return latest
+    return PitScouting2026(**data)
 
 
 
@@ -606,7 +567,7 @@ def post_pit_scouting_data(
         raise HTTPException(404, "Event does not exist")
 
     teams = [team[3:] for team in teams]  # strip 'frc'
-    team = str(data.team_number)
+    team = str(data.team_number) # Temporary hardcoded team number for testing; replace with data.team_number in production
 
     if team not in teams:
         raise HTTPException(
@@ -773,7 +734,7 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                 for team in teams:
                     keyList.append(keyStr + team[3:])
 
-                # Default data structure without L1, processor, algae, coral
+            
                 retval0 = {"data": {"keys": keyList}}
                 data = [retval0]
                 data.extend([{
@@ -2917,7 +2878,6 @@ def updateData(event_code: str, event_type: int):
         for team in teams:
             keyList.append(keyStr + team[3:])
 
-        # Fallback structure (2026 only, no coral/L1-L4)
         fallback_entry = {
             "historical": False,
             "key": None,
@@ -2925,8 +2885,6 @@ def updateData(event_code: str, event_type: int):
             "match_count": 0,
             "shoot_amount": 0,
             "cycles_completed": 0,
-            "shoots_from_X": 0,
-            "shoots_from_Y": 0,
             "auto": {},  # empty Auto2026 object
             "miscellaneous": {"died": False, "comments": ""}
         }

@@ -124,53 +124,34 @@ class ApiService {
 
   Future<PitScouting2026> fetchTeamPitScouting(
       String year, String event, String team) async {
+    final storageName = '${year}/${event}_${team}_PitScouting';
+    final endpoint = '$APIURL/$year/$event/$team/PitScouting';
+
     try {
-      final storageName = '${year}/${event}_${team}_PitScouting';
-      final endpoint = '$APIURL/$year/$event/$team/PitScouting';
-      final data = await _fetchFromAPI(endpoint, storageName, useCache: false);
-      return PitScouting2026.fromJson(data);
+      final response =
+          await _fetchFromAPI(endpoint, storageName, useCache: false);
+
+      // Defensive null check
+      if (response == null || response is! Map<String, dynamic>) {
+        print('Warning: Pit scouting API returned null or invalid data');
+        return _defaultPitScouting(year, event, team);
+      }
+
+      return PitScouting2026.fromJson(response);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
-      return PitScouting2026(
-        scout_info: get_scout_info(await token ?? ''),
-        team_number: int.tryParse(team.substring(3)) ?? 0,
-        time: 0,
-        event_code: '${year}${event}',
-        data: PitData2026(
-            auto: Auto2026(
-                starting_position_meters_from_hub_center: 0,
-                steps: [],
-                field_side: [],
-                preload: false,
-                climb: false,
-                contacts_robot: false),
-            driver_experience_events: 0,
-            drive_train: '',
-            climbing: [],
-            spare_parts: 0,
-            favorite_color: '',
-            autos: [],
-            can_feed_human_player: false,
-            can_pick_up_from_ground: false,
-            distance_to_shoot: 0,
-            cycles_in_25_seconds: 0,
-            cycle_time: 0,
-            go_over_bump: false,
-            go_under_trench: false,
-            can_climb: false,
-            can_climb_in_autonomous: false,
-            can_climb_with_others: false,
-            automatically_shooting: false,
-            shooting_while_moving: false,
-            main_strategy: '',
-            auto_scoring: AutoScoring(
-              feed_amount: 0,
-              intake_amount: 0,
-              shoot_amount: 0,
-              cycles_completed: 0,
-              climb_side: 'Did not Climb',
-            )),
-        user_id: '',
+      return _defaultPitScouting(year, event, team);
+    }
+  }
+
+// Helper to create a default PitScouting2026 object
+  PitScouting2026 _defaultPitScouting(String year, String event, String team) {
+    return PitScouting2026(
+      scout_info: get_scout_info(''), // pass token if needed
+      team_number: int.tryParse(team.replaceAll(RegExp(r'\D'), '')) ?? 0,
+      time: 0,
+      event_code: '$year$event',
+      data: PitData2026(
         auto: Auto2026(
           starting_position_meters_from_hub_center: 0,
           steps: [],
@@ -179,8 +160,43 @@ class ApiService {
           climb: false,
           contacts_robot: false,
         ),
-      );
-    }
+        driver_experience_events: 0,
+        drive_train: '',
+        climbing: [],
+        spare_parts: 0,
+        favorite_color: '',
+        autos: [],
+        can_feed_human_player: false,
+        can_pick_up_from_ground: false,
+        distance_to_shoot: 0,
+        cycles_in_25_seconds: 0,
+        cycle_time: 0,
+        go_over_bump: false,
+        go_under_trench: false,
+        can_climb: false,
+        can_climb_in_autonomous: false,
+        can_climb_with_others: false,
+        automatically_shooting: false,
+        shooting_while_moving: false,
+        main_strategy: '',
+        auto_scoring: AutoScoring(
+          feed_amount: 0,
+          intake_amount: 0,
+          shoot_amount: 0,
+          cycles_completed: 0,
+          climb_side: 'Did not Climb',
+        ),
+      ),
+      user_id: '',
+      auto: Auto2026(
+        starting_position_meters_from_hub_center: 0,
+        steps: [],
+        field_side: [],
+        preload: false,
+        climb: false,
+        contacts_robot: false,
+      ),
+    );
   }
 
   Future<int> postPitScouting(

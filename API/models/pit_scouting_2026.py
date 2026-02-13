@@ -28,12 +28,12 @@ class Scoring2026(BaseModel):
     goes_over_bump: Optional[int] = 0
     climb_side: Optional[str] = "Does not climb"
     # Location-specific scoring fields (for charts)
-    l_1: Optional[int] = 0
-    l_2: Optional[int] = 0
-    l_3: Optional[int] = 0
-    l_4: Optional[int] = 0
-    net: Optional[int] = 0
-    processor: Optional[int] = 0
+    # l_1: Optional[int] = 0
+    # l_2: Optional[int] = 0
+    # l_3: Optional[int] = 0
+    # l_4: Optional[int] = 0
+    # net: Optional[int] = 0
+    # processor: Optional[int] = 0
 
 class Auto2026(BaseModel):
     starting_position_meters_from_hub_center: float

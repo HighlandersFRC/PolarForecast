@@ -176,32 +176,14 @@ class _RankingsTabState extends State<_RankingsTab> {
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Auto Coral Points'),
-      columnName: 'auto_coral_points',
+      label: Text('Auto Fuel Points'),
+      columnName: 'auto_fuel_points',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Teleop Coral'),
-      columnName: 'teleop_coral',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('Teleop Coral Points'),
-      columnName: 'teleop_coral_points',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('Net'),
-      columnName: 'net',
-      allowFiltering: false,
-    ),
-    GridColumn(
-      allowSorting: true,
-      label: Text('Processor'),
-      columnName: 'processor',
+      label: Text('Teleop Fuel Points'),
+      columnName: 'teleop_fuel_points',
       allowFiltering: false,
     ),
     GridColumn(
@@ -222,11 +204,8 @@ class _RankingsTabState extends State<_RankingsTab> {
     'OPR': true,
     'rank': true,
     'simulated_rp': true,
-    'auto_coral_points': true,
-    'teleop_coral': true,
-    'teleop_coral_points': true,
-    'net': true,
-    'processor': true,
+    'auto_fuel_points': true,
+    'teleop_fuel_points': true,
     'climbing_points': true,
     'death_rate': true,
   };
@@ -444,21 +423,21 @@ class _TeamDataSource extends DataGridSource {
               opr: e.value,
               scouting: scouting);
         }
-        if (e.columnName == 'teleop_coral_points' ||
-            e.columnName == 'teleop_coral') {
-          return _CoralMenuOnClick(
+        if (e.columnName == 'teleop_fuel_points' ||
+            e.columnName == 'teleop_fuel') {
+          return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
               color: color,
               auto: false,
-              coralOPR: e.value,
+              fuelOPR: e.value,
               rankings: rankings);
         }
-        if (e.columnName == 'auto_coral_points') {
-          return _CoralMenuOnClick(
+        if (e.columnName == 'auto_fuel_points') {
+          return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
               color: color,
               auto: true,
-              coralOPR: e.value,
+              fuelOPR: e.value,
               rankings: rankings);
         }
         return Container(
@@ -653,17 +632,17 @@ class _OvertimeChartOnClick extends StatelessWidget {
   }
 }
 
-class _CoralMenuOnClick extends StatelessWidget {
+class _FuelMenuOnClick extends StatelessWidget {
   final bool auto;
   final int teamNumber;
   final Color color;
-  final double coralOPR;
+  final double fuelOPR;
   final List<TeamStats2026> rankings;
-  _CoralMenuOnClick(
+  _FuelMenuOnClick(
       {required this.auto,
       required this.teamNumber,
       required this.color,
-      required this.coralOPR,
+      required this.fuelOPR,
       required this.rankings});
   final GlobalKey containerKey = GlobalKey();
   @override
@@ -674,7 +653,7 @@ class _CoralMenuOnClick extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             alignment: Alignment.center,
             color: color,
-            child: Text('${(coralOPR * 10).roundToDouble() / 10}',
+            child: Text('${(fuelOPR * 10).roundToDouble() / 10}',
                 style: TextStyle(
                   color: Colors.white,
                   decoration: TextDecoration.underline,
@@ -1129,18 +1108,18 @@ class _ChartsTabState extends State<_ChartsTab> {
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: BarChartWithWeights(
-                  title: 'Coral By Game Period',
+                  title: 'Fuel By Game Period',
                   data: rankings,
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Teleop Coral',
-                        key: 'teleop_coral',
+                        name: 'Teleop Fuel',
+                        key: 'teleop_fuel',
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Auto Coral',
-                        key: 'auto_coral',
+                        name: 'Auto Fuel',
+                        key: 'auto_fuel',
                         enabled: true,
                         weight: 1),
                   ])),
@@ -1153,15 +1132,10 @@ class _ChartsTabState extends State<_ChartsTab> {
                   number: 24,
                   startingFields: [
                     Field(
-                        name: 'Coral',
-                        key: 'coral_points',
+                        name: 'Fuel',
+                        key: 'fuel_points',
                         enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Algae',
-                        key: 'algae_points',
-                        enabled: true,
-                        weight: 1),
+                        weight: 1)
                   ])),
           Divider(color: Colors.blue),
           Padding(
@@ -1893,8 +1867,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
                     ? Card(
                         child: Padding(
                             padding: EdgeInsets.all(20.0),
-                            child:
-                                Text('Your Group is not part of this event')))
+                            child: Text('Your team is not part of this event')))
                     : LayoutBuilder(
                         builder: (context, constraints) => Container(
                             alignment: Alignment.center,

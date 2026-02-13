@@ -6,7 +6,9 @@ class NotFoundPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PolarForecastAppBar(),
-      body: Center(child: Text('404 Page not found')),
+      body: Center(
+          child: Text(
+              'Oh No! Something Broke! The robot or at least this page does not exist! 404 Not Found')),
     );
   }
 }

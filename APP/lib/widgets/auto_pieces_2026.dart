@@ -89,8 +89,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
     double pixelsPerMeter,
     double squareSize,
   ) {
-    Offset? tappedPosition;
-
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -98,109 +96,71 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: Colors.black,
-              title: const Text(
-                "Shoot Location",
-                style: TextStyle(color: Colors.white),
-              ),
-              content: SizedBox(
-                width: width,
-                height: height,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (details) {
-                    final local = details.localPosition;
+                backgroundColor: Colors.black,
+                title: const Text(
+                  "Shoot Location",
+                  style: TextStyle(color: Colors.white),
+                ),
+                content: SizedBox(
+                  width: width,
+                  height: height,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (details) {
+                      final local = details.localPosition;
 
-                    // Restrict to lower half
-                    if (local.dy < height * 0.5) return;
+                      // Restrict to lower half
+                      if (local.dy < height * 0.5) return;
 
-                    setDialogState(() {
                       final centeredX = local.dx - squareSize / 2;
                       final centeredY = local.dy - squareSize / 2;
 
-                      tappedPosition = Offset(
+                      final position = Offset(
                         centeredX.clamp(0.0, width - squareSize),
                         centeredY.clamp(height * 0.5, height - squareSize),
                       );
-                    });
 
-                    HapticFeedback.selectionClick();
-                  },
-                  child: Stack(
-                    children: [
-                      Transform.rotate(
-                        angle: imageRotation,
-                        child: Image.asset(
-                          imagePath,
-                          width: width,
-                          height: height,
-                          fit: BoxFit.contain,
+                      final xMeters = position.dx / pixelsPerMeter;
+                      final yMeters = position.dy / pixelsPerMeter;
+
+                      HapticFeedback.lightImpact();
+
+                      final autoSteps = widget.auto.steps.toList();
+                      autoSteps.add(
+                        AutoStep2026(
+                          name:
+                              "Robot Shot at X: ${xMeters.toStringAsFixed(2)}m, "
+                              "Y: ${yMeters.toStringAsFixed(2)}m",
+                          extra_data: {
+                            'shots_from_x': xMeters,
+                            'shots_from_y': yMeters,
+                          },
                         ),
-                      ),
+                      );
 
-                      /// --- Robot marker ---
-                      if (tappedPosition != null)
-                        Positioned(
-                          left: tappedPosition!.dx,
-                          top: tappedPosition!.dy,
-                          child: Container(
-                            width: squareSize,
-                            height: squareSize,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.75),
-                              border: Border.all(
-                                color: Colors.greenAccent,
-                                width: 2.5,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.smart_toy,
-                              color: Colors.white,
-                            ),
+                      widget.onChanged?.call(
+                        widget.auto.copyWith(steps: autoSteps),
+                      );
+
+                      Navigator.pop(context); // 👈 auto-close dialog
+                    },
+                    child: Stack(
+                      children: [
+                        Transform.rotate(
+                          angle: imageRotation,
+                          child: Image.asset(
+                            imagePath,
+                            width: width,
+                            height: height,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                    ],
+
+                        /// --- Robot marker ---
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  child: const Text("Cancel"),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                ElevatedButton(
-                  onPressed: tappedPosition == null
-                      ? null
-                      : () {
-                          final xMeters = tappedPosition!.dx / pixelsPerMeter;
-                          final yMeters = tappedPosition!.dy / pixelsPerMeter;
-
-                          HapticFeedback.lightImpact();
-
-                          final autoSteps = widget.auto.steps.toList();
-                          autoSteps.add(
-                            AutoStep2026(
-                              name:
-                                  "Robot Shot at X: ${xMeters.toStringAsFixed(2)}m, "
-                                  "Y: ${yMeters.toStringAsFixed(2)}m",
-                              extra_data: {
-                                'shots_from_x': xMeters,
-                                'shots_from_y': yMeters,
-                              },
-                            ),
-                          );
-
-                          widget.onChanged!(
-                            widget.auto.copyWith(steps: autoSteps),
-                          );
-
-                          Navigator.pop(context);
-                        },
-                  child: const Text("Confirm Shot"),
-                ),
-              ],
-            );
+                ));
           },
         );
       },

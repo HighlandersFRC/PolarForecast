@@ -282,10 +282,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     Navigator.pushNamed(context, '/event/${widget.tournament.key}');
   }
 
-  final Color algaeButtonColor = Color.fromARGB(255, 58, 185, 164);
-  final Color coralButtonColor = Colors.white;
-  final Color bothButtonColor = const Color.fromARGB(255, 139, 61, 175);
-
   @override
   Widget build(BuildContext context) {
     return Container(

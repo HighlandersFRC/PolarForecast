@@ -154,9 +154,7 @@ class _StatsTabState extends State<_StatsTab> {
   List<GridColumn> columns = [
     GridColumn(columnName: 'team_number', label: Text('Team Number')),
     GridColumn(columnName: 'opr', label: Text('OPR')),
-    GridColumn(columnName: 'coral_points', label: Text('Coral Points')),
-    GridColumn(columnName: 'processor', label: Text('Processor')),
-    GridColumn(columnName: 'net', label: Text('Net')),
+    GridColumn(columnName: 'fuel_points', label: Text('Fuel Points')),
     GridColumn(columnName: 'climb_points', label: Text('Climb Points')),
   ];
   bool isLoading = true;
@@ -189,25 +187,17 @@ class _StatsTabState extends State<_StatsTab> {
     if (stats != null) {
       setState(() {
         blueRows = [];
-        double blueOPR = 0,
-            blueCoral = 0,
-            blueProcessor = 0,
-            blueNet = 0,
-            blueClimb = 0;
+        double blueOPR = 0, blueFuel = 0, blueClimb = 0;
         for (var blueTeam in stats?.blue_teams ?? []) {
           blueOPR += blueTeam.OPR;
-          blueCoral += blueTeam.coral_points;
-          blueProcessor += blueTeam.processor;
-          blueNet += blueTeam.net;
+          blueFuel += blueTeam.fuel_points;
           blueClimb += blueTeam.climbing_points;
           blueRows.add(DataGridRow(cells: [
             DataGridCell(
                 columnName: 'team_number', value: blueTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: blueTeam.OPR),
             DataGridCell(
-                columnName: 'coral_points', value: blueTeam.coral_points),
-            DataGridCell(columnName: 'processor', value: blueTeam.processor),
-            DataGridCell(columnName: 'net', value: blueTeam.net),
+                columnName: 'fuel_points', value: blueTeam.fuel_points),
             DataGridCell(
                 columnName: 'climb_points', value: blueTeam.climbing_points),
           ]));
@@ -215,31 +205,20 @@ class _StatsTabState extends State<_StatsTab> {
         blueRows.add(DataGridRow(cells: [
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: blueOPR),
-          DataGridCell(columnName: 'coral_points', value: blueCoral),
-          DataGridCell(columnName: 'processor', value: blueProcessor),
-          DataGridCell(columnName: 'net', value: blueNet),
+          DataGridCell(columnName: 'fuel_points', value: blueFuel),
           DataGridCell(columnName: 'climb_points', value: blueClimb),
         ]));
         redRows = [];
-        double redOPR = 0,
-            redCoral = 0,
-            redProcessor = 0,
-            redNet = 0,
-            redClimb = 0;
+        double redOPR = 0, redFuel = 0, redClimb = 0;
         for (var redTeam in stats?.red_teams ?? []) {
           redOPR += redTeam.OPR;
-          redCoral += redTeam.coral_points;
-          redProcessor += redTeam.processor;
-          redNet += redTeam.net;
+          redFuel += redTeam.fuel_points;
           redClimb += redTeam.climbing_points;
           redRows.add(DataGridRow(cells: [
             DataGridCell(
                 columnName: 'team_number', value: redTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: redTeam.OPR),
-            DataGridCell(
-                columnName: 'coral_points', value: redTeam.coral_points),
-            DataGridCell(columnName: 'processor', value: redTeam.processor),
-            DataGridCell(columnName: 'net', value: redTeam.net),
+            DataGridCell(columnName: 'fuel_points', value: redTeam.fuel_points),
             DataGridCell(
                 columnName: 'climb_points', value: redTeam.climbing_points),
           ]));
@@ -247,9 +226,7 @@ class _StatsTabState extends State<_StatsTab> {
         redRows.add(DataGridRow(cells: [
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: redOPR),
-          DataGridCell(columnName: 'coral_points', value: redCoral),
-          DataGridCell(columnName: 'processor', value: redProcessor),
-          DataGridCell(columnName: 'net', value: redNet),
+          DataGridCell(columnName: 'fuel_points', value: redFuel),
           DataGridCell(columnName: 'climb_points', value: redClimb),
         ]));
       });

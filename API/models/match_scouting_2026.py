@@ -10,20 +10,12 @@ class Scoring2026(BaseModel):
     cycles_completed: int = 0
     shoots_from_X: float = 0
     shoots_from_Y: float = 0
-    # Optional fields with defaults for backward compatibility
     feed_amount: Optional[int] = 0
     intake_amount: Optional[int] = 0
     goes_under_trench: Optional[int] = 0
     goes_over_bump: Optional[int] = 0
     climb_side: Optional[str] = "Does not climb"
-    # Location-specific scoring fields (for charts)
-    l_1: Optional[int] = 0
-    l_2: Optional[int] = 0
-    l_3: Optional[int] = 0
-    l_4: Optional[int] = 0
-    net: Optional[int] = 0
-    processor: Optional[int] = 0
-
+   
 
 class Miscellaneous2026(BaseModel):
     died: bool = False
