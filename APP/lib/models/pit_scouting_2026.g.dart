@@ -16,7 +16,9 @@ _$PitScouting2026Impl _$$PitScouting2026ImplFromJson(
       event_code: json['event_code'] as String,
       time: (json['time'] as num).toInt(),
       data: PitData2026.fromJson(json['data'] as Map<String, dynamic>),
-      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
+      auto: json['auto'] == null
+          ? null
+          : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PitScouting2026ImplToJson(
@@ -28,7 +30,7 @@ Map<String, dynamic> _$$PitScouting2026ImplToJson(
       'event_code': instance.event_code,
       'time': instance.time,
       'data': instance.data.toJson(),
-      'auto': instance.auto.toJson(),
+      'auto': instance.auto?.toJson(),
     };
 
 _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
@@ -54,7 +56,9 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
       main_strategy: json['main_strategy'] as String,
       spare_parts: (json['spare_parts'] as num).toInt(),
       favorite_color: json['favorite_color'] as String,
-      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
+      auto: json['auto'] == null
+          ? null
+          : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       auto_scoring:
           AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
       autos: json['autos'] as List<dynamic>,
@@ -80,7 +84,7 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'main_strategy': instance.main_strategy,
       'spare_parts': instance.spare_parts,
       'favorite_color': instance.favorite_color,
-      'auto': instance.auto.toJson(),
+      'auto': instance.auto?.toJson(),
       'auto_scoring': instance.auto_scoring.toJson(),
       'autos': instance.autos,
     };
@@ -97,9 +101,10 @@ _$Auto2026Impl _$$Auto2026ImplFromJson(Map<String, dynamic> json) =>
       climb: json['climb'] as bool,
       contacts_robot: json['contacts_robot'] as bool,
       both_sides: json['both_sides'] as bool? ?? false,
-      autoPieces: (json['autoPieces'] as num?)?.toInt() ?? 0,
-      fuelShotsInAuto: (json['fuelShotsInAuto'] as num?)?.toInt() ?? 0,
-      intakedAmountInAuto: (json['intakedAmountInAuto'] as num?)?.toInt() ?? 0,
+      autoPieces: (json['auto_pieces'] as num?)?.toInt() ?? 0,
+      fuelShotsInAuto: (json['fuel_shots_in_auto'] as num?)?.toInt() ?? 0,
+      intakedAmountInAuto:
+          (json['intaked_amount_in_auto'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
@@ -112,9 +117,9 @@ Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
       'climb': instance.climb,
       'contacts_robot': instance.contacts_robot,
       'both_sides': instance.both_sides,
-      'autoPieces': instance.autoPieces,
-      'fuelShotsInAuto': instance.fuelShotsInAuto,
-      'intakedAmountInAuto': instance.intakedAmountInAuto,
+      'auto_pieces': instance.autoPieces,
+      'fuel_shots_in_auto': instance.fuelShotsInAuto,
+      'intaked_amount_in_auto': instance.intakedAmountInAuto,
     };
 
 _$AutoStep2026Impl _$$AutoStep2026ImplFromJson(Map<String, dynamic> json) =>

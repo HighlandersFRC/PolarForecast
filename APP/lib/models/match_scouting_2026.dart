@@ -44,7 +44,6 @@ class AutoScoring with _$AutoScoring {
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>
       _$AutoScoringFromJson(json);
-  void operator []=(int other, Auto2026 value) {}
 }
 
 @freezed

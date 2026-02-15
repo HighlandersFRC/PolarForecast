@@ -1,3 +1,5 @@
+import pandas as pd
+
 def analyzeData(TBAData: list, ScoutingData: list):
     """
     Analyze TBA and scouting data to calculate team statistics.
@@ -44,4 +46,4 @@ def analyzeData(TBAData: list, ScoutingData: list):
     
     # Add analysis logic here based on 2026 game rules
     
-    return calculated_data, ratings
+    return pd.DataFrame(calculated_data), ratings 

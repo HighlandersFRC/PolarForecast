@@ -13,7 +13,7 @@ class PitScouting2026 with _$PitScouting2026 {
     required String event_code,
     required int time,
     required PitData2026 data,
-    required Auto2026 auto,
+    Auto2026? auto,
   }) = _PitScouting2026;
   factory PitScouting2026.fromJson(Map<String, dynamic> json) =>
       _$PitScouting2026FromJson(json);
@@ -40,7 +40,7 @@ class PitData2026 with _$PitData2026 {
     required String main_strategy,
     required int spare_parts,
     required String favorite_color,
-    required Auto2026 auto,
+    Auto2026? auto,
     required AutoScoring auto_scoring,
     // keep autos dynamic to avoid type-mismatch with other code/widgets
     required List<dynamic> autos,
@@ -59,15 +59,19 @@ class Auto2026 with _$Auto2026 {
     required bool climb,
     required bool contacts_robot,
     @Default(false) bool both_sides,
-    @Default(0) int autoPieces, // <-- NEW COUNTER FIELD
-    @Default(0) int fuelShotsInAuto, // NEW: fuel shots
-    @Default(0) int intakedAmountInAuto,
+    @JsonKey(name: 'auto_pieces')
+    @Default(0)
+    int autoPieces, // <-- NEW COUNTER FIELD
+    @JsonKey(name: 'fuel_shots_in_auto')
+    @Default(0)
+    int fuelShotsInAuto, // NEW: fuel shots
+    @JsonKey(name: 'intaked_amount_in_auto')
+    @Default(0)
+    int intakedAmountInAuto,
   }) = _Auto2026;
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>
       _$Auto2026FromJson(json);
-
-  void operator []=(int other, Auto2026 value) {}
 }
 
 @freezed

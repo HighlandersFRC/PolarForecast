@@ -774,11 +774,6 @@ class _$AutoScoringImpl implements _AutoScoring {
       this,
     );
   }
-
-  @override
-  void operator []=(int other, Auto2026 value) {
-    // TODO: implement []=
-  }
 }
 
 abstract class _AutoScoring implements AutoScoring {

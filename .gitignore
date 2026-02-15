@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+.vscode/settings.json
+.dart_tool/
 # Distribution / packaging
 .Python
 build/

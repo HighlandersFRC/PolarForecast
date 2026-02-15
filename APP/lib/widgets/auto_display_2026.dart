@@ -18,8 +18,6 @@ class AutoDisplay2026 extends StatefulWidget {
 }
 
 class _AutoDisplay2025State extends State<AutoDisplay2026> {
-  late final image;
-
   @override
   void initState() {
     super.initState();

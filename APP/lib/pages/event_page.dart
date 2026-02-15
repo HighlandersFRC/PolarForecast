@@ -660,22 +660,38 @@ class _FuelMenuOnClick extends StatelessWidget {
                   decorationThickness: 2,
                 ))),
         onTap: () {
-          rankings.firstWhere(
-              (element) => element.team_number == teamNumber.toString());
-          showMenu(
-              context: context,
-              position: RelativeRect.fromRect(
-                (containerKey.currentContext!.findRenderObject() as RenderBox)
-                        .localToGlobal(Offset.zero) &
-                    (containerKey.currentContext!.findRenderObject()
-                            as RenderBox)
-                        .size,
-                Offset.zero &
-                    (Overlay.of(context).context.findRenderObject()
-                            as RenderBox)
-                        .size,
+          final ctx = containerKey.currentContext;
+          if (ctx == null) return;
+
+          final renderBox = ctx.findRenderObject() as RenderBox;
+          final overlay =
+              Overlay.of(context).context.findRenderObject() as RenderBox;
+          List<PopupMenuEntry> buildMenuItems() {
+            return [
+              PopupMenuItem(
+                child: Text('Team $teamNumber'),
               ),
-              items: []);
+              PopupMenuItem(
+                child: Text('Fuel OPR: ${fuelOPR.toStringAsFixed(1)}'),
+              ),
+              PopupMenuItem(
+                child: Text(auto ? 'Auto' : 'TeleOp'),
+              ),
+            ];
+          }
+
+          final items = buildMenuItems(); // <-- move logic out
+
+          if (items.isEmpty) return;
+
+          showMenu(
+            context: context,
+            position: RelativeRect.fromRect(
+              renderBox.localToGlobal(Offset.zero) & renderBox.size,
+              Offset.zero & overlay.size,
+            ),
+            items: items,
+          );
         });
   }
 }
