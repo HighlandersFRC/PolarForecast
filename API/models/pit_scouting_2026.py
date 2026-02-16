@@ -43,8 +43,6 @@ class Auto2026(BaseModel):
     both_sides: bool = False
     contacts_robot: bool = False
     auto_pieces: int = 0
-    fuel_shots_in_auto: int = 0
-    intaked_amount_in_auto: int = 0
     climb: bool
 
 class PitData2026(BaseModel):

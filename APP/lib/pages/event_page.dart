@@ -15,7 +15,7 @@ import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
-import 'package:scouting_app/widgets/counter.dart';
+import 'package:scouting_app/widgets/modifedCounter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2026.dart';
 import '../models/pit_scouting_2026.dart' hide Data;
@@ -1212,22 +1212,22 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       scout_info: get_scout_info(token ?? ''),
       data: Data(
           auto: Auto2026(
-              starting_position_meters_from_hub_center: 0,
-              steps: [],
-              field_side: [],
-              preload: false,
-              climb: false,
-              contacts_robot: false,
-              fuelShotsInAuto: 0, // Make sure this exists
-              intakedAmountInAuto: 0),
+            starting_position_meters_from_hub_center: 0,
+            steps: [],
+            field_side: [],
+            preload: false,
+            climb: false,
+            contacts_robot: false,
+          ),
           auto_scoring: AutoScoring(
-              feed_amount: 0,
-              intake_amount: 0,
-              shoot_amount: 0,
+              passing_cycles: 0,
+              scoring_cycles: 0,
               cycles_completed: 0,
-              climb_side: 'Did not Climb'),
-          teleop_scoring: TeleopScoring(cycles_completed: 0, shoot_amount: 0),
-          miscellaneous: Miscellaneous(died: false, comments: '')),
+              climb_side: 'Did not Climb',
+              fuel_cycles: 0),
+          teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+          miscellaneous:
+              Miscellaneous(died: false, comments: '', defense: false)),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
 
   @override
@@ -1402,13 +1402,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 climb: false,
                 contacts_robot: false),
             auto_scoring: AutoScoring(
-                feed_amount: 0,
-                intake_amount: 0,
-                shoot_amount: 0,
+                passing_cycles: 0,
+                scoring_cycles: 0,
                 cycles_completed: 0,
-                climb_side: 'Did not Climb'),
-            teleop_scoring: TeleopScoring(cycles_completed: 0, shoot_amount: 0),
-            miscellaneous: Miscellaneous(died: false, comments: '')));
+                climb_side: 'Did not Climb',
+                fuel_cycles: 0),
+            teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+            miscellaneous:
+                Miscellaneous(died: false, comments: '', defense: false)));
     setState(() {
       data = reset;
       submitted = false;
@@ -1637,27 +1638,27 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         ),
                         SizedBox(height: 8),
                         Divider(color: const Color.fromRGBO(33, 150, 243, 1)),
-                        Counter(
-                          label: 'Fuel Shot Completed',
-                          value: data.data.teleop_scoring.shoot_amount,
-                          max: 12,
+                        SizedBox(height: 8),
+                        BiggerCounter(
+                          label: 'Passing Cycles',
+                          value: data.data.teleop_scoring.passing_cycles,
+                          max: 10000000000,
                           onChanged: (value) => setState(() {
                             data = data.copyWith(
                                 data: data.data.copyWith(
                                     teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(shoot_amount: value)));
+                                        .copyWith(passing_cycles: value)));
                           }),
                         ),
-                        SizedBox(height: 8),
-                        Counter(
-                          label: 'Cycles Completed',
-                          value: data.data.teleop_scoring.cycles_completed,
-                          max: 12,
+                        BiggerCounter(
+                          label: 'Fuel Amount (Approximate)',
+                          value: data.data.teleop_scoring.fuel_cycles,
+                          max: 10000000000,
                           onChanged: (value) => setState(() {
                             data = data.copyWith(
                                 data: data.data.copyWith(
                                     teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(cycles_completed: value)));
+                                        .copyWith(fuel_cycles: value)));
                           }),
                         ),
                         SizedBox(height: 20),
@@ -1667,18 +1668,33 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         ),
                         Divider(color: Colors.blue),
                         SizedBox(height: 8),
-                        Text('Died?'),
-                        Switch(
-                          value: data.data.miscellaneous.died,
-                          onChanged: (value) => setState(() {
-                            HapticFeedback.lightImpact();
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    miscellaneous: data.data.miscellaneous
-                                        .copyWith(died: value)));
-                          }),
-                          activeThumbColor: Colors.blue,
-                        ),
+                        Row(children: [
+                          Text('Died?'),
+                          Switch(
+                            value: data.data.miscellaneous.died,
+                            onChanged: (value) => setState(() {
+                              HapticFeedback.lightImpact();
+                              data = data.copyWith(
+                                  data: data.data.copyWith(
+                                      miscellaneous: data.data.miscellaneous
+                                          .copyWith(died: value)));
+                            }),
+                            activeThumbColor: Colors.blue,
+                          ),
+                          SizedBox(width: 20),
+                          Text('Played Defense?'),
+                          Switch(
+                            value: data.data.miscellaneous.defense,
+                            onChanged: (value) => setState(() {
+                              HapticFeedback.lightImpact();
+                              data = data.copyWith(
+                                  data: data.data.copyWith(
+                                      miscellaneous: data.data.miscellaneous
+                                          .copyWith(defense: value)));
+                            }),
+                            activeThumbColor: Colors.blue,
+                          ),
+                        ]),
                         SizedBox(height: 8),
                         TextField(
                           controller: commentsController,

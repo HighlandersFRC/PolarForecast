@@ -6,19 +6,15 @@ from models.pit_scouting_2026 import Auto2026
 
 
 class Scoring2026(BaseModel):
-    shoot_amount: int = 0
+    fuel_cycles: int = 0
+    passing_cycles: int = 0
+    scoring_cycles: int = 0
     cycles_completed: int = 0
-    shoots_from_X: float = 0
-    shoots_from_Y: float = 0
-    feed_amount: Optional[int] = 0
-    intake_amount: Optional[int] = 0
-    goes_under_trench: Optional[int] = 0
-    goes_over_bump: Optional[int] = 0
-    climb_side: Optional[str] = "Does not climb"
    
 
 class Miscellaneous2026(BaseModel):
     died: bool = False
+    defense: bool = False
     comments: str = ""
 
 

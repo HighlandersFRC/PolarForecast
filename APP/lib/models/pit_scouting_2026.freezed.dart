@@ -998,13 +998,7 @@ mixin _$Auto2026 {
   bool get contacts_robot => throw _privateConstructorUsedError;
   bool get both_sides => throw _privateConstructorUsedError;
   @JsonKey(name: 'auto_pieces')
-  int get autoPieces =>
-      throw _privateConstructorUsedError; // <-- NEW COUNTER FIELD
-  @JsonKey(name: 'fuel_shots_in_auto')
-  int get fuelShotsInAuto =>
-      throw _privateConstructorUsedError; // NEW: fuel shots
-  @JsonKey(name: 'intaked_amount_in_auto')
-  int get intakedAmountInAuto => throw _privateConstructorUsedError;
+  int get autoPieces => throw _privateConstructorUsedError;
 
   /// Serializes this Auto2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1029,9 +1023,7 @@ abstract class $Auto2026CopyWith<$Res> {
       bool climb,
       bool contacts_robot,
       bool both_sides,
-      @JsonKey(name: 'auto_pieces') int autoPieces,
-      @JsonKey(name: 'fuel_shots_in_auto') int fuelShotsInAuto,
-      @JsonKey(name: 'intaked_amount_in_auto') int intakedAmountInAuto});
+      @JsonKey(name: 'auto_pieces') int autoPieces});
 }
 
 /// @nodoc
@@ -1057,8 +1049,6 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
     Object? contacts_robot = null,
     Object? both_sides = null,
     Object? autoPieces = null,
-    Object? fuelShotsInAuto = null,
-    Object? intakedAmountInAuto = null,
   }) {
     return _then(_value.copyWith(
       starting_position_meters_from_hub_center: null ==
@@ -1094,14 +1084,6 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
           ? _value.autoPieces
           : autoPieces // ignore: cast_nullable_to_non_nullable
               as int,
-      fuelShotsInAuto: null == fuelShotsInAuto
-          ? _value.fuelShotsInAuto
-          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
-      intakedAmountInAuto: null == intakedAmountInAuto
-          ? _value.intakedAmountInAuto
-          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
     ) as $Val);
   }
 }
@@ -1122,9 +1104,7 @@ abstract class _$$Auto2026ImplCopyWith<$Res>
       bool climb,
       bool contacts_robot,
       bool both_sides,
-      @JsonKey(name: 'auto_pieces') int autoPieces,
-      @JsonKey(name: 'fuel_shots_in_auto') int fuelShotsInAuto,
-      @JsonKey(name: 'intaked_amount_in_auto') int intakedAmountInAuto});
+      @JsonKey(name: 'auto_pieces') int autoPieces});
 }
 
 /// @nodoc
@@ -1148,8 +1128,6 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
     Object? contacts_robot = null,
     Object? both_sides = null,
     Object? autoPieces = null,
-    Object? fuelShotsInAuto = null,
-    Object? intakedAmountInAuto = null,
   }) {
     return _then(_$Auto2026Impl(
       starting_position_meters_from_hub_center: null ==
@@ -1185,14 +1163,6 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
           ? _value.autoPieces
           : autoPieces // ignore: cast_nullable_to_non_nullable
               as int,
-      fuelShotsInAuto: null == fuelShotsInAuto
-          ? _value.fuelShotsInAuto
-          : fuelShotsInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
-      intakedAmountInAuto: null == intakedAmountInAuto
-          ? _value.intakedAmountInAuto
-          : intakedAmountInAuto // ignore: cast_nullable_to_non_nullable
-              as int,
     ));
   }
 }
@@ -1208,9 +1178,7 @@ class _$Auto2026Impl implements _Auto2026 {
       required this.climb,
       required this.contacts_robot,
       this.both_sides = false,
-      @JsonKey(name: 'auto_pieces') this.autoPieces = 0,
-      @JsonKey(name: 'fuel_shots_in_auto') this.fuelShotsInAuto = 0,
-      @JsonKey(name: 'intaked_amount_in_auto') this.intakedAmountInAuto = 0})
+      @JsonKey(name: 'auto_pieces') this.autoPieces = 0})
       : _steps = steps,
         _field_side = field_side;
 
@@ -1247,18 +1215,10 @@ class _$Auto2026Impl implements _Auto2026 {
   @override
   @JsonKey(name: 'auto_pieces')
   final int autoPieces;
-// <-- NEW COUNTER FIELD
-  @override
-  @JsonKey(name: 'fuel_shots_in_auto')
-  final int fuelShotsInAuto;
-// NEW: fuel shots
-  @override
-  @JsonKey(name: 'intaked_amount_in_auto')
-  final int intakedAmountInAuto;
 
   @override
   String toString() {
-    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides, autoPieces: $autoPieces, fuelShotsInAuto: $fuelShotsInAuto, intakedAmountInAuto: $intakedAmountInAuto)';
+    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides, autoPieces: $autoPieces)';
   }
 
   @override
@@ -1280,11 +1240,7 @@ class _$Auto2026Impl implements _Auto2026 {
             (identical(other.both_sides, both_sides) ||
                 other.both_sides == both_sides) &&
             (identical(other.autoPieces, autoPieces) ||
-                other.autoPieces == autoPieces) &&
-            (identical(other.fuelShotsInAuto, fuelShotsInAuto) ||
-                other.fuelShotsInAuto == fuelShotsInAuto) &&
-            (identical(other.intakedAmountInAuto, intakedAmountInAuto) ||
-                other.intakedAmountInAuto == intakedAmountInAuto));
+                other.autoPieces == autoPieces));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1298,9 +1254,7 @@ class _$Auto2026Impl implements _Auto2026 {
       climb,
       contacts_robot,
       both_sides,
-      autoPieces,
-      fuelShotsInAuto,
-      intakedAmountInAuto);
+      autoPieces);
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.
@@ -1327,10 +1281,7 @@ abstract class _Auto2026 implements Auto2026 {
       required final bool climb,
       required final bool contacts_robot,
       final bool both_sides,
-      @JsonKey(name: 'auto_pieces') final int autoPieces,
-      @JsonKey(name: 'fuel_shots_in_auto') final int fuelShotsInAuto,
-      @JsonKey(name: 'intaked_amount_in_auto')
-      final int intakedAmountInAuto}) = _$Auto2026Impl;
+      @JsonKey(name: 'auto_pieces') final int autoPieces}) = _$Auto2026Impl;
 
   factory _Auto2026.fromJson(Map<String, dynamic> json) =
       _$Auto2026Impl.fromJson;
@@ -1351,13 +1302,7 @@ abstract class _Auto2026 implements Auto2026 {
   bool get both_sides;
   @override
   @JsonKey(name: 'auto_pieces')
-  int get autoPieces; // <-- NEW COUNTER FIELD
-  @override
-  @JsonKey(name: 'fuel_shots_in_auto')
-  int get fuelShotsInAuto; // NEW: fuel shots
-  @override
-  @JsonKey(name: 'intaked_amount_in_auto')
-  int get intakedAmountInAuto;
+  int get autoPieces;
 
   /// Create a copy of Auto2026
   /// with the given fields replaced by the non-null parameter values.

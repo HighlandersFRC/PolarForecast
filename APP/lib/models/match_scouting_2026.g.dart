@@ -49,42 +49,44 @@ Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
 
 _$AutoScoringImpl _$$AutoScoringImplFromJson(Map<String, dynamic> json) =>
     _$AutoScoringImpl(
-      feed_amount: (json['feed_amount'] as num).toInt(),
-      intake_amount: (json['intake_amount'] as num).toInt(),
-      shoot_amount: (json['shoot_amount'] as num).toInt(),
+      passing_cycles: (json['passing_cycles'] as num).toInt(),
+      scoring_cycles: (json['scoring_cycles'] as num).toInt(),
+      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
       cycles_completed: (json['cycles_completed'] as num).toInt(),
       climb_side: json['climb_side'] as String,
     );
 
 Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
     <String, dynamic>{
-      'feed_amount': instance.feed_amount,
-      'intake_amount': instance.intake_amount,
-      'shoot_amount': instance.shoot_amount,
+      'passing_cycles': instance.passing_cycles,
+      'scoring_cycles': instance.scoring_cycles,
+      'fuel_cycles': instance.fuel_cycles,
       'cycles_completed': instance.cycles_completed,
       'climb_side': instance.climb_side,
     };
 
 _$TeleopScoringImpl _$$TeleopScoringImplFromJson(Map<String, dynamic> json) =>
     _$TeleopScoringImpl(
-      cycles_completed: (json['cycles_completed'] as num).toInt(),
-      shoot_amount: (json['shoot_amount'] as num).toInt(),
+      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
+      passing_cycles: (json['passing_cycles'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$TeleopScoringImplToJson(_$TeleopScoringImpl instance) =>
     <String, dynamic>{
-      'cycles_completed': instance.cycles_completed,
-      'shoot_amount': instance.shoot_amount,
+      'fuel_cycles': instance.fuel_cycles,
+      'passing_cycles': instance.passing_cycles,
     };
 
 _$MiscellaneousImpl _$$MiscellaneousImplFromJson(Map<String, dynamic> json) =>
     _$MiscellaneousImpl(
       died: json['died'] as bool,
+      defense: json['defense'] as bool,
       comments: json['comments'] as String,
     );
 
 Map<String, dynamic> _$$MiscellaneousImplToJson(_$MiscellaneousImpl instance) =>
     <String, dynamic>{
       'died': instance.died,
+      'defense': instance.defense,
       'comments': instance.comments,
     };

@@ -573,9 +573,12 @@ AutoScoring _$AutoScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AutoScoring {
-  int get feed_amount => throw _privateConstructorUsedError;
-  int get intake_amount => throw _privateConstructorUsedError;
-  int get shoot_amount => throw _privateConstructorUsedError;
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
+  int get passing_cycles => throw _privateConstructorUsedError;
+  int get scoring_cycles => throw _privateConstructorUsedError;
+  int get fuel_cycles => throw _privateConstructorUsedError;
   int get cycles_completed => throw _privateConstructorUsedError;
   String get climb_side => throw _privateConstructorUsedError;
 
@@ -596,9 +599,9 @@ abstract class $AutoScoringCopyWith<$Res> {
       _$AutoScoringCopyWithImpl<$Res, AutoScoring>;
   @useResult
   $Res call(
-      {int feed_amount,
-      int intake_amount,
-      int shoot_amount,
+      {int passing_cycles,
+      int scoring_cycles,
+      int fuel_cycles,
       int cycles_completed,
       String climb_side});
 }
@@ -618,24 +621,24 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? feed_amount = null,
-    Object? intake_amount = null,
-    Object? shoot_amount = null,
+    Object? passing_cycles = null,
+    Object? scoring_cycles = null,
+    Object? fuel_cycles = null,
     Object? cycles_completed = null,
     Object? climb_side = null,
   }) {
     return _then(_value.copyWith(
-      feed_amount: null == feed_amount
-          ? _value.feed_amount
-          : feed_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      intake_amount: null == intake_amount
-          ? _value.intake_amount
-          : intake_amount // ignore: cast_nullable_to_non_nullable
+      scoring_cycles: null == scoring_cycles
+          ? _value.scoring_cycles
+          : scoring_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
       cycles_completed: null == cycles_completed
           ? _value.cycles_completed
@@ -658,9 +661,9 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int feed_amount,
-      int intake_amount,
-      int shoot_amount,
+      {int passing_cycles,
+      int scoring_cycles,
+      int fuel_cycles,
       int cycles_completed,
       String climb_side});
 }
@@ -678,24 +681,24 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? feed_amount = null,
-    Object? intake_amount = null,
-    Object? shoot_amount = null,
+    Object? passing_cycles = null,
+    Object? scoring_cycles = null,
+    Object? fuel_cycles = null,
     Object? cycles_completed = null,
     Object? climb_side = null,
   }) {
     return _then(_$AutoScoringImpl(
-      feed_amount: null == feed_amount
-          ? _value.feed_amount
-          : feed_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      intake_amount: null == intake_amount
-          ? _value.intake_amount
-          : intake_amount // ignore: cast_nullable_to_non_nullable
+      scoring_cycles: null == scoring_cycles
+          ? _value.scoring_cycles
+          : scoring_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
       cycles_completed: null == cycles_completed
           ? _value.cycles_completed
@@ -713,21 +716,24 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
-      {required this.feed_amount,
-      required this.intake_amount,
-      required this.shoot_amount,
+      {required this.passing_cycles,
+      required this.scoring_cycles,
+      required this.fuel_cycles,
       required this.cycles_completed,
       required this.climb_side});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
 
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
   @override
-  final int feed_amount;
+  final int passing_cycles;
   @override
-  final int intake_amount;
+  final int scoring_cycles;
   @override
-  final int shoot_amount;
+  final int fuel_cycles;
   @override
   final int cycles_completed;
   @override
@@ -735,7 +741,7 @@ class _$AutoScoringImpl implements _AutoScoring {
 
   @override
   String toString() {
-    return 'AutoScoring(feed_amount: $feed_amount, intake_amount: $intake_amount, shoot_amount: $shoot_amount, cycles_completed: $cycles_completed, climb_side: $climb_side)';
+    return 'AutoScoring(passing_cycles: $passing_cycles, scoring_cycles: $scoring_cycles, fuel_cycles: $fuel_cycles, cycles_completed: $cycles_completed, climb_side: $climb_side)';
   }
 
   @override
@@ -743,12 +749,12 @@ class _$AutoScoringImpl implements _AutoScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AutoScoringImpl &&
-            (identical(other.feed_amount, feed_amount) ||
-                other.feed_amount == feed_amount) &&
-            (identical(other.intake_amount, intake_amount) ||
-                other.intake_amount == intake_amount) &&
-            (identical(other.shoot_amount, shoot_amount) ||
-                other.shoot_amount == shoot_amount) &&
+            (identical(other.passing_cycles, passing_cycles) ||
+                other.passing_cycles == passing_cycles) &&
+            (identical(other.scoring_cycles, scoring_cycles) ||
+                other.scoring_cycles == scoring_cycles) &&
+            (identical(other.fuel_cycles, fuel_cycles) ||
+                other.fuel_cycles == fuel_cycles) &&
             (identical(other.cycles_completed, cycles_completed) ||
                 other.cycles_completed == cycles_completed) &&
             (identical(other.climb_side, climb_side) ||
@@ -757,8 +763,8 @@ class _$AutoScoringImpl implements _AutoScoring {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, feed_amount, intake_amount,
-      shoot_amount, cycles_completed, climb_side);
+  int get hashCode => Object.hash(runtimeType, passing_cycles, scoring_cycles,
+      fuel_cycles, cycles_completed, climb_side);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -778,21 +784,24 @@ class _$AutoScoringImpl implements _AutoScoring {
 
 abstract class _AutoScoring implements AutoScoring {
   factory _AutoScoring(
-      {required final int feed_amount,
-      required final int intake_amount,
-      required final int shoot_amount,
+      {required final int passing_cycles,
+      required final int scoring_cycles,
+      required final int fuel_cycles,
       required final int cycles_completed,
       required final String climb_side}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
 
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
   @override
-  int get feed_amount;
+  int get passing_cycles;
   @override
-  int get intake_amount;
+  int get scoring_cycles;
   @override
-  int get shoot_amount;
+  int get fuel_cycles;
   @override
   int get cycles_completed;
   @override
@@ -812,8 +821,8 @@ TeleopScoring _$TeleopScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TeleopScoring {
-  int get cycles_completed => throw _privateConstructorUsedError;
-  int get shoot_amount => throw _privateConstructorUsedError;
+  int get fuel_cycles => throw _privateConstructorUsedError;
+  int get passing_cycles => throw _privateConstructorUsedError;
 
   /// Serializes this TeleopScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -831,7 +840,7 @@ abstract class $TeleopScoringCopyWith<$Res> {
           TeleopScoring value, $Res Function(TeleopScoring) then) =
       _$TeleopScoringCopyWithImpl<$Res, TeleopScoring>;
   @useResult
-  $Res call({int cycles_completed, int shoot_amount});
+  $Res call({int fuel_cycles, int passing_cycles});
 }
 
 /// @nodoc
@@ -849,17 +858,17 @@ class _$TeleopScoringCopyWithImpl<$Res, $Val extends TeleopScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cycles_completed = null,
-    Object? shoot_amount = null,
+    Object? fuel_cycles = null,
+    Object? passing_cycles = null,
   }) {
     return _then(_value.copyWith(
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -873,7 +882,7 @@ abstract class _$$TeleopScoringImplCopyWith<$Res>
       __$$TeleopScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int cycles_completed, int shoot_amount});
+  $Res call({int fuel_cycles, int passing_cycles});
 }
 
 /// @nodoc
@@ -889,17 +898,17 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cycles_completed = null,
-    Object? shoot_amount = null,
+    Object? fuel_cycles = null,
+    Object? passing_cycles = null,
   }) {
     return _then(_$TeleopScoringImpl(
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -909,19 +918,19 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
-      {required this.cycles_completed, required this.shoot_amount});
+      {required this.fuel_cycles, required this.passing_cycles});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$TeleopScoringImplFromJson(json);
 
   @override
-  final int cycles_completed;
+  final int fuel_cycles;
   @override
-  final int shoot_amount;
+  final int passing_cycles;
 
   @override
   String toString() {
-    return 'TeleopScoring(cycles_completed: $cycles_completed, shoot_amount: $shoot_amount)';
+    return 'TeleopScoring(fuel_cycles: $fuel_cycles, passing_cycles: $passing_cycles)';
   }
 
   @override
@@ -929,15 +938,15 @@ class _$TeleopScoringImpl implements _TeleopScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$TeleopScoringImpl &&
-            (identical(other.cycles_completed, cycles_completed) ||
-                other.cycles_completed == cycles_completed) &&
-            (identical(other.shoot_amount, shoot_amount) ||
-                other.shoot_amount == shoot_amount));
+            (identical(other.fuel_cycles, fuel_cycles) ||
+                other.fuel_cycles == fuel_cycles) &&
+            (identical(other.passing_cycles, passing_cycles) ||
+                other.passing_cycles == passing_cycles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, cycles_completed, shoot_amount);
+  int get hashCode => Object.hash(runtimeType, fuel_cycles, passing_cycles);
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -957,16 +966,16 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
-      {required final int cycles_completed,
-      required final int shoot_amount}) = _$TeleopScoringImpl;
+      {required final int fuel_cycles,
+      required final int passing_cycles}) = _$TeleopScoringImpl;
 
   factory _TeleopScoring.fromJson(Map<String, dynamic> json) =
       _$TeleopScoringImpl.fromJson;
 
   @override
-  int get cycles_completed;
+  int get fuel_cycles;
   @override
-  int get shoot_amount;
+  int get passing_cycles;
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -983,6 +992,7 @@ Miscellaneous _$MiscellaneousFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Miscellaneous {
   bool get died => throw _privateConstructorUsedError;
+  bool get defense => throw _privateConstructorUsedError;
   String get comments => throw _privateConstructorUsedError;
 
   /// Serializes this Miscellaneous to a JSON map.
@@ -1001,7 +1011,7 @@ abstract class $MiscellaneousCopyWith<$Res> {
           Miscellaneous value, $Res Function(Miscellaneous) then) =
       _$MiscellaneousCopyWithImpl<$Res, Miscellaneous>;
   @useResult
-  $Res call({bool died, String comments});
+  $Res call({bool died, bool defense, String comments});
 }
 
 /// @nodoc
@@ -1020,12 +1030,17 @@ class _$MiscellaneousCopyWithImpl<$Res, $Val extends Miscellaneous>
   @override
   $Res call({
     Object? died = null,
+    Object? defense = null,
     Object? comments = null,
   }) {
     return _then(_value.copyWith(
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
+              as bool,
+      defense: null == defense
+          ? _value.defense
+          : defense // ignore: cast_nullable_to_non_nullable
               as bool,
       comments: null == comments
           ? _value.comments
@@ -1043,7 +1058,7 @@ abstract class _$$MiscellaneousImplCopyWith<$Res>
       __$$MiscellaneousImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({bool died, String comments});
+  $Res call({bool died, bool defense, String comments});
 }
 
 /// @nodoc
@@ -1060,12 +1075,17 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? died = null,
+    Object? defense = null,
     Object? comments = null,
   }) {
     return _then(_$MiscellaneousImpl(
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
+              as bool,
+      defense: null == defense
+          ? _value.defense
+          : defense // ignore: cast_nullable_to_non_nullable
               as bool,
       comments: null == comments
           ? _value.comments
@@ -1078,7 +1098,8 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$MiscellaneousImpl implements _Miscellaneous {
-  _$MiscellaneousImpl({required this.died, required this.comments});
+  _$MiscellaneousImpl(
+      {required this.died, required this.defense, required this.comments});
 
   factory _$MiscellaneousImpl.fromJson(Map<String, dynamic> json) =>
       _$$MiscellaneousImplFromJson(json);
@@ -1086,11 +1107,13 @@ class _$MiscellaneousImpl implements _Miscellaneous {
   @override
   final bool died;
   @override
+  final bool defense;
+  @override
   final String comments;
 
   @override
   String toString() {
-    return 'Miscellaneous(died: $died, comments: $comments)';
+    return 'Miscellaneous(died: $died, defense: $defense, comments: $comments)';
   }
 
   @override
@@ -1099,13 +1122,14 @@ class _$MiscellaneousImpl implements _Miscellaneous {
         (other.runtimeType == runtimeType &&
             other is _$MiscellaneousImpl &&
             (identical(other.died, died) || other.died == died) &&
+            (identical(other.defense, defense) || other.defense == defense) &&
             (identical(other.comments, comments) ||
                 other.comments == comments));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, died, comments);
+  int get hashCode => Object.hash(runtimeType, died, defense, comments);
 
   /// Create a copy of Miscellaneous
   /// with the given fields replaced by the non-null parameter values.
@@ -1126,6 +1150,7 @@ class _$MiscellaneousImpl implements _Miscellaneous {
 abstract class _Miscellaneous implements Miscellaneous {
   factory _Miscellaneous(
       {required final bool died,
+      required final bool defense,
       required final String comments}) = _$MiscellaneousImpl;
 
   factory _Miscellaneous.fromJson(Map<String, dynamic> json) =
@@ -1133,6 +1158,8 @@ abstract class _Miscellaneous implements Miscellaneous {
 
   @override
   bool get died;
+  @override
+  bool get defense;
   @override
   String get comments;
 

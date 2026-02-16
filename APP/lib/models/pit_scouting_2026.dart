@@ -62,12 +62,6 @@ class Auto2026 with _$Auto2026 {
     @JsonKey(name: 'auto_pieces')
     @Default(0)
     int autoPieces, // <-- NEW COUNTER FIELD
-    @JsonKey(name: 'fuel_shots_in_auto')
-    @Default(0)
-    int fuelShotsInAuto, // NEW: fuel shots
-    @JsonKey(name: 'intaked_amount_in_auto')
-    @Default(0)
-    int intakedAmountInAuto,
   }) = _Auto2026;
 
   factory Auto2026.fromJson(Map<String, dynamic> json) =>

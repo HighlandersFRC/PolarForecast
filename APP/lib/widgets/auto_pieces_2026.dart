@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
-import 'package:scouting_app/widgets/counter.dart';
+import 'package:scouting_app/widgets/modifedCounter.dart';
 
 import '../models/pit_scouting_2026.dart';
 
@@ -30,143 +30,6 @@ class AutoPieces2026 extends StatefulWidget {
 }
 
 class _AutoPieces2026State extends State<AutoPieces2026> {
-  Widget buildOpenFieldButton({
-    required double left,
-    required double top,
-    required double width,
-    required double height,
-    required VoidCallback onPressed,
-    required bool isAnimating,
-    double scaleFactor = 1.0,
-  }) {
-    return Positioned(
-      left: left,
-      top: top,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        child: AnimatedContainer(
-          duration: Durations.medium1,
-          curve: Curves.easeInOutQuad,
-          width: isAnimating ? width * 1.1 : width,
-          height: isAnimating ? height * 1.1 : height,
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(142, 0, 0, 0),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.place,
-                color: Colors.white,
-                size: 18 * scaleFactor,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Relative Shot Location',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11 * (scaleFactor - 0.4),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openShotLocationDialog(
-    BuildContext context,
-    double width,
-    double height,
-    String imagePath,
-    double imageRotation,
-    double pixelsPerMeter,
-    double squareSize,
-  ) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-                backgroundColor: Colors.black,
-                title: const Text(
-                  "Shoot Location",
-                  style: TextStyle(color: Colors.white),
-                ),
-                content: SizedBox(
-                  width: width,
-                  height: height,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapDown: (details) {
-                      final local = details.localPosition;
-
-                      // Restrict to lower half
-                      if (local.dy < height * 0.5) return;
-
-                      final centeredX = local.dx - squareSize / 2;
-                      final centeredY = local.dy - squareSize / 2;
-
-                      final position = Offset(
-                        centeredX.clamp(0.0, width - squareSize),
-                        centeredY.clamp(height * 0.5, height - squareSize),
-                      );
-
-                      final xMeters = position.dx / pixelsPerMeter;
-                      final yMeters = position.dy / pixelsPerMeter;
-
-                      HapticFeedback.lightImpact();
-
-                      final autoSteps = widget.auto.steps.toList();
-                      autoSteps.add(
-                        AutoStep2026(
-                          name:
-                              "Robot Shot at X: ${xMeters.toStringAsFixed(2)}m, "
-                              "Y: ${yMeters.toStringAsFixed(2)}m",
-                          extra_data: {
-                            'shots_from_x': xMeters,
-                            'shots_from_y': yMeters,
-                          },
-                        ),
-                      );
-
-                      widget.onChanged?.call(
-                        widget.auto.copyWith(steps: autoSteps),
-                      );
-
-                      Navigator.pop(context); // 👈 auto-close dialog
-                    },
-                    child: Stack(
-                      children: [
-                        Transform.rotate(
-                          angle: imageRotation,
-                          child: Image.asset(
-                            imagePath,
-                            width: width,
-                            height: height,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-
-                        /// --- Robot marker ---
-                      ],
-                    ),
-                  ),
-                ));
-          },
-        );
-      },
-    );
-  }
-
   bool isFlipped = false;
   List<double> pickupBallScales = [1.0, 1.0, 1.0];
   int formRotation = 0;
@@ -181,6 +44,97 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
   static const double fieldWidthMeters = 8.052;
 
   Offset? robotPosition;
+
+  void _openShotLocationDialog(
+    BuildContext context,
+    double width,
+    double height,
+    String imagePath,
+    double imageRotation,
+    double pixelsPerMeter,
+    double squareSize,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: Colors.black,
+            title: const Text('Shoot Location',
+                style: TextStyle(color: Colors.white)),
+            content: SizedBox(
+              width: width,
+              height: height,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (details) {
+                  final local = details.localPosition;
+
+                  // Restrict to lower half
+                  if (local.dy < height * 0.5) return;
+
+                  final centeredX = local.dx - squareSize / 2;
+                  final centeredY = local.dy - squareSize / 2;
+
+                  final position = Offset(
+                    centeredX.clamp(0.0, width - squareSize),
+                    centeredY.clamp(height * 0.5, height - squareSize),
+                  );
+
+                  final xMeters = position.dx / pixelsPerMeter;
+                  final yMeters = position.dy / pixelsPerMeter;
+
+                  HapticFeedback.lightImpact();
+
+                  // --- Add AutoStep for shot ---
+                  final autoSteps = widget.auto.steps.toList();
+                  autoSteps.add(
+                    AutoStep2026(
+                      name:
+                          'Shot at X: ${xMeters.toStringAsFixed(2)}m, Y: ${yMeters.toStringAsFixed(2)}m',
+                      extra_data: {
+                        'shots_from_x': xMeters,
+                        'shots_from_y': yMeters,
+                      },
+                    ),
+                  );
+
+                  // --- Add "Scored in Hub" step ---
+                  autoSteps.add(
+                      AutoStep2026(name: 'Scored in the Hub', extra_data: {}));
+
+                  // --- Update scoring ---
+                  final newScoring = widget.autoScoring.copyWith(
+                    scoring_cycles: widget.autoScoring.scoring_cycles + 1,
+                  );
+
+                  widget.onChanged!(widget.auto.copyWith(steps: autoSteps));
+                  widget.onAutoScoringChanged!(newScoring);
+
+                  Navigator.pop(context); // close dialog
+                },
+                child: Stack(
+                  children: [
+                    Transform.rotate(
+                      angle: imageRotation,
+                      child: Image.asset(
+                        imagePath,
+                        width: width,
+                        height: height,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
   bool robotPlaced = false;
   final GlobalKey dropdownKey = GlobalKey();
 
@@ -308,8 +262,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
             double overlayWidthNeutralZone = displayedImageWidth * 0.55;
             double overlayHeightNeutralZone = displayedImageHeight * 0.12;
 
-            double overlayWidthHub = displayedImageWidth * 0.16;
-            double overlayHeightHub = displayedImageHeight * 0.15;
+            double overlayWidthHub = displayedImageWidth * 0.35;
+            double overlayHeightHub = displayedImageHeight * 0.1;
 
             robotPosition ??= Offset(
               displayedImageWidth * 0.45, // middle horizontally
@@ -395,6 +349,54 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                     'Depot',
                                     style: TextStyle(
                                       color: const Color.fromARGB(255, 0, 0, 0),
+                                      fontSize: 11 * (scaleFactor - 0.4),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: displayedImageWidth * 0.32,
+                          bottom: displayedImageHeight * 0.3,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (widget.onChanged == null ||
+                                  widget.onAutoScoringChanged == null ||
+                                  widget.locked) return;
+                              HapticFeedback.lightImpact();
+                              _openShotLocationDialog(
+                                context,
+                                displayedImageWidth,
+                                displayedImageHeight,
+                                imagePath,
+                                imageRotation,
+                                pixelsPerMeter,
+                                squareSize,
+                              );
+                            },
+                            child: AnimatedContainer(
+                              duration: Durations.medium1,
+                              curve: Curves.easeInOutQuad,
+                              width: overlayWidthHub,
+                              height: overlayHeightHub,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: const Color.fromARGB(142, 1, 57, 126),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.sports_score,
+                                      color: Colors.white,
+                                      size: 18 * scaleFactor),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Scored in Hub',
+                                    style: TextStyle(
+                                      color: Colors.white,
                                       fontSize: 11 * (scaleFactor - 0.4),
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -692,7 +694,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   ? overlayHeightNeutralZone * 1.1
                                   : overlayHeightNeutralZone,
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(142, 0, 0, 0),
+                                color: const Color.fromARGB(145, 255, 238, 203),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -700,16 +702,14 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                 children: [
                                   Icon(
                                     Icons.gas_meter, // depot-style icon
-                                    color: const Color.fromARGB(
-                                        255, 255, 255, 255),
+                                    color: const Color.fromARGB(255, 0, 0, 0),
                                     size: 18 * scaleFactor,
                                   ),
                                   SizedBox(height: 4),
                                   Text(
                                     'Neutral Zone',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 11 * (scaleFactor - 0.4),
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -718,88 +718,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                               ),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          left: displayedImageWidth * 0.425,
-                          bottom: displayedImageHeight * 0.52,
-                          child: GestureDetector(
-                            onTap: widget.onChanged == null
-                                ? null
-                                : widget.locked
-                                    ? null
-                                    : () {
-                                        HapticFeedback.lightImpact();
-                                        setState(() {
-                                          var autoSteps =
-                                              widget.auto.steps.toList();
-                                          autoSteps.add(AutoStep2026(
-                                              name: 'Scored in the Hub',
-                                              extra_data: {}));
-                                          isAnimatingHub = true;
-                                          var newAuto = widget.auto
-                                              .copyWith(steps: autoSteps);
-                                          widget.onChanged!(newAuto);
-                                        });
-                                        Future.delayed(Durations.medium1, () {
-                                          setState(
-                                              () => isAnimatingHub = false);
-                                        });
-                                      },
-                            child: AnimatedContainer(
-                              duration: Durations.medium1,
-                              curve: Curves.easeInOutQuad,
-                              width: isAnimatingHub
-                                  ? overlayWidthHub * 1.1
-                                  : overlayWidthHub,
-                              height: isAnimatingHub
-                                  ? overlayHeightHub * 1.1
-                                  : overlayHeightHub,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: const Color.fromARGB(142, 1, 57, 126),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.sports_score, // depot-style icon
-                                    color: const Color.fromARGB(
-                                        255, 255, 255, 255),
-                                    size: 18 * scaleFactor,
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    'The Hub',
-                                    style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        buildOpenFieldButton(
-                          left: displayedImageWidth * 0.23,
-                          top: displayedImageHeight * 0.6,
-                          width: 250,
-                          height: 50,
-                          isAnimating: true,
-                          scaleFactor: scaleFactor,
-                          onPressed: () {
-                            _openShotLocationDialog(
-                              context,
-                              displayedImageWidth,
-                              displayedImageHeight,
-                              imagePath,
-                              imageRotation,
-                              pixelsPerMeter,
-                              squareSize,
-                            );
-                          },
                         ),
                         Positioned(
                           left: displayedImageWidth * 0.46,
@@ -816,7 +734,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                               var autoSteps =
                                                   widget.auto.steps.toList();
                                               autoSteps.add(AutoStep2026(
-                                                  name: 'Action Option 1',
+                                                  name:
+                                                      'Can Climb in Autonomous',
                                                   extra_data: {}));
                                               isAnimatingDropdown = true;
                                               var newAuto = widget.auto
@@ -991,58 +910,6 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     '${widget.auto.starting_position_meters_from_hub_center.toStringAsFixed(2)} meters',
                     style: TextStyle(color: Colors.white)),
                 buildStepsUI(),
-                SizedBox(height: 8),
-                Counter(
-                  label: 'Fuel Shot in Auto (Approximate)',
-                  value: widget.autoScoring.shoot_amount,
-                  max: 1000000,
-                  locked: widget.locked,
-                  onChanged: (newValue) {
-                    if (widget.onAutoScoringChanged != null) {
-                      widget.onAutoScoringChanged!(
-                          widget.autoScoring.copyWith(shoot_amount: newValue));
-                    }
-                  },
-                ),
-                SizedBox(height: 8),
-                Counter(
-                  label: 'Intaked amount in Auto (Approximate)',
-                  value: widget.autoScoring.intake_amount,
-                  max: 1000000,
-                  locked: widget.locked,
-                  onChanged: (newValue) {
-                    if (widget.onAutoScoringChanged != null) {
-                      widget.onAutoScoringChanged!(
-                          widget.autoScoring.copyWith(intake_amount: newValue));
-                    }
-                  },
-                ),
-                SizedBox(height: 8),
-                Counter(
-                  label: 'Feed amount in Auto (Approximate)',
-                  value: widget.autoScoring.feed_amount,
-                  max: 1000000,
-                  locked: widget.locked,
-                  onChanged: (newValue) {
-                    if (widget.onAutoScoringChanged != null) {
-                      widget.onAutoScoringChanged!(
-                          widget.autoScoring.copyWith(feed_amount: newValue));
-                    }
-                  },
-                ),
-                SizedBox(height: 8),
-                Counter(
-                  label: 'Cycles Completed',
-                  value: widget.autoScoring.cycles_completed,
-                  max: 1000000,
-                  locked: widget.locked,
-                  onChanged: (newValue) {
-                    if (widget.onAutoScoringChanged != null) {
-                      widget.onAutoScoringChanged!(widget.autoScoring
-                          .copyWith(cycles_completed: newValue));
-                    }
-                  },
-                ),
                 if (!widget.matchScouting)
                   Text('Field Side',
                       style: TextStyle(fontSize: 20, color: Colors.blue)),
@@ -1116,6 +983,23 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                 widget.auto.copyWith(both_sides: value));
                           },
                   ),
+                BiggerCounter(
+                    label: 'Passing Cycles',
+                    value: widget.autoScoring.passing_cycles,
+                    max: 10000000000,
+                    onChanged: (value) => setState(() {
+                          widget.onAutoScoringChanged!(widget.autoScoring
+                              .copyWith(passing_cycles: value));
+                        })),
+                SizedBox(height: 40),
+                BiggerCounter(
+                    label: 'Fuel Amount Auto (Approximate)',
+                    value: widget.autoScoring.fuel_cycles,
+                    max: 10000000000,
+                    onChanged: (value) => setState(() {
+                          widget.onAutoScoringChanged!(
+                              widget.autoScoring.copyWith(fuel_cycles: value));
+                        })),
               ],
             );
           },

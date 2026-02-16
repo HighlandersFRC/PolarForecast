@@ -35,9 +35,13 @@ class Data with _$Data {
 @freezed
 class AutoScoring with _$AutoScoring {
   factory AutoScoring({
-    required int feed_amount,
-    required int intake_amount,
-    required int shoot_amount,
+    // required int feed_amount,
+    // required int intake_amount,
+    // required int shoot_amount,
+
+    required int passing_cycles,
+    required int scoring_cycles,
+    required int fuel_cycles,
     required int cycles_completed,
     required String climb_side,
   }) = _AutoScoring;
@@ -49,8 +53,8 @@ class AutoScoring with _$AutoScoring {
 @freezed
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
-    required int cycles_completed,
-    required int shoot_amount,
+    required int fuel_cycles,
+    required int passing_cycles,
   }) = _TeleopScoring;
 
   factory TeleopScoring.fromJson(Map<String, dynamic> json) =>
@@ -61,6 +65,7 @@ class TeleopScoring with _$TeleopScoring {
 class Miscellaneous with _$Miscellaneous {
   factory Miscellaneous({
     required bool died,
+    required bool defense,
     required String comments,
   }) = _Miscellaneous;
 
