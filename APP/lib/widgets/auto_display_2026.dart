@@ -59,13 +59,16 @@ class _AutoDisplay2025State extends State<AutoDisplay2026> {
                 if (!isMobile())
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text((widget.showTeamNumber ?? true
-                            ? 'Team: ${scoutingData.team_number} | '
-                            : '') +
-                        'Match: ${scoutingData.match_number} | ' +
-                        (widget.showScoutDetails ?? true
-                            ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
-                            : '')),
+                    child: Text(
+                      (widget.showTeamNumber ?? true
+                              ? 'Team: ${scoutingData.team_number} | '
+                              : '') +
+                          'Match: ${scoutingData.match_number} | ' +
+                          (widget.showScoutDetails ?? true
+                              ? 'Scout: ${scoutingData.scout_info.first_name != null ? scoutingData.scout_info.first_name : "From Team ${scoutingData.scout_info.team_number}"} | '
+                              : ''),
+                      style: TextStyle(fontFamily: 'Font'),
+                    ),
                   ),
               ],
             )));

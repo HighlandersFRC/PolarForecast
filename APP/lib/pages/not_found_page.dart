@@ -8,7 +8,8 @@ class NotFoundPage extends StatelessWidget {
       appBar: PolarForecastAppBar(),
       body: Center(
           child: Text(
-              'Oh No! Something Broke! The robot or at least this page does not exist! 404 Not Found')),
+              'Oh No! Something Broke! The robot or at least this page does not exist! 404 Not Found',
+              style: TextStyle(fontFamily: 'Font'))),
     );
   }
 }

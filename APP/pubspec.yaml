@@ -49,6 +49,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
     - staticwebapp.config.json
     - assets/PolarBearHead.png
@@ -63,3 +64,10 @@ flutter:
     - assets/2026GameField_Red.png
     - assets/2025GameField.png
     - assets/documentation/
+
+  fonts:
+    - family: Font
+      fonts:
+        - asset: assets/fonts/comfortaa.light.ttf
+        - asset: assets/fonts/comfortaa.bold.ttf
+          weight: 700

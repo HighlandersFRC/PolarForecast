@@ -17,12 +17,16 @@ class GroupsDocumentation extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style:
-                  const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Font')),
           const SizedBox(height: 12),
           if (imagePath != null) Image.asset(imagePath, fit: BoxFit.fitWidth),
           if (imagePath != null) const SizedBox(height: 12),
-          Text(content, style: const TextStyle(fontSize: 16, height: 1.6)),
+          Text(content,
+              style: const TextStyle(
+                  fontSize: 16, height: 1.6, fontFamily: 'Font')),
         ],
       ),
     );
@@ -56,35 +60,35 @@ class GroupsDocumentation extends StatelessWidget {
     final tableOfContents = [
       ListTile(
           title: const Text('What are Groups?',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('groups')),
       ListTile(
           title: const Text('Creating a Group',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('group_creation')),
       ListTile(
           title: const Text('Adding Members',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('adding_members')),
       ListTile(
           title: const Text('Group Management',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('group_management')),
       ListTile(
           title: const Text('Group Permissions',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('permissions')),
       ListTile(
           title: const Text('Joining Events',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('group_events')),
       ListTile(
           title: const Text('What are Alliances?',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('alliances')),
       ListTile(
           title: const Text('Requesting Alliances',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           onTap: () => scrollToSection('alliance_requests')),
     ];
 
@@ -114,8 +118,10 @@ class GroupsDocumentation extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Contents',
-                style:
-                    const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font')),
             ...tableOfContents,
             SizedBox(height: 24),
             Container(

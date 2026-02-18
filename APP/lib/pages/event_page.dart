@@ -126,10 +126,12 @@ class _EventPageState extends State<EventPage> {
           ],
           type: BottomNavigationBarType.shifting,
           selectedLabelStyle: TextStyle(
+              fontFamily: 'Font',
               color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black),
           unselectedLabelStyle: TextStyle(
+              fontFamily: 'Font',
               color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black),
@@ -160,41 +162,47 @@ class _RankingsTabState extends State<_RankingsTab> {
   List<GridColumn> dataColumns = [
     GridColumn(
         allowSorting: true,
-        label: Text('#'),
+        label: Text(
+          '#',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
         columnName: 'team_number',
         filterPopupMenuOptions: FilterPopupMenuOptions()),
-    GridColumn(allowSorting: true, label: Text('OPR'), columnName: 'OPR'),
+    GridColumn(
+        allowSorting: true,
+        label: Text('OPR', style: TextStyle(fontFamily: 'Font')),
+        columnName: 'OPR'),
     GridColumn(
       allowSorting: true,
-      label: Text('Rank'),
+      label: Text('Rank', style: TextStyle(fontFamily: 'Font')),
       columnName: 'rank',
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Sim RPs'),
+      label: Text('Sim RPs', style: TextStyle(fontFamily: 'Font')),
       columnName: 'simulated_rp',
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Auto Fuel Points'),
+      label: Text('Auto Fuel Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'auto_fuel_points',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Teleop Fuel Points'),
+      label: Text('Teleop Fuel Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'teleop_fuel_points',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Climb Points'),
+      label: Text('Climb Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'climbing_points',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
-      label: Text('Deathrate'),
+      label: Text('Deathrate', style: TextStyle(fontFamily: 'Font')),
       columnName: 'death_rate',
       allowFiltering: false,
     ),
@@ -349,7 +357,7 @@ class _RankingsTabState extends State<_RankingsTab> {
             foregroundColor: Colors.white,
             side: BorderSide(color: Colors.blue.shade900, width: 2),
           ),
-          child: Text('Export as CSV'),
+          child: Text('Export as CSV', style: TextStyle(fontFamily: 'Font')),
         ),
         Expanded(
           child: Center(
@@ -445,7 +453,7 @@ class _TeamDataSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text('${_formatValue(e.value)}',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         );
       }).toList(),
     );
@@ -499,10 +507,10 @@ class _OvertimeChartOnClick extends StatelessWidget {
           color: color,
           child: Text('${(opr * 10).roundToDouble() / 10}',
               style: TextStyle(
-                color: Colors.white,
-                decoration: TextDecoration.underline,
-                decorationThickness: 2,
-              ))),
+                  color: Colors.white,
+                  decoration: TextDecoration.underline,
+                  decorationThickness: 2,
+                  fontFamily: 'Font'))),
       onTap: () {
         int firstMatch = 0, lastMatch = 1;
         scouting.forEach((entry) {
@@ -620,7 +628,8 @@ class _OvertimeChartOnClick extends StatelessWidget {
           showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                    title: Text('Team $teamNumber Scouting Data'),
+                    title: Text('Team $teamNumber Scouting Data',
+                        style: TextStyle(fontFamily: 'Font')),
                     content: Container(
                       height: 400,
                       width: 800,
@@ -655,6 +664,7 @@ class _FuelMenuOnClick extends StatelessWidget {
             color: color,
             child: Text('${(fuelOPR * 10).roundToDouble() / 10}',
                 style: TextStyle(
+                  fontFamily: 'Font',
                   color: Colors.white,
                   decoration: TextDecoration.underline,
                   decorationThickness: 2,
@@ -669,13 +679,16 @@ class _FuelMenuOnClick extends StatelessWidget {
           List<PopupMenuEntry> buildMenuItems() {
             return [
               PopupMenuItem(
-                child: Text('Team $teamNumber'),
+                child: Text('Team $teamNumber',
+                    style: TextStyle(fontFamily: 'Font')),
               ),
               PopupMenuItem(
-                child: Text('Fuel OPR: ${fuelOPR.toStringAsFixed(1)}'),
+                child: Text('Fuel OPR: ${fuelOPR.toStringAsFixed(1)}',
+                    style: TextStyle(fontFamily: 'Font')),
               ),
               PopupMenuItem(
-                child: Text(auto ? 'Auto' : 'TeleOp'),
+                child: Text(auto ? 'Auto' : 'TeleOp',
+                    style: TextStyle(fontFamily: 'Font')),
               ),
             ];
           }
@@ -775,7 +788,8 @@ class _ChartsTabState extends State<_ChartsTab> {
       child: Column(
         children: [
           Text('Scouting Data By Match',
-              style: TextStyle(fontSize: 20, color: Colors.blue)),
+              style: TextStyle(
+                  fontFamily: 'Font', fontSize: 20, color: Colors.blue)),
           if (token != null && teams.isNotEmpty)
             LayoutBuilder(builder: (context, constraints) {
               bool landscape =
@@ -1015,11 +1029,13 @@ class _ChartsTabState extends State<_ChartsTab> {
                       DropdownButton<int>(
                         items: [
                           DropdownMenuItem(
-                            child: Text('Select a Team'),
+                            child: Text('Select a Team',
+                                style: TextStyle(fontFamily: 'Font')),
                             value: 0,
                           ),
                           ...teams.map((team) => DropdownMenuItem(
-                                child: Text('Team $team'),
+                                child: Text('Team $team',
+                                    style: TextStyle(fontFamily: 'Font')),
                                 value: teams.indexOf(team) + 1,
                               ))
                         ],
@@ -1063,11 +1079,13 @@ class _ChartsTabState extends State<_ChartsTab> {
                         DropdownButton<int>(
                           items: [
                             DropdownMenuItem(
-                              child: Text('Select a Team'),
+                              child: Text('Select a Team',
+                                  style: TextStyle(fontFamily: 'Font')),
                               value: 0,
                             ),
                             ...teams.map((team) => DropdownMenuItem(
-                                  child: Text('Team $team'),
+                                  child: Text('Team $team',
+                                      style: TextStyle(fontFamily: 'Font')),
                                   value: teams.indexOf(team) + 1,
                                 )),
                           ],
@@ -1095,7 +1113,8 @@ class _ChartsTabState extends State<_ChartsTab> {
           if (token != null && teams.isEmpty)
             Padding(
                 padding: EdgeInsets.all(20),
-                child: Text('No scouting data available for this event')),
+                child: Text('No scouting data available for this event',
+                    style: TextStyle(fontFamily: 'Font'))),
           Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -1353,8 +1372,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.post_match_scouting(data).then((_) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Submitted Successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Submitted Successfully',
+              style: TextStyle(fontFamily: 'Font'))));
       setState(() {
         submitted = true;
       });
@@ -1365,10 +1385,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-                'You have already submitted this match. Do you want to update?')));
+                'You have already submitted this match. Do you want to update?',
+                style: TextStyle(fontFamily: 'Font'))));
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(error.toString(), style: TextStyle(fontFamily: 'Font'))));
         showQR(error.toString());
       }
     });
@@ -1378,14 +1400,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     HapticFeedback.heavyImpact();
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.update_match_scouting(data).then((_) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Submitted Successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Submitted Successfully',
+              style: TextStyle(fontFamily: 'Font'))));
       setState(() {
         submitted = true;
       });
     }).onError((error, trace) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
     });
   }
 
@@ -1433,10 +1456,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               children: [
                 Text(
                   errorText,
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red, fontFamily: 'Font'),
                 ),
                 SizedBox(height: 10),
-                Text('Match Data Copied To Clipboard. Save to upload later.'),
+                Text('Match Data Copied To Clipboard. Save to upload later.',
+                    style: TextStyle(fontFamily: 'Font')),
                 SizedBox(height: 10),
                 QrImageView(
                   size: min(constraints.maxWidth, (constraints.maxHeight - 60)),
@@ -1489,32 +1513,44 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       children: [
                         Text(
                           widget.widget.tournament.display,
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 24,
+                              fontFamily: 'Font'),
                         ),
                         Divider(color: Colors.blue),
                         SizedBox(height: 8),
                         TextField(
-                          controller: eventCodeController,
-                          enabled: false,
-                          decoration: InputDecoration(
-                            labelText: 'Event Code',
-                          ),
-                        ),
+                            controller: eventCodeController,
+                            enabled: false,
+                            decoration: InputDecoration(
+                              floatingLabelStyle: TextStyle(
+                                  fontFamily: 'Font', color: Colors.blue),
+                              labelText: 'Event Code',
+                            ),
+                            style: TextStyle(fontFamily: 'Font')),
                         SizedBox(height: 8),
                         TextField(
-                          controller: scoutNameController,
-                          enabled: false,
-                          decoration: InputDecoration(
-                            labelText: 'Scout Name',
-                          ),
-                        ),
+                            controller: scoutNameController,
+                            enabled: false,
+                            decoration: InputDecoration(
+                              floatingLabelStyle: TextStyle(
+                                  fontFamily: 'Font', color: Colors.blue),
+                              labelText: 'Scout Name',
+                            ),
+                            style: TextStyle(fontFamily: 'Font')),
                         SizedBox(height: 8),
                         TextField(
                           controller: matchNumberController,
                           enabled: true,
                           decoration: InputDecoration(
+                            floatingLabelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue),
                             labelText: 'Match Number',
+                            labelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue),
                           ),
+                          style: TextStyle(fontFamily: 'Font'),
                           onChanged: (value) {
                             int matchNumber = int.tryParse(value) ?? -1;
                             if (matchNumber >= 0 && matchNumber < 500) {
@@ -1536,9 +1572,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         ),
                         SizedBox(height: 8),
                         TextField(
+                          style: TextStyle(fontFamily: 'Font'),
                           controller: teamNumberController,
                           enabled: true,
                           decoration: InputDecoration(
+                            floatingLabelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue),
+                            labelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue),
                             labelText: 'Team Number',
                           ),
                           keyboardType: TextInputType.number,
@@ -1565,7 +1606,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                               ? null
                               : driverStationIndex,
                           hint: Text('Select Driver Station',
-                              style: TextStyle(color: Colors.white)),
+                              style: TextStyle(
+                                  color: Colors.white, fontFamily: 'Font')),
                           onChanged: (int? value) {
                             setState(() {
                               driverStationIndex = value!;
@@ -1594,6 +1636,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                               value: index,
                               child: Text(DRIVER_STATIONS[index],
                                   style: TextStyle(
+                                      fontFamily: 'Font',
                                       color: index == 0
                                           ? Colors.white
                                           : index < 4
@@ -1606,7 +1649,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         SizedBox(height: 20),
                         Text(
                           'Auto',
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 24,
+                              fontFamily: 'Font'),
                         ),
                         Divider(color: Colors.blue),
                         AutoPieces2026(
@@ -1634,7 +1680,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         SizedBox(height: 20),
                         Text(
                           'Teleop',
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 24,
+                              fontFamily: 'Font'),
                         ),
                         SizedBox(height: 8),
                         Divider(color: const Color.fromRGBO(33, 150, 243, 1)),
@@ -1664,12 +1713,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         SizedBox(height: 20),
                         Text(
                           'Miscellaneous',
-                          style: TextStyle(color: Colors.blue, fontSize: 24),
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 24,
+                              fontFamily: 'Font'),
                         ),
                         Divider(color: Colors.blue),
                         SizedBox(height: 8),
                         Row(children: [
-                          Text('Died?'),
+                          Text('Died?', style: TextStyle(fontFamily: 'Font')),
                           Switch(
                             value: data.data.miscellaneous.died,
                             onChanged: (value) => setState(() {
@@ -1682,7 +1734,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             activeThumbColor: Colors.blue,
                           ),
                           SizedBox(width: 20),
-                          Text('Played Defense?'),
+                          Text('Played Defense?',
+                              style: TextStyle(fontFamily: 'Font')),
                           Switch(
                             value: data.data.miscellaneous.defense,
                             onChanged: (value) => setState(() {
@@ -1701,6 +1754,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           enabled: true,
                           decoration: InputDecoration(
                               labelText: 'Comments',
+                              hintStyle: TextStyle(fontFamily: 'Font'),
+                              errorStyle: TextStyle(fontFamily: 'Font'),
+                              labelStyle: TextStyle(fontFamily: 'Font'),
+                              helperStyle: TextStyle(fontFamily: 'Font'),
+                              prefixStyle: TextStyle(fontFamily: 'Font'),
+                              counterStyle: TextStyle(fontFamily: 'Font'),
+                              suffixStyle: TextStyle(fontFamily: 'Font'),
+                              floatingLabelStyle: TextStyle(
+                                  fontFamily: 'Font', color: Colors.blue),
                               helperText:
                                   'Do not type anything which could upset someone.',
                               helperMaxLines: 2),
@@ -1717,7 +1779,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         Center(
                           child: ElevatedButton(
                             onPressed: submitted ? _update : _submit,
-                            child: Text(submitted ? 'Update' : 'Submit'),
+                            child: Text(submitted ? 'Update' : 'Submit',
+                                style: TextStyle(fontFamily: 'Font')),
                           ),
                         ),
                         SizedBox(
@@ -1727,7 +1790,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           Center(
                             child: ElevatedButton(
                               onPressed: _reset,
-                              child: Text('Reset'),
+                              child: Text(
+                                'Reset',
+                                style: TextStyle(fontFamily: 'Font'),
+                              ),
                             ),
                           ),
                       ],
@@ -1834,6 +1900,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
                 'Team',
                 textAlign: TextAlign.center,
                 textScaler: TextScaler.linear(1.25),
+                style: TextStyle(fontFamily: 'Font'),
               ))),
       GridColumn(
           columnName: 'pit_status',
@@ -1842,6 +1909,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
               alignment: Alignment.center,
               child: Text(
                 'Pit Scouting',
+                style: TextStyle(fontFamily: 'Font'),
                 textAlign: TextAlign.center,
                 textScaler: TextScaler.linear(1.25),
               ))),
@@ -1852,6 +1920,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
               alignment: Alignment.center,
               child: Text(
                 'Pictures',
+                style: TextStyle(fontFamily: 'Font'),
                 textAlign: TextAlign.center,
                 textScaler: TextScaler.linear(1.25),
               ))),
@@ -1862,6 +1931,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
               alignment: Alignment.center,
               child: Text(
                 'Follow Up',
+                style: TextStyle(fontFamily: 'Font'),
                 textAlign: TextAlign.center,
                 textScaler: TextScaler.linear(1.25),
               ))),
@@ -1899,7 +1969,8 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
                     ? Card(
                         child: Padding(
                             padding: EdgeInsets.all(20.0),
-                            child: Text('Your team is not part of this event')))
+                            child: Text('Your team is not part of this event',
+                                style: TextStyle(fontFamily: 'Font'))))
                     : LayoutBuilder(
                         builder: (context, constraints) => Container(
                             alignment: Alignment.center,
@@ -1975,6 +2046,7 @@ class _StatusSource extends DataGridSource {
                           child: Text(cell.value.toString(),
                               textScaler: TextScaler.linear(1.25),
                               style: TextStyle(
+                                  fontFamily: 'Font',
                                   color: cell.value == 'Incomplete'
                                       ? Colors.yellow
                                       : cell.value == 'Done'
@@ -2047,9 +2119,9 @@ class _MatchStatusSource extends DataGridSource {
                               ? color
                               : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'red_rp')
         returnCells.add(Container(
@@ -2069,9 +2141,9 @@ class _MatchStatusSource extends DataGridSource {
                               ? color
                               : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'winner')
         returnCells.add(Container(
@@ -2083,9 +2155,9 @@ class _MatchStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else
         returnCells.add(Container(
@@ -2093,9 +2165,9 @@ class _MatchStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
     }
     return DataGridRowAdapter(
@@ -2150,56 +2222,50 @@ class _QualsTabState extends State<_QualsTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Match',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Type',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'blue_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Blue Score',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Blue Score',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'red_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Red Score',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Red Score',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'blue_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Blue RP',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Blue RP',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'red_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Red RP',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Red RP',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
     ];
 
     statuses.sort((a, b) {
@@ -2307,29 +2373,26 @@ class _ElimsTabState extends State<_ElimsTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Match',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Type',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'winner',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Winner',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Winner',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
     ];
 
     statuses.sort((a, b) {

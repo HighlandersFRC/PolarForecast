@@ -193,7 +193,8 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
       await file.writeAsBytes(pngBytes);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Image saved to ${directory?.path}/${fileName}.png'),
+          content: Text('Image saved to ${directory?.path}/${fileName}.png',
+              style: TextStyle(fontFamily: 'Font')),
         ),
       );
       Navigator.of(context).pop();
@@ -208,11 +209,14 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Enter File Name'),
+          title: const Text('Enter File Name',
+              style: TextStyle(fontFamily: 'Font')),
           content: TextField(
             onChanged: (value) => fileName = value,
             cursorColor: Colors.blue,
             decoration: InputDecoration(
+                floatingLabelStyle:
+                    TextStyle(fontFamily: 'Font', color: Colors.blue),
                 hintText: 'File name (without extension)',
                 focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue, width: 2))),
@@ -220,11 +224,13 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(fileName),
-              child: const Text('Save', style: TextStyle(color: Colors.blue)),
+              child: const Text('Save',
+                  style: TextStyle(color: Colors.blue, fontFamily: 'Font')),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel', style: TextStyle(color: Colors.blue)),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.blue, fontFamily: 'Font')),
             ),
           ],
         );
@@ -240,12 +246,14 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sketch as JSON'),
+        title:
+            const Text('Sketch as JSON', style: TextStyle(fontFamily: 'Font')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-                'Copy the JSON to save it. Then Paste to import it again'),
+                'Copy the JSON to save it. Then Paste to import it again',
+                style: TextStyle(fontFamily: 'Font')),
             TextField(
               controller: jsonController,
               clipBehavior: Clip.hardEdge,
@@ -265,7 +273,9 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
             onPressed: () {
               Clipboard.setData(ClipboardData(text: jsonController.text));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('JSON copied to clipboard!')),
+                const SnackBar(
+                    content: Text('JSON copied to clipboard!',
+                        style: TextStyle(fontFamily: 'Font'))),
               );
               Navigator.of(context).pop();
             },
@@ -277,21 +287,26 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
                 final pastedJson = jsonDecode(jsonController.text);
                 notifier.setSketch(sketch: Sketch.fromJson(pastedJson));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('JSON imported successfully!')),
+                  const SnackBar(
+                      content: Text('JSON imported successfully!',
+                          style: TextStyle(fontFamily: 'Font'))),
                 );
                 Navigator.of(context).pop();
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invalid JSON format!')),
+                  const SnackBar(
+                      content: Text('Invalid JSON format!',
+                          style: TextStyle(fontFamily: 'Font'))),
                 );
               }
             },
-            child:
-                const Text('Import JSON', style: TextStyle(color: Colors.blue)),
+            child: const Text('Import JSON',
+                style: TextStyle(color: Colors.blue, fontFamily: 'Font')),
           ),
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Close', style: TextStyle(color: Colors.blue)),
+            child: const Text('Close',
+                style: TextStyle(color: Colors.blue, fontFamily: 'Font')),
           ),
         ],
       ),
@@ -305,7 +320,7 @@ class _FieldWhiteboardState extends State<FieldWhiteboard> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Stroke Size'),
+            Text('Stroke Size', style: TextStyle(fontFamily: 'Font')),
             SliderTheme(
               data: SliderThemeData(
                 thumbShape: AppSliderShape(thumbRadius: state.selectedWidth),

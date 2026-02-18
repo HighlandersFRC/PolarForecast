@@ -76,10 +76,10 @@ class _BiggerCounterState extends State<BiggerCounter> {
               child: Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font'),
               ),
             ),
           ),
@@ -94,7 +94,10 @@ class _BiggerCounterState extends State<BiggerCounter> {
         Text(
           widget.label,
           style: const TextStyle(
-              fontSize: 20, fontWeight: FontWeight.w600, color: Colors.blue),
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue,
+              fontFamily: 'Font'),
         ),
         const SizedBox(height: 6),
 
@@ -104,9 +107,9 @@ class _BiggerCounterState extends State<BiggerCounter> {
           readOnly: widget.locked,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-          ),
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Font'),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(

@@ -97,7 +97,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
             children: <Widget>[
               ListTile(
                 leading: Icon(Icons.camera_alt),
-                title: Text('Take Picture'),
+                title:
+                    Text('Take Picture', style: TextStyle(fontFamily: 'Font')),
                 onTap: () {
                   Navigator.of(context).pop();
                   _captureImage(section);
@@ -105,7 +106,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library),
-                title: Text('From Gallery'),
+                title:
+                    Text('From Gallery', style: TextStyle(fontFamily: 'Font')),
                 onTap: () {
                   Navigator.of(context).pop();
                   _pickImage(section);
@@ -165,7 +167,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$section Image ${index + 1} uploaded successfully'),
+          content: Text('$section Image ${index + 1} uploaded successfully',
+              style: TextStyle(fontFamily: 'Font')),
         ),
       );
     } catch (e) {
@@ -176,7 +179,8 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Failed to upload $section Image ${index + 1}: $errorMessage'),
+              'Failed to upload $section Image ${index + 1}: $errorMessage',
+              style: TextStyle(fontFamily: 'Font')),
         ),
       );
     } finally {
@@ -222,11 +226,11 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      '${section.toUpperCase()} Image ${index + 1}',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                    child: Text('${section.toUpperCase()} Image ${index + 1}',
+                        style: TextStyle(
+                            fontFamily: 'Font',
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold)),
                   ),
                   IconButton(
                     onPressed: () => _removeImage(section, index),
@@ -286,8 +290,10 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
                   Expanded(
                     child: Text(
                       'By ${picture.scout_info.first_name ?? 'scout on ${picture.scout_info.team_number}'}',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontFamily: 'Font',
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -357,13 +363,9 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              section.toUpperCase(),
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            child: Text(section.toUpperCase(),
+                style:
+                    TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold)),
           ),
           SizedBox(height: 12),
           Container(
@@ -395,19 +397,13 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
           children: [
             Text(
               'Team ${widget.team} Pictures',
-              style: Theme.of(context)
-                  .textTheme
-                  .displaySmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 12),
             Text(
               'Capture, select, remove, and upload images for each section.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.grey[700]),
+              style: TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
@@ -423,7 +419,7 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
             ElevatedButton.icon(
               onPressed: anyUploading ? null : _uploadAllImages,
               icon: Icon(Icons.cloud_upload),
-              label: Text('Upload All'),
+              label: Text('Upload All', style: TextStyle(fontFamily: 'Font')),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                 textStyle: TextStyle(fontSize: 18),

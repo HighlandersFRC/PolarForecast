@@ -62,7 +62,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
           return AlertDialog(
             backgroundColor: Colors.black,
             title: const Text('Shoot Location',
-                style: TextStyle(color: Colors.white)),
+                style: TextStyle(color: Colors.white, fontFamily: 'Font')),
             content: SizedBox(
               width: width,
               height: height,
@@ -148,7 +148,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
         color: Colors.grey[800],
         child: ListTile(
           title: Text('Step ${stepIndex + 1}: $stepLabel',
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: Colors.white, fontFamily: 'Font')),
           trailing: widget.onChanged != null && !widget.locked
               ? IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
@@ -348,10 +348,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'Depot',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(255, 0, 0, 0),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color:
+                                            const Color.fromARGB(255, 0, 0, 0),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -396,10 +397,10 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'Scored in Hub',
                                     style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color: Colors.white,
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -458,11 +459,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'R Trench',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -521,11 +522,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'L Trench',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -584,11 +585,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'L Bump',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -647,11 +648,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'R Bump',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color: const Color.fromARGB(
+                                            255, 255, 255, 255),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -709,10 +710,11 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   Text(
                                     'Neutral Zone',
                                     style: TextStyle(
-                                      color: const Color.fromARGB(255, 0, 0, 0),
-                                      fontSize: 11 * (scaleFactor - 0.4),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                        color:
+                                            const Color.fromARGB(255, 0, 0, 0),
+                                        fontSize: 11 * (scaleFactor - 0.4),
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -782,14 +784,16 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                                   child: Text(
                                                       'Left Side Rung Climb',
                                                       style: TextStyle(
-                                                          color: Colors.green)),
+                                                          color: Colors.white,
+                                                          fontFamily: 'Font')),
                                                 ),
                                                 PopupMenuItem(
                                                   value: 'center',
                                                   child: Text(
                                                       'Center Rung Climb',
                                                       style: TextStyle(
-                                                          color: Colors.blue)),
+                                                          color: Colors.blue,
+                                                          fontFamily: 'Font')),
                                                 ),
                                                 PopupMenuItem(
                                                   value: 'right',
@@ -797,7 +801,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                                       'Right Side Rung Climb',
                                                       style: TextStyle(
                                                           color:
-                                                              Colors.orange)),
+                                                              Colors.deepPurple,
+                                                          fontFamily: 'Font')),
                                                 ),
                                               ],
                                             ).then((value) {
@@ -850,7 +855,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 11 * (scaleFactor - 0.4),
-                                          fontWeight: FontWeight.bold)),
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Font')),
                                 ],
                               ),
                             ),
@@ -876,7 +882,10 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                     },
                     label: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Icon(Icons.rotate_right), Text('Rotate')]),
+                        children: [
+                          Icon(Icons.rotate_right),
+                          Text('Rotate', style: TextStyle(fontFamily: 'Font'))
+                        ]),
                   ),
                 SizedBox(height: 10),
                 SizedBox(
@@ -908,11 +917,14 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                 ),
                 Text(
                     '${widget.auto.starting_position_meters_from_hub_center.toStringAsFixed(2)} meters',
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(color: Colors.white, fontFamily: 'Font')),
                 buildStepsUI(),
                 if (!widget.matchScouting)
                   Text('Field Side',
-                      style: TextStyle(fontSize: 20, color: Colors.blue)),
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.blue,
+                          fontFamily: 'Font')),
                 if (!widget.matchScouting)
                   DropdownButton<String>(
                       value: widget.auto.field_side.contains('blue')
@@ -920,7 +932,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                               ? 'both'
                               : 'blue'
                           : 'red',
-                      hint: Text('Select Option'),
+                      hint: Text('Select Option',
+                          style: TextStyle(fontFamily: 'Font')),
                       isExpanded: true,
                       onChanged: widget.onChanged == null || widget.locked
                           ? null
@@ -940,26 +953,30 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                             value: 'red',
                             child: Text(
                               'Red Side',
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(
+                                  color: Colors.red, fontFamily: 'Font'),
                             )),
                         DropdownMenuItem(
                             value: 'blue',
                             child: Text(
                               'Blue Side',
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(
+                                  color: Colors.blue, fontFamily: 'Font'),
                             )),
                         DropdownMenuItem(
                             value: 'both',
                             child: Text(
                               'Both',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                  color: Colors.white, fontFamily: 'Font'),
                             )),
                       ]),
                 if (!widget.matchScouting)
                   SwitchListTile(
                     activeThumbColor: Colors.blue,
                     inactiveThumbColor: Colors.blue,
-                    title: Text('Preload'),
+                    title:
+                        Text('Preload', style: TextStyle(fontFamily: 'Font')),
                     value: widget.auto.preload,
                     onChanged: widget.onChanged == null || widget.locked
                         ? null
@@ -973,7 +990,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                   SwitchListTile(
                     activeThumbColor: Colors.blue,
                     inactiveThumbColor: Colors.blue,
-                    title: Text('Works on Left and Right?'),
+                    title: Text('Works on Left and Right?',
+                        style: TextStyle(fontFamily: 'Font')),
                     value: widget.auto.both_sides,
                     onChanged: widget.onChanged == null || widget.locked
                         ? null

@@ -116,8 +116,9 @@ class _TeamPageState extends State<TeamPage> {
               label: 'Deaths')
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(color: Colors.white),
-        unselectedLabelStyle: TextStyle(color: Colors.white),
+        selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
+        unselectedLabelStyle:
+            TextStyle(color: Colors.white, fontFamily: 'Font'),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
@@ -189,7 +190,8 @@ class _StatsTabState extends State<_StatsTab> {
                       style: TextStyle(
                           color: theme.primaryColor,
                           fontSize: 24,
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Font'),
                     ),
                     SizedBox(height: 20),
                     Wrap(
@@ -213,12 +215,14 @@ class _StatsTabState extends State<_StatsTab> {
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: theme.primaryColor),
+                                        color: theme.primaryColor,
+                                        fontFamily: 'Font'),
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     formatValue(entry.value),
-                                    style: TextStyle(fontSize: 16),
+                                    style: TextStyle(
+                                        fontSize: 16, fontFamily: 'Font'),
                                   ),
                                 ],
                               ),
@@ -339,9 +343,9 @@ class _ScheduleStatusSource extends DataGridSource {
                       .withOpacity(0.6)
                   : Colors.grey.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'color')
         returnCells.add(Container(
@@ -353,9 +357,9 @@ class _ScheduleStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'team_score')
         returnCells.add(Container(
@@ -416,9 +420,9 @@ class _ScheduleStatusSource extends DataGridSource {
                                       : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6)
                               : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'opponent_score')
         returnCells.add(Container(
@@ -461,9 +465,9 @@ class _ScheduleStatusSource extends DataGridSource {
                           : Color.lerp(Colors.red, Colors.green, 0.5)!
                               .withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else
         returnCells.add(Container(
@@ -471,9 +475,9 @@ class _ScheduleStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
     }
     return DataGridRowAdapter(
@@ -543,56 +547,50 @@ class _ScheduleTabState extends State<_ScheduleTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Match',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Type',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'color',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Alliance',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Alliance',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Team Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Team Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'opponent_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Opponent Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Opponent Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Ranking Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Ranking Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
     ];
 
     statuses.sort((a, b) {
@@ -780,7 +778,7 @@ class _PicturesTabState extends State<_PicturesTab> {
                   redirect_path:
                       '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
               : images.isEmpty
-                  ? Text('No Images')
+                  ? Text('No Images', style: TextStyle(fontFamily: 'Font'))
                   : LayoutBuilder(
                       builder: (context, constraints) {
                         return GridView.builder(
@@ -811,7 +809,9 @@ class _PicturesTabState extends State<_PicturesTab> {
                                           ),
                                           actions: [
                                             Text(
-                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}'),
+                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
                                             if (images[index]
                                                 .permissions
                                                 .contains('delete'))
@@ -837,12 +837,16 @@ class _PicturesTabState extends State<_PicturesTab> {
                                                       });
                                                     });
                                                   },
-                                                  child: Text('Delete')),
+                                                  child: Text('Delete',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
                                             TextButton(
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                 },
-                                                child: Text('Close'))
+                                                child: Text('Close',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')))
                                           ],
                                         ));
                                   },
@@ -952,8 +956,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   void updateGrid() {
     setState(() {
       columns = [
-        GridColumn(columnName: 'scout_name', label: Text('Scout Name')),
-        GridColumn(columnName: 'match_number', label: Text('Match')),
+        GridColumn(
+            columnName: 'scout_name',
+            label: Text('Scout Name', style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'match_number',
+            label: Text('Match', style: TextStyle(fontFamily: 'Font'))),
         GridColumn(columnName: 'auto_scoring_l_1', label: Text('Auto L1')),
         GridColumn(columnName: 'auto_scoring_l_2', label: Text('Auto L2')),
         GridColumn(columnName: 'auto_scoring_l_3', label: Text('Auto L3')),
@@ -970,9 +978,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         GridColumn(
             columnName: 'teleop_scoring_processor',
             label: Text('Teleop Processor')),
-        GridColumn(columnName: 'died', label: Text('Died')),
-        GridColumn(columnName: 'comments', label: Text('Comments')),
-        GridColumn(columnName: 'delete', label: Text('Delete'))
+        GridColumn(
+            columnName: 'died',
+            label: Text('Died', style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'comments',
+            label: Text('Comments', style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'delete',
+            label: Text('Delete', style: TextStyle(fontFamily: 'Font')))
       ];
       rows = [];
       for (var entry in scouting) {
@@ -1063,9 +1077,8 @@ class _MatchScoutingSource extends DataGridSource {
         else
           cells.add(SizedBox.shrink());
       } else
-        cells.add(Text(
-          cell.value.toString(),
-        ));
+        cells.add(
+            Text(cell.value.toString(), style: TextStyle(fontFamily: 'Font')));
     }
     return DataGridRowAdapter(cells: cells);
   }
@@ -1097,13 +1110,15 @@ class _DeleteButtonState extends State<DeleteButton> {
         ApiService api = Provider.of<ApiService>(context, listen: false);
         api.delete_match_scouting(widget.data).then(
           (_) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Successfully Deleted')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Successfully Deleted',
+                    style: TextStyle(fontFamily: 'Font'))));
             widget.onDelete();
           },
         ).onError((e, trace) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
         });
       },
       icon: Icon(Icons.delete_forever),
@@ -1207,7 +1222,7 @@ class _AutosTabState extends State<_AutosTab> {
                     if (scouting.length == 0)
                       Text(
                         'No data for this event',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 30, fontFamily: 'Font'),
                       ),
                     Expanded(
                         child: LayoutBuilder(builder: (context, constraints) {

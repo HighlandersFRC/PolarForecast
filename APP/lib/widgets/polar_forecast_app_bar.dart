@@ -66,7 +66,7 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       color: Colors.white,
                       fontSize: kToolbarHeight *
                           0.8, // Adjust font size based on screen width
-                      fontFamily: 'OpenSans',
+                      fontFamily: 'Font',
                     ),
                     overflow: TextOverflow.fade, // Prevent overflow
                   ),
@@ -113,7 +113,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Logged in as: ${get_scout_info(token ?? '').username}',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                   ),
@@ -124,7 +125,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Groups',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -138,7 +140,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Group Join Requests',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -152,7 +155,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Logout',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -166,7 +170,8 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Login',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -261,7 +266,7 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       color: Colors.white,
                       fontSize: kToolbarHeight *
                           0.8, // Adjust font size based on screen width
-                      fontFamily: 'OpenSans',
+                      fontFamily: 'Font',
                     ),
                     overflow: TextOverflow.fade, // Prevent overflow
                   ),
@@ -308,7 +313,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Logged in as: ${get_scout_info(token ?? '').username}',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                   ),
@@ -319,7 +325,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Groups',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -333,7 +340,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Group Join Requests',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -347,7 +355,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Logout',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -361,7 +370,8 @@ class _PolarForecastAppBarState extends State<PolarForecastAppBar> {
                       padding: EdgeInsets.all(16),
                       child: Text(
                         'Login',
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            TextStyle(color: Colors.white, fontFamily: 'Font'),
                       ),
                     ),
                     onTap: () {
@@ -436,7 +446,8 @@ class TournamentSearchDelegate extends SearchDelegate {
       itemCount: results.length,
       itemBuilder: (context, index) {
         return ListTile(
-            title: Text(results[index].display),
+            title: Text(results[index].display,
+                style: TextStyle(fontFamily: 'Font')),
             onTap: () {
               Navigator.pushNamed(context, '/event/${results[index].key}');
             },
@@ -460,7 +471,8 @@ class TournamentSearchDelegate extends SearchDelegate {
       itemCount: suggestions.length,
       itemBuilder: (context, index) {
         return ListTile(
-          title: Text(suggestions[index].display),
+          title: Text(suggestions[index].display,
+              style: TextStyle(fontFamily: 'Font')),
           onTap: () {
             Navigator.pushNamed(context, '/event/${suggestions[index].key}');
           },
@@ -494,13 +506,15 @@ _openGroupsPopup(BuildContext context) async {
               children: [
                 Text(
                   'Your Group',
-                  style: TextStyle(color: Colors.white, fontSize: 30),
+                  style: TextStyle(
+                      color: Colors.white, fontSize: 30, fontFamily: 'Font'),
                 ),
                 groups.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Text('You are not part of any group',
-                            style: TextStyle(color: Colors.white)),
+                            style: TextStyle(
+                                color: Colors.red, fontFamily: 'Font')),
                       )
                     : SizedBox(
                         child: Column(
@@ -512,14 +526,16 @@ _openGroupsPopup(BuildContext context) async {
                                 Navigator.of(context).pushNamed(
                                     '/group/${groups[index]['name']}');
                               },
-                              title: Text(groups[index]['name']),
+                              title: Text(groups[index]['name'],
+                                  style: TextStyle(fontFamily: 'Font')),
                             );
                           },
                         )),
                       ),
                 if (groups.isEmpty)
                   ElevatedButton(
-                      child: Text('Create a New Group'),
+                      child: Text('Create a New Group',
+                          style: TextStyle(fontFamily: 'Font')),
                       onPressed: () {
                         final TextEditingController groupNameController =
                             TextEditingController();
@@ -528,7 +544,8 @@ _openGroupsPopup(BuildContext context) async {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: const Text('Create a New Group'),
+                              title: const Text('Create a New Group',
+                                  style: TextStyle(fontFamily: 'Font')),
                               content: TextField(
                                   controller: groupNameController,
                                   decoration: const InputDecoration(
@@ -544,7 +561,8 @@ _openGroupsPopup(BuildContext context) async {
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
-                                  child: const Text('Cancel'),
+                                  child: const Text('Cancel',
+                                      style: TextStyle(fontFamily: 'Font')),
                                 ),
                                 ElevatedButton(
                                   onPressed: () async {
@@ -562,10 +580,13 @@ _openGroupsPopup(BuildContext context) async {
                                       Navigator.of(context).pop();
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                              content: Text(e.toString())));
+                                              content: Text(e.toString(),
+                                                  style: TextStyle(
+                                                      fontFamily: 'Font'))));
                                     });
                                   },
-                                  child: const Text('Create'),
+                                  child: const Text('Create',
+                                      style: TextStyle(fontFamily: 'Font')),
                                 ),
                               ],
                             );
@@ -602,9 +623,14 @@ _openJoinRequestsPopup(BuildContext context) async {
                   children: [
                     Text(
                       'Group Join Requests',
-                      style: TextStyle(fontSize: 30, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontFamily: 'Font'),
                     ),
-                    if (requests.isEmpty) Text('No Pending Join Requests'),
+                    if (requests.isEmpty)
+                      Text('No Pending Join Requests',
+                          style: TextStyle(fontFamily: 'Font')),
                     ExpansionPanelList.radio(
                       children: [
                         ...List.generate(requests.length, (requestIndex) {
@@ -612,7 +638,8 @@ _openJoinRequestsPopup(BuildContext context) async {
                               value: requestIndex,
                               headerBuilder: (context, open) => ListTile(
                                     title: Text(
-                                        'Group: ${requests[requestIndex].group_name}'),
+                                        'Group: ${requests[requestIndex].group_name}',
+                                        style: TextStyle(fontFamily: 'Font')),
                                   ),
                               body: ElevatedButton(
                                   onPressed: () {
@@ -624,10 +651,13 @@ _openJoinRequestsPopup(BuildContext context) async {
                                         .onError((e, _) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                              content: Text(e.toString())));
+                                              content: Text(e.toString(),
+                                                  style: TextStyle(
+                                                      fontFamily: 'Font'))));
                                     });
                                   },
-                                  child: Text('Delete'),
+                                  child: Text('Delete',
+                                      style: TextStyle(fontFamily: 'Font')),
                                   style: ButtonStyle(
                                     foregroundColor:
                                         WidgetStatePropertyAll(Colors.white),
@@ -652,7 +682,8 @@ _openDocumentationSheet(BuildContext context) {
           children: [
             ListTile(
               leading: const Icon(Icons.group),
-              title: const Text('How to use Groups'),
+              title: const Text('How to use Groups',
+                  style: TextStyle(fontFamily: 'Font')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(
@@ -663,7 +694,8 @@ _openDocumentationSheet(BuildContext context) {
             ),
             ListTile(
               leading: const Icon(Icons.remove_red_eye),
-              title: const Text('How to Scout'),
+              title: const Text('How to Scout',
+                  style: TextStyle(fontFamily: 'Font')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(

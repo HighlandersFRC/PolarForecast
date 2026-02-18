@@ -163,7 +163,8 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
         Text(
           widget.title,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.blue, fontSize: 20),
+          style:
+              TextStyle(color: Colors.blue, fontSize: 20, fontFamily: 'Font'),
         ),
         SfCartesianChart(
           tooltipBehavior: TooltipBehavior(
@@ -200,10 +201,12 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
               child: TextField(
                 decoration: InputDecoration(
                     labelText: field.name,
-                    labelStyle:
-                        TextStyle(color: palette[index % palette.length]),
-                    floatingLabelStyle:
-                        TextStyle(color: palette[index % palette.length])),
+                    labelStyle: TextStyle(
+                        color: palette[index % palette.length],
+                        fontFamily: 'Font'),
+                    floatingLabelStyle: TextStyle(
+                        color: palette[index % palette.length],
+                        fontFamily: 'Font')),
                 controller:
                     new TextEditingController(text: field.weight.toString()),
                 keyboardType: TextInputType.number,
@@ -220,7 +223,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
         SizedBox(height: 8),
         ElevatedButton(
           onPressed: _exportToCSV,
-          child: Text('Export to CSV'),
+          child: Text('Export to CSV', style: TextStyle(fontFamily: 'Font')),
         ),
       ],
     );

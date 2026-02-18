@@ -90,12 +90,13 @@ class _DeathsFormState extends State<DeathsForm> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Submission failed. Please try again.'),
+          title: Text('Error', style: TextStyle(fontFamily: 'Font')),
+          content: Text('Submission failed. Please try again.',
+              style: TextStyle(fontFamily: 'Font')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
+              child: Text('OK', style: TextStyle(fontFamily: 'Font')),
             ),
           ],
         ),
@@ -127,17 +128,22 @@ class _DeathsFormState extends State<DeathsForm> {
                       children: [
                         Text(
                           'Submission Successful',
-                          style: TextStyle(fontSize: 24, color: Colors.green),
+                          style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.green,
+                              fontFamily: 'Font'),
                         ),
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: handleEditForm,
-                          child: Text('Edit Form'),
+                          child: Text('Edit Form',
+                              style: TextStyle(fontFamily: 'Font')),
                         ),
                         SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () => handleGoBack(context),
-                          child: Text('Go Back'),
+                          child: Text('Go Back',
+                              style: TextStyle(fontFamily: 'Font')),
                         ),
                       ],
                     ),
@@ -145,7 +151,7 @@ class _DeathsFormState extends State<DeathsForm> {
                 : SingleChildScrollView(
                     child: (deaths.deaths.isEmpty)
                         ? Text('No Deaths Reported',
-                            style: TextStyle(fontSize: 24))
+                            style: TextStyle(fontSize: 24, fontFamily: 'Font'))
                         : Column(children: [
                             ...deaths.deaths.map((death) {
                               TextEditingController _controller =
@@ -169,9 +175,9 @@ class _DeathsFormState extends State<DeathsForm> {
                                       Text(
                                         'Death #${deaths.deaths.indexOf(death) + 1}',
                                         style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Font'),
                                       ),
                                       SizedBox(height: 10),
                                       TextField(
@@ -183,14 +189,18 @@ class _DeathsFormState extends State<DeathsForm> {
                                                   width: 3)),
                                           floatingLabelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           labelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           labelText: 'Match Number',
                                           border: OutlineInputBorder(),
                                         ),
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(
+                                            color: Colors.grey,
+                                            fontFamily: 'Font'),
                                         keyboardType: TextInputType.number,
                                         onChanged: (value) => setState(() {
                                           int index =
@@ -215,7 +225,9 @@ class _DeathsFormState extends State<DeathsForm> {
                                       SizedBox(height: 10),
                                       TextField(
                                         style: widget.locked
-                                            ? TextStyle(color: Colors.grey)
+                                            ? TextStyle(
+                                                color: Colors.grey,
+                                                fontFamily: 'Font')
                                             : null,
                                         readOnly: widget.locked,
                                         cursorColor: Colors.blue,
@@ -226,10 +238,12 @@ class _DeathsFormState extends State<DeathsForm> {
                                                   width: 3)),
                                           floatingLabelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           labelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           labelText: 'Reason for Team Death',
                                           border: OutlineInputBorder(),
                                         ),
@@ -259,10 +273,12 @@ class _DeathsFormState extends State<DeathsForm> {
                                                   width: 3)),
                                           floatingLabelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           labelStyle: TextStyle(
                                               color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Font'),
                                           focusColor: Colors.blue,
                                           labelText: 'Severity',
                                           border: OutlineInputBorder(),
@@ -290,7 +306,9 @@ class _DeathsFormState extends State<DeathsForm> {
                                                 }),
                                         items: [
                                           DropdownMenuItem(
-                                            child: Text('Choose...'),
+                                            child: Text('Choose...',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
                                             value: -1,
                                           ),
                                           DropdownMenuItem(
@@ -298,7 +316,8 @@ class _DeathsFormState extends State<DeathsForm> {
                                             child: Text(
                                               '1 (One-time error)',
                                               style: TextStyle(
-                                                  color: Colors.green),
+                                                  color: Colors.green,
+                                                  fontFamily: 'Font'),
                                             ),
                                           ),
                                           DropdownMenuItem(
@@ -306,15 +325,17 @@ class _DeathsFormState extends State<DeathsForm> {
                                             child: Text(
                                               '2 (Fixable before elims)',
                                               style: TextStyle(
-                                                  color: Colors.yellow),
+                                                  color: Colors.yellow,
+                                                  fontFamily: 'Font'),
                                             ),
                                           ),
                                           DropdownMenuItem(
                                             value: 3,
                                             child: Text(
                                               '3 (Permanently broken)',
-                                              style:
-                                                  TextStyle(color: Colors.red),
+                                              style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontFamily: 'Font'),
                                             ),
                                           ),
                                         ],
@@ -323,9 +344,9 @@ class _DeathsFormState extends State<DeathsForm> {
                                       Text(
                                         'Comments',
                                         style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Font'),
                                       ),
                                       SizedBox(height: 10),
                                       if (commentsLoading)
@@ -349,23 +370,27 @@ class _DeathsFormState extends State<DeathsForm> {
                                                 title: Text(
                                                   'Match ${death.match_number} - Comment ${commentIndex + 1}',
                                                   style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontFamily: 'Font'),
                                                 ),
                                                 subtitle: SingleChildScrollView(
                                                   scrollDirection:
                                                       Axis.horizontal,
                                                   child: Text(
-                                                    comments[commentIndex],
-                                                  ),
+                                                      comments[commentIndex],
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font')),
                                                 ),
                                               ),
                                             );
                                           },
                                         )
                                       else
-                                        Text('No comments found'),
+                                        Text('No comments found',
+                                            style:
+                                                TextStyle(fontFamily: 'Font')),
                                     ],
                                   ),
                                 ),
@@ -379,7 +404,9 @@ class _DeathsFormState extends State<DeathsForm> {
                                     child: Row(children: [
                                       Text(
                                         'Submit  ',
-                                        style: TextStyle(color: Colors.blue),
+                                        style: TextStyle(
+                                            color: Colors.blue,
+                                            fontFamily: 'Font'),
                                       ),
                                       Icon(Icons.send, color: Colors.blue)
                                     ]),

@@ -169,8 +169,9 @@ class _GroupPageState extends State<GroupPage> {
                 label: 'Settings'),
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(color: Colors.white),
-        unselectedLabelStyle: TextStyle(color: Colors.white),
+        selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
+        unselectedLabelStyle:
+            TextStyle(color: Colors.white, fontFamily: 'Font'),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
@@ -195,7 +196,9 @@ class _GroupPageState extends State<GroupPage> {
                         ? Center(
                             child: Text(errorMessage!,
                                 style: TextStyle(
-                                    color: Colors.blue, fontSize: 20.0)))
+                                    color: Colors.blue,
+                                    fontSize: 20.0,
+                                    fontFamily: 'Font')))
                         : SizedBox(
                             height: constraints.maxHeight,
                             width: constraints.maxWidth,
@@ -221,12 +224,14 @@ class _GroupPageState extends State<GroupPage> {
                     builder: (context) {
                       return AlertDialog(
                         title: Text('Leave Group'),
-                        content:
-                            Text('Are you sure you want to leave this group?'),
+                        content: Text(
+                            'Are you sure you want to leave this group?',
+                            style: TextStyle(fontFamily: 'Font')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: Text('Cancel'),
+                            child: Text('Cancel',
+                                style: TextStyle(fontFamily: 'Font')),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -243,7 +248,8 @@ class _GroupPageState extends State<GroupPage> {
                                 );
                               });
                             },
-                            child: Text('Leave'),
+                            child: Text('Leave',
+                                style: TextStyle(fontFamily: 'Font')),
                             style: ButtonStyle(
                               backgroundColor:
                                   WidgetStateProperty.all(Colors.red),
@@ -278,7 +284,8 @@ class _GroupPageState extends State<GroupPage> {
                         child: LayoutBuilder(
                           builder: (context, constraints) => Column(
                             children: [
-                              Text('Join Link Copied to Clipboard'),
+                              Text('Join Link Copied to Clipboard',
+                                  style: TextStyle(fontFamily: 'Font')),
                               SizedBox(height: 10),
                               QrImageView(
                                 size: min(constraints.maxWidth,
@@ -393,7 +400,9 @@ class _EventsTabState extends State<_EventsTab> {
                                       return AlertDialog(
                                         title: Text('Error'),
                                         content: Text(
-                                            'Failed to load events. Please try again later.'),
+                                            'Failed to load events. Please try again later.',
+                                            style:
+                                                TextStyle(fontFamily: 'Font')),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>
@@ -408,7 +417,9 @@ class _EventsTabState extends State<_EventsTab> {
                                     return StatefulBuilder(
                                       builder: (context, setState) {
                                         return AlertDialog(
-                                          title: Text('Choose an Event'),
+                                          title: Text('Choose an Event',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font')),
                                           content: Column(
                                             children: [
                                               SearchAnchor.bar(
@@ -426,7 +437,10 @@ class _EventsTabState extends State<_EventsTab> {
                                                   }).toList();
                                                   return [
                                                     ListTile(
-                                                      title: Text('None'),
+                                                      title: Text('None',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Font')),
                                                       onTap: () {
                                                         setState(() {
                                                           selectedEvent = null;
@@ -439,7 +453,10 @@ class _EventsTabState extends State<_EventsTab> {
                                                         .map((tournament) {
                                                       return ListTile(
                                                         title: Text(
-                                                            tournament.display),
+                                                            tournament.display,
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
                                                         onTap: () {
                                                           setState(() {
                                                             selectedEvent =
@@ -464,7 +481,8 @@ class _EventsTabState extends State<_EventsTab> {
                                                         color: Colors.blue,
                                                         fontSize: 30.0,
                                                         fontWeight:
-                                                            FontWeight.bold),
+                                                            FontWeight.bold,
+                                                        fontFamily: 'Font'),
                                                   ),
                                                 ),
                                             ],
@@ -473,7 +491,9 @@ class _EventsTabState extends State<_EventsTab> {
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.of(context).pop(),
-                                              child: Text('Cancel'),
+                                              child: Text('Cancel',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Font')),
                                             ),
                                             ElevatedButton(
                                               onPressed: selectedEvent != null
@@ -499,7 +519,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                           .pop(selectedEvent);
                                                     }
                                                   : null,
-                                              child: Text('Confirm'),
+                                              child: Text('Confirm',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Font')),
                                             ),
                                           ],
                                         );
@@ -510,13 +532,15 @@ class _EventsTabState extends State<_EventsTab> {
                               },
                             );
                           },
-                          child: Text('Join An Event')))),
+                          child: Text('Join An Event',
+                              style: TextStyle(fontFamily: 'Font'))))),
           if (widget.group != null)
             if (widget.group!.events.length == 0)
               Center(
                 child: Text(
                   'Not Currently Part of Any Events',
-                  style: TextStyle(color: Colors.white, fontSize: 30.0),
+                  style: TextStyle(
+                      color: Colors.white, fontSize: 30.0, fontFamily: 'Font'),
                 ),
               ),
           ExpansionPanelList.radio(
@@ -586,6 +610,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                     .event_code,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
+                                                fontFamily: 'Font',
                                                 fontSize: 20,
                                                 color: Colors.blue,
                                                 decorationColor: Colors.blue,
@@ -625,6 +650,8 @@ class _EventsTabState extends State<_EventsTab> {
                                                                   Text(
                                                                       'Alliances',
                                                                       style: TextStyle(
+                                                                          fontFamily:
+                                                                              'Font',
                                                                           fontSize:
                                                                               20,
                                                                           color:
@@ -652,7 +679,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                       groups = snapshot.requireData;
                                                                                     } catch (e) {
                                                                                       return AlertDialog(
-                                                                                        title: Text('Groups at ${widget.group!.events[event_index].event_code}'),
+                                                                                        title: Text('Groups at ${widget.group!.events[event_index].event_code}', style: TextStyle(fontFamily: 'Font')),
                                                                                         content: CircularProgressIndicator(
                                                                                           color: Colors.blue,
                                                                                         ),
@@ -666,21 +693,21 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                       }
                                                                                     }
                                                                                     return AlertDialog(
-                                                                                      title: Text('Groups at ${widget.group!.events[event_index].event_code}'),
+                                                                                      title: Text('Groups at ${widget.group!.events[event_index].event_code}', style: TextStyle(fontFamily: 'Font')),
                                                                                       content: SingleChildScrollView(
                                                                                         child: Column(
                                                                                           children: [
-                                                                                            if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}'),
+                                                                                            if (groups.length == 0) Text('There are no other groups at ${widget.group!.events[event_index].event_code}', style: TextStyle(fontFamily: 'Font')),
                                                                                             ...List.generate(groups.length, (int group_index) {
                                                                                               return ListTile(
-                                                                                                  title: Text('${groups[group_index]['name']} - ${groups[group_index]['affiliation'].substring(3)}'),
+                                                                                                  title: Text('${groups[group_index]['name']} - ${groups[group_index]['affiliation'].substring(3)}', style: TextStyle(fontFamily: 'Font')),
                                                                                                   onTap: () {
                                                                                                     apiService.request_alliance(widget.group!.name, widget.group!.events[event_index].event_code, groups[group_index]['name']).then((_requests) {
                                                                                                       setState(() {
                                                                                                         this.requests = _requests;
                                                                                                       });
                                                                                                     }).onError((e, _) {
-                                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
                                                                                                     });
                                                                                                     Navigator.of(context).pop();
                                                                                                   });
@@ -695,7 +722,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                                           );
                                                                         },
                                                                         child: Text(
-                                                                            'Create an Alliance')),
+                                                                            'Create an Alliance',
+                                                                            style:
+                                                                                TextStyle(fontFamily: 'Font'))),
                                                                   SizedBox(
                                                                       height:
                                                                           10),
@@ -707,7 +736,10 @@ class _EventsTabState extends State<_EventsTab> {
                                                                           .length ==
                                                                       0)
                                                                     Text(
-                                                                        'No Alliances'),
+                                                                        'No Alliances',
+                                                                        style: TextStyle(
+                                                                            fontFamily:
+                                                                                'Font')),
                                                                   if (widget
                                                                           .group!
                                                                           .events[
@@ -725,7 +757,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                           value:
                                                                               alliance_index,
                                                                           headerBuilder: (context, expanded) =>
-                                                                              ListTile(title: Text('${widget.group!.events[event_index].alliance_groups[alliance_index].name} - ${widget.group!.events[event_index].alliance_groups[alliance_index].affiliation.substring(3)}')),
+                                                                              ListTile(title: Text('${widget.group!.events[event_index].alliance_groups[alliance_index].name} - ${widget.group!.events[event_index].alliance_groups[alliance_index].affiliation.substring(3)}', style: TextStyle(fontFamily: 'Font'))),
                                                                           body: Row(
                                                                             mainAxisAlignment:
                                                                                 MainAxisAlignment.center,
@@ -744,10 +776,10 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                           widget.widget.group = group;
                                                                                         });
                                                                                       }).onError((e, _) {
-                                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
                                                                                       });
                                                                                     },
-                                                                                    child: Text('Leave')),
+                                                                                    child: Text('Leave', style: TextStyle(fontFamily: 'Font'))),
                                                                             ],
                                                                           ));
                                                                     }))
@@ -775,7 +807,9 @@ class _EventsTabState extends State<_EventsTab> {
                                                                       color: Colors
                                                                           .white,
                                                                       fontSize:
-                                                                          20),
+                                                                          20,
+                                                                      fontFamily:
+                                                                          'Font'),
                                                                 ),
                                                                 SizedBox(
                                                                     height: 10),
@@ -784,14 +818,20 @@ class _EventsTabState extends State<_EventsTab> {
                                                                     widget.membership !=
                                                                         'admin')
                                                                   Text(
-                                                                      'You must be an owner or admin to view alliance requests'),
+                                                                      'You must be an owner or admin to view alliance requests',
+                                                                      style: TextStyle(
+                                                                          fontFamily:
+                                                                              'Font')),
                                                                 if (event_requests
                                                                             .length ==
                                                                         0 &&
                                                                     widget.membership !=
                                                                         'member')
                                                                   Text(
-                                                                      'No Pending Requests'),
+                                                                      'No Pending Requests',
+                                                                      style: TextStyle(
+                                                                          fontFamily:
+                                                                              'Font')),
                                                                 if (event_requests
                                                                         .length !=
                                                                     0)
@@ -815,7 +855,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                               request_index,
                                                                           headerBuilder: (context, open) =>
                                                                               ListTile(
-                                                                                title: Text('${request.group_2} - ${request.group_2_affiliation.substring(3)}', style: TextStyle(fontSize: 11)),
+                                                                                title: Text('${request.group_2} - ${request.group_2_affiliation.substring(3)}', style: TextStyle(fontSize: 11, fontFamily: 'Font')),
                                                                               ),
                                                                           body:
                                                                               Row(
@@ -829,7 +869,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                                         this.requests = _requests;
                                                                                       });
                                                                                     }).onError((e, _) {
-                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
                                                                                     });
                                                                                   },
                                                                                   icon: Icon(Icons.delete, color: Colors.red)),
@@ -843,7 +883,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                                         headerBuilder: (context,
                                                                                 open) =>
                                                                             ListTile(
-                                                                              title: Text('${request.group_1} - ${request.group_1_affiliation}'),
+                                                                              title: Text('${request.group_1} - ${request.group_1_affiliation}', style: TextStyle(fontFamily: 'Font')),
                                                                             ),
                                                                         body:
                                                                             Row(
@@ -895,7 +935,8 @@ class _EventsTabState extends State<_EventsTab> {
                                                     style: TextStyle(
                                                         fontSize: 18,
                                                         fontWeight:
-                                                            FontWeight.bold),
+                                                            FontWeight.bold,
+                                                        fontFamily: 'Font'),
                                                   ),
                                                   SizedBox(height: 8),
                                                   Card(
@@ -916,7 +957,10 @@ class _EventsTabState extends State<_EventsTab> {
                                                                   '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/scouting_report');
                                                         },
                                                         child: Text(
-                                                            'View Scouting Report'),
+                                                            'View Scouting Report',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
                                                       ),
                                                     ),
                                                   ),
@@ -925,8 +969,8 @@ class _EventsTabState extends State<_EventsTab> {
                                                     'Tap to see detailed scouting data for this event.',
                                                     style: TextStyle(
                                                         fontSize: 14,
-                                                        color:
-                                                            Colors.grey[700]),
+                                                        color: Colors.grey[700],
+                                                        fontFamily: 'Font'),
                                                   ),
                                                 ],
                                               ),
@@ -965,11 +1009,17 @@ class _EventsTabState extends State<_EventsTab> {
                                                                   context)
                                                               .showSnackBar(SnackBar(
                                                                   content: Text(
-                                                                      e.toString())));
+                                                                      e
+                                                                          .toString(),
+                                                                      style: TextStyle(
+                                                                          fontFamily:
+                                                                              'Font'))));
                                                         });
                                                       },
-                                                      child:
-                                                          Text('Leave Event')),
+                                                      child: Text('Leave Event',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Font'))),
                                                 ),
                                               )
                                             ])))));
@@ -1085,10 +1135,13 @@ class _MembersTabState extends State<_MembersTab> {
                     child: Column(
                       children: [
                         Text('Join Requests',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 30)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontFamily: 'Font')),
                         if ((filteredRequests?.length ?? 0) == 0)
-                          Text('No Pending Join Requests'),
+                          Text('No Pending Join Requests',
+                              style: TextStyle(fontFamily: 'Font')),
                         ExpansionPanelList.radio(elevation: 0, children: [
                           ...List.generate(
                             filteredRequests?.length ?? 0,
@@ -1099,7 +1152,8 @@ class _MembersTabState extends State<_MembersTab> {
                                 headerBuilder: (context, isExpanded) {
                                   return ListTile(
                                     title: Text(
-                                        'Username: ${filteredRequests[requestIndex].username}\nTime of Request: ${DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(filteredRequests[requestIndex].request_time * 1000).toLocal())}'),
+                                        'Username: ${filteredRequests[requestIndex].username}\nTime of Request: ${DateFormat('MM/dd/yyyy hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(filteredRequests[requestIndex].request_time * 1000).toLocal())}',
+                                        style: TextStyle(fontFamily: 'Font')),
                                   );
                                 },
                                 body: Row(
@@ -1161,7 +1215,10 @@ class _MembersTabState extends State<_MembersTab> {
                     child: Column(children: [
                       Text(
                         'Owners',
-                        style: TextStyle(color: Colors.white, fontSize: 30),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontFamily: 'Font'),
                       ),
                       ExpansionPanelList.radio(
                         dividerColor: Colors.blue,
@@ -1175,12 +1232,14 @@ class _MembersTabState extends State<_MembersTab> {
                                   headerBuilder: (context, isExpanded) {
                                     return Padding(
                                       child: Text(
-                                          'Owner: ${members?['owners'][index]['firstName']}'),
+                                          'Owner: ${members?['owners'][index]['firstName']}',
+                                          style: TextStyle(fontFamily: 'Font')),
                                       padding: EdgeInsets.all(20),
                                     );
                                   },
                                   body: Text(
-                                      members?['owners'][index]['username']),
+                                      members?['owners'][index]['username'],
+                                      style: TextStyle(fontFamily: 'Font')),
                                 )),
                       ),
                     ]),
@@ -1192,7 +1251,10 @@ class _MembersTabState extends State<_MembersTab> {
                     child: Column(children: [
                       Text(
                         'Admins',
-                        style: TextStyle(color: Colors.white, fontSize: 30),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontFamily: 'Font'),
                       ),
                       ExpansionPanelList.radio(
                         dividerColor: Colors.blue,
@@ -1206,7 +1268,8 @@ class _MembersTabState extends State<_MembersTab> {
                               headerBuilder: (context, isExpanded) {
                                 return Padding(
                                   child: Text(
-                                      'Admin ${index + 1}: ${members?['admins'][index]['firstName']}'),
+                                      'Admin ${index + 1}: ${members?['admins'][index]['firstName']}',
+                                      style: TextStyle(fontFamily: 'Font')),
                                   padding: EdgeInsets.all(20),
                                 );
                               },
@@ -1215,7 +1278,8 @@ class _MembersTabState extends State<_MembersTab> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(members?['admins'][index]['username']),
+                                    Text(members?['admins'][index]['username'],
+                                        style: TextStyle(fontFamily: 'Font')),
                                     if (widget.membership == 'owner')
                                       SizedBox(width: 8),
                                     if (widget.membership == 'owner')
@@ -1239,7 +1303,9 @@ class _MembersTabState extends State<_MembersTab> {
                                               foregroundColor:
                                                   WidgetStatePropertyAll(
                                                       Colors.white)),
-                                          child: Text('Demote to Member')),
+                                          child: Text('Demote to Member',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font'))),
                                     if (widget.membership == 'owner')
                                       SizedBox(width: 8),
                                     if (widget.membership == 'owner')
@@ -1263,7 +1329,9 @@ class _MembersTabState extends State<_MembersTab> {
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
                                                     Colors.black)),
-                                        child: Text('Promote to Owner'),
+                                        child: Text('Promote to Owner',
+                                            style:
+                                                TextStyle(fontFamily: 'Font')),
                                       )
                                   ],
                                 ),
@@ -1271,7 +1339,8 @@ class _MembersTabState extends State<_MembersTab> {
                         ),
                       ),
                       if (members?['admins'].length == 0)
-                        Text('There are no admins in your group')
+                        Text('There are no admins in your group',
+                            style: TextStyle(fontFamily: 'Font'))
                     ]),
                   ),
                 ),
@@ -1281,7 +1350,10 @@ class _MembersTabState extends State<_MembersTab> {
                     child: Column(children: [
                       Text(
                         'Members',
-                        style: TextStyle(color: Colors.white, fontSize: 30),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontFamily: 'Font'),
                       ),
                       ExpansionPanelList.radio(
                         dividerColor: Colors.blue,
@@ -1295,7 +1367,8 @@ class _MembersTabState extends State<_MembersTab> {
                               headerBuilder: (context, isExpanded) {
                                 return Padding(
                                   child: Text(
-                                      'Member ${index + 1}: ${members?['members'][index]['firstName']}'),
+                                      'Member ${index + 1}: ${members?['members'][index]['firstName']}',
+                                      style: TextStyle(fontFamily: 'Font')),
                                   padding: EdgeInsets.all(20),
                                 );
                               },
@@ -1307,7 +1380,9 @@ class _MembersTabState extends State<_MembersTab> {
                                       if (!(widget.membership == 'owner' ||
                                           widget.membership == 'admin'))
                                         Text(
-                                            'username: ${members?['members'][index]['username']}'),
+                                            'username: ${members?['members'][index]['username']}',
+                                            style:
+                                                TextStyle(fontFamily: 'Font')),
                                       if (widget.membership == 'owner' ||
                                           widget.membership == 'admin')
                                         SizedBox(
@@ -1335,7 +1410,9 @@ class _MembersTabState extends State<_MembersTab> {
                                                 });
                                               });
                                             },
-                                            child: Text('Kick')),
+                                            child: Text('Kick',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font'))),
                                       if (widget.membership == 'owner')
                                         SizedBox(
                                           width: 10,
@@ -1354,13 +1431,16 @@ class _MembersTabState extends State<_MembersTab> {
                                                 });
                                               });
                                             },
-                                            child: Text('Promote to Admin')),
+                                            child: Text('Promote to Admin',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font'))),
                                     ]),
                               )),
                         ),
                       ),
                       if (members?['members'].length == 0)
-                        Text('There are no members in your group')
+                        Text('There are no members in your group',
+                            style: TextStyle(fontFamily: 'Font'))
                     ]),
                   ),
                 ),
@@ -1395,7 +1475,7 @@ class _SettingsTabState extends State<_SettingsTab> {
         padding: EdgeInsets.all(20.0),
         child: ElevatedButton(
             onPressed: _openConfirmDelete,
-            child: Text('Delete Group'),
+            child: Text('Delete Group', style: TextStyle(fontFamily: 'Font')),
             style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(Colors.red),
                 foregroundColor: WidgetStatePropertyAll(Colors.white))),
@@ -1405,7 +1485,8 @@ class _SettingsTabState extends State<_SettingsTab> {
         padding: EdgeInsets.all(20.0),
         child: Text(
           'More Settings Coming Soon...',
-          style: TextStyle(color: Colors.blue, fontSize: 30.0),
+          style:
+              TextStyle(color: Colors.blue, fontSize: 30.0, fontFamily: 'Font'),
         ),
       ))
     ]);
@@ -1417,22 +1498,29 @@ class _SettingsTabState extends State<_SettingsTab> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Group'),
+          title: Text('Delete Group', style: TextStyle(fontFamily: 'Font')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Are you sure you want to delete this group?'),
-              Text('Please type "${widget.group!.name}" to confirm:'),
+              Text('Are you sure you want to delete this group?',
+                  style: TextStyle(fontFamily: 'Font')),
+              Text('Please type "${widget.group!.name}" to confirm:',
+                  style: TextStyle(fontFamily: 'Font')),
               TextField(
                 controller: _controller,
-                decoration: InputDecoration(hintText: 'Group Name'),
+                decoration: InputDecoration(
+                    hintText: 'Group Name',
+                    labelStyle:
+                        TextStyle(fontFamily: 'Font', color: Colors.blue),
+                    floatingLabelStyle:
+                        TextStyle(fontFamily: 'Font', color: Colors.blue)),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontFamily: 'Font')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -1444,16 +1532,19 @@ class _SettingsTabState extends State<_SettingsTab> {
                       .delete_group(widget.group!.name)
                       .then((value) {})
                       .onError((e, _) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(e.toString())));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(e.toString(),
+                            style: TextStyle(fontFamily: 'Font'))));
                   });
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Group name does not match')),
+                    SnackBar(
+                        content: Text('Group name does not match',
+                            style: TextStyle(fontFamily: 'Font'))),
                   );
                 }
               },
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(fontFamily: 'Font')),
               style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(Colors.red),
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
@@ -1492,14 +1583,18 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
       await apiService.post_offline_match_scouting(matchData);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Match data submitted successfully!')),
+        SnackBar(
+            content: Text('Match data submitted successfully!',
+                style: TextStyle(fontFamily: 'Font'))),
       );
       setState(() {
         _textController.clear();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(
+            content: Text('Error: ${e.toString()}',
+                style: TextStyle(fontFamily: 'Font'))),
       );
     }
   }
@@ -1535,13 +1630,17 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
                               });
                               if (prevText != _textController.text) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Scan Successful')),
+                                  SnackBar(
+                                      content: Text('Scan Successful',
+                                          style:
+                                              TextStyle(fontFamily: 'Font'))),
                                 );
                               }
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content: Text('Error: ${e.toString()}')),
+                                    content: Text('Error: ${e.toString()}',
+                                        style: TextStyle(fontFamily: 'Font'))),
                               );
                             }
                           });
@@ -1556,9 +1655,12 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
                       TextField(
                         controller: _textController,
                         decoration: InputDecoration(
-                          labelText: 'Enter Data Manually',
-                          border: OutlineInputBorder(),
-                        ),
+                            labelText: 'Enter Data Manually',
+                            border: OutlineInputBorder(),
+                            floatingLabelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue),
+                            labelStyle: TextStyle(
+                                fontFamily: 'Font', color: Colors.blue)),
                         onChanged: (value) {
                           setState(() {});
                         },
@@ -1567,7 +1669,8 @@ class _OfflineScoutingTabState extends State<_OfflineScoutingTab> {
                       ElevatedButton(
                           onPressed:
                               _textController.text.isEmpty ? null : _onSubmit,
-                          child: Text('Submit'))
+                          child: Text('Submit',
+                              style: TextStyle(fontFamily: 'Font')))
                     ],
                   ),
                 ),

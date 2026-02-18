@@ -128,7 +128,7 @@ class _MatchPageState extends State<MatchPage> {
               label: 'Blue Autos'),
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(color: Colors.white),
+        selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
@@ -152,10 +152,30 @@ class _StatsTabState extends State<_StatsTab> {
   List<DataGridRow> redRows = [];
   List<DataGridRow> blueRows = [];
   List<GridColumn> columns = [
-    GridColumn(columnName: 'team_number', label: Text('Team Number')),
-    GridColumn(columnName: 'opr', label: Text('OPR')),
-    GridColumn(columnName: 'fuel_points', label: Text('Fuel Points')),
-    GridColumn(columnName: 'climb_points', label: Text('Climb Points')),
+    GridColumn(
+        columnName: 'team_number',
+        label: Text(
+          'Team Number',
+          style: TextStyle(fontFamily: 'Font'),
+        )),
+    GridColumn(
+        columnName: 'opr',
+        label: Text(
+          'OPR',
+          style: TextStyle(fontFamily: 'Font'),
+        )),
+    GridColumn(
+        columnName: 'fuel_points',
+        label: Text(
+          'Fuel Points',
+          style: TextStyle(fontFamily: 'Font'),
+        )),
+    GridColumn(
+        columnName: 'climb_points',
+        label: Text(
+          'Climb Points',
+          style: TextStyle(fontFamily: 'Font'),
+        )),
   ];
   bool isLoading = true;
   @override
@@ -250,8 +270,10 @@ class _StatsTabState extends State<_StatsTab> {
                           children: [
                             Text(
                               'Blue Alliance',
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                             Divider(
                               color: Colors.blue,
@@ -261,25 +283,33 @@ class _StatsTabState extends State<_StatsTab> {
                             ),
                             Text(
                               'Blue Predicted Score: ${stats?.prediction?.blue_score.toStringAsFixed(2)}',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                             if (stats?.prediction?.blue_actual_score != null)
                               Text(
                                 'Blue Actual Score: ${stats?.prediction?.blue_actual_score}',
-                                style:
-                                    TextStyle(fontSize: 20, color: Colors.blue),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.blue,
+                                    fontFamily: 'Font'),
                               ),
                             Text(
                               'Blue Predicted RP: ${stats?.prediction?.blue_total_rp}',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                             if (!(stats?.prediction?.predicted ?? true))
                               Text(
                                 'Blue Actual RP: ${stats?.prediction?.blue_display_rp}',
-                                style:
-                                    TextStyle(fontSize: 20, color: Colors.blue),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.blue,
+                                    fontFamily: 'Font'),
                               ),
                             SizedBox(
                               height: 8,
@@ -297,7 +327,10 @@ class _StatsTabState extends State<_StatsTab> {
                             ),
                             Text(
                               'Red Alliance',
-                              style: TextStyle(fontSize: 30, color: Colors.red),
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.red,
+                                  fontFamily: 'Font'),
                             ),
                             Divider(
                               color: Colors.red,
@@ -307,23 +340,33 @@ class _StatsTabState extends State<_StatsTab> {
                             ),
                             Text(
                               'Red Predicted Score: ${stats?.prediction?.red_score.toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 20, color: Colors.red),
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.red,
+                                  fontFamily: 'Font'),
                             ),
                             if (stats?.prediction?.red_actual_score != null)
                               Text(
                                 'Red Actual Score: ${stats?.prediction?.red_actual_score}',
-                                style:
-                                    TextStyle(fontSize: 20, color: Colors.red),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.red,
+                                    fontFamily: 'Font'),
                               ),
                             Text(
                               'Red Predicted RP: ${stats?.prediction?.red_total_rp}',
-                              style: TextStyle(fontSize: 20, color: Colors.red),
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.red,
+                                  fontFamily: 'Font'),
                             ),
                             if (!(stats?.prediction?.predicted ?? true))
                               Text(
                                 'Red Actual RP: ${stats?.prediction?.red_display_rp}',
-                                style:
-                                    TextStyle(fontSize: 20, color: Colors.red),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.red,
+                                    fontFamily: 'Font'),
                               ),
                             SizedBox(
                               height: 8,
@@ -356,9 +399,11 @@ class _StatsTableSource extends DataGridSource {
     List<Widget> cells = [];
     for (var cell in row.getCells()) {
       if (cell.value is num)
-        cells.add(Text((cell.value as num).toStringAsFixed(2)));
+        cells.add(Text((cell.value as num).toStringAsFixed(2),
+            style: TextStyle(fontFamily: 'Font')));
       else
-        cells.add(Text(cell.value.toString()));
+        cells.add(
+            Text(cell.value.toString(), style: TextStyle(fontFamily: 'Font')));
     }
     return DataGridRowAdapter(cells: cells, color: color);
   }
@@ -488,11 +533,14 @@ class _RedTabState extends State<_RedTab> {
                                             'Team ${match!.match.alliances.red.team_keys[i].substring(3)}',
                                             style: TextStyle(
                                                 fontSize: kToolbarHeight - 20,
-                                                color: Colors.red)),
+                                                color: Colors.red,
+                                                fontFamily: 'Font')),
                                         if (scouting.length == 0)
                                           Text(
                                             'No data for this event',
-                                            style: TextStyle(fontSize: 30),
+                                            style: TextStyle(
+                                                fontSize: 30,
+                                                fontFamily: 'Font'),
                                           ),
                                         Expanded(child: LayoutBuilder(
                                             builder: (context, constraints) {
@@ -662,11 +710,14 @@ class _BlueTabState extends State<_BlueTab> {
                                             'Team ${match!.match.alliances.blue.team_keys[i].substring(3)}',
                                             style: TextStyle(
                                                 fontSize: kToolbarHeight - 20,
-                                                color: Colors.blue)),
+                                                color: Colors.blue,
+                                                fontFamily: 'Font')),
                                         if (scouting.length == 0)
                                           Text(
                                             'No data for this event',
-                                            style: TextStyle(fontSize: 30),
+                                            style: TextStyle(
+                                                fontSize: 30,
+                                                fontFamily: 'Font'),
                                           ),
                                         Expanded(child: LayoutBuilder(
                                             builder: (context, constraints) {

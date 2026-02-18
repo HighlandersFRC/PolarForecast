@@ -13,7 +13,8 @@ class LoginWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('You have to log in to view this content'),
+          Text('You have to log in to view this content',
+              style: TextStyle(fontFamily: 'Font')),
           SizedBox(height: 10.0),
           ElevatedButton(
               onPressed: () {
@@ -21,7 +22,8 @@ class LoginWidget extends StatelessWidget {
                     Provider.of<ApiService>(context, listen: false);
                 apiService.login(redirect_path);
               },
-              child: Text('Log in or Sign up'))
+              child: Text('Log in or Sign up',
+                  style: TextStyle(fontFamily: 'Font')))
         ],
       ),
     ));

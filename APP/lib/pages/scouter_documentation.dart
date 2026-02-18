@@ -16,8 +16,10 @@ class ScouterDocumentation extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style:
-                  const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Font')),
           const SizedBox(height: 12),
           if (imagePath != null)
             Column(
@@ -26,7 +28,9 @@ class ScouterDocumentation extends StatelessWidget {
                 const SizedBox(height: 12),
               ],
             ),
-          Text(content, style: const TextStyle(fontSize: 16, height: 1.6)),
+          Text(content,
+              style: const TextStyle(
+                  fontSize: 16, height: 1.6, fontFamily: 'Font')),
         ],
       ),
     );
@@ -67,71 +71,78 @@ class ScouterDocumentation extends StatelessWidget {
 
     final tableOfContents = [
       ListTile(
-        title: const Text('General', style: TextStyle(color: Colors.white)),
+        title: const Text('General',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('general'),
       ),
       ListTile(
-        title:
-            const Text('Pit Scouting', style: TextStyle(color: Colors.white)),
+        title: const Text('Pit Scouting',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('pit'),
       ),
       ListTile(
         title: const Text('Capturing Pictures',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('pictures'),
       ),
       ListTile(
-        title: const Text('Follow-Ups', style: TextStyle(color: Colors.white)),
+        title: const Text('Follow-Ups',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('followups'),
       ),
       ListTile(
         title: const Text('Editing Pit Scouting Data',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('editing'),
       ),
       ListTile(
-        title:
-            const Text('Auto Scouting', style: TextStyle(color: Colors.white)),
+        title: const Text('Auto Scouting',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('auto'),
       ),
       ListTile(
-        title:
-            const Text('Data Checking', style: TextStyle(color: Colors.white)),
+        title: const Text('Data Checking',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('data-checking'),
       ),
       ListTile(
-        title:
-            const Text('Event Rankings', style: TextStyle(color: Colors.white)),
+        title: const Text('Event Rankings',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('event-rankings'),
       ),
       ListTile(
         title: const Text('Match Predictions',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('match-predictions'),
       ),
       ListTile(
         title: const Text('Team Comparisons',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('team-comparisons'),
       ),
       ListTile(
-        title: const Text('Charts', style: TextStyle(color: Colors.white)),
+        title: const Text('Charts',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('charts'),
       ),
       ListTile(
-        title: const Text('Schedule', style: TextStyle(color: Colors.white)),
+        title: const Text('Schedule',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('schedule'),
       ),
       ListTile(
-        title: const Text('Autos', style: TextStyle(color: Colors.white)),
+        title: const Text('Autos',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('autos'),
       ),
       ListTile(
-        title: const Text('Stats', style: TextStyle(color: Colors.white)),
+        title: const Text('Stats',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('stats'),
       ),
       ListTile(
-        title: const Text('Pictures', style: TextStyle(color: Colors.white)),
+        title: const Text('Pictures',
+            style: TextStyle(color: Colors.white, fontFamily: 'Font')),
         onTap: () => scrollToSection('pictures_display'),
       ),
     ];
@@ -162,8 +173,10 @@ class ScouterDocumentation extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Contents',
-                style:
-                    const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font')),
             ...tableOfContents,
             Container(
               key: sectionKeys['general'],

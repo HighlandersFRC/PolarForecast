@@ -74,7 +74,11 @@ class _CounterState extends State<Counter> {
         Expanded(
           child: TextField(
             readOnly: widget.locked,
+            style: TextStyle(fontFamily: 'Font'),
             decoration: InputDecoration(
+              floatingLabelStyle:
+                  TextStyle(fontFamily: 'Font', color: Colors.blue),
+              labelStyle: TextStyle(fontFamily: 'Font', color: Colors.blue),
               labelText: widget.label,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),

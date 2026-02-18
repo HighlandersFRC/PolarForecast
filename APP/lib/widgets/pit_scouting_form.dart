@@ -259,12 +259,13 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Submission failed. Please try again.'),
+          title: Text('Error', style: TextStyle(fontFamily: 'Font')),
+          content: Text('Submission failed. Please try again.',
+              style: TextStyle(fontFamily: 'Font')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
+              child: Text('OK', style: TextStyle(fontFamily: 'Font')),
             ),
           ],
         ),
@@ -294,17 +295,20 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 children: [
                   Text(
                     'Submission Successful',
-                    style: TextStyle(fontSize: 24, color: Colors.green),
+                    style: TextStyle(
+                        fontSize: 24, color: Colors.green, fontFamily: 'Font'),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: handleEditForm,
-                    child: Text('Edit Form'),
+                    child:
+                        Text('Edit Form', style: TextStyle(fontFamily: 'Font')),
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () => handleGoBack(context),
-                    child: Text('Go Back'),
+                    child:
+                        Text('Go Back', style: TextStyle(fontFamily: 'Font')),
                   ),
                 ],
               ),
@@ -322,8 +326,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           children: [
                             Text(
                               'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                           ],
                         ),
@@ -335,8 +341,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           children: [
                             Text(
                               'Questions',
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                           ],
                         ),
@@ -357,7 +365,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                       driver_experience_events: experience));
                             });
                           }),
-                      Text('Main Strategy'),
+                      Text('Main Strategy',
+                          style: TextStyle(fontFamily: 'Font')),
                       TextField(
                         enabled: !widget.locked,
                         onChanged: widget.locked
@@ -368,7 +377,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can Feed Human Player'),
+                        title: Text('Can Feed Human Player',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.can_feed_human_player,
                         onChanged: widget.locked
                             ? null
@@ -378,7 +388,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can Pick Up From Ground'),
+                        title: Text('Can Pick Up From Ground',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.can_pick_up_from_ground,
                         onChanged: widget.locked
                             ? null
@@ -388,7 +399,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can Go Under Trench'),
+                        title: Text('Can Go Under Trench',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.go_under_trench,
                         onChanged: widget.locked
                             ? null
@@ -397,7 +409,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can Go Over Bump'),
+                        title: Text('Can Go Over Bump',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.go_over_bump,
                         onChanged: widget.locked
                             ? null
@@ -406,7 +419,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Automatically Shooting'),
+                        title: Text('Automatically Shooting',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.automatically_shooting,
                         onChanged: widget.locked
                             ? null
@@ -416,7 +430,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can shoot while moving'),
+                        title: Text('Can shoot while moving',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.shooting_while_moving,
                         onChanged: widget.locked
                             ? null
@@ -426,7 +441,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: const Text('Can Climb'),
+                        title: const Text('Can Climb',
+                            style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.can_climb,
                         onChanged: widget.locked
                             ? null
@@ -443,7 +459,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     activeColor: Colors.blue,
                                     inactiveThumbColor: Colors.blue,
                                     title: const Text(
-                                        'Can Climb With Other Robots'),
+                                        'Can Climb With Other Robots',
+                                        style: TextStyle(fontFamily: 'Font')),
                                     value: pitScoutingData
                                         .data.can_climb_with_others,
                                     onChanged: widget.locked
@@ -454,8 +471,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   SwitchListTile(
                                     activeColor: Colors.blue,
                                     inactiveThumbColor: Colors.blue,
-                                    title:
-                                        const Text('Can Climb in Autonomous'),
+                                    title: const Text('Can Climb in Autonomous',
+                                        style: TextStyle(fontFamily: 'Font')),
                                     value: pitScoutingData
                                         .data.can_climb_in_autonomous,
                                     onChanged: widget.locked
@@ -504,38 +521,36 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                       .copyWith(cycle_time: cycleTime));
                             });
                           }),
-                      Text('Favorite Color'),
+                      Text('Favorite Color',
+                          style: TextStyle(fontFamily: 'Font')),
                       TextField(
+                        style: TextStyle(fontFamily: 'Font'),
                         enabled: !widget.locked,
                         onChanged: widget.locked
                             ? null
                             : (value) => handleChange('favorite_color', value),
                         controller: favoriteColorController,
                       ),
-                      Text('Drive Train'),
+                      Text('Drive Train', style: TextStyle(fontFamily: 'Font')),
                       DropdownButton<String>(
                         isExpanded: true,
                         items: [
                           DropdownMenuItem(
                               value: '',
-                              child: Text(
-                                'Choose...',
-                              )),
+                              child: Text('Choose...',
+                                  style: TextStyle(fontFamily: 'Font'))),
                           DropdownMenuItem(
                               value: 'Tank',
-                              child: Text(
-                                'Tank',
-                              )),
+                              child: Text('Tank',
+                                  style: TextStyle(fontFamily: 'Font'))),
                           DropdownMenuItem(
                               value: 'Swerve',
-                              child: Text(
-                                'Swerve',
-                              )),
+                              child: Text('Swerve',
+                                  style: TextStyle(fontFamily: 'Font'))),
                           DropdownMenuItem(
                               value: 'Mecanum',
-                              child: Text(
-                                'Mecanum',
-                              )),
+                              child: Text('Mecanum',
+                                  style: TextStyle(fontFamily: 'Font'))),
                         ],
                         value: pitScoutingData.data.drive_train,
                         onChanged: widget.locked
@@ -552,8 +567,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           children: [
                             Text(
                               'Autos',
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.blue),
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.blue,
+                                  fontFamily: 'Font'),
                             ),
                           ],
                         ),
@@ -575,20 +592,33 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   child: Column(children: [
                                 AutoPieces2026(
                                   auto: pitScoutingData.data.autos[index],
+                                  autoScoring:
+                                      pitScoutingData.data.auto_scoring,
+                                  locked: widget.locked,
                                   onChanged: (newAuto) {
                                     setState(() {
                                       List<dynamic> newAutos =
                                           pitScoutingData.data.autos.toList();
                                       newAutos[index] = newAuto;
+
                                       pitScoutingData =
                                           pitScoutingData.copyWith(
-                                              data: pitScoutingData.data
-                                                  .copyWith(autos: newAutos));
+                                        data: pitScoutingData.data.copyWith(
+                                          autos: newAutos,
+                                        ),
+                                      );
                                     });
                                   },
-                                  locked: widget.locked,
-                                  autoScoring:
-                                      pitScoutingData.data.auto_scoring,
+                                  onAutoScoringChanged: (newScoring) {
+                                    setState(() {
+                                      pitScoutingData =
+                                          pitScoutingData.copyWith(
+                                        data: pitScoutingData.data.copyWith(
+                                          auto_scoring: newScoring,
+                                        ),
+                                      );
+                                    });
+                                  },
                                 ),
                                 SizedBox(
                                   height: 8,
@@ -615,13 +645,15 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       if (!widget.locked)
                         ElevatedButton(
                           onPressed: widget.locked ? () {} : handleAddAuto,
-                          child: Text('Add Auto'),
+                          child: Text('Add Auto',
+                              style: TextStyle(fontFamily: 'Font')),
                         ),
                       SizedBox(height: 20),
                       if (!widget.locked)
                         ElevatedButton(
                           onPressed: widget.locked ? () {} : handleSubmit,
-                          child: Text('Submit'),
+                          child: Text('Submit',
+                              style: TextStyle(fontFamily: 'Font')),
                         ),
                     ]),
               ),
