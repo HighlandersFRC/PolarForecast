@@ -54,7 +54,7 @@ class PitData2026 with _$PitData2026 {
 @freezed
 class Auto2026 with _$Auto2026 {
   factory Auto2026({
-    required int starting_position_meters_from_hub_center,
+    required double starting_position_meters_from_hub_center,
     required List<String> field_side,
     required List<AutoStep2026> steps,
     required bool preload,

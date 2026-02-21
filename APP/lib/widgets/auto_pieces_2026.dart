@@ -974,7 +974,7 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                 HapticFeedback.lightImpact();
                                 widget.onChanged!(widget.auto.copyWith(
                                     starting_position_meters_from_hub_center:
-                                        value.toInt()));
+                                        value));
                               },
                       ),
                     ),

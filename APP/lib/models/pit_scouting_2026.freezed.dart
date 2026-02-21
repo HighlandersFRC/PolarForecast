@@ -1065,7 +1065,7 @@ Auto2026 _$Auto2026FromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Auto2026 {
-  int get starting_position_meters_from_hub_center =>
+  double get starting_position_meters_from_hub_center =>
       throw _privateConstructorUsedError;
   List<String> get field_side => throw _privateConstructorUsedError;
   List<AutoStep2026> get steps => throw _privateConstructorUsedError;
@@ -1092,7 +1092,7 @@ abstract class $Auto2026CopyWith<$Res> {
       _$Auto2026CopyWithImpl<$Res, Auto2026>;
   @useResult
   $Res call(
-      {int starting_position_meters_from_hub_center,
+      {double starting_position_meters_from_hub_center,
       List<String> field_side,
       List<AutoStep2026> steps,
       bool preload,
@@ -1131,7 +1131,7 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
               starting_position_meters_from_hub_center
           ? _value.starting_position_meters_from_hub_center
           : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       field_side: null == field_side
           ? _value.field_side
           : field_side // ignore: cast_nullable_to_non_nullable
@@ -1173,7 +1173,7 @@ abstract class _$$Auto2026ImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int starting_position_meters_from_hub_center,
+      {double starting_position_meters_from_hub_center,
       List<String> field_side,
       List<AutoStep2026> steps,
       bool preload,
@@ -1210,7 +1210,7 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
               starting_position_meters_from_hub_center
           ? _value.starting_position_meters_from_hub_center
           : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       field_side: null == field_side
           ? _value._field_side
           : field_side // ignore: cast_nullable_to_non_nullable
@@ -1262,7 +1262,7 @@ class _$Auto2026Impl implements _Auto2026 {
       _$$Auto2026ImplFromJson(json);
 
   @override
-  final int starting_position_meters_from_hub_center;
+  final double starting_position_meters_from_hub_center;
   final List<String> _field_side;
   @override
   List<String> get field_side {
@@ -1350,7 +1350,7 @@ class _$Auto2026Impl implements _Auto2026 {
 
 abstract class _Auto2026 implements Auto2026 {
   factory _Auto2026(
-      {required final int starting_position_meters_from_hub_center,
+      {required final double starting_position_meters_from_hub_center,
       required final List<String> field_side,
       required final List<AutoStep2026> steps,
       required final bool preload,
@@ -1363,7 +1363,7 @@ abstract class _Auto2026 implements Auto2026 {
       _$Auto2026Impl.fromJson;
 
   @override
-  int get starting_position_meters_from_hub_center;
+  double get starting_position_meters_from_hub_center;
   @override
   List<String> get field_side;
   @override

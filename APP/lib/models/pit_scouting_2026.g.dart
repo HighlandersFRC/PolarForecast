@@ -101,7 +101,7 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
 _$Auto2026Impl _$$Auto2026ImplFromJson(Map<String, dynamic> json) =>
     _$Auto2026Impl(
       starting_position_meters_from_hub_center:
-          (json['starting_position_meters_from_hub_center'] as num).toInt(),
+          (json['starting_position_meters_from_hub_center'] as num).toDouble(),
       field_side: (json['field_side'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
