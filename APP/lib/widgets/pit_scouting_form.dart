@@ -264,6 +264,130 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   }
 
   void handleSubmit() async {
+    // Collect missing fields
+    final missingFields = [
+      if (pitScoutingData.data.favorite_color.isEmpty) 'Favorite Color',
+      if (pitScoutingData.data.drive_train.isEmpty) 'Drive Train',
+      if (pitScoutingData.data.main_strategy.isEmpty) 'Main Strategy',
+      if (pitScoutingData.data.autos?.isEmpty ?? true) 'Autos',
+    ];
+
+    if (missingFields.isNotEmpty) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => Dialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: SizedBox(
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Missing Fields',
+                    style: const TextStyle(
+                      fontFamily: 'Font',
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'You are missing the following fields:',
+                    style: const TextStyle(
+                      fontFamily: 'Font',
+                      fontSize: 16,
+                      color: Color.fromARGB(221, 255, 255, 255),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // List of missing fields with icon
+                  ...missingFields.map(
+                    (field) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline,
+                              color: Colors.red, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            field,
+                            style: const TextStyle(
+                              fontFamily: 'Font',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color.fromARGB(221, 255, 255, 255),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Do you want to submit anyway?',
+                    style: const TextStyle(
+                      fontFamily: 'Font',
+                      fontSize: 16,
+                      color: Color.fromARGB(137, 255, 255, 255),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontFamily: 'Font',
+                            fontSize: 16,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: const Text(
+                          'Submit Anyway',
+                          style: TextStyle(
+                            fontFamily: 'Font',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      if (confirm != true) return; // Stop submission if user cancels
+    }
+
+    // Proceed with submission
     final api = Provider.of<ApiService>(context, listen: false);
     final status = await api.postPitScouting(
       pitScoutingData,
@@ -271,24 +395,66 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       widget.tournament.page.split('/')[4],
       'frc${widget.teamNumber}',
     );
+
     if (status == 200) {
       HapticFeedback.mediumImpact();
-      setState(() {
-        formSubmitted = true;
-      });
+      setState(() => formSubmitted = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Form submitted successfully!')),
+      );
     } else {
+      HapticFeedback.heavyImpact();
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error', style: TextStyle(fontFamily: 'Font')),
-          content: Text('Submission failed. Please try again.',
-              style: TextStyle(fontFamily: 'Font')),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK', style: TextStyle(fontFamily: 'Font')),
+        builder: (context) => Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Submission Error',
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Submission failed. Please try again.',
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              ],
             ),
-          ],
+          ),
         ),
       );
     }
@@ -302,6 +468,27 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   void handleGoBack(BuildContext context) {
     Navigator.pushNamed(context, '/event/${widget.tournament.key}');
+  }
+
+  Widget _buildSectionCard({
+    required Widget child,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -370,285 +557,544 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           ],
                         ),
                       ),
+                      SizedBox(
+                        height: 20,
+                      ),
                       Divider(
                         color: Colors.blue,
-                        thickness: 2.0,
                       ),
-                      Counter(
-                          label: '# of Events Driver has Driven',
-                          value: pitScoutingData.data.driver_experience_events,
-                          max: 500,
-                          locked: widget.locked,
-                          onChanged: (experience) {
-                            setState(() {
-                              pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data.copyWith(
-                                      driver_experience_events: experience));
-                            });
-                          }),
-                      Text('Main Strategy',
-                          style: TextStyle(fontFamily: 'Font')),
-                      TextField(
-                        style: TextStyle(fontFamily: 'Font'),
-                        enabled: !widget.locked,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) => handleChange('main_strategy', value),
-                        controller: mainStrategyController,
+                      SizedBox(
+                        height: 20,
                       ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Human Player Feed',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.can_feed_human_player,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) =>
-                                handleChange('can_feed_human_player', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Can Pick Up From Ground',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.can_pick_up_from_ground,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) =>
-                                handleChange('can_pick_up_from_ground', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Can Go Under Trench',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.go_under_trench,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) => handleChange('go_under_trench', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Can Go Over Bump',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.go_over_bump,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) => handleChange('go_over_bump', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Automatically Shooting',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.automatically_shooting,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) =>
-                                handleChange('automatically_shooting', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: Text('Can shoot while moving',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.shooting_while_moving,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) =>
-                                handleChange('shooting_while_moving', value),
-                      ),
-                      SwitchListTile(
-                        activeColor: Colors.blue,
-                        inactiveThumbColor: Colors.blue,
-                        title: const Text('Can Climb',
-                            style: TextStyle(fontFamily: 'Font')),
-                        value: pitScoutingData.data.can_climb,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) => handleChange('can_climb', value),
-                      ),
-                      Column(children: [
-                        AnimatedSwitcher(
-                          key: ValueKey(pitScoutingData.data.can_climb),
-                          duration: const Duration(milliseconds: 250),
-                          child: !pitScoutingData.data.can_climb
-                              ? const SizedBox.shrink()
-                              : Column(
-                                  key: const ValueKey('climb_options'),
-                                  children: [
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: const Text(
-                                          'Can Climb in Autonomous',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value: pitScoutingData
-                                          .data.can_climb_in_autonomous,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'can_climb_in_autonomous', value),
-                                    ),
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: Text('Straddles the pole right',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value: pitScoutingData
-                                          .data.straddling_pole_climb_right,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'straddling_pole_climb_right',
-                                              value),
-                                    ),
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: Text('Straddles the pole left',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value: pitScoutingData
-                                          .data.straddling_pole_climb_left,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'straddling_pole_climb_left',
-                                              value),
-                                    ),
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: Text('Climbs from pole Left',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value:
-                                          pitScoutingData.data.left_pole_climb,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'left_pole_climb', value),
-                                    ),
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: Text('Climbs from pole Right',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value:
-                                          pitScoutingData.data.right_pole_climb,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'right_pole_climb', value),
-                                    ),
-                                    SwitchListTile(
-                                      activeColor: Colors.blue,
-                                      inactiveThumbColor: Colors.blue,
-                                      title: Text('Climbs from the Center',
-                                          style: TextStyle(fontFamily: 'Font')),
-                                      value: pitScoutingData
-                                          .data.center_pole_climb,
-                                      onChanged: widget.locked
-                                          ? null
-                                          : (value) => handleChange(
-                                              'center_pole_climb', value),
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ]),
-                      Counter(
-                          label: 'Distance to Shoot (meters)',
-                          value: pitScoutingData.data.distance_to_shoot,
-                          max: 500,
-                          locked: widget.locked,
-                          onChanged: (distance) {
-                            setState(() {
-                              pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data
-                                      .copyWith(distance_to_shoot: distance));
-                            });
-                          }),
-                      SizedBox(height: 8),
-                      Counter(
-                          label: 'Robot Height',
-                          value: pitScoutingData.data.robot_height,
-                          max: 500,
-                          locked: widget.locked,
-                          onChanged: (distance) {
-                            setState(() {
-                              pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data
-                                      .copyWith(robot_height: distance));
-                            });
-                          }),
-                      SizedBox(height: 8),
-                      Counter(
-                          label: 'Mag Unload Speed (seconds)',
-                          value: pitScoutingData.data.mag_unload_speed,
-                          max: 100000,
-                          locked: widget.locked,
-                          onChanged: (distance) {
-                            setState(() {
-                              pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data
-                                      .copyWith(mag_unload_speed: distance));
-                            });
-                          }),
-                      SizedBox(height: 8),
-                      Counter(
-                          label: 'Hopper Capacity',
-                          value: pitScoutingData.data.hopper_capacity,
-                          max: 100000,
-                          locked: widget.locked,
-                          onChanged: (distance) {
-                            setState(() {
-                              pitScoutingData = pitScoutingData.copyWith(
-                                  data: pitScoutingData.data
-                                      .copyWith(hopper_capacity: distance));
-                            });
-                          }),
-                      SizedBox(height: 8),
-                      Text('Favorite Color',
-                          style: TextStyle(fontFamily: 'Font')),
-                      TextField(
-                        style: TextStyle(fontFamily: 'Font'),
-                        enabled: !widget.locked,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) => handleChange('favorite_color', value),
-                        controller: favoriteColorController,
-                      ),
-                      Text('Drive Train', style: TextStyle(fontFamily: 'Font')),
-                      DropdownButton<String>(
-                        isExpanded: true,
-                        items: [
-                          DropdownMenuItem(
-                              value: '',
-                              child: Text('Choose...',
-                                  style: TextStyle(fontFamily: 'Font'))),
-                          DropdownMenuItem(
-                              value: 'Tank',
-                              child: Text('Tank',
-                                  style: TextStyle(fontFamily: 'Font'))),
-                          DropdownMenuItem(
-                              value: 'Swerve',
-                              child: Text('Swerve',
-                                  style: TextStyle(fontFamily: 'Font'))),
-                          DropdownMenuItem(
-                              value: 'Mecanum',
-                              child: Text('Mecanum',
-                                  style: TextStyle(fontFamily: 'Font'))),
+                      _buildSectionCard(
+                          child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Text(
+                              'Required Questions',
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: Colors.blue,
+                                fontFamily: 'Font',
+                              ),
+                            ),
+                          ),
+                          // Favorite Color
+                          Card(
+                            color: const Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Favorite Color',
+                                      style: TextStyle(
+                                          fontFamily: 'Font',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 8),
+                                  TextField(
+                                    controller: favoriteColorController,
+                                    enabled: !widget.locked,
+                                    style: TextStyle(fontFamily: 'Font'),
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (val) =>
+                                            handleChange('favorite_color', val),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Drive Train
+                          Card(
+                            color: const Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Drive Train',
+                                      style: TextStyle(
+                                          fontFamily: 'Font',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 8),
+                                  DropdownButton<String>(
+                                    isExpanded: true,
+                                    value: pitScoutingData.data.drive_train,
+                                    items: [
+                                      DropdownMenuItem(
+                                          value: '',
+                                          child: Text('Choose...',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font'))),
+                                      DropdownMenuItem(
+                                          value: 'Tank',
+                                          child: Text('Tank',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font'))),
+                                      DropdownMenuItem(
+                                          value: 'Swerve',
+                                          child: Text('Swerve',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font'))),
+                                      DropdownMenuItem(
+                                          value: 'Mecanum',
+                                          child: Text('Mecanum',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font'))),
+                                    ],
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (val) {
+                                            if (val != null)
+                                              handleChange('drive_train', val);
+                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // # of Events Driver has Driven
+                          Card(
+                            color: const Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('# of Events Driver has Driven',
+                                      style: TextStyle(
+                                          fontFamily: 'Font',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 8),
+                                  Counter(
+                                    label: '',
+                                    value: pitScoutingData
+                                        .data.driver_experience_events,
+                                    max: 500,
+                                    locked: widget.locked,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        pitScoutingData =
+                                            pitScoutingData.copyWith(
+                                          data: pitScoutingData.data.copyWith(
+                                              driver_experience_events: val),
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Main Strategy
+                          Card(
+                            color: const Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Main Strategy',
+                                      style: TextStyle(
+                                          fontFamily: 'Font',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 8),
+                                  TextField(
+                                    controller: mainStrategyController,
+                                    enabled: !widget.locked,
+                                    style: TextStyle(fontFamily: 'Font'),
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (val) =>
+                                            handleChange('main_strategy', val),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
-                        value: pitScoutingData.data.drive_train,
-                        onChanged: widget.locked
-                            ? null
-                            : (value) {
-                                if (value != null)
-                                  handleChange('drive_train', value);
-                              },
-                      ),
+                      )),
+                      Divider(color: Colors.blue),
+                      _buildSectionCard(
+                          child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Text(
+                              'True and False',
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: Colors.blue,
+                                fontFamily: 'Font',
+                              ),
+                            ),
+                          ),
+                          Card(
+                            color: Color.fromARGB(
+                                24, 68, 137, 255), // light blue background
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Human Player Feed',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData
+                                        .data.can_feed_human_player,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'can_feed_human_player', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Ground Pickup',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData
+                                        .data.can_pick_up_from_ground,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'can_pick_up_from_ground', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Can Go Under Trench',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData.data.go_under_trench,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'go_under_trench', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Can Go Over Bump',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData.data.go_over_bump,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) =>
+                                            handleChange('go_over_bump', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Automatically Shooting',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData
+                                        .data.automatically_shooting,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'automatically_shooting', value),
+                                  ),
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Can Shoot While Moving',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData
+                                        .data.shooting_while_moving,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) => handleChange(
+                                            'shooting_while_moving', value),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Climbing Abilities
+                          Card(
+                            color: Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  SwitchListTile(
+                                    activeColor: Colors.blue,
+                                    inactiveThumbColor: Colors.blue,
+                                    title: Text('Can Climb',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: pitScoutingData.data.can_climb,
+                                    onChanged: widget.locked
+                                        ? null
+                                        : (value) =>
+                                            handleChange('can_climb', value),
+                                  ),
+                                  AnimatedSwitcher(
+                                    key: ValueKey(
+                                        pitScoutingData.data.can_climb),
+                                    duration: const Duration(milliseconds: 250),
+                                    child: !pitScoutingData.data.can_climb
+                                        ? SizedBox.shrink()
+                                        : Column(
+                                            key:
+                                                const ValueKey('climb_options'),
+                                            children: [
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Can Climb in Autonomous',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData.data
+                                                    .can_climb_in_autonomous,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'can_climb_in_autonomous',
+                                                        value),
+                                              ),
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Straddles the Pole Right',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData.data
+                                                    .straddling_pole_climb_right,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'straddling_pole_climb_right',
+                                                        value),
+                                              ),
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Straddles the Pole Left',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData.data
+                                                    .straddling_pole_climb_left,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'straddling_pole_climb_left',
+                                                        value),
+                                              ),
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Climbs from Pole Left',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData
+                                                    .data.left_pole_climb,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'left_pole_climb',
+                                                        value),
+                                              ),
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Climbs from Pole Right',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData
+                                                    .data.right_pole_climb,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'right_pole_climb',
+                                                        value),
+                                              ),
+                                              SwitchListTile(
+                                                activeColor: Colors.blue,
+                                                inactiveThumbColor: Colors.blue,
+                                                title: Text(
+                                                    'Climbs from the Center',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                                value: pitScoutingData
+                                                    .data.center_pole_climb,
+                                                onChanged: widget.locked
+                                                    ? null
+                                                    : (value) => handleChange(
+                                                        'center_pole_climb',
+                                                        value),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
+                      Divider(color: Colors.blue),
+                      _buildSectionCard(
+                          child: Column(
+                        children: [
+                          // Section Title
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Text(
+                              'Numerical Questions',
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: Colors.blue,
+                                fontFamily: 'Font',
+                              ),
+                            ),
+                          ),
+
+                          // Distance to Shoot
+                          Card(
+                            color: Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Counter(
+                                label: 'Distance to Shoot (meters)',
+                                value: pitScoutingData.data.distance_to_shoot,
+                                max: 500,
+                                locked: widget.locked,
+                                onChanged: (distance) {
+                                  setState(() {
+                                    pitScoutingData = pitScoutingData.copyWith(
+                                        data: pitScoutingData.data.copyWith(
+                                            distance_to_shoot: distance));
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          // Robot Height
+                          Card(
+                            color: Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Counter(
+                                label: 'Robot Height',
+                                value: pitScoutingData.data.robot_height,
+                                max: 500,
+                                locked: widget.locked,
+                                onChanged: (height) {
+                                  setState(() {
+                                    pitScoutingData = pitScoutingData.copyWith(
+                                        data: pitScoutingData.data
+                                            .copyWith(robot_height: height));
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          // Mag Unload Speed
+                          Card(
+                            color: Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Counter(
+                                label: 'Mag Unload Speed (seconds)',
+                                value: pitScoutingData.data.mag_unload_speed,
+                                max: 100000,
+                                locked: widget.locked,
+                                onChanged: (speed) {
+                                  setState(() {
+                                    pitScoutingData = pitScoutingData.copyWith(
+                                        data: pitScoutingData.data
+                                            .copyWith(mag_unload_speed: speed));
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          // Hopper Capacity
+                          Card(
+                            color: Color.fromARGB(24, 68, 137, 255),
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Counter(
+                                label: 'Hopper Capacity',
+                                value: pitScoutingData.data.hopper_capacity,
+                                max: 100000,
+                                locked: widget.locked,
+                                onChanged: (capacity) {
+                                  setState(() {
+                                    pitScoutingData = pitScoutingData.copyWith(
+                                        data: pitScoutingData.data.copyWith(
+                                            hopper_capacity: capacity));
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
+                      SizedBox(height: 8),
                       Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Column(
