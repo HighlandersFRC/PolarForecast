@@ -348,23 +348,27 @@ mixin _$PitData2026 {
   bool get can_feed_human_player => throw _privateConstructorUsedError;
   bool get can_pick_up_from_ground => throw _privateConstructorUsedError;
   int get distance_to_shoot => throw _privateConstructorUsedError;
-  int get cycles_in_25_seconds => throw _privateConstructorUsedError;
-  int get cycle_time => throw _privateConstructorUsedError;
   bool get go_over_bump => throw _privateConstructorUsedError;
   bool get go_under_trench => throw _privateConstructorUsedError;
   bool get can_climb => throw _privateConstructorUsedError;
   List<int> get climbing => throw _privateConstructorUsedError;
   bool get can_climb_in_autonomous => throw _privateConstructorUsedError;
-  bool get can_climb_with_others => throw _privateConstructorUsedError;
   bool get automatically_shooting => throw _privateConstructorUsedError;
   bool get shooting_while_moving => throw _privateConstructorUsedError;
   String get main_strategy => throw _privateConstructorUsedError;
   int get spare_parts => throw _privateConstructorUsedError;
   String get favorite_color => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
-  AutoScoring get auto_scoring =>
+  int get hopper_capacity => throw _privateConstructorUsedError;
+  int get mag_unload_speed =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
-  List<dynamic> get autos => throw _privateConstructorUsedError;
+  List<Auto2026>? get autos => throw _privateConstructorUsedError;
+  int get robot_height => throw _privateConstructorUsedError;
+  bool get straddling_pole_climb_right => throw _privateConstructorUsedError;
+  bool get straddling_pole_climb_left => throw _privateConstructorUsedError;
+  bool get left_pole_climb => throw _privateConstructorUsedError;
+  bool get right_pole_climb => throw _privateConstructorUsedError;
+  bool get center_pole_climb => throw _privateConstructorUsedError;
 
   /// Serializes this PitData2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -388,25 +392,28 @@ abstract class $PitData2026CopyWith<$Res> {
       bool can_feed_human_player,
       bool can_pick_up_from_ground,
       int distance_to_shoot,
-      int cycles_in_25_seconds,
-      int cycle_time,
       bool go_over_bump,
       bool go_under_trench,
       bool can_climb,
       List<int> climbing,
       bool can_climb_in_autonomous,
-      bool can_climb_with_others,
       bool automatically_shooting,
       bool shooting_while_moving,
       String main_strategy,
       int spare_parts,
       String favorite_color,
       Auto2026? auto,
-      AutoScoring auto_scoring,
-      List<dynamic> autos});
+      int hopper_capacity,
+      int mag_unload_speed,
+      List<Auto2026>? autos,
+      int robot_height,
+      bool straddling_pole_climb_right,
+      bool straddling_pole_climb_left,
+      bool left_pole_climb,
+      bool right_pole_climb,
+      bool center_pole_climb});
 
   $Auto2026CopyWith<$Res>? get auto;
-  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -429,22 +436,26 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? can_feed_human_player = null,
     Object? can_pick_up_from_ground = null,
     Object? distance_to_shoot = null,
-    Object? cycles_in_25_seconds = null,
-    Object? cycle_time = null,
     Object? go_over_bump = null,
     Object? go_under_trench = null,
     Object? can_climb = null,
     Object? climbing = null,
     Object? can_climb_in_autonomous = null,
-    Object? can_climb_with_others = null,
     Object? automatically_shooting = null,
     Object? shooting_while_moving = null,
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
     Object? auto = freezed,
-    Object? auto_scoring = null,
-    Object? autos = null,
+    Object? hopper_capacity = null,
+    Object? mag_unload_speed = null,
+    Object? autos = freezed,
+    Object? robot_height = null,
+    Object? straddling_pole_climb_right = null,
+    Object? straddling_pole_climb_left = null,
+    Object? left_pole_climb = null,
+    Object? right_pole_climb = null,
+    Object? center_pole_climb = null,
   }) {
     return _then(_value.copyWith(
       driver_experience_events: null == driver_experience_events
@@ -467,14 +478,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.distance_to_shoot
           : distance_to_shoot // ignore: cast_nullable_to_non_nullable
               as int,
-      cycles_in_25_seconds: null == cycles_in_25_seconds
-          ? _value.cycles_in_25_seconds
-          : cycles_in_25_seconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      cycle_time: null == cycle_time
-          ? _value.cycle_time
-          : cycle_time // ignore: cast_nullable_to_non_nullable
-              as int,
       go_over_bump: null == go_over_bump
           ? _value.go_over_bump
           : go_over_bump // ignore: cast_nullable_to_non_nullable
@@ -494,10 +497,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
       can_climb_in_autonomous: null == can_climb_in_autonomous
           ? _value.can_climb_in_autonomous
           : can_climb_in_autonomous // ignore: cast_nullable_to_non_nullable
-              as bool,
-      can_climb_with_others: null == can_climb_with_others
-          ? _value.can_climb_with_others
-          : can_climb_with_others // ignore: cast_nullable_to_non_nullable
               as bool,
       automatically_shooting: null == automatically_shooting
           ? _value.automatically_shooting
@@ -523,14 +522,42 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026?,
-      auto_scoring: null == auto_scoring
-          ? _value.auto_scoring
-          : auto_scoring // ignore: cast_nullable_to_non_nullable
-              as AutoScoring,
-      autos: null == autos
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
+              as int,
+      mag_unload_speed: null == mag_unload_speed
+          ? _value.mag_unload_speed
+          : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+              as int,
+      autos: freezed == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
+              as List<Auto2026>?,
+      robot_height: null == robot_height
+          ? _value.robot_height
+          : robot_height // ignore: cast_nullable_to_non_nullable
+              as int,
+      straddling_pole_climb_right: null == straddling_pole_climb_right
+          ? _value.straddling_pole_climb_right
+          : straddling_pole_climb_right // ignore: cast_nullable_to_non_nullable
+              as bool,
+      straddling_pole_climb_left: null == straddling_pole_climb_left
+          ? _value.straddling_pole_climb_left
+          : straddling_pole_climb_left // ignore: cast_nullable_to_non_nullable
+              as bool,
+      left_pole_climb: null == left_pole_climb
+          ? _value.left_pole_climb
+          : left_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
+      right_pole_climb: null == right_pole_climb
+          ? _value.right_pole_climb
+          : right_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
+      center_pole_climb: null == center_pole_climb
+          ? _value.center_pole_climb
+          : center_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 
@@ -545,16 +572,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
 
     return $Auto2026CopyWith<$Res>(_value.auto!, (value) {
       return _then(_value.copyWith(auto: value) as $Val);
-    });
-  }
-
-  /// Create a copy of PitData2026
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AutoScoringCopyWith<$Res> get auto_scoring {
-    return $AutoScoringCopyWith<$Res>(_value.auto_scoring, (value) {
-      return _then(_value.copyWith(auto_scoring: value) as $Val);
     });
   }
 }
@@ -573,27 +590,29 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       bool can_feed_human_player,
       bool can_pick_up_from_ground,
       int distance_to_shoot,
-      int cycles_in_25_seconds,
-      int cycle_time,
       bool go_over_bump,
       bool go_under_trench,
       bool can_climb,
       List<int> climbing,
       bool can_climb_in_autonomous,
-      bool can_climb_with_others,
       bool automatically_shooting,
       bool shooting_while_moving,
       String main_strategy,
       int spare_parts,
       String favorite_color,
       Auto2026? auto,
-      AutoScoring auto_scoring,
-      List<dynamic> autos});
+      int hopper_capacity,
+      int mag_unload_speed,
+      List<Auto2026>? autos,
+      int robot_height,
+      bool straddling_pole_climb_right,
+      bool straddling_pole_climb_left,
+      bool left_pole_climb,
+      bool right_pole_climb,
+      bool center_pole_climb});
 
   @override
   $Auto2026CopyWith<$Res>? get auto;
-  @override
-  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -614,22 +633,26 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? can_feed_human_player = null,
     Object? can_pick_up_from_ground = null,
     Object? distance_to_shoot = null,
-    Object? cycles_in_25_seconds = null,
-    Object? cycle_time = null,
     Object? go_over_bump = null,
     Object? go_under_trench = null,
     Object? can_climb = null,
     Object? climbing = null,
     Object? can_climb_in_autonomous = null,
-    Object? can_climb_with_others = null,
     Object? automatically_shooting = null,
     Object? shooting_while_moving = null,
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
     Object? auto = freezed,
-    Object? auto_scoring = null,
-    Object? autos = null,
+    Object? hopper_capacity = null,
+    Object? mag_unload_speed = null,
+    Object? autos = freezed,
+    Object? robot_height = null,
+    Object? straddling_pole_climb_right = null,
+    Object? straddling_pole_climb_left = null,
+    Object? left_pole_climb = null,
+    Object? right_pole_climb = null,
+    Object? center_pole_climb = null,
   }) {
     return _then(_$PitData2026Impl(
       driver_experience_events: null == driver_experience_events
@@ -652,14 +675,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.distance_to_shoot
           : distance_to_shoot // ignore: cast_nullable_to_non_nullable
               as int,
-      cycles_in_25_seconds: null == cycles_in_25_seconds
-          ? _value.cycles_in_25_seconds
-          : cycles_in_25_seconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      cycle_time: null == cycle_time
-          ? _value.cycle_time
-          : cycle_time // ignore: cast_nullable_to_non_nullable
-              as int,
       go_over_bump: null == go_over_bump
           ? _value.go_over_bump
           : go_over_bump // ignore: cast_nullable_to_non_nullable
@@ -679,10 +694,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
       can_climb_in_autonomous: null == can_climb_in_autonomous
           ? _value.can_climb_in_autonomous
           : can_climb_in_autonomous // ignore: cast_nullable_to_non_nullable
-              as bool,
-      can_climb_with_others: null == can_climb_with_others
-          ? _value.can_climb_with_others
-          : can_climb_with_others // ignore: cast_nullable_to_non_nullable
               as bool,
       automatically_shooting: null == automatically_shooting
           ? _value.automatically_shooting
@@ -708,14 +719,42 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026?,
-      auto_scoring: null == auto_scoring
-          ? _value.auto_scoring
-          : auto_scoring // ignore: cast_nullable_to_non_nullable
-              as AutoScoring,
-      autos: null == autos
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
+              as int,
+      mag_unload_speed: null == mag_unload_speed
+          ? _value.mag_unload_speed
+          : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+              as int,
+      autos: freezed == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
+              as List<Auto2026>?,
+      robot_height: null == robot_height
+          ? _value.robot_height
+          : robot_height // ignore: cast_nullable_to_non_nullable
+              as int,
+      straddling_pole_climb_right: null == straddling_pole_climb_right
+          ? _value.straddling_pole_climb_right
+          : straddling_pole_climb_right // ignore: cast_nullable_to_non_nullable
+              as bool,
+      straddling_pole_climb_left: null == straddling_pole_climb_left
+          ? _value.straddling_pole_climb_left
+          : straddling_pole_climb_left // ignore: cast_nullable_to_non_nullable
+              as bool,
+      left_pole_climb: null == left_pole_climb
+          ? _value.left_pole_climb
+          : left_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
+      right_pole_climb: null == right_pole_climb
+          ? _value.right_pole_climb
+          : right_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
+      center_pole_climb: null == center_pole_climb
+          ? _value.center_pole_climb
+          : center_pole_climb // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -729,22 +768,26 @@ class _$PitData2026Impl implements _PitData2026 {
       required this.can_feed_human_player,
       required this.can_pick_up_from_ground,
       required this.distance_to_shoot,
-      required this.cycles_in_25_seconds,
-      required this.cycle_time,
       required this.go_over_bump,
       required this.go_under_trench,
       required this.can_climb,
       required final List<int> climbing,
       required this.can_climb_in_autonomous,
-      required this.can_climb_with_others,
       required this.automatically_shooting,
       required this.shooting_while_moving,
       required this.main_strategy,
       required this.spare_parts,
       required this.favorite_color,
       this.auto,
-      required this.auto_scoring,
-      required final List<dynamic> autos})
+      required this.hopper_capacity,
+      required this.mag_unload_speed,
+      final List<Auto2026>? autos,
+      required this.robot_height,
+      required this.straddling_pole_climb_right,
+      required this.straddling_pole_climb_left,
+      required this.left_pole_climb,
+      required this.right_pole_climb,
+      required this.center_pole_climb})
       : _climbing = climbing,
         _autos = autos;
 
@@ -762,10 +805,6 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final int distance_to_shoot;
   @override
-  final int cycles_in_25_seconds;
-  @override
-  final int cycle_time;
-  @override
   final bool go_over_bump;
   @override
   final bool go_under_trench;
@@ -782,8 +821,6 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final bool can_climb_in_autonomous;
   @override
-  final bool can_climb_with_others;
-  @override
   final bool automatically_shooting;
   @override
   final bool shooting_while_moving;
@@ -796,20 +833,37 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final Auto2026? auto;
   @override
-  final AutoScoring auto_scoring;
+  final int hopper_capacity;
+  @override
+  final int mag_unload_speed;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
-  final List<dynamic> _autos;
+  final List<Auto2026>? _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   @override
-  List<dynamic> get autos {
+  List<Auto2026>? get autos {
+    final value = _autos;
+    if (value == null) return null;
     if (_autos is EqualUnmodifiableListView) return _autos;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_autos);
+    return EqualUnmodifiableListView(value);
   }
 
   @override
+  final int robot_height;
+  @override
+  final bool straddling_pole_climb_right;
+  @override
+  final bool straddling_pole_climb_left;
+  @override
+  final bool left_pole_climb;
+  @override
+  final bool right_pole_climb;
+  @override
+  final bool center_pole_climb;
+
+  @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, cycles_in_25_seconds: $cycles_in_25_seconds, cycle_time: $cycle_time, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, can_climb_with_others: $can_climb_with_others, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, auto_scoring: $auto_scoring, autos: $autos)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, mag_unload_speed: $mag_unload_speed, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
   }
 
   @override
@@ -817,22 +871,16 @@ class _$PitData2026Impl implements _PitData2026 {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PitData2026Impl &&
-            (identical(
-                    other.driver_experience_events, driver_experience_events) ||
+            (identical(other.driver_experience_events, driver_experience_events) ||
                 other.driver_experience_events == driver_experience_events) &&
             (identical(other.drive_train, drive_train) ||
                 other.drive_train == drive_train) &&
             (identical(other.can_feed_human_player, can_feed_human_player) ||
                 other.can_feed_human_player == can_feed_human_player) &&
-            (identical(
-                    other.can_pick_up_from_ground, can_pick_up_from_ground) ||
+            (identical(other.can_pick_up_from_ground, can_pick_up_from_ground) ||
                 other.can_pick_up_from_ground == can_pick_up_from_ground) &&
             (identical(other.distance_to_shoot, distance_to_shoot) ||
                 other.distance_to_shoot == distance_to_shoot) &&
-            (identical(other.cycles_in_25_seconds, cycles_in_25_seconds) ||
-                other.cycles_in_25_seconds == cycles_in_25_seconds) &&
-            (identical(other.cycle_time, cycle_time) ||
-                other.cycle_time == cycle_time) &&
             (identical(other.go_over_bump, go_over_bump) ||
                 other.go_over_bump == go_over_bump) &&
             (identical(other.go_under_trench, go_under_trench) ||
@@ -840,11 +888,8 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.can_climb, can_climb) ||
                 other.can_climb == can_climb) &&
             const DeepCollectionEquality().equals(other._climbing, _climbing) &&
-            (identical(
-                    other.can_climb_in_autonomous, can_climb_in_autonomous) ||
+            (identical(other.can_climb_in_autonomous, can_climb_in_autonomous) ||
                 other.can_climb_in_autonomous == can_climb_in_autonomous) &&
-            (identical(other.can_climb_with_others, can_climb_with_others) ||
-                other.can_climb_with_others == can_climb_with_others) &&
             (identical(other.automatically_shooting, automatically_shooting) ||
                 other.automatically_shooting == automatically_shooting) &&
             (identical(other.shooting_while_moving, shooting_while_moving) ||
@@ -856,9 +901,25 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.favorite_color, favorite_color) ||
                 other.favorite_color == favorite_color) &&
             (identical(other.auto, auto) || other.auto == auto) &&
-            (identical(other.auto_scoring, auto_scoring) ||
-                other.auto_scoring == auto_scoring) &&
-            const DeepCollectionEquality().equals(other._autos, _autos));
+            (identical(other.hopper_capacity, hopper_capacity) ||
+                other.hopper_capacity == hopper_capacity) &&
+            (identical(other.mag_unload_speed, mag_unload_speed) ||
+                other.mag_unload_speed == mag_unload_speed) &&
+            const DeepCollectionEquality().equals(other._autos, _autos) &&
+            (identical(other.robot_height, robot_height) ||
+                other.robot_height == robot_height) &&
+            (identical(other.straddling_pole_climb_right, straddling_pole_climb_right) ||
+                other.straddling_pole_climb_right ==
+                    straddling_pole_climb_right) &&
+            (identical(other.straddling_pole_climb_left, straddling_pole_climb_left) ||
+                other.straddling_pole_climb_left ==
+                    straddling_pole_climb_left) &&
+            (identical(other.left_pole_climb, left_pole_climb) ||
+                other.left_pole_climb == left_pole_climb) &&
+            (identical(other.right_pole_climb, right_pole_climb) ||
+                other.right_pole_climb == right_pole_climb) &&
+            (identical(other.center_pole_climb, center_pole_climb) ||
+                other.center_pole_climb == center_pole_climb));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -870,22 +931,26 @@ class _$PitData2026Impl implements _PitData2026 {
         can_feed_human_player,
         can_pick_up_from_ground,
         distance_to_shoot,
-        cycles_in_25_seconds,
-        cycle_time,
         go_over_bump,
         go_under_trench,
         can_climb,
         const DeepCollectionEquality().hash(_climbing),
         can_climb_in_autonomous,
-        can_climb_with_others,
         automatically_shooting,
         shooting_while_moving,
         main_strategy,
         spare_parts,
         favorite_color,
         auto,
-        auto_scoring,
-        const DeepCollectionEquality().hash(_autos)
+        hopper_capacity,
+        mag_unload_speed,
+        const DeepCollectionEquality().hash(_autos),
+        robot_height,
+        straddling_pole_climb_right,
+        straddling_pole_climb_left,
+        left_pole_climb,
+        right_pole_climb,
+        center_pole_climb
       ]);
 
   /// Create a copy of PitData2026
@@ -911,22 +976,26 @@ abstract class _PitData2026 implements PitData2026 {
       required final bool can_feed_human_player,
       required final bool can_pick_up_from_ground,
       required final int distance_to_shoot,
-      required final int cycles_in_25_seconds,
-      required final int cycle_time,
       required final bool go_over_bump,
       required final bool go_under_trench,
       required final bool can_climb,
       required final List<int> climbing,
       required final bool can_climb_in_autonomous,
-      required final bool can_climb_with_others,
       required final bool automatically_shooting,
       required final bool shooting_while_moving,
       required final String main_strategy,
       required final int spare_parts,
       required final String favorite_color,
       final Auto2026? auto,
-      required final AutoScoring auto_scoring,
-      required final List<dynamic> autos}) = _$PitData2026Impl;
+      required final int hopper_capacity,
+      required final int mag_unload_speed,
+      final List<Auto2026>? autos,
+      required final int robot_height,
+      required final bool straddling_pole_climb_right,
+      required final bool straddling_pole_climb_left,
+      required final bool left_pole_climb,
+      required final bool right_pole_climb,
+      required final bool center_pole_climb}) = _$PitData2026Impl;
 
   factory _PitData2026.fromJson(Map<String, dynamic> json) =
       _$PitData2026Impl.fromJson;
@@ -942,10 +1011,6 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   int get distance_to_shoot;
   @override
-  int get cycles_in_25_seconds;
-  @override
-  int get cycle_time;
-  @override
   bool get go_over_bump;
   @override
   bool get go_under_trench;
@@ -955,8 +1020,6 @@ abstract class _PitData2026 implements PitData2026 {
   List<int> get climbing;
   @override
   bool get can_climb_in_autonomous;
-  @override
-  bool get can_climb_with_others;
   @override
   bool get automatically_shooting;
   @override
@@ -970,10 +1033,23 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   Auto2026? get auto;
   @override
-  AutoScoring
-      get auto_scoring; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  int get hopper_capacity;
   @override
-  List<dynamic> get autos;
+  int get mag_unload_speed; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  @override
+  List<Auto2026>? get autos;
+  @override
+  int get robot_height;
+  @override
+  bool get straddling_pole_climb_right;
+  @override
+  bool get straddling_pole_climb_left;
+  @override
+  bool get left_pole_climb;
+  @override
+  bool get right_pole_climb;
+  @override
+  bool get center_pole_climb;
 
   /// Create a copy of PitData2026
   /// with the given fields replaced by the non-null parameter values.
@@ -989,10 +1065,10 @@ Auto2026 _$Auto2026FromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Auto2026 {
-  double get starting_position_meters_from_hub_center =>
+  int get starting_position_meters_from_hub_center =>
       throw _privateConstructorUsedError;
-  List<dynamic> get steps => throw _privateConstructorUsedError;
   List<String> get field_side => throw _privateConstructorUsedError;
+  List<AutoStep2026> get steps => throw _privateConstructorUsedError;
   bool get preload => throw _privateConstructorUsedError;
   bool get climb => throw _privateConstructorUsedError;
   bool get contacts_robot => throw _privateConstructorUsedError;
@@ -1016,9 +1092,9 @@ abstract class $Auto2026CopyWith<$Res> {
       _$Auto2026CopyWithImpl<$Res, Auto2026>;
   @useResult
   $Res call(
-      {double starting_position_meters_from_hub_center,
-      List<dynamic> steps,
+      {int starting_position_meters_from_hub_center,
       List<String> field_side,
+      List<AutoStep2026> steps,
       bool preload,
       bool climb,
       bool contacts_robot,
@@ -1042,8 +1118,8 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
   @override
   $Res call({
     Object? starting_position_meters_from_hub_center = null,
-    Object? steps = null,
     Object? field_side = null,
+    Object? steps = null,
     Object? preload = null,
     Object? climb = null,
     Object? contacts_robot = null,
@@ -1055,15 +1131,15 @@ class _$Auto2026CopyWithImpl<$Res, $Val extends Auto2026>
               starting_position_meters_from_hub_center
           ? _value.starting_position_meters_from_hub_center
           : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as double,
-      steps: null == steps
-          ? _value.steps
-          : steps // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
+              as int,
       field_side: null == field_side
           ? _value.field_side
           : field_side // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      steps: null == steps
+          ? _value.steps
+          : steps // ignore: cast_nullable_to_non_nullable
+              as List<AutoStep2026>,
       preload: null == preload
           ? _value.preload
           : preload // ignore: cast_nullable_to_non_nullable
@@ -1097,9 +1173,9 @@ abstract class _$$Auto2026ImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {double starting_position_meters_from_hub_center,
-      List<dynamic> steps,
+      {int starting_position_meters_from_hub_center,
       List<String> field_side,
+      List<AutoStep2026> steps,
       bool preload,
       bool climb,
       bool contacts_robot,
@@ -1121,8 +1197,8 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? starting_position_meters_from_hub_center = null,
-    Object? steps = null,
     Object? field_side = null,
+    Object? steps = null,
     Object? preload = null,
     Object? climb = null,
     Object? contacts_robot = null,
@@ -1134,15 +1210,15 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
               starting_position_meters_from_hub_center
           ? _value.starting_position_meters_from_hub_center
           : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as double,
-      steps: null == steps
-          ? _value._steps
-          : steps // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
+              as int,
       field_side: null == field_side
           ? _value._field_side
           : field_side // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      steps: null == steps
+          ? _value._steps
+          : steps // ignore: cast_nullable_to_non_nullable
+              as List<AutoStep2026>,
       preload: null == preload
           ? _value.preload
           : preload // ignore: cast_nullable_to_non_nullable
@@ -1172,35 +1248,35 @@ class __$$Auto2026ImplCopyWithImpl<$Res>
 class _$Auto2026Impl implements _Auto2026 {
   _$Auto2026Impl(
       {required this.starting_position_meters_from_hub_center,
-      required final List<dynamic> steps,
       required final List<String> field_side,
+      required final List<AutoStep2026> steps,
       required this.preload,
       required this.climb,
       required this.contacts_robot,
       this.both_sides = false,
       @JsonKey(name: 'auto_pieces') this.autoPieces = 0})
-      : _steps = steps,
-        _field_side = field_side;
+      : _field_side = field_side,
+        _steps = steps;
 
   factory _$Auto2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$Auto2026ImplFromJson(json);
 
   @override
-  final double starting_position_meters_from_hub_center;
-  final List<dynamic> _steps;
-  @override
-  List<dynamic> get steps {
-    if (_steps is EqualUnmodifiableListView) return _steps;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_steps);
-  }
-
+  final int starting_position_meters_from_hub_center;
   final List<String> _field_side;
   @override
   List<String> get field_side {
     if (_field_side is EqualUnmodifiableListView) return _field_side;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_field_side);
+  }
+
+  final List<AutoStep2026> _steps;
+  @override
+  List<AutoStep2026> get steps {
+    if (_steps is EqualUnmodifiableListView) return _steps;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_steps);
   }
 
   @override
@@ -1218,7 +1294,7 @@ class _$Auto2026Impl implements _Auto2026 {
 
   @override
   String toString() {
-    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides, autoPieces: $autoPieces)';
+    return 'Auto2026(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, field_side: $field_side, steps: $steps, preload: $preload, climb: $climb, contacts_robot: $contacts_robot, both_sides: $both_sides, autoPieces: $autoPieces)';
   }
 
   @override
@@ -1230,9 +1306,9 @@ class _$Auto2026Impl implements _Auto2026 {
                     starting_position_meters_from_hub_center) ||
                 other.starting_position_meters_from_hub_center ==
                     starting_position_meters_from_hub_center) &&
-            const DeepCollectionEquality().equals(other._steps, _steps) &&
             const DeepCollectionEquality()
                 .equals(other._field_side, _field_side) &&
+            const DeepCollectionEquality().equals(other._steps, _steps) &&
             (identical(other.preload, preload) || other.preload == preload) &&
             (identical(other.climb, climb) || other.climb == climb) &&
             (identical(other.contacts_robot, contacts_robot) ||
@@ -1248,8 +1324,8 @@ class _$Auto2026Impl implements _Auto2026 {
   int get hashCode => Object.hash(
       runtimeType,
       starting_position_meters_from_hub_center,
-      const DeepCollectionEquality().hash(_steps),
       const DeepCollectionEquality().hash(_field_side),
+      const DeepCollectionEquality().hash(_steps),
       preload,
       climb,
       contacts_robot,
@@ -1274,9 +1350,9 @@ class _$Auto2026Impl implements _Auto2026 {
 
 abstract class _Auto2026 implements Auto2026 {
   factory _Auto2026(
-      {required final double starting_position_meters_from_hub_center,
-      required final List<dynamic> steps,
+      {required final int starting_position_meters_from_hub_center,
       required final List<String> field_side,
+      required final List<AutoStep2026> steps,
       required final bool preload,
       required final bool climb,
       required final bool contacts_robot,
@@ -1287,11 +1363,11 @@ abstract class _Auto2026 implements Auto2026 {
       _$Auto2026Impl.fromJson;
 
   @override
-  double get starting_position_meters_from_hub_center;
-  @override
-  List<dynamic> get steps;
+  int get starting_position_meters_from_hub_center;
   @override
   List<String> get field_side;
+  @override
+  List<AutoStep2026> get steps;
   @override
   bool get preload;
   @override
@@ -1495,7 +1571,6 @@ Data _$DataFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Data {
   Auto2026 get auto => throw _privateConstructorUsedError;
-  AutoScoring get auto_scoring => throw _privateConstructorUsedError;
 
   /// Serializes this Data to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1511,10 +1586,9 @@ abstract class $DataCopyWith<$Res> {
   factory $DataCopyWith(Data value, $Res Function(Data) then) =
       _$DataCopyWithImpl<$Res, Data>;
   @useResult
-  $Res call({Auto2026 auto, AutoScoring auto_scoring});
+  $Res call({Auto2026 auto});
 
   $Auto2026CopyWith<$Res> get auto;
-  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -1533,17 +1607,12 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
   @override
   $Res call({
     Object? auto = null,
-    Object? auto_scoring = null,
   }) {
     return _then(_value.copyWith(
       auto: null == auto
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026,
-      auto_scoring: null == auto_scoring
-          ? _value.auto_scoring
-          : auto_scoring // ignore: cast_nullable_to_non_nullable
-              as AutoScoring,
     ) as $Val);
   }
 
@@ -1556,16 +1625,6 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
       return _then(_value.copyWith(auto: value) as $Val);
     });
   }
-
-  /// Create a copy of Data
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AutoScoringCopyWith<$Res> get auto_scoring {
-    return $AutoScoringCopyWith<$Res>(_value.auto_scoring, (value) {
-      return _then(_value.copyWith(auto_scoring: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
@@ -1575,12 +1634,10 @@ abstract class _$$DataImplCopyWith<$Res> implements $DataCopyWith<$Res> {
       __$$DataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Auto2026 auto, AutoScoring auto_scoring});
+  $Res call({Auto2026 auto});
 
   @override
   $Auto2026CopyWith<$Res> get auto;
-  @override
-  $AutoScoringCopyWith<$Res> get auto_scoring;
 }
 
 /// @nodoc
@@ -1596,17 +1653,12 @@ class __$$DataImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? auto = null,
-    Object? auto_scoring = null,
   }) {
     return _then(_$DataImpl(
       auto: null == auto
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
               as Auto2026,
-      auto_scoring: null == auto_scoring
-          ? _value.auto_scoring
-          : auto_scoring // ignore: cast_nullable_to_non_nullable
-              as AutoScoring,
     ));
   }
 }
@@ -1614,19 +1666,17 @@ class __$$DataImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$DataImpl implements _Data {
-  _$DataImpl({required this.auto, required this.auto_scoring});
+  _$DataImpl({required this.auto});
 
   factory _$DataImpl.fromJson(Map<String, dynamic> json) =>
       _$$DataImplFromJson(json);
 
   @override
   final Auto2026 auto;
-  @override
-  final AutoScoring auto_scoring;
 
   @override
   String toString() {
-    return 'Data(auto: $auto, auto_scoring: $auto_scoring)';
+    return 'Data(auto: $auto)';
   }
 
   @override
@@ -1634,14 +1684,12 @@ class _$DataImpl implements _Data {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$DataImpl &&
-            (identical(other.auto, auto) || other.auto == auto) &&
-            (identical(other.auto_scoring, auto_scoring) ||
-                other.auto_scoring == auto_scoring));
+            (identical(other.auto, auto) || other.auto == auto));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, auto, auto_scoring);
+  int get hashCode => Object.hash(runtimeType, auto);
 
   /// Create a copy of Data
   /// with the given fields replaced by the non-null parameter values.
@@ -1660,16 +1708,12 @@ class _$DataImpl implements _Data {
 }
 
 abstract class _Data implements Data {
-  factory _Data(
-      {required final Auto2026 auto,
-      required final AutoScoring auto_scoring}) = _$DataImpl;
+  factory _Data({required final Auto2026 auto}) = _$DataImpl;
 
   factory _Data.fromJson(Map<String, dynamic> json) = _$DataImpl.fromJson;
 
   @override
   Auto2026 get auto;
-  @override
-  AutoScoring get auto_scoring;
 
   /// Create a copy of Data
   /// with the given fields replaced by the non-null parameter values.

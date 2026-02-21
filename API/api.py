@@ -300,20 +300,12 @@ def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(N
         raise HTTPException(404, f"No data found for event {event_code}")
     # ---------------------------
 
-    i = 0
-    for doc in data["data"]:
-        # Note: Your current logic skips the first item (i=1). 
-        # Ensure that is intentional for your data structure.
-        i += 1
-        if not i == 1:
-            if doc["key"] == team:
-                foundTeam = True
-                break
-                
-    if not foundTeam:
-        raise HTTPException(400, "No team key '"+team +"' in "+event_code)
+    for doc in data["data"][1:]:   # skip first metadata object
+        if doc.get("key") == team:
+            return doc
+
+    raise HTTPException(404, f"No team key '{team}' in {event_code}")
         
-    return doc
 
 
 @app.get("/{year}/{event}/{team}/matches", tags=["stats"])
@@ -2573,7 +2565,7 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
             return DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
         else:
             formData = DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(
-                year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
+                year)+event, team_key=team, total=0, average=0, time=int(datetime.utcnow().timestamp()))
             notRecorded = True
             for entry in deathEntries:
                 for death in formData.deaths:
@@ -3245,6 +3237,9 @@ def update_database():
                     responseJson = []
                 for x in responseJson:
                     # print(event)
+                    x['time'] = int(x['time']) if 'time' in x and isinstance(x['time'], float) else x.get('time')
+                    x['actual_time'] = int(x['actual_time']) if 'actual_time' in x and isinstance(x['actual_time'], float) else x.get('actual_time')
+                    x['post_result_time'] = int(x['post_result_time']) if 'post_result_time' in x and isinstance(x['post_result_time'], float) else x.get('post_result_time')
                     tbaEntry = TBAMatch2026(**x)
                     try:
                         TBACollection.insert_one(tbaEntry.dict())

@@ -1657,7 +1657,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         Divider(color: Colors.blue),
                         AutoPieces2026(
                           auto: data.data.auto,
-                          autoScoring: data.data.auto_scoring,
                           onChanged: (newAuto) {
                             setState(() {
                               data = data.copyWith(
@@ -1677,6 +1676,29 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           matchScouting: true,
                         ),
                         SizedBox(height: 20),
+                        BiggerCounter(
+                          label: 'Passing Cycles',
+                          value: data.data.auto_scoring.passing_cycles,
+                          max: 10000000000,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(passing_cycles: value)));
+                          }),
+                        ),
+                        SizedBox(height: 40),
+                        BiggerCounter(
+                          label: 'Fuel Amount (Approximate)',
+                          value: data.data.auto_scoring.fuel_cycles,
+                          max: 10000000000,
+                          onChanged: (value) => setState(() {
+                            data = data.copyWith(
+                                data: data.data.copyWith(
+                                    auto_scoring: data.data.auto_scoring
+                                        .copyWith(fuel_cycles: value)));
+                          }),
+                        ),
                         SizedBox(height: 20),
                         Text(
                           'Teleop',

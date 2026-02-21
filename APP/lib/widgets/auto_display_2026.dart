@@ -48,13 +48,11 @@ class _AutoDisplay2025State extends State<AutoDisplay2026> {
                         child: AutoPieces2026(
                           auto: widget.scoutingData.data.auto,
                           matchScouting: true,
-                          autoScoring: widget.scoutingData.data.auto_scoring,
                         ),
                       )
                     : AutoPieces2026(
                         auto: widget.scoutingData.data.auto,
                         matchScouting: true,
-                        autoScoring: widget.scoutingData.data.auto_scoring,
                       ),
                 if (!isMobile())
                   Padding(

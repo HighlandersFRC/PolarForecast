@@ -44,6 +44,7 @@ class Auto2026(BaseModel):
     contacts_robot: bool = False
     auto_pieces: int = 0
     climb: bool
+    steps: List[PitAutoStep2026]
 
 class PitData2026(BaseModel):
     driver_experience_events: int
@@ -51,14 +52,11 @@ class PitData2026(BaseModel):
     can_feed_human_player: bool
     can_pick_up_from_ground: bool
     distance_to_shoot: int
-    cycles_in_25_seconds: int
-    cycle_time: int
     go_over_bump: bool
     go_under_trench: bool
     can_climb: bool
     climbing: list[int]
     can_climb_in_autonomous: bool
-    can_climb_with_others: bool
     automatically_shooting: bool
     shooting_while_moving: bool
     main_strategy: str
@@ -66,6 +64,18 @@ class PitData2026(BaseModel):
     auto_scoring: Scoring2026 = Field(default_factory=Scoring2026)
     favorite_color: str
     autos: list
+    hopper_capacity: int
+    mag_unload_speed: int
+    robot_height: int
+
+
+
+    straddling_pole_climb_right: bool
+    straddling_pole_climb_left: bool
+    left_pole_climb: bool
+    right_pole_climb: bool
+    center_pole_climb: bool
+
 
 
 class PitScouting2026(BaseModel):

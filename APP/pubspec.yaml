@@ -68,6 +68,6 @@ flutter:
   fonts:
     - family: Font
       fonts:
-        - asset: assets/fonts/comfortaa.light.ttf
-        - asset: assets/fonts/comfortaa.bold.ttf
+        - asset: assets/fonts/times.ttf #Light
+        - asset: assets/fonts/times.ttf #Bold
           weight: 700

@@ -58,27 +58,41 @@ class _BiggerCounterState extends State<BiggerCounter> {
 
   @override
   Widget build(BuildContext context) {
-    const double buttonHeight = 75;
-    const double fontSize = 28;
+    const double buttonHeight = 70;
+    const double fontSize = 32;
 
-    // Helper to create a button
-    Widget buildButton(String label, Color color, VoidCallback? onTap) {
+    final bool atMin = widget.value <= 0;
+    final bool atMax = widget.value >= widget.max;
+    final bool disabled = widget.locked;
+
+    Color primary = Colors.blue;
+    Color danger = Colors.red;
+
+    Widget buildButton({
+      required String label,
+      required Color color,
+      required VoidCallback? onTap,
+    }) {
+      final bool isDisabled = onTap == null;
+
       return Expanded(
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            height: buttonHeight,
-            decoration: BoxDecoration(
-              color: onTap == null ? Colors.grey : color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
+        child: Material(
+          color: isDisabled
+              ? Colors.grey.withOpacity(0.2)
+              : color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(20),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: onTap,
+            child: Container(
+              height: buttonHeight,
+              alignment: Alignment.center,
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 22,
-                    color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    color: isDisabled ? Colors.grey : color,
                     fontFamily: 'Font'),
               ),
             ),
@@ -87,85 +101,95 @@ class _BiggerCounterState extends State<BiggerCounter> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// LABEL
-        Text(
-          widget.label,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.blue,
-              fontFamily: 'Font'),
-        ),
-        const SizedBox(height: 6),
-
-        /// EDITABLE VALUE
-        TextField(
-          controller: _controller,
-          readOnly: widget.locked,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Font'),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          onSubmitted: _submitText,
-          onEditingComplete: () => _submitText(_controller.text),
-        ),
-        const SizedBox(height: 12),
-
-        /// ROW: -1 and +1
-        Row(
+    return Card(
+      elevation: 6,
+      shadowColor: Colors.black.withOpacity(0.15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildButton(
-              "-1",
-              Colors.red,
-              widget.locked || widget.value == 0
-                  ? null
-                  : () => _updateValue(-1),
+            /// LABEL
+            Text(
+              widget.label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: primary,
+                letterSpacing: 0.1,
+                fontFamily: 'Font',
+              ),
             ),
-            const SizedBox(width: 10),
-            buildButton(
-              "+1",
-              Colors.blue,
-              widget.locked || widget.value >= widget.max
-                  ? null
-                  : () => _updateValue(1),
+            const SizedBox(height: 12),
+
+            /// VALUE FIELD
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TextField(
+                controller: _controller,
+                readOnly: disabled,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 18),
+                ),
+                onSubmitted: _submitText,
+                onEditingComplete: () => _submitText(_controller.text),
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            /// -1 / +1
+            Row(
+              children: [
+                buildButton(
+                  label: "-1",
+                  color: danger,
+                  onTap: disabled || atMin ? null : () => _updateValue(-1),
+                ),
+                const SizedBox(width: 14),
+                buildButton(
+                  label: "+1",
+                  color: primary,
+                  onTap: disabled || atMax ? null : () => _updateValue(1),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            /// -5 / +5
+            Row(
+              children: [
+                buildButton(
+                  label: "-5",
+                  color: danger,
+                  onTap: disabled || atMin ? null : () => _updateValue(-5),
+                ),
+                const SizedBox(width: 14),
+                buildButton(
+                  label: "+5",
+                  color: primary,
+                  onTap: disabled || atMax ? null : () => _updateValue(5),
+                ),
+              ],
             ),
           ],
         ),
-        const SizedBox(height: 10),
-
-        /// ROW: -5 and +5
-        Row(
-          children: [
-            buildButton(
-              "-5",
-              Colors.red,
-              widget.locked || widget.value == 0
-                  ? null
-                  : () => _updateValue(-5),
-            ),
-            const SizedBox(width: 10),
-            buildButton(
-              "+5",
-              Colors.blue,
-              widget.locked || widget.value >= widget.max
-                  ? null
-                  : () => _updateValue(5),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }

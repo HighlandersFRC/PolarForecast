@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
 
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
@@ -47,13 +46,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           can_feed_human_player: false,
           can_pick_up_from_ground: false,
           distance_to_shoot: 0,
-          cycles_in_25_seconds: 0,
-          cycle_time: 0,
           go_over_bump: false,
           go_under_trench: false,
           can_climb: false,
           can_climb_in_autonomous: false,
-          can_climb_with_others: false,
           automatically_shooting: false,
           shooting_while_moving: false,
           auto: Auto2026(
@@ -63,13 +59,15 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               preload: false,
               climb: false,
               contacts_robot: false),
-          auto_scoring: AutoScoring(
-              passing_cycles: 0,
-              scoring_cycles: 0,
-              cycles_completed: 0,
-              climb_side: 'Did not Climb',
-              fuel_cycles: 0),
-          main_strategy: ''),
+          main_strategy: '',
+          hopper_capacity: 0,
+          mag_unload_speed: 0,
+          robot_height: 0,
+          straddling_pole_climb_right: false,
+          straddling_pole_climb_left: false,
+          left_pole_climb: false,
+          right_pole_climb: false,
+          center_pole_climb: false),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       user_id: '',
       auto: Auto2026(
@@ -112,6 +110,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     pitScoutingData.data.spare_parts.toString();
                 favoriteColorController.text =
                     pitScoutingData.data.favorite_color;
+                mainStrategyController.text =
+                    pitScoutingData.data.main_strategy;
               }))
           .onError((e, _) {
         loading = false;
@@ -163,15 +163,19 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(distance_to_shoot: value),
           );
           break;
-        case 'cycles_in_25_seconds':
+        case 'robot_height':
           pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(cycles_in_25_seconds: value),
+            data: pitScoutingData.data.copyWith(robot_height: value),
           );
           break;
-        case 'cycle_time':
+        case 'hopper_capacity':
           pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(cycle_time: value),
+            data: pitScoutingData.data.copyWith(hopper_capacity: value),
           );
+          break;
+        case 'mag_unload_speed':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data.copyWith(mag_unload_speed: value));
           break;
         case 'go_over_bump':
           pitScoutingData = pitScoutingData.copyWith(
@@ -182,6 +186,28 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(go_under_trench: value),
           );
+          break;
+        case 'straddling_pole_climb_right':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data
+                  .copyWith(straddling_pole_climb_right: value));
+          break;
+        case 'straddling_pole_climb_left':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data
+                  .copyWith(straddling_pole_climb_left: value));
+          break;
+        case 'left_pole_climb':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data.copyWith(left_pole_climb: value));
+          break;
+        case 'right_pole_climb':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data.copyWith(right_pole_climb: value));
+          break;
+        case 'center_pole_climb':
+          pitScoutingData = pitScoutingData.copyWith(
+              data: pitScoutingData.data.copyWith(center_pole_climb: value));
           break;
         case 'can_climb':
           pitScoutingData = pitScoutingData.copyWith(
@@ -196,11 +222,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'can_climb_in_autonomous':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(can_climb_in_autonomous: value),
-          );
-          break;
-        case 'can_climb_with_others':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_climb_with_others: value),
           );
           break;
         case 'automatically_shooting':
@@ -227,7 +248,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     setState(() {
       pitScoutingData = pitScoutingData.copyWith(
         data: pitScoutingData.data.copyWith(
-          autos: List.from(pitScoutingData.data.autos)
+          autos: List.from(pitScoutingData.data.autos as Iterable<dynamic>)
             ..add(
               Auto2026(
                   starting_position_meters_from_hub_center: 0,
@@ -368,6 +389,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       Text('Main Strategy',
                           style: TextStyle(fontFamily: 'Font')),
                       TextField(
+                        style: TextStyle(fontFamily: 'Font'),
                         enabled: !widget.locked,
                         onChanged: widget.locked
                             ? null
@@ -377,7 +399,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       SwitchListTile(
                         activeColor: Colors.blue,
                         inactiveThumbColor: Colors.blue,
-                        title: Text('Can Feed Human Player',
+                        title: Text('Human Player Feed',
                             style: TextStyle(fontFamily: 'Font')),
                         value: pitScoutingData.data.can_feed_human_player,
                         onChanged: widget.locked
@@ -448,41 +470,94 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                             ? null
                             : (value) => handleChange('can_climb', value),
                       ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: !pitScoutingData.data.can_climb
-                            ? const SizedBox.shrink()
-                            : Column(
-                                key: const ValueKey('climb_options'),
-                                children: [
-                                  SwitchListTile(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    title: const Text(
-                                        'Can Climb With Other Robots',
-                                        style: TextStyle(fontFamily: 'Font')),
-                                    value: pitScoutingData
-                                        .data.can_climb_with_others,
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) => handleChange(
-                                            'can_climb_with_others', value),
-                                  ),
-                                  SwitchListTile(
-                                    activeColor: Colors.blue,
-                                    inactiveThumbColor: Colors.blue,
-                                    title: const Text('Can Climb in Autonomous',
-                                        style: TextStyle(fontFamily: 'Font')),
-                                    value: pitScoutingData
-                                        .data.can_climb_in_autonomous,
-                                    onChanged: widget.locked
-                                        ? null
-                                        : (value) => handleChange(
-                                            'can_climb_in_autonomous', value),
-                                  ),
-                                ],
-                              ),
-                      ),
+                      Column(children: [
+                        AnimatedSwitcher(
+                          key: ValueKey(pitScoutingData.data.can_climb),
+                          duration: const Duration(milliseconds: 250),
+                          child: !pitScoutingData.data.can_climb
+                              ? const SizedBox.shrink()
+                              : Column(
+                                  key: const ValueKey('climb_options'),
+                                  children: [
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: const Text(
+                                          'Can Climb in Autonomous',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value: pitScoutingData
+                                          .data.can_climb_in_autonomous,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'can_climb_in_autonomous', value),
+                                    ),
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: Text('Straddles the pole right',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value: pitScoutingData
+                                          .data.straddling_pole_climb_right,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'straddling_pole_climb_right',
+                                              value),
+                                    ),
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: Text('Straddles the pole left',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value: pitScoutingData
+                                          .data.straddling_pole_climb_left,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'straddling_pole_climb_left',
+                                              value),
+                                    ),
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: Text('Climbs from pole Left',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value:
+                                          pitScoutingData.data.left_pole_climb,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'left_pole_climb', value),
+                                    ),
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: Text('Climbs from pole Right',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value:
+                                          pitScoutingData.data.right_pole_climb,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'right_pole_climb', value),
+                                    ),
+                                    SwitchListTile(
+                                      activeColor: Colors.blue,
+                                      inactiveThumbColor: Colors.blue,
+                                      title: Text('Climbs from the Center',
+                                          style: TextStyle(fontFamily: 'Font')),
+                                      value: pitScoutingData
+                                          .data.center_pole_climb,
+                                      onChanged: widget.locked
+                                          ? null
+                                          : (value) => handleChange(
+                                              'center_pole_climb', value),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ]),
                       Counter(
                           label: 'Distance to Shoot (meters)',
                           value: pitScoutingData.data.distance_to_shoot,
@@ -497,30 +572,44 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           }),
                       SizedBox(height: 8),
                       Counter(
-                          label: 'Cycles in 25 Seconds',
-                          value: pitScoutingData.data.cycles_in_25_seconds,
+                          label: 'Robot Height',
+                          value: pitScoutingData.data.robot_height,
                           max: 500,
                           locked: widget.locked,
-                          onChanged: (cycles) {
+                          onChanged: (distance) {
                             setState(() {
                               pitScoutingData = pitScoutingData.copyWith(
                                   data: pitScoutingData.data
-                                      .copyWith(cycles_in_25_seconds: cycles));
+                                      .copyWith(robot_height: distance));
                             });
                           }),
                       SizedBox(height: 8),
                       Counter(
-                          label: 'Cycle Time (seconds)',
-                          value: pitScoutingData.data.cycle_time,
-                          max: 500,
+                          label: 'Mag Unload Speed (seconds)',
+                          value: pitScoutingData.data.mag_unload_speed,
+                          max: 100000,
                           locked: widget.locked,
-                          onChanged: (cycleTime) {
+                          onChanged: (distance) {
                             setState(() {
                               pitScoutingData = pitScoutingData.copyWith(
                                   data: pitScoutingData.data
-                                      .copyWith(cycle_time: cycleTime));
+                                      .copyWith(mag_unload_speed: distance));
                             });
                           }),
+                      SizedBox(height: 8),
+                      Counter(
+                          label: 'Hopper Capacity',
+                          value: pitScoutingData.data.hopper_capacity,
+                          max: 100000,
+                          locked: widget.locked,
+                          onChanged: (distance) {
+                            setState(() {
+                              pitScoutingData = pitScoutingData.copyWith(
+                                  data: pitScoutingData.data
+                                      .copyWith(hopper_capacity: distance));
+                            });
+                          }),
+                      SizedBox(height: 8),
                       Text('Favorite Color',
                           style: TextStyle(fontFamily: 'Font')),
                       TextField(
@@ -583,7 +672,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: pitScoutingData.data.autos.length,
+                        itemCount: pitScoutingData.data.autos!.length,
                         itemBuilder: (context, index) {
                           return Padding(
                               padding:
@@ -591,30 +680,18 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                               child: Card(
                                   child: Column(children: [
                                 AutoPieces2026(
-                                  auto: pitScoutingData.data.autos[index],
-                                  autoScoring:
-                                      pitScoutingData.data.auto_scoring,
+                                  auto: pitScoutingData.data.autos![index],
                                   locked: widget.locked,
                                   onChanged: (newAuto) {
                                     setState(() {
-                                      List<dynamic> newAutos =
-                                          pitScoutingData.data.autos.toList();
+                                      List<Auto2026> newAutos =
+                                          pitScoutingData.data.autos!.toList();
                                       newAutos[index] = newAuto;
 
                                       pitScoutingData =
                                           pitScoutingData.copyWith(
                                         data: pitScoutingData.data.copyWith(
                                           autos: newAutos,
-                                        ),
-                                      );
-                                    });
-                                  },
-                                  onAutoScoringChanged: (newScoring) {
-                                    setState(() {
-                                      pitScoutingData =
-                                          pitScoutingData.copyWith(
-                                        data: pitScoutingData.data.copyWith(
-                                          auto_scoring: newScoring,
                                         ),
                                       );
                                     });
@@ -631,8 +708,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         pitScoutingData =
                                             pitScoutingData.copyWith(
                                           data: pitScoutingData.data.copyWith(
-                                            autos: List.from(
-                                                pitScoutingData.data.autos)
+                                            autos: List.from(pitScoutingData
+                                                .data
+                                                .autos as Iterable<dynamic>)
                                               ..removeAt(index),
                                           ),
                                         );

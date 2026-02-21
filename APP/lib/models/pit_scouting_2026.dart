@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/scout_info.dart';
 part 'pit_scouting_2026.freezed.dart';
 part 'pit_scouting_2026.g.dart';
@@ -21,30 +20,33 @@ class PitScouting2026 with _$PitScouting2026 {
 
 @freezed
 class PitData2026 with _$PitData2026 {
-  const factory PitData2026({
-    required int driver_experience_events,
-    required String drive_train,
-    required bool can_feed_human_player,
-    required bool can_pick_up_from_ground,
-    required int distance_to_shoot,
-    required int cycles_in_25_seconds,
-    required int cycle_time,
-    required bool go_over_bump,
-    required bool go_under_trench,
-    required bool can_climb,
-    required List<int> climbing,
-    required bool can_climb_in_autonomous,
-    required bool can_climb_with_others,
-    required bool automatically_shooting,
-    required bool shooting_while_moving,
-    required String main_strategy,
-    required int spare_parts,
-    required String favorite_color,
-    Auto2026? auto,
-    required AutoScoring auto_scoring,
-    // keep autos dynamic to avoid type-mismatch with other code/widgets
-    required List<dynamic> autos,
-  }) = _PitData2026;
+  const factory PitData2026(
+      {required int driver_experience_events,
+      required String drive_train,
+      required bool can_feed_human_player,
+      required bool can_pick_up_from_ground,
+      required int distance_to_shoot,
+      required bool go_over_bump,
+      required bool go_under_trench,
+      required bool can_climb,
+      required List<int> climbing,
+      required bool can_climb_in_autonomous,
+      required bool automatically_shooting,
+      required bool shooting_while_moving,
+      required String main_strategy,
+      required int spare_parts,
+      required String favorite_color,
+      Auto2026? auto,
+      required int hopper_capacity,
+      required int mag_unload_speed,
+      // keep autos dynamic to avoid type-mismatch with other code/widgets
+      List<Auto2026>? autos,
+      required int robot_height,
+      required bool straddling_pole_climb_right,
+      required bool straddling_pole_climb_left,
+      required bool left_pole_climb,
+      required bool right_pole_climb,
+      required bool center_pole_climb}) = _PitData2026;
   factory PitData2026.fromJson(Map<String, dynamic> json) =>
       _$PitData2026FromJson(json);
 }
@@ -52,9 +54,9 @@ class PitData2026 with _$PitData2026 {
 @freezed
 class Auto2026 with _$Auto2026 {
   factory Auto2026({
-    required double starting_position_meters_from_hub_center,
-    required List<dynamic> steps,
+    required int starting_position_meters_from_hub_center,
     required List<String> field_side,
+    required List<AutoStep2026> steps,
     required bool preload,
     required bool climb,
     required bool contacts_robot,
@@ -82,7 +84,6 @@ class AutoStep2026 with _$AutoStep2026 {
 class Data with _$Data {
   factory Data({
     required Auto2026 auto,
-    required AutoScoring auto_scoring,
   }) = _Data;
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);

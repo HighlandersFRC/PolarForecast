@@ -41,8 +41,6 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
       can_feed_human_player: json['can_feed_human_player'] as bool,
       can_pick_up_from_ground: json['can_pick_up_from_ground'] as bool,
       distance_to_shoot: (json['distance_to_shoot'] as num).toInt(),
-      cycles_in_25_seconds: (json['cycles_in_25_seconds'] as num).toInt(),
-      cycle_time: (json['cycle_time'] as num).toInt(),
       go_over_bump: json['go_over_bump'] as bool,
       go_under_trench: json['go_under_trench'] as bool,
       can_climb: json['can_climb'] as bool,
@@ -50,7 +48,6 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
           .map((e) => (e as num).toInt())
           .toList(),
       can_climb_in_autonomous: json['can_climb_in_autonomous'] as bool,
-      can_climb_with_others: json['can_climb_with_others'] as bool,
       automatically_shooting: json['automatically_shooting'] as bool,
       shooting_while_moving: json['shooting_while_moving'] as bool,
       main_strategy: json['main_strategy'] as String,
@@ -59,9 +56,17 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
       auto: json['auto'] == null
           ? null
           : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
-      auto_scoring:
-          AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
-      autos: json['autos'] as List<dynamic>,
+      hopper_capacity: (json['hopper_capacity'] as num).toInt(),
+      mag_unload_speed: (json['mag_unload_speed'] as num).toInt(),
+      autos: (json['autos'] as List<dynamic>?)
+          ?.map((e) => Auto2026.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      robot_height: (json['robot_height'] as num).toInt(),
+      straddling_pole_climb_right: json['straddling_pole_climb_right'] as bool,
+      straddling_pole_climb_left: json['straddling_pole_climb_left'] as bool,
+      left_pole_climb: json['left_pole_climb'] as bool,
+      right_pole_climb: json['right_pole_climb'] as bool,
+      center_pole_climb: json['center_pole_climb'] as bool,
     );
 
 Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
@@ -71,31 +76,37 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'can_feed_human_player': instance.can_feed_human_player,
       'can_pick_up_from_ground': instance.can_pick_up_from_ground,
       'distance_to_shoot': instance.distance_to_shoot,
-      'cycles_in_25_seconds': instance.cycles_in_25_seconds,
-      'cycle_time': instance.cycle_time,
       'go_over_bump': instance.go_over_bump,
       'go_under_trench': instance.go_under_trench,
       'can_climb': instance.can_climb,
       'climbing': instance.climbing,
       'can_climb_in_autonomous': instance.can_climb_in_autonomous,
-      'can_climb_with_others': instance.can_climb_with_others,
       'automatically_shooting': instance.automatically_shooting,
       'shooting_while_moving': instance.shooting_while_moving,
       'main_strategy': instance.main_strategy,
       'spare_parts': instance.spare_parts,
       'favorite_color': instance.favorite_color,
       'auto': instance.auto?.toJson(),
-      'auto_scoring': instance.auto_scoring.toJson(),
-      'autos': instance.autos,
+      'hopper_capacity': instance.hopper_capacity,
+      'mag_unload_speed': instance.mag_unload_speed,
+      'autos': instance.autos?.map((e) => e.toJson()).toList(),
+      'robot_height': instance.robot_height,
+      'straddling_pole_climb_right': instance.straddling_pole_climb_right,
+      'straddling_pole_climb_left': instance.straddling_pole_climb_left,
+      'left_pole_climb': instance.left_pole_climb,
+      'right_pole_climb': instance.right_pole_climb,
+      'center_pole_climb': instance.center_pole_climb,
     };
 
 _$Auto2026Impl _$$Auto2026ImplFromJson(Map<String, dynamic> json) =>
     _$Auto2026Impl(
       starting_position_meters_from_hub_center:
-          (json['starting_position_meters_from_hub_center'] as num).toDouble(),
-      steps: json['steps'] as List<dynamic>,
+          (json['starting_position_meters_from_hub_center'] as num).toInt(),
       field_side: (json['field_side'] as List<dynamic>)
           .map((e) => e as String)
+          .toList(),
+      steps: (json['steps'] as List<dynamic>)
+          .map((e) => AutoStep2026.fromJson(e as Map<String, dynamic>))
           .toList(),
       preload: json['preload'] as bool,
       climb: json['climb'] as bool,
@@ -108,8 +119,8 @@ Map<String, dynamic> _$$Auto2026ImplToJson(_$Auto2026Impl instance) =>
     <String, dynamic>{
       'starting_position_meters_from_hub_center':
           instance.starting_position_meters_from_hub_center,
-      'steps': instance.steps,
       'field_side': instance.field_side,
+      'steps': instance.steps.map((e) => e.toJson()).toList(),
       'preload': instance.preload,
       'climb': instance.climb,
       'contacts_robot': instance.contacts_robot,
@@ -131,12 +142,9 @@ Map<String, dynamic> _$$AutoStep2026ImplToJson(_$AutoStep2026Impl instance) =>
 
 _$DataImpl _$$DataImplFromJson(Map<String, dynamic> json) => _$DataImpl(
       auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
-      auto_scoring:
-          AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
     <String, dynamic>{
       'auto': instance.auto.toJson(),
-      'auto_scoring': instance.auto_scoring.toJson(),
     };
