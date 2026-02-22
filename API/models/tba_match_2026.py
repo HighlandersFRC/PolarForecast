@@ -15,16 +15,7 @@ class ScoreBreakdown2026(BaseModel):
     
     
     # ===== CUSTOM SCOUTING FIELDS (not from TBA) =====
-    climb: Optional[bool] = False
-    feed_amount: Optional[int] = 0
-    intake_amount: Optional[int] = 0
-    shoot_amount: Optional[int] = 0
-    goes_under_trench: Optional[bool] = False
-    goes_over_bump: Optional[bool] = False
-    climb_side: Optional[int] = 0
-    cycles_completed: Optional[int] = 0
-    shoots_from_X: Optional[float] = 0
-    shoots_from_Y: Optional[float] = 0
+    
     
     class Config:
         extra = "allow"  # Allow TBA to send additional fields

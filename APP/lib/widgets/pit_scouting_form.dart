@@ -417,7 +417,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 Text(
                   'Submission Error',
                   style: const TextStyle(
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Font',
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.redAccent,
@@ -427,7 +427,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 Text(
                   'Submission failed. Please try again.',
                   style: const TextStyle(
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Font',
                     fontSize: 16,
                     color: Colors.black87,
                   ),
@@ -446,7 +446,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                   child: const Text(
                     'OK',
                     style: TextStyle(
-                      fontFamily: 'Roboto',
+                      fontFamily: 'Font',
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -838,7 +838,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                               ),
                             ),
                           ),
-
+                          Divider(
+                            color: Colors.blue,
+                            thickness: 5,
+                            radius: BorderRadius.circular(10),
+                          ),
                           // Climbing Abilities
                           Card(
                             color: Color.fromARGB(24, 68, 137, 255),
@@ -872,6 +876,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                             key:
                                                 const ValueKey('climb_options'),
                                             children: [
+                                              Divider(
+                                                  color: Colors.blue,
+                                                  thickness: 4,
+                                                  radius: BorderRadius.circular(
+                                                      10)),
                                               SwitchListTile(
                                                 activeColor: Colors.blue,
                                                 inactiveThumbColor: Colors.blue,
@@ -1094,78 +1103,78 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                           ),
                         ],
                       )),
-                      SizedBox(height: 8),
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Autos',
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  color: Colors.blue,
-                                  fontFamily: 'Font'),
-                            ),
-                          ],
+                      Divider(color: Colors.blue),
+                      _buildSectionCard(
+                          child: Column(children: [
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Autos',
+                                style: TextStyle(
+                                    fontSize: 30,
+                                    color: Colors.blue,
+                                    fontFamily: 'Font'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Divider(
-                        color: Colors.blue,
-                        thickness: 2.0,
-                      ),
-                      SizedBox(height: 20),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: pitScoutingData.data.autos!.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Card(
-                                  child: Column(children: [
-                                AutoPieces2026(
-                                  auto: pitScoutingData.data.autos![index],
-                                  locked: widget.locked,
-                                  onChanged: (newAuto) {
-                                    setState(() {
-                                      List<Auto2026> newAutos =
-                                          pitScoutingData.data.autos!.toList();
-                                      newAutos[index] = newAuto;
-
-                                      pitScoutingData =
-                                          pitScoutingData.copyWith(
-                                        data: pitScoutingData.data.copyWith(
-                                          autos: newAutos,
-                                        ),
-                                      );
-                                    });
-                                  },
-                                ),
-                                SizedBox(
-                                  height: 8,
-                                ),
-                                if (!widget.locked)
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () {
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: pitScoutingData.data.autos!.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Card(
+                                    child: Column(children: [
+                                  AutoPieces2026(
+                                    auto: pitScoutingData.data.autos![index],
+                                    locked: widget.locked,
+                                    onChanged: (newAuto) {
                                       setState(() {
+                                        List<Auto2026> newAutos =
+                                            pitScoutingData.data.autos!
+                                                .toList();
+                                        newAutos[index] = newAuto;
+
                                         pitScoutingData =
                                             pitScoutingData.copyWith(
                                           data: pitScoutingData.data.copyWith(
-                                            autos: List.from(pitScoutingData
-                                                .data
-                                                .autos as Iterable<dynamic>)
-                                              ..removeAt(index),
+                                            autos: newAutos,
                                           ),
                                         );
                                       });
                                     },
                                   ),
-                              ])));
-                        },
-                      ),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  if (!widget.locked)
+                                    IconButton(
+                                      icon:
+                                          Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () {
+                                        setState(() {
+                                          pitScoutingData =
+                                              pitScoutingData.copyWith(
+                                            data: pitScoutingData.data.copyWith(
+                                              autos: List.from(pitScoutingData
+                                                  .data
+                                                  .autos as Iterable<dynamic>)
+                                                ..removeAt(index),
+                                            ),
+                                          );
+                                        });
+                                      },
+                                    ),
+                                ])));
+                          },
+                        )
+                      ])),
                       if (!widget.locked)
                         ElevatedButton(
                           onPressed: widget.locked ? () {} : handleAddAuto,

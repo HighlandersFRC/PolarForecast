@@ -962,25 +962,29 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         GridColumn(
             columnName: 'match_number',
             label: Text('Match', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(columnName: 'auto_scoring_l_1', label: Text('Auto L1')),
-        GridColumn(columnName: 'auto_scoring_l_2', label: Text('Auto L2')),
-        GridColumn(columnName: 'auto_scoring_l_3', label: Text('Auto L3')),
-        GridColumn(columnName: 'auto_scoring_l_4', label: Text('Auto L4')),
-        GridColumn(columnName: 'auto_scoring_net', label: Text('Auto Net')),
         GridColumn(
-            columnName: 'auto_scoring_processor',
-            label: Text('Auto Processor')),
-        GridColumn(columnName: 'teleop_scoring_l_1', label: Text('Teleop L1')),
-        GridColumn(columnName: 'teleop_scoring_l_2', label: Text('Teleop L2')),
-        GridColumn(columnName: 'teleop_scoring_l_3', label: Text('Teleop L3')),
-        GridColumn(columnName: 'teleop_scoring_l_4', label: Text('Teleop L4')),
-        GridColumn(columnName: 'teleop_scoring_net', label: Text('Teleop Net')),
+            columnName: 'fuel_cycles_auto',
+            label: Text('Fuel Shot in Auto',
+                style: TextStyle(fontFamily: 'Font'))),
         GridColumn(
-            columnName: 'teleop_scoring_processor',
-            label: Text('Teleop Processor')),
+            columnName: 'fuel_cycles',
+            label: Text('Fuel Shot in Teleop',
+                style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'passing_cycles_auto',
+            label: Text('Passing Cycles in Auto',
+                style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'passing_cycles',
+            label: Text('Passing Cycles in Teleop',
+                style: TextStyle(fontFamily: 'Font'))),
         GridColumn(
             columnName: 'died',
             label: Text('Died', style: TextStyle(fontFamily: 'Font'))),
+        GridColumn(
+            columnName: 'defense',
+            label:
+                Text('Played Defense', style: TextStyle(fontFamily: 'Font'))),
         GridColumn(
             columnName: 'comments',
             label: Text('Comments', style: TextStyle(fontFamily: 'Font'))),
@@ -1004,14 +1008,27 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   'Scout from ${entry.scout_info.team_number}'),
           DataGridCell(columnName: 'match_number', value: entry.match_number),
           DataGridCell(
+              columnName: 'fuel_cycles_auto',
+              value: entry.data.auto_scoring.fuel_cycles),
+          DataGridCell(
+              columnName: 'fuel_cycles',
+              value: entry.data.teleop_scoring.fuel_cycles),
+          DataGridCell(
+              columnName: 'passing_cycles_auto',
+              value: entry.data.auto_scoring.passing_cycles),
+          DataGridCell(
+              columnName: 'passing_cycles',
+              value: entry.data.teleop_scoring.passing_cycles),
+          DataGridCell(
               columnName: 'died', value: entry.data.miscellaneous.died),
+          DataGridCell(
+              columnName: 'defense', value: entry.data.miscellaneous.defense),
           DataGridCell(
               columnName: 'comments', value: entry.data.miscellaneous.comments),
           DataGridCell(
-            columnName: 'delete',
-            value: entry.scout_info.first_name != null &&
-                (role == 'admin' || role == 'owner'),
-          ),
+              columnName: 'delete',
+              value: entry.scout_info.first_name != null &&
+                  (role == 'admin' || role == 'owner')),
         ]));
       }
     });

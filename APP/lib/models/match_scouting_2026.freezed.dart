@@ -580,7 +580,6 @@ mixin _$AutoScoring {
   int get scoring_cycles => throw _privateConstructorUsedError;
   int get fuel_cycles => throw _privateConstructorUsedError;
   int get cycles_completed => throw _privateConstructorUsedError;
-  String get climb_side => throw _privateConstructorUsedError;
 
   /// Serializes this AutoScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -602,8 +601,7 @@ abstract class $AutoScoringCopyWith<$Res> {
       {int passing_cycles,
       int scoring_cycles,
       int fuel_cycles,
-      int cycles_completed,
-      String climb_side});
+      int cycles_completed});
 }
 
 /// @nodoc
@@ -625,7 +623,6 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
     Object? scoring_cycles = null,
     Object? fuel_cycles = null,
     Object? cycles_completed = null,
-    Object? climb_side = null,
   }) {
     return _then(_value.copyWith(
       passing_cycles: null == passing_cycles
@@ -644,10 +641,6 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
           ? _value.cycles_completed
           : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
-      climb_side: null == climb_side
-          ? _value.climb_side
-          : climb_side // ignore: cast_nullable_to_non_nullable
-              as String,
     ) as $Val);
   }
 }
@@ -664,8 +657,7 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
       {int passing_cycles,
       int scoring_cycles,
       int fuel_cycles,
-      int cycles_completed,
-      String climb_side});
+      int cycles_completed});
 }
 
 /// @nodoc
@@ -685,7 +677,6 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
     Object? scoring_cycles = null,
     Object? fuel_cycles = null,
     Object? cycles_completed = null,
-    Object? climb_side = null,
   }) {
     return _then(_$AutoScoringImpl(
       passing_cycles: null == passing_cycles
@@ -704,10 +695,6 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
           ? _value.cycles_completed
           : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
-      climb_side: null == climb_side
-          ? _value.climb_side
-          : climb_side // ignore: cast_nullable_to_non_nullable
-              as String,
     ));
   }
 }
@@ -719,8 +706,7 @@ class _$AutoScoringImpl implements _AutoScoring {
       {required this.passing_cycles,
       required this.scoring_cycles,
       required this.fuel_cycles,
-      required this.cycles_completed,
-      required this.climb_side});
+      required this.cycles_completed});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
@@ -736,12 +722,10 @@ class _$AutoScoringImpl implements _AutoScoring {
   final int fuel_cycles;
   @override
   final int cycles_completed;
-  @override
-  final String climb_side;
 
   @override
   String toString() {
-    return 'AutoScoring(passing_cycles: $passing_cycles, scoring_cycles: $scoring_cycles, fuel_cycles: $fuel_cycles, cycles_completed: $cycles_completed, climb_side: $climb_side)';
+    return 'AutoScoring(passing_cycles: $passing_cycles, scoring_cycles: $scoring_cycles, fuel_cycles: $fuel_cycles, cycles_completed: $cycles_completed)';
   }
 
   @override
@@ -756,15 +740,13 @@ class _$AutoScoringImpl implements _AutoScoring {
             (identical(other.fuel_cycles, fuel_cycles) ||
                 other.fuel_cycles == fuel_cycles) &&
             (identical(other.cycles_completed, cycles_completed) ||
-                other.cycles_completed == cycles_completed) &&
-            (identical(other.climb_side, climb_side) ||
-                other.climb_side == climb_side));
+                other.cycles_completed == cycles_completed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, passing_cycles, scoring_cycles,
-      fuel_cycles, cycles_completed, climb_side);
+      fuel_cycles, cycles_completed);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -787,8 +769,7 @@ abstract class _AutoScoring implements AutoScoring {
       {required final int passing_cycles,
       required final int scoring_cycles,
       required final int fuel_cycles,
-      required final int cycles_completed,
-      required final String climb_side}) = _$AutoScoringImpl;
+      required final int cycles_completed}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
@@ -804,8 +785,6 @@ abstract class _AutoScoring implements AutoScoring {
   int get fuel_cycles;
   @override
   int get cycles_completed;
-  @override
-  String get climb_side;
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.

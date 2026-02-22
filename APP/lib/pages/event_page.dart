@@ -231,56 +231,63 @@ class _RankingsTabState extends State<_RankingsTab> {
   }
 
   void updateGrid() {
+    // Helper to safely convert any dynamic value to a number
+    num _safeNum(dynamic val) {
+      if (val == null) return 0;
+      if (val is num) return val;
+      return num.tryParse(val.toString()) ?? 0;
+    }
+
     minValues = {};
     maxValues = {};
+
+    // Compute min/max for heatmap columns
     for (var column in dataColumns) {
-      if (heatMapFromKey[column.columnName]!) {
-        var columnKey = column.columnName;
+      if (heatMapFromKey[column.columnName] == true) {
+        final columnKey = column.columnName;
         minValues[columnKey] = double.infinity;
         maxValues[columnKey] = double.negativeInfinity;
 
         for (var rank in rankings) {
-          var value = rank.toJson()[columnKey];
+          var value = _safeNum(rank.toJson()[columnKey]);
           if (value < minValues[columnKey]!) minValues[columnKey] = value;
           if (value > maxValues[columnKey]!) maxValues[columnKey] = value;
         }
       }
     }
 
+    // Build DataGrid rows
     dataRows = [];
     for (var rank in rankings) {
       List<DataGridCell> cells = [];
+
       for (var column in dataColumns) {
         try {
-          if (heatMapFromKey[column.columnName] != null &&
-              !(heatMapFromKey[column.columnName]!)) {
-            // print(column.columnName);
+          final columnKey = column.columnName;
+          final rawValue = rank.toJson()[columnKey];
+
+          num value = _safeNum(rawValue);
+
+          // Heatmap: round to 1 decimal for display
+          if (heatMapFromKey[columnKey] == true) {
             cells.add(DataGridCell(
-                columnName: column.columnName,
-                value: heatMapFromKey[column.columnName]!
-                    ? ((rank.toJson()[column.columnName] as num) * 10)
-                            .roundToDouble() /
-                        10
-                    : double.parse(
-                        rank.toJson()[column.columnName].toString())));
+              columnName: columnKey,
+              value: (value * 10).roundToDouble() / 10,
+            ));
           } else {
+            // Keep original value for non-heatmap columns
             cells.add(DataGridCell(
-              columnName: column.columnName,
-              value: (rank.toJson()[column.columnName] is num)
-                  ? ((rank.toJson()[column.columnName] as num) * 10)
-                          .roundToDouble() /
-                      10
-                  : rank.toJson()[column.columnName],
+              columnName: columnKey,
+              value: rawValue ?? 0,
             ));
           }
         } catch (e) {
-          print(e);
-          cells.add(DataGridCell(columnName: column.columnName, value: ''));
+          print('Error processing column ${column.columnName}: $e');
+          cells.add(DataGridCell(columnName: column.columnName, value: 0));
         }
       }
-      dataRows.add(DataGridRow(
-        cells: cells,
-      ));
+
+      dataRows.add(DataGridRow(cells: cells));
     }
   }
 
@@ -298,6 +305,7 @@ class _RankingsTabState extends State<_RankingsTab> {
         if (mounted) {
           setState(() {
             rankings = fetchedRankings;
+            print('Rankings length: ${fetchedRankings.length}');
             isLoading = false;
             scouting = fetchedScouting;
             scouting.forEach((entry) {
@@ -1186,8 +1194,8 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 3),
                     new Field(
-                        name: 'Shallow Climb',
-                        key: 'shallow_climb_rate',
+                        name: 'Climb',
+                        key: 'climb_rate',
                         enabled: true,
                         weight: 6),
                     Field(
@@ -1242,7 +1250,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
               passing_cycles: 0,
               scoring_cycles: 0,
               cycles_completed: 0,
-              climb_side: 'Did not Climb',
               fuel_cycles: 0),
           teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
           miscellaneous:
@@ -1428,7 +1435,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 passing_cycles: 0,
                 scoring_cycles: 0,
                 cycles_completed: 0,
-                climb_side: 'Did not Climb',
                 fuel_cycles: 0),
             teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
             miscellaneous:
@@ -1483,7 +1489,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Dark Mode Palette
+    const Color backgroundDb = Color(0xFF0F111A);
+    const Color cardDb = Color(0xFF1A1D29);
+    const Color primaryBlue = Color(0xFF47A7FF);
+    const Color textPrimary = Color(0xFFE1E1E1);
+    const String customFont = 'Font';
+
     const List<String> DRIVER_STATIONS = [
       'None',
       'Red 1',
@@ -1493,336 +1505,418 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       'Blue 2',
       'Blue 3'
     ];
+
     scoutNameController.text = data.scout_info.first_name ?? '';
-    return loading
-        ? Center(
-            child: CircularProgressIndicator(
-            color: theme.primaryColor,
-          ))
-        : token == null
-            ? Center(
-                child: LoginWidget(
-                    redirect_path: 'event/${widget.widget.tournament.key}'))
-            : SingleChildScrollView(
-                controller: scrollController,
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.widget.tournament.display,
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 24,
-                              fontFamily: 'Font'),
-                        ),
-                        Divider(color: Colors.blue),
-                        SizedBox(height: 8),
-                        TextField(
-                            controller: eventCodeController,
-                            enabled: false,
-                            decoration: InputDecoration(
-                              floatingLabelStyle: TextStyle(
-                                  fontFamily: 'Font', color: Colors.blue),
-                              labelText: 'Event Code',
-                            ),
-                            style: TextStyle(fontFamily: 'Font')),
-                        SizedBox(height: 8),
-                        TextField(
-                            controller: scoutNameController,
-                            enabled: false,
-                            decoration: InputDecoration(
-                              floatingLabelStyle: TextStyle(
-                                  fontFamily: 'Font', color: Colors.blue),
-                              labelText: 'Scout Name',
-                            ),
-                            style: TextStyle(fontFamily: 'Font')),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: matchNumberController,
-                          enabled: true,
-                          decoration: InputDecoration(
-                            floatingLabelStyle: TextStyle(
-                                fontFamily: 'Font', color: Colors.blue),
-                            labelText: 'Match Number',
-                            labelStyle: TextStyle(
-                                fontFamily: 'Font', color: Colors.blue),
-                          ),
-                          style: TextStyle(fontFamily: 'Font'),
-                          onChanged: (value) {
-                            int matchNumber = int.tryParse(value) ?? -1;
-                            if (matchNumber >= 0 && matchNumber < 500) {
-                              setState(() => data =
-                                  data.copyWith(match_number: matchNumber));
-                              getNewMatchDetails(matchNumber);
-                            } else {
-                              if (matchNumber < 0) {
-                                teamNumberController.text = '0';
-                              } else {
-                                teamNumberController.text = '499';
-                              }
-                            }
-                          },
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        TextField(
-                          style: TextStyle(fontFamily: 'Font'),
-                          controller: teamNumberController,
-                          enabled: true,
-                          decoration: InputDecoration(
-                            floatingLabelStyle: TextStyle(
-                                fontFamily: 'Font', color: Colors.blue),
-                            labelStyle: TextStyle(
-                                fontFamily: 'Font', color: Colors.blue),
-                            labelText: 'Team Number',
-                          ),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          onChanged: (value) {
-                            int teamNumber = int.tryParse(value) ?? -1;
-                            if (teamNumber >= 0 && teamNumber < 20000) {
-                              setState(() => data =
-                                  data.copyWith(team_number: teamNumber));
-                            } else {
-                              if (teamNumber < 0) {
-                                teamNumberController.text = '0';
-                              } else {
-                                teamNumberController.text = '19999';
-                              }
-                            }
-                          },
-                        ),
-                        SizedBox(height: 8),
-                        DropdownButton<int>(
-                          value: driverStationIndex == -1
-                              ? null
-                              : driverStationIndex,
-                          hint: Text('Select Driver Station',
-                              style: TextStyle(
-                                  color: Colors.white, fontFamily: 'Font')),
-                          onChanged: (int? value) {
-                            setState(() {
-                              driverStationIndex = value!;
-                              if (value == 0) {
-                                data = data.copyWith(
-                                    data: data.data.copyWith(
-                                        auto: data.data.auto.copyWith(
-                                            field_side: ['red', 'blue'])));
-                              } else if (value < 4) {
-                                data = data.copyWith(
-                                    data: data.data.copyWith(
-                                        auto: data.data.auto
-                                            .copyWith(field_side: ['red'])));
-                              } else if (value > 3) {
-                                data = data.copyWith(
-                                    data: data.data.copyWith(
-                                        auto: data.data.auto
-                                            .copyWith(field_side: ['blue'])));
-                              }
-                            });
-                            getNewMatchDetails(data.match_number);
-                          },
-                          items: List.generate(
-                            DRIVER_STATIONS.length,
-                            (index) => DropdownMenuItem<int>(
-                              value: index,
-                              child: Text(DRIVER_STATIONS[index],
-                                  style: TextStyle(
-                                      fontFamily: 'Font',
-                                      color: index == 0
-                                          ? Colors.white
-                                          : index < 4
-                                              ? Colors.red
-                                              : Colors.blue)),
-                            ),
-                          ),
-                          isExpanded: true,
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Auto',
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 24,
-                              fontFamily: 'Font'),
-                        ),
-                        Divider(color: Colors.blue),
-                        AutoPieces2026(
-                          auto: data.data.auto,
-                          onChanged: (newAuto) {
-                            setState(() {
-                              data = data.copyWith(
-                                data: data.data.copyWith(auto: newAuto),
-                              );
-                            });
-                          },
-                          onAutoScoringChanged: (newAutoScoring) {
-                            setState(() {
-                              data = data.copyWith(
-                                data: data.data
-                                    .copyWith(auto_scoring: newAutoScoring),
-                              );
-                            });
-                          },
-                          locked: false,
-                          matchScouting: true,
-                        ),
-                        SizedBox(height: 20),
-                        BiggerCounter(
-                          label: 'Passing Cycles',
-                          value: data.data.auto_scoring.passing_cycles,
-                          max: 10000000000,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(passing_cycles: value)));
-                          }),
-                        ),
-                        SizedBox(height: 40),
-                        BiggerCounter(
-                          label: 'Fuel Amount (Approximate)',
-                          value: data.data.auto_scoring.fuel_cycles,
-                          max: 10000000000,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    auto_scoring: data.data.auto_scoring
-                                        .copyWith(fuel_cycles: value)));
-                          }),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Teleop',
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 24,
-                              fontFamily: 'Font'),
-                        ),
-                        SizedBox(height: 8),
-                        Divider(color: const Color.fromRGBO(33, 150, 243, 1)),
-                        SizedBox(height: 8),
-                        BiggerCounter(
-                          label: 'Passing Cycles',
-                          value: data.data.teleop_scoring.passing_cycles,
-                          max: 10000000000,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(passing_cycles: value)));
-                          }),
-                        ),
-                        BiggerCounter(
-                          label: 'Fuel Amount (Approximate)',
-                          value: data.data.teleop_scoring.fuel_cycles,
-                          max: 10000000000,
-                          onChanged: (value) => setState(() {
-                            data = data.copyWith(
-                                data: data.data.copyWith(
-                                    teleop_scoring: data.data.teleop_scoring
-                                        .copyWith(fuel_cycles: value)));
-                          }),
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Miscellaneous',
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 24,
-                              fontFamily: 'Font'),
-                        ),
-                        Divider(color: Colors.blue),
-                        SizedBox(height: 8),
-                        Row(children: [
-                          Text('Died?', style: TextStyle(fontFamily: 'Font')),
-                          Switch(
-                            value: data.data.miscellaneous.died,
-                            onChanged: (value) => setState(() {
-                              HapticFeedback.lightImpact();
-                              data = data.copyWith(
-                                  data: data.data.copyWith(
-                                      miscellaneous: data.data.miscellaneous
-                                          .copyWith(died: value)));
-                            }),
-                            activeThumbColor: Colors.blue,
-                          ),
-                          SizedBox(width: 20),
-                          Text('Played Defense?',
-                              style: TextStyle(fontFamily: 'Font')),
-                          Switch(
-                            value: data.data.miscellaneous.defense,
-                            onChanged: (value) => setState(() {
-                              HapticFeedback.lightImpact();
-                              data = data.copyWith(
-                                  data: data.data.copyWith(
-                                      miscellaneous: data.data.miscellaneous
-                                          .copyWith(defense: value)));
-                            }),
-                            activeThumbColor: Colors.blue,
-                          ),
-                        ]),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: commentsController,
-                          enabled: true,
-                          decoration: InputDecoration(
-                              labelText: 'Comments',
-                              hintStyle: TextStyle(fontFamily: 'Font'),
-                              errorStyle: TextStyle(fontFamily: 'Font'),
-                              labelStyle: TextStyle(fontFamily: 'Font'),
-                              helperStyle: TextStyle(fontFamily: 'Font'),
-                              prefixStyle: TextStyle(fontFamily: 'Font'),
-                              counterStyle: TextStyle(fontFamily: 'Font'),
-                              suffixStyle: TextStyle(fontFamily: 'Font'),
-                              floatingLabelStyle: TextStyle(
-                                  fontFamily: 'Font', color: Colors.blue),
-                              helperText:
-                                  'Do not type anything which could upset someone.',
-                              helperMaxLines: 2),
-                          onChanged: (val) {
-                            setState(() {
-                              data = data.copyWith(
-                                  data: data.data.copyWith(
-                                      miscellaneous: data.data.miscellaneous
-                                          .copyWith(comments: val)));
-                            });
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: submitted ? _update : _submit,
-                            child: Text(submitted ? 'Update' : 'Submit',
-                                style: TextStyle(fontFamily: 'Font')),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        if (submitted)
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: _reset,
-                              child: Text(
-                                'Reset',
-                                style: TextStyle(fontFamily: 'Font'),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+
+    if (loading) {
+      return const Center(child: CircularProgressIndicator(color: primaryBlue));
+    }
+
+    if (token == null) {
+      return Container(
+        color: backgroundDb,
+        child: Center(
+            child: LoginWidget(
+                redirect_path: 'event/${widget.widget.tournament.key}')),
+      );
+    }
+
+    return Container(
+      color: backgroundDb,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 850),
+            child: Column(
+              children: [
+                // HEADER
+                Text(
+                  widget.widget.tournament.display,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: primaryBlue,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: customFont,
                   ),
                 ),
-              );
+                const SizedBox(height: 24),
+
+                // 1. PRE-MATCH INFO
+                _buildDarkCard(
+                  title: "Pre-Match Info",
+                  icon: Icons.assignment_outlined,
+                  cardColor: cardDb,
+                  accentColor: primaryBlue,
+                  children: [
+                    _buildDarkField(eventCodeController, 'Event Code',
+                        enabled: false,
+                        accent: primaryBlue,
+                        textCol: textPrimary),
+                    const SizedBox(height: 16),
+                    _buildDarkField(scoutNameController, 'Scout Name',
+                        enabled: false,
+                        accent: primaryBlue,
+                        textCol: textPrimary),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDarkField(
+                            matchNumberController,
+                            'Match Number',
+                            isNum: true,
+                            prefixIcon: Icons.tag,
+                            accent: primaryBlue,
+                            textCol: textPrimary,
+                            onChanged: (value) {
+                              int matchNumber = int.tryParse(value) ?? -1;
+                              if (matchNumber >= 0 && matchNumber < 500) {
+                                setState(() => data =
+                                    data.copyWith(match_number: matchNumber));
+                                getNewMatchDetails(matchNumber);
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildDarkField(
+                            teamNumberController,
+                            'Team Number',
+                            isNum: true,
+                            prefixIcon: Icons.precision_manufacturing,
+                            accent: primaryBlue,
+                            textCol: textPrimary,
+                            onChanged: (value) {
+                              int teamNumber = int.tryParse(value) ?? -1;
+                              if (teamNumber >= 0 && teamNumber < 20000) {
+                                setState(() => data =
+                                    data.copyWith(team_number: teamNumber));
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDarkDropdown(
+                        DRIVER_STATIONS, cardDb, primaryBlue, textPrimary),
+                  ],
+                ),
+
+                // 2. AUTO PHASE
+                _buildDarkCard(
+                  title: "Autonomous",
+                  icon: Icons.smart_toy_outlined,
+                  cardColor: cardDb,
+                  accentColor: primaryBlue,
+                  children: [
+                    AutoPieces2026(
+                      auto: data.data.auto,
+                      onChanged: (newAuto) {
+                        setState(() {
+                          data = data.copyWith(
+                              data: data.data.copyWith(auto: newAuto));
+                        });
+                      },
+                      onAutoScoringChanged: (newAutoScoring) {
+                        setState(() {
+                          data = data.copyWith(
+                              data: data.data
+                                  .copyWith(auto_scoring: newAutoScoring));
+                        });
+                      },
+                      locked: false,
+                      matchScouting: true,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildCounterRow(
+                        'Passing Cycles', data.data.auto_scoring.passing_cycles,
+                        (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              auto_scoring: data.data.auto_scoring
+                                  .copyWith(passing_cycles: val))));
+                    }),
+                    _buildCounterRow(
+                        'Fuel Amount', data.data.auto_scoring.fuel_cycles,
+                        (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              auto_scoring: data.data.auto_scoring
+                                  .copyWith(fuel_cycles: val))));
+                    }),
+                  ],
+                ),
+
+                // 3. TELEOP PHASE
+                _buildDarkCard(
+                  title: "Teleop Phase",
+                  icon: Icons.videogame_asset_outlined,
+                  cardColor: cardDb,
+                  accentColor: primaryBlue,
+                  children: [
+                    _buildCounterRow('Passing Cycles',
+                        data.data.teleop_scoring.passing_cycles, (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              teleop_scoring: data.data.teleop_scoring
+                                  .copyWith(passing_cycles: val))));
+                    }),
+                    _buildCounterRow(
+                        'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
+                        (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              teleop_scoring: data.data.teleop_scoring
+                                  .copyWith(fuel_cycles: val))));
+                    }),
+                  ],
+                ),
+
+                // 4. MISCELLANEOUS
+                _buildDarkCard(
+                  title: "Post-Match & Misc",
+                  icon: Icons.widgets,
+                  cardColor: cardDb,
+                  accentColor: primaryBlue,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildSwitch('Died?', data.data.miscellaneous.died,
+                            textPrimary, primaryBlue, (value) {
+                          HapticFeedback.lightImpact();
+                          setState(() => data = data.copyWith(
+                              data: data.data.copyWith(
+                                  miscellaneous: data.data.miscellaneous
+                                      .copyWith(died: value))));
+                        }),
+                        _buildSwitch(
+                            'Defense?',
+                            data.data.miscellaneous.defense,
+                            textPrimary,
+                            primaryBlue, (value) {
+                          HapticFeedback.lightImpact();
+                          setState(() => data = data.copyWith(
+                              data: data.data.copyWith(
+                                  miscellaneous: data.data.miscellaneous
+                                      .copyWith(defense: value))));
+                        }),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDarkField(
+                      commentsController,
+                      'Comments',
+                      maxLines: 3,
+                      accent: primaryBlue,
+                      textCol: textPrimary,
+                      onChanged: (val) {
+                        setState(() {
+                          data = data.copyWith(
+                              data: data.data.copyWith(
+                                  miscellaneous: data.data.miscellaneous
+                                      .copyWith(comments: val)));
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                // BUTTONS
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    onPressed: submitted ? _update : _submit,
+                    child: Text(submitted ? 'UPDATE' : 'SUBMIT',
+                        style: const TextStyle(
+                            fontFamily: customFont,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                if (submitted)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: TextButton(
+                      onPressed: _reset,
+                      child: const Text('Reset',
+                          style: TextStyle(
+                              color: primaryBlue,
+                              fontFamily: customFont,
+                              fontSize: 16)),
+                    ),
+                  ),
+                const SizedBox(height: 60),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+// UI HELPERS (Dark Mode)
+
+  Widget _buildDarkCard(
+      {required String title,
+      required IconData icon,
+      required List<Widget> children,
+      required Color cardColor,
+      required Color accentColor}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentColor.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: accentColor, size: 26),
+              const SizedBox(width: 10),
+              Text(title,
+                  style: TextStyle(
+                      color: accentColor,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Font')),
+            ],
+          ),
+          Divider(color: accentColor.withOpacity(0.3), height: 24),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDarkField(TextEditingController controller, String label,
+      {bool enabled = true,
+      bool isNum = false,
+      IconData? prefixIcon,
+      int maxLines = 1,
+      required Color accent,
+      required Color textCol,
+      Function(String)? onChanged}) {
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      onChanged: onChanged,
+      maxLines: maxLines,
+      keyboardType: isNum ? TextInputType.number : TextInputType.text,
+      inputFormatters: isNum ? [FilteringTextInputFormatter.digitsOnly] : [],
+      style: TextStyle(fontFamily: 'Font', color: textCol),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: accent) : null,
+        labelStyle:
+            TextStyle(color: accent.withOpacity(0.8), fontFamily: 'Font'),
+        filled: true,
+        fillColor: Colors.black26,
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: accent.withOpacity(0.3))),
+        focusedBorder:
+            OutlineInputBorder(borderSide: BorderSide(color: accent, width: 2)),
+        disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: accent.withOpacity(0.1))),
+      ),
+    );
+  }
+
+  Widget _buildDarkDropdown(
+      List<String> stations, Color bg, Color accent, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        border: Border.all(color: accent.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: driverStationIndex == -1 ? null : driverStationIndex,
+          dropdownColor: bg,
+          icon: Icon(Icons.arrow_drop_down),
+          hint: Row(children: [
+            Icon(Icons.sports_esports, color: accent),
+            SizedBox(
+              width: 8,
+            ),
+            Text('Select Driver Station', style: TextStyle(fontFamily: 'Font')),
+          ]),
+          isExpanded: true,
+          onChanged: (int? value) {
+            setState(() {
+              driverStationIndex = value!;
+              if (value == 0) {
+                data = data.copyWith(
+                    data: data.data.copyWith(
+                        auto: data.data.auto
+                            .copyWith(field_side: ['red', 'blue'])));
+              } else if (value < 4) {
+                data = data.copyWith(
+                    data: data.data.copyWith(
+                        auto: data.data.auto.copyWith(field_side: ['red'])));
+              } else if (value > 3) {
+                data = data.copyWith(
+                    data: data.data.copyWith(
+                        auto: data.data.auto.copyWith(field_side: ['blue'])));
+              }
+            });
+            getNewMatchDetails(data.match_number);
+          },
+          items: List.generate(
+              stations.length,
+              (i) => DropdownMenuItem(
+                    value: i,
+                    child: Text(stations[i],
+                        style: TextStyle(
+                            fontFamily: 'Font',
+                            color: i == 0
+                                ? Colors.white54
+                                : (i < 4 ? Colors.redAccent : accent))),
+                  )),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCounterRow(String label, int val, Function(int) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: BiggerCounter(
+        label: label,
+        value: val,
+        max: 1000,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildSwitch(String label, bool val, Color textCol, Color accent,
+      Function(bool) onChanged) {
+    return Row(
+      children: [
+        Text(label,
+            style: TextStyle(fontFamily: 'Font', color: textCol, fontSize: 16)),
+        Switch(value: val, onChanged: onChanged, activeColor: accent),
+      ],
+    );
   }
 }
 
@@ -1849,6 +1943,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   List<GridColumn> dataColumns = [];
   List<DataGridRow> dataRows = [];
   List<dynamic> statuses = [];
+
   String? token;
   bool isLoading = true;
   bool hasGoodGroup = true;
@@ -1856,8 +1951,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   @override
   void initState() {
     super.initState();
-    updateGrid();
-    fetchData().then((_) => updateGrid());
+    fetchData();
   }
 
   @override
@@ -1869,7 +1963,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
 
   @override
   void didPopNext() {
-    fetchData().then((_) => updateGrid());
+    fetchData();
   }
 
   @override
@@ -1879,206 +1973,247 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   }
 
   Future<void> fetchData() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
+
     final apiService = Provider.of<ApiService>(context, listen: false);
+
     try {
       token = await apiService.token;
-      if (token != null) {
-        try {
-          final fetchedStatus = await apiService.fetchPitStatus(
-              int.parse(widget.widget.tournament.page.split('/')[3]),
-              widget.widget.tournament.page.split('/')[4]);
-          if (mounted) {
-            setState(() {
-              statuses = fetchedStatus;
-              isLoading = false;
-              updateGrid();
-            });
-          }
-        } catch (e) {
-          setState(() {
-            isLoading = false;
-            hasGoodGroup = false;
-          });
-        }
-      } else {
-        setState(() {});
+
+      if (token == null) {
+        setState(() => isLoading = false);
+        return;
       }
-    } catch (e) {
-      print('Error fetching data: $e');
+
+      final fetchedStatus = await apiService.fetchPitStatus(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+      );
+
+      if (!mounted) return;
+
+      statuses = fetchedStatus;
+      statuses.sort(
+        (a, b) => int.parse(a['key']).compareTo(int.parse(b['key'])),
+      );
+
+      _buildGrid();
+
+      setState(() => isLoading = false);
+    } catch (_) {
+      setState(() {
+        isLoading = false;
+        hasGoodGroup = false;
+      });
     }
   }
 
-  void updateGrid() {
+  void _buildGrid() {
     dataColumns = [
-      GridColumn(
-          columnName: 'key',
-          allowSorting: true,
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Team',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-                style: TextStyle(fontFamily: 'Font'),
-              ))),
-      GridColumn(
-          columnName: 'pit_status',
-          allowSorting: true,
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Pit Scouting',
-                style: TextStyle(fontFamily: 'Font'),
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'picture_status',
-          allowSorting: true,
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Pictures',
-                style: TextStyle(fontFamily: 'Font'),
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'follow_up_status',
-          allowSorting: true,
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Follow Up',
-                style: TextStyle(fontFamily: 'Font'),
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+      _buildColumn('key', 'Team'),
+      _buildColumn('pit_status', 'Pit'),
+      _buildColumn('picture_status', 'Pictures'),
+      _buildColumn('follow_up_status', 'Follow Up'),
     ];
 
-    statuses.sort((a, b) => int.parse(a['key']).compareTo(int.parse(b['key'])));
+    dataRows = statuses.map((status) {
+      return DataGridRow(cells: [
+        DataGridCell(columnName: 'key', value: int.parse(status['key'])),
+        DataGridCell(columnName: 'pit_status', value: status['pit_status']),
+        DataGridCell(
+            columnName: 'picture_status', value: status['picture_status']),
+        DataGridCell(
+            columnName: 'follow_up_status', value: status['follow_up_status']),
+      ]);
+    }).toList();
+  }
 
-    dataRows = [
-      for (Map<String, dynamic> status in statuses)
-        DataGridRow(cells: [
-          DataGridCell(columnName: 'key', value: int.parse(status['key'])),
-          DataGridCell(columnName: 'pit_status', value: status['pit_status']),
-          DataGridCell(
-              columnName: 'picture_status', value: status['picture_status']),
-          DataGridCell(
-              columnName: 'follow_up_status',
-              value: status['follow_up_status']),
-        ])
-    ];
+  GridColumn _buildColumn(String name, String label) {
+    return GridColumn(
+      columnName: name,
+      allowSorting: true,
+      label: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Font',
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     const columnMinWidth = 175.0;
-    bool isWide = MediaQuery.of(context).size.width >=
+    final isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
 
-    return Center(
-        child: isLoading
-            ? CircularProgressIndicator(color: Colors.blue)
-            : token == null
-                ? LoginWidget(
-                    redirect_path: 'event/${widget.widget.tournament.key}')
-                : !hasGoodGroup
-                    ? Card(
-                        child: Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: Text('Your team is not part of this event',
-                                style: TextStyle(fontFamily: 'Font'))))
-                    : LayoutBuilder(
-                        builder: (context, constraints) => Container(
-                            alignment: Alignment.center,
-                            height: constraints.maxHeight,
-                            width: constraints.maxWidth,
-                            child: InteractiveViewer(
-                              scaleEnabled: false,
-                              clipBehavior: Clip.hardEdge,
-                              child: SfDataGrid(
-                                allowSorting: true,
-                                columns: dataColumns,
-                                defaultColumnWidth: columnMinWidth,
-                                columnWidthMode: isWide
-                                    ? ColumnWidthMode.fill
-                                    : ColumnWidthMode.none,
-                                frozenColumnsCount: 0,
-                                source: _StatusSource(context, dataRows,
-                                    widget.widget.tournament),
-                              ),
-                            ))));
+    if (isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              "Loading Pit Status...",
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (token == null) {
+      return LoginWidget(
+        redirect_path: 'event/${widget.widget.tournament.key}',
+      );
+    }
+
+    if (!hasGoodGroup) {
+      return Center(
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              "Your team is not part of this event",
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SfDataGrid(
+            source: _StatusSource(context, dataRows, widget.widget.tournament),
+            columns: dataColumns,
+            allowSorting: true,
+            frozenColumnsCount: 1,
+            defaultColumnWidth: columnMinWidth,
+            columnWidthMode:
+                isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+            rowHeight: 60,
+            headerRowHeight: 56,
+            gridLinesVisibility: GridLinesVisibility.none,
+            headerGridLinesVisibility: GridLinesVisibility.none,
+          ),
+        ),
+      ),
+    );
   }
 }
 
 class _StatusSource extends DataGridSource {
   final BuildContext context;
-  final List<DataGridRow> rows;
-  final Tournament tournament;
-  _StatusSource(BuildContext this.context, this.rows, this.tournament);
+  final List<DataGridRow> dataRows;
+  final dynamic tournament;
+
+  // Manual configuration for Dark Mode consistency
+  Color rowColor = const Color(0xFF1A1D29);
+  final Color _cardDb = const Color(0xFF1A1D29);
+  final Color _cardDbAlt = const Color(0xFF222636);
+  final String _customFont = 'Font';
+
+  _StatusSource(this.context, this.dataRows, this.tournament);
+
   @override
-  DataGridRowAdapter? buildRow(DataGridRow row) {
-    List<DataGridCell> cells = row.getCells();
-    List<Widget> returnCells = [];
-    for (DataGridCell cell in cells) {
-      int rowNumber = rows.indexOf(row);
-      bool even = rowNumber % 2 == 0;
-      final color = even
-          ? Theme.of(context).primaryColor.withOpacity(0.3)
-          : Colors.black.withOpacity(0);
-      cell.columnName == 'key'
-          ? returnCells.add(Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              alignment: Alignment.center,
-              color: color,
-              child: TeamLink(
-                cell.value,
-                tournament,
-              )))
-          : cell.columnName == 'pit_status'
-              ? returnCells.add(Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  alignment: Alignment.center,
-                  color: color,
-                  child: PitScoutingLink(
-                      row.getCells()[0].value, tournament, cell.value)))
-              : cell.columnName == 'picture_status'
-                  ? returnCells.add(Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      alignment: Alignment.center,
-                      color: color,
-                      child: PicturesLink(
-                          row.getCells()[0].value, tournament, cell.value)))
-                  : cell.columnName == 'follow_up_status'
-                      ? returnCells.add(Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.0),
-                          alignment: Alignment.center,
-                          color: color,
-                          child: DeathLink(
-                              row.getCells()[0].value, tournament, cell.value)))
-                      : returnCells.add(Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.0),
-                          alignment: Alignment.center,
-                          color: color,
-                          child: Text(cell.value.toString(),
-                              textScaler: TextScaler.linear(1.25),
-                              style: TextStyle(
-                                  fontFamily: 'Font',
-                                  color: cell.value == 'Incomplete'
-                                      ? Colors.yellow
-                                      : cell.value == 'Done'
-                                          ? Colors.green
-                                          : Colors.red)),
-                        ));
-    }
+  List<DataGridRow> get rows => dataRows;
+
+  @override
+  DataGridRowAdapter buildRow(DataGridRow row) {
+    final int index = dataRows.indexOf(row);
+    // Manual zebra striping
+    final Color backgroundColor = (index % 2 == 0) ? _cardDb : _cardDbAlt;
+
     return DataGridRowAdapter(
-      cells: returnCells,
+      color: backgroundColor,
+      cells: row.getCells().map<Widget>((dataGridCell) {
+        // Find the team key (first cell) for the specific links
+        final dynamic teamKey = row.getCells()[0].value;
+        final String colName = dataGridCell.columnName;
+        final dynamic val = dataGridCell.value;
+
+        Widget cellChild;
+
+        // Routing logic for specialized columns
+        switch (colName) {
+          case 'key':
+            cellChild = TeamLink(val, tournament);
+            break;
+          case 'pit_status':
+            cellChild = PitScoutingLink(teamKey, tournament, val);
+            break;
+          case 'picture_status':
+            cellChild = PicturesLink(teamKey, tournament, val);
+            break;
+          case 'follow_up_status':
+            cellChild = DeathLink(teamKey, tournament, val);
+            break;
+          default:
+            // Standard status text with color coding
+            cellChild = Text(
+              val.toString(),
+              style: TextStyle(
+                fontFamily: _customFont,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: _getStatusColor(val.toString()),
+              ),
+            );
+        }
+
+        return Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: cellChild,
+        );
+      }).toList(),
     );
+  }
+
+  // Logic for coloring "Done", "Incomplete", etc.
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Done':
+      case 'Complete':
+        return Colors.greenAccent;
+      case 'Incomplete':
+      case 'Partial':
+        return Colors.yellowAccent;
+      case 'None':
+      case 'Missing':
+        return Colors.redAccent;
+      default:
+        return const Color(0xFFE1E1E1); // Off-white default
+    }
   }
 }
 

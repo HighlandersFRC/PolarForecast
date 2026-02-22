@@ -79,9 +79,9 @@ class PitData2026(BaseModel):
 
 
 class PitScouting2026(BaseModel):
-    user_id: str
-    scout_info: ScoutInfo
-    team_number: int
-    time: int
-    event_code: str
-    data: PitData2026
+    user_id: Optional[str] = None
+    scout_info: Optional[ScoutInfo] = None
+    team_number: Optional[int] = None
+    time: Optional[int] = None
+    event_code: Optional[str] = None
+    data: Optional[PitData2026] = None

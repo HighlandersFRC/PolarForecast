@@ -107,11 +107,62 @@ class ApiService {
   Future<List<TeamStats2026>> fetchEventRankings(int year, String event) async {
     final cacheKey = '${year}_${event}_rankings';
     final url = '${APIURL}/${year}/${event}/stats';
-    var data = (await _fetchFromAPI(url, cacheKey))['data'];
-    data = [...data];
-    data.removeAt(0);
-    data = data.where((x) => x != null);
-    return [for (var x in data) TeamStats2026.fromJson(x)];
+
+    var rawData = (await _fetchFromAPI(url, cacheKey))['data'];
+
+    if (rawData == null || rawData.isEmpty) return [];
+
+    // Remove header or placeholder if needed
+    rawData = [...rawData];
+    if (rawData.isNotEmpty) rawData.removeAt(0);
+
+    List<TeamStats2026> rankings = [];
+
+    double _safeDouble(dynamic val) {
+      if (val == null) return 0.0;
+      double parsed;
+      if (val is int)
+        parsed = val.toDouble();
+      else if (val is double)
+        parsed = val;
+      else
+        parsed = double.tryParse(val.toString()) ?? 0.0;
+
+      // sanitize NaN or Infinity
+      if (parsed.isNaN || parsed.isInfinite) return 0.0;
+      return parsed;
+    }
+
+    int _safeInt(dynamic val) {
+      if (val == null) return 0;
+      if (val is int) return val;
+      return int.tryParse(val.toString()) ?? 0;
+    }
+
+    for (var x in rawData) {
+      if (x == null) continue;
+
+      rankings.add(TeamStats2026(
+        key: x['team_key'] ?? '',
+        historical: x['historical'] ?? false,
+        rank: _safeInt(x['rank']),
+        team_number: (x['team_number'] ?? 0),
+        match_count: _safeDouble(x['matches_played']),
+        OPR: _safeDouble(x['OPR']),
+        OPRRank: _safeInt(x['OPRRank']),
+        endgame_points: _safeDouble(x['endgame_points']),
+        teleop_points: _safeDouble(x['teleop_points']),
+        auto_points: _safeDouble(x['auto_points']),
+        climbing_points: _safeDouble(x['climbing_points']),
+        mobility: _safeDouble(x['mobility']),
+        death_rate: _safeDouble(x['death_rate']),
+        parking: _safeDouble(x['parking']),
+        simulated_rp: _safeInt(x['simulated_rp']),
+        simulated_rank: _safeInt(x['simulated_rank']),
+      ));
+    }
+    print(rankings);
+    return rankings;
   }
 
   Future<List<dynamic>> fetchPitStatus(int year, String event) async {

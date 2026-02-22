@@ -37,6 +37,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
   bool isAnimatingBumpR = false;
   bool isAnimatingDropdown = false;
   bool isAnimatingNeutralZone = false;
+  bool isAnimatingHuman = false;
+  bool isAnimatingPass = false;
   bool isAnimatingHub = false;
   static const double fieldWidthMeters = 8.052;
 
@@ -271,6 +273,9 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
               double overlayWidthHuman = displayedImageWidth * 0.11;
               double overlayHeightHuman = displayedImageHeight * 0.1;
 
+              double overlayWidthPass = displayedImageWidth * 0.55;
+              double overlayHeightPass = displayedImageHeight * 0.1;
+
               robotPosition ??= Offset(
                 displayedImageWidth * 0.45, // middle horizontally
                 displayedImageHeight * 0.65, // middle of lower half vertically
@@ -382,23 +387,23 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                             autoSteps.add(AutoStep2026(
                                                 name: 'Intaked at Human Player',
                                                 extra_data: {}));
-                                            isAnimatingDepot = true;
+                                            isAnimatingHuman = true;
                                             var newAuto = widget.auto
                                                 .copyWith(steps: autoSteps);
                                             widget.onChanged!(newAuto);
                                           });
                                           Future.delayed(Durations.medium1, () {
                                             setState(
-                                                () => isAnimatingDepot = false);
+                                                () => isAnimatingHuman = false);
                                           });
                                         },
                               child: AnimatedContainer(
                                 duration: Durations.medium1,
                                 curve: Curves.easeInOutQuad,
-                                width: isAnimatingDepot
+                                width: isAnimatingHuman
                                     ? overlayWidthHuman * 1.1
                                     : overlayWidthHuman,
-                                height: isAnimatingDepot
+                                height: isAnimatingHuman
                                     ? overlayHeightHuman * 1.1
                                     : overlayHeightHuman,
                                 decoration: BoxDecoration(
@@ -424,12 +429,12 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                           ),
                           Positioned(
                             left: displayedImageWidth * 0.32,
-                            bottom: displayedImageHeight * 0.3,
+                            bottom: displayedImageHeight * 0.25,
                             child: GestureDetector(
+                              behavior: HitTestBehavior.translucent,
                               onTap: () {
-                                if (widget.onChanged == null ||
-                                    widget.onAutoScoringChanged == null ||
-                                    widget.locked) return;
+                                if (widget.onChanged == null || widget.locked)
+                                  return;
                                 HapticFeedback.lightImpact();
                                 _openShotLocationDialog(
                                   context,
@@ -441,31 +446,29 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                   squareSize,
                                 );
                               },
-                              child: AnimatedContainer(
-                                duration: Durations.medium1,
-                                curve: Curves.easeInOutQuad,
+                              child: Container(
                                 width: overlayWidthHub,
                                 height: overlayHeightHub,
                                 decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.55),
                                   borderRadius: BorderRadius.circular(12),
-                                  color: const Color.fromARGB(142, 1, 57, 126),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.sports_score,
-                                        color: Colors.white,
-                                        size: 18 * scaleFactor),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      'Scored in Hub',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11 * (scaleFactor - 0.4),
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Font'),
-                                    ),
-                                  ],
+                                child: Center(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.sports_score,
+                                          color: Colors.white, size: 20),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Scored in Hub',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Font',
+                                            fontSize: 20),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -786,6 +789,71 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                             ),
                           ),
                           Positioned(
+                            left: displayedImageWidth * 0.225,
+                            bottom: displayedImageHeight * 0.4,
+                            child: GestureDetector(
+                              onTap: widget.onChanged == null
+                                  ? null
+                                  : widget.locked
+                                      ? null
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            var autoSteps =
+                                                widget.auto.steps.toList();
+                                            autoSteps.add(AutoStep2026(
+                                                name:
+                                                    'Passed into Alliance Zone',
+                                                extra_data: {}));
+                                            isAnimatingPass = true;
+                                            var newAuto = widget.auto
+                                                .copyWith(steps: autoSteps);
+                                            widget.onChanged!(newAuto);
+                                          });
+                                          Future.delayed(Durations.medium1, () {
+                                            setState(
+                                                () => isAnimatingPass = false);
+                                          });
+                                        },
+                              child: AnimatedContainer(
+                                duration: Durations.medium1,
+                                curve: Curves.easeInOutQuad,
+                                width: isAnimatingPass
+                                    ? overlayWidthPass * 1.1
+                                    : overlayWidthPass,
+                                height: isAnimatingPass
+                                    ? overlayHeightPass * 1.1
+                                    : overlayHeightPass,
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color.fromARGB(145, 255, 238, 203),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons
+                                          .youtube_searched_for_outlined, // depot-style icon
+                                      color: const Color.fromARGB(255, 0, 0, 0),
+                                      size: 18 * scaleFactor,
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Passed into Alliance Zone',
+                                      style: TextStyle(
+                                          color: const Color.fromARGB(
+                                              255, 0, 0, 0),
+                                          fontSize: 11 * (scaleFactor - 0.4),
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Font'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
                             left: displayedImageWidth * 0.46,
                             bottom: displayedImageHeight * 0.12,
                             child: GestureDetector(
@@ -870,6 +938,34 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                                         style: TextStyle(
                                                             color: Colors
                                                                 .deepPurple,
+                                                            fontFamily:
+                                                                'Font')),
+                                                  ),
+                                                  PopupMenuItem(
+                                                    value: 'straddle right',
+                                                    child: Text(
+                                                        'Straddles Right Side Pole Rung Climb',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    183,
+                                                                    131,
+                                                                    58),
+                                                            fontFamily:
+                                                                'Font')),
+                                                  ),
+                                                  PopupMenuItem(
+                                                    value: 'straddle left',
+                                                    child: Text(
+                                                        'Straddles Left Side Pole Rung Climb',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    229,
+                                                                    207,
+                                                                    13),
                                                             fontFamily:
                                                                 'Font')),
                                                   ),

@@ -43,7 +43,6 @@ class AutoScoring with _$AutoScoring {
     required int scoring_cycles,
     required int fuel_cycles,
     required int cycles_completed,
-    required String climb_side,
   }) = _AutoScoring;
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>

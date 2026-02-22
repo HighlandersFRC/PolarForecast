@@ -53,7 +53,6 @@ _$AutoScoringImpl _$$AutoScoringImplFromJson(Map<String, dynamic> json) =>
       scoring_cycles: (json['scoring_cycles'] as num).toInt(),
       fuel_cycles: (json['fuel_cycles'] as num).toInt(),
       cycles_completed: (json['cycles_completed'] as num).toInt(),
-      climb_side: json['climb_side'] as String,
     );
 
 Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
@@ -62,7 +61,6 @@ Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
       'scoring_cycles': instance.scoring_cycles,
       'fuel_cycles': instance.fuel_cycles,
       'cycles_completed': instance.cycles_completed,
-      'climb_side': instance.climb_side,
     };
 
 _$TeleopScoringImpl _$$TeleopScoringImplFromJson(Map<String, dynamic> json) =>

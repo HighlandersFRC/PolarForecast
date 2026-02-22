@@ -25,7 +25,7 @@ from models.match_scouting_2026 import MatchScouting2026
 from models.death_scouting_form import Death, DeathScoutingForm
 from models.pit_scouting_status import PitScoutingStatus
 from models.picture_data import PictureData
-from models.pit_scouting_2026 import PitScouting2026
+from models.pit_scouting_2026 import PitScouting2026, PitData2026
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
 from models.group_join_request import GroupJoinRequest
@@ -110,6 +110,10 @@ PitScoutingCollection.create_index(
 CalculatedDataCollection = testDB["CalculatedData"]
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+CalculatedDataCollection.update_many(
+    {"data": {"$type": "object"}},
+    {"$set": {"data": []}}
+)
 
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
@@ -324,31 +328,37 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 
 @app.get("/{year}/{event}/stats", tags=["stats"])
 def get_Event_Stats(year: int, event: str, token: str = Header(None)):
-    event_code = str(year)+event
-    if (token == None):
-        data = getEventCalculatedData(event_code)
-    else:
-        if get_token_active(token=token):
-            groups = [Group(**group)
-                      for group in get_user_groups_detailed(token=token)]
-            foundGroup = False
-            for group in groups:
-                if event_code in [x.event_code for x in group.events]:
-                    data = getGroupCalculatedData(event_code, group.group_id)
-                    if data != None:
-                        foundGroup = True
-                    break
-            if not foundGroup:
-                data = getEventCalculatedData(event_code)
-        else:
-            data = getEventCalculatedData(event_code)
+    event_code = f"{year}{event}"
+    
+    # Try fetching calculated data
+    data = getEventCalculatedData(event_code)
+    
+    # Fallback: use TBA rankings if calculated data empty
+    if not data or not data.get("data"):
+        event_doc = ETagCollection.find_one({"key": event_code})
+        rankings = event_doc.get("rankings", [])
+        processed = []
+        for r in rankings:
+            processed.append({
+                "team_number": int(r["team_key"].replace("frc", "")),
+                "rank": r["rank"],
+                "simulated_rp": r["extra_stats"][0] if r["extra_stats"] else 0,
+                "OPR": r["sort_orders"][1] if len(r["sort_orders"]) > 1 else 0,
+                "auto_fuel_points": r["sort_orders"][2] if len(r["sort_orders"]) > 2 else 0,
+                "teleop_fuel_points": r["sort_orders"][0] if len(r["sort_orders"]) > 0 else 0,
+                "climbing_points": r["sort_orders"][3] if len(r["sort_orders"]) > 3 else 0,
+                "death_rate": 0
+            })
+        return {"data": processed}
+    
+    # Otherwise, process calculated data
     for i, team in enumerate(data["data"][1:]):
         if math.isnan(team["death_rate"]):
             team["death_rate"] = 0
         data["data"][i+1] = team
-    data.pop("_id")
+    
+    data.pop("_id", None)
     return data
-
 
 @app.get("/events/{year}", tags=["miscellaneous"])
 @cacheValue()
@@ -505,25 +515,24 @@ def get_pit_scouting_data(
     event_code = f"{year}{event}"
 
     data = PitScoutingCollection.find_one({
-        "event_code": event_code,
-        "team_number": int(team[3:]),
-        "scout_info.user_id": user_info["sub"]
-    })
+    "event_code": event_code,
+    "team_number": int(team[3:])
+})
 
     if not data:
-        # Instead of returning None, return an empty dict
-        return {
-            "scout_info": scout_info_from_token(token),
-            "team_number": int(team[3:]),
-            "time": 0,
-            "event_code": event_code,
-            "data": {},  # empty PitData2026 placeholder
-            "user_id": "",
-            "auto": {}
-        }
+        # Return an empty PitScouting2026 with default PitData2026
+        empty_data = PitScouting2026()  # all defaults set inside model
+        return PitScouting2026(
+            scout_info=scout_info_from_token(token),
+            team_number=int(team[3:]),
+            time=0,
+            event_code=event_code,
+            data=PitData2026(),
+            user_id="",
+            auto={}  # or an Auto2026 object with defaults if needed
+        )
 
     return PitScouting2026(**data)
-
 
 
 @app.get("/{year}/{event}/PitScoutingStatus", tags=["scouting"])
@@ -1765,7 +1774,7 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
         group_name=group_name,
         user_id=user_info['sub'],
         username=user_info['preferred_username'],
-        request_time=datetime.now().timestamp(),
+        request_time=int(datetime.now().timestamp()),
         group_id=DBgroup.group_id,
         accepted=False,
     )
@@ -2142,7 +2151,7 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
 def update_match_scouting(data: MatchScouting2026, token: str = Depends(check_token_active)):
     data.scout_info = scout_info_from_token(token=token)
     oldEntry = MatchScoutingCollection.find_one(
-        {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id})
+        {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id,  "match_number": data.match_number})
     data.time = datetime.utcnow().timestamp()
     data.data.miscellaneous.comments = profanity.censor(
         data.data.miscellaneous.comments)
@@ -2922,7 +2931,10 @@ def updateData(event_code: str, event_type: int):
     # ---- Merge previous data (keep missing keys) ----
     try:
         prevDataDoc = CalculatedDataCollection.find_one({"event_code": event_code})
-        prevData = prevDataDoc["data"][1:] if prevDataDoc else []
+        if prevDataDoc and isinstance(prevDataDoc.get("data"), list):
+            prevData = prevDataDoc["data"][1:]
+        else:
+            prevData = []
 
         for old_team in prevData:
             for new_team in data[1:]:
@@ -3138,7 +3150,7 @@ def update_database():
         eventCode = YEAR+event["event_code"]
         try:
             CalculatedDataCollection.insert_one(
-                {"event_code": (eventCode), "data": {}})
+                {"event_code": (eventCode), "data": []})
         except:
             pass
         try:
@@ -3168,7 +3180,7 @@ def update_database():
                     if req.status_code != 304:
                         continue
                     print(req.status_code, event["key"])
-                    teams = event["teams"]
+                    teams = event.get("teams", [])
                 # print("got Teams")
                 event["teams"] = teams
                 # print(teams)
