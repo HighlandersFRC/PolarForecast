@@ -156,13 +156,13 @@ class _BiggerCounterState extends State<BiggerCounter> {
             Row(
               children: [
                 buildButton(
-                  label: "-1",
+                  label: '-1',
                   color: danger,
                   onTap: disabled || atMin ? null : () => _updateValue(-1),
                 ),
                 const SizedBox(width: 14),
                 buildButton(
-                  label: "+1",
+                  label: '+1',
                   color: primary,
                   onTap: disabled || atMax ? null : () => _updateValue(1),
                 ),
@@ -175,13 +175,13 @@ class _BiggerCounterState extends State<BiggerCounter> {
             Row(
               children: [
                 buildButton(
-                  label: "-5",
+                  label: '-5',
                   color: danger,
                   onTap: disabled || atMin ? null : () => _updateValue(-5),
                 ),
                 const SizedBox(width: 14),
                 buildButton(
-                  label: "+5",
+                  label: '+5',
                   color: primary,
                   onTap: disabled || atMax ? null : () => _updateValue(5),
                 ),

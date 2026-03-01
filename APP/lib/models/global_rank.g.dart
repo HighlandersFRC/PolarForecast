@@ -15,7 +15,7 @@ _$GlobalRankImpl _$$GlobalRankImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      data: TeamStats2025.fromJson(json['data'] as Map<String, dynamic>),
+      data: TeamStats2026.fromJson(json['data'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$GlobalRankImplToJson(_$GlobalRankImpl instance) =>

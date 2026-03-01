@@ -38,10 +38,10 @@ class PitData2026 with _$PitData2026 {
       required String favorite_color,
       Auto2026? auto,
       required int hopper_capacity,
-      required int mag_unload_speed,
+      required double mag_unload_speed,
       // keep autos dynamic to avoid type-mismatch with other code/widgets
       List<Auto2026>? autos,
-      required int robot_height,
+      required double robot_height,
       required bool straddling_pole_climb_right,
       required bool straddling_pole_climb_left,
       required bool left_pole_climb,

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
@@ -461,11 +460,13 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                                           color: Colors.white, size: 20),
                                       SizedBox(width: 4),
                                       Text(
-                                        'Scored in Hub',
+                                        'Scored in the Hub',
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontFamily: 'Font',
-                                            fontSize: 20),
+                                            color: const Color.fromARGB(
+                                                255, 0, 0, 0),
+                                            fontSize: 11 * (scaleFactor - 0.4),
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Font'),
                                       ),
                                     ],
                                   ),

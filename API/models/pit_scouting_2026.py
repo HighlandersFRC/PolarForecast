@@ -37,7 +37,6 @@ class Scoring2026(BaseModel):
 
 class Auto2026(BaseModel):
     starting_position_meters_from_hub_center: float
-    steps: list
     field_side: List[str]
     preload: bool
     both_sides: bool = False
@@ -65,8 +64,8 @@ class PitData2026(BaseModel):
     favorite_color: str
     autos: list
     hopper_capacity: int
-    mag_unload_speed: int
-    robot_height: int
+    mag_unload_speed: float
+    robot_height: float
 
 
 

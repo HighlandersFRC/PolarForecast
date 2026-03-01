@@ -20,25 +20,24 @@ TeamStats2026 _$TeamStats2026FromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TeamStats2026 {
-// Historical from backend? Default false
-  bool get historical =>
-      throw _privateConstructorUsedError; // Unique key for the team, e.g., "frc6328"
-  String get key => throw _privateConstructorUsedError; // Event rank
-  int get rank => throw _privateConstructorUsedError; // Team number as string
-  int get team_number =>
-      throw _privateConstructorUsedError; // Total matches played
-  double get match_count =>
-      throw _privateConstructorUsedError; // Offensive Power Rating
-  double get OPR => throw _privateConstructorUsedError; // Optional OPR ranking
-  int? get OPRRank => throw _privateConstructorUsedError; // Scoring breakdown
+  bool get historical => throw _privateConstructorUsedError;
+  String get key => throw _privateConstructorUsedError;
+  int get rank => throw _privateConstructorUsedError;
+  String get team_number => throw _privateConstructorUsedError;
+  double get match_count => throw _privateConstructorUsedError;
+  double get OPR => throw _privateConstructorUsedError;
+  int? get OPRRank => throw _privateConstructorUsedError;
+  double get total_pass => throw _privateConstructorUsedError;
+  double get auto_pass => throw _privateConstructorUsedError;
+  double get teleop_pass => throw _privateConstructorUsedError;
   double get endgame_points => throw _privateConstructorUsedError;
   double get teleop_points => throw _privateConstructorUsedError;
   double get auto_points => throw _privateConstructorUsedError;
   double get climbing_points => throw _privateConstructorUsedError;
-  double get mobility => throw _privateConstructorUsedError;
-  double get parking => throw _privateConstructorUsedError; // Failure rate
-  double get death_rate =>
-      throw _privateConstructorUsedError; // Simulated rank points / RP
+  double get death_rate => throw _privateConstructorUsedError;
+  double get auto_fuel_cycles => throw _privateConstructorUsedError;
+  double get teleop_fuel_cycles => throw _privateConstructorUsedError;
+  double get foul_points => throw _privateConstructorUsedError;
   int get simulated_rp => throw _privateConstructorUsedError;
   int get simulated_rank => throw _privateConstructorUsedError;
 
@@ -62,17 +61,21 @@ abstract class $TeamStats2026CopyWith<$Res> {
       {bool historical,
       String key,
       int rank,
-      int team_number,
+      String team_number,
       double match_count,
       double OPR,
       int? OPRRank,
+      double total_pass,
+      double auto_pass,
+      double teleop_pass,
       double endgame_points,
       double teleop_points,
       double auto_points,
       double climbing_points,
-      double mobility,
-      double parking,
       double death_rate,
+      double auto_fuel_cycles,
+      double teleop_fuel_cycles,
+      double foul_points,
       int simulated_rp,
       int simulated_rank});
 }
@@ -99,13 +102,17 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
     Object? match_count = null,
     Object? OPR = null,
     Object? OPRRank = freezed,
+    Object? total_pass = null,
+    Object? auto_pass = null,
+    Object? teleop_pass = null,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
     Object? climbing_points = null,
-    Object? mobility = null,
-    Object? parking = null,
     Object? death_rate = null,
+    Object? auto_fuel_cycles = null,
+    Object? teleop_fuel_cycles = null,
+    Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
   }) {
@@ -125,7 +132,7 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       match_count: null == match_count
           ? _value.match_count
           : match_count // ignore: cast_nullable_to_non_nullable
@@ -138,6 +145,18 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.OPRRank
           : OPRRank // ignore: cast_nullable_to_non_nullable
               as int?,
+      total_pass: null == total_pass
+          ? _value.total_pass
+          : total_pass // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_pass: null == auto_pass
+          ? _value.auto_pass
+          : auto_pass // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_pass: null == teleop_pass
+          ? _value.teleop_pass
+          : teleop_pass // ignore: cast_nullable_to_non_nullable
+              as double,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -154,17 +173,21 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.climbing_points
           : climbing_points // ignore: cast_nullable_to_non_nullable
               as double,
-      mobility: null == mobility
-          ? _value.mobility
-          : mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      parking: null == parking
-          ? _value.parking
-          : parking // ignore: cast_nullable_to_non_nullable
-              as double,
       death_rate: null == death_rate
           ? _value.death_rate
           : death_rate // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_fuel_cycles: null == auto_fuel_cycles
+          ? _value.auto_fuel_cycles
+          : auto_fuel_cycles // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_fuel_cycles: null == teleop_fuel_cycles
+          ? _value.teleop_fuel_cycles
+          : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
+              as double,
+      foul_points: null == foul_points
+          ? _value.foul_points
+          : foul_points // ignore: cast_nullable_to_non_nullable
               as double,
       simulated_rp: null == simulated_rp
           ? _value.simulated_rp
@@ -190,17 +213,21 @@ abstract class _$$TeamStats2026ImplCopyWith<$Res>
       {bool historical,
       String key,
       int rank,
-      int team_number,
+      String team_number,
       double match_count,
       double OPR,
       int? OPRRank,
+      double total_pass,
+      double auto_pass,
+      double teleop_pass,
       double endgame_points,
       double teleop_points,
       double auto_points,
       double climbing_points,
-      double mobility,
-      double parking,
       double death_rate,
+      double auto_fuel_cycles,
+      double teleop_fuel_cycles,
+      double foul_points,
       int simulated_rp,
       int simulated_rank});
 }
@@ -225,13 +252,17 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
     Object? match_count = null,
     Object? OPR = null,
     Object? OPRRank = freezed,
+    Object? total_pass = null,
+    Object? auto_pass = null,
+    Object? teleop_pass = null,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
     Object? climbing_points = null,
-    Object? mobility = null,
-    Object? parking = null,
     Object? death_rate = null,
+    Object? auto_fuel_cycles = null,
+    Object? teleop_fuel_cycles = null,
+    Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
   }) {
@@ -251,7 +282,7 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
       team_number: null == team_number
           ? _value.team_number
           : team_number // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       match_count: null == match_count
           ? _value.match_count
           : match_count // ignore: cast_nullable_to_non_nullable
@@ -264,6 +295,18 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.OPRRank
           : OPRRank // ignore: cast_nullable_to_non_nullable
               as int?,
+      total_pass: null == total_pass
+          ? _value.total_pass
+          : total_pass // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_pass: null == auto_pass
+          ? _value.auto_pass
+          : auto_pass // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_pass: null == teleop_pass
+          ? _value.teleop_pass
+          : teleop_pass // ignore: cast_nullable_to_non_nullable
+              as double,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -280,17 +323,21 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.climbing_points
           : climbing_points // ignore: cast_nullable_to_non_nullable
               as double,
-      mobility: null == mobility
-          ? _value.mobility
-          : mobility // ignore: cast_nullable_to_non_nullable
-              as double,
-      parking: null == parking
-          ? _value.parking
-          : parking // ignore: cast_nullable_to_non_nullable
-              as double,
       death_rate: null == death_rate
           ? _value.death_rate
           : death_rate // ignore: cast_nullable_to_non_nullable
+              as double,
+      auto_fuel_cycles: null == auto_fuel_cycles
+          ? _value.auto_fuel_cycles
+          : auto_fuel_cycles // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_fuel_cycles: null == teleop_fuel_cycles
+          ? _value.teleop_fuel_cycles
+          : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
+              as double,
+      foul_points: null == foul_points
+          ? _value.foul_points
+          : foul_points // ignore: cast_nullable_to_non_nullable
               as double,
       simulated_rp: null == simulated_rp
           ? _value.simulated_rp
@@ -308,87 +355,74 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeamStats2026Impl implements _TeamStats2026 {
   _$TeamStats2026Impl(
-      {this.historical = false,
-      this.key = '',
-      this.rank = 0,
-      this.team_number = 0,
-      this.match_count = 0.0,
-      this.OPR = 0.0,
+      {required this.historical,
+      required this.key,
+      required this.rank,
+      required this.team_number,
+      required this.match_count,
+      required this.OPR,
       this.OPRRank,
-      this.endgame_points = 0.0,
-      this.teleop_points = 0.0,
-      this.auto_points = 0.0,
-      this.climbing_points = 0.0,
-      this.mobility = 0.0,
-      this.parking = 0.0,
-      this.death_rate = 0.0,
-      this.simulated_rp = 0,
-      this.simulated_rank = 0});
+      required this.total_pass,
+      required this.auto_pass,
+      required this.teleop_pass,
+      required this.endgame_points,
+      required this.teleop_points,
+      required this.auto_points,
+      required this.climbing_points,
+      required this.death_rate,
+      required this.auto_fuel_cycles,
+      required this.teleop_fuel_cycles,
+      required this.foul_points,
+      required this.simulated_rp,
+      required this.simulated_rank});
 
   factory _$TeamStats2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$TeamStats2026ImplFromJson(json);
 
-// Historical from backend? Default false
   @override
-  @JsonKey()
   final bool historical;
-// Unique key for the team, e.g., "frc6328"
   @override
-  @JsonKey()
   final String key;
-// Event rank
   @override
-  @JsonKey()
   final int rank;
-// Team number as string
   @override
-  @JsonKey()
-  final int team_number;
-// Total matches played
+  final String team_number;
   @override
-  @JsonKey()
   final double match_count;
-// Offensive Power Rating
   @override
-  @JsonKey()
   final double OPR;
-// Optional OPR ranking
   @override
   final int? OPRRank;
-// Scoring breakdown
   @override
-  @JsonKey()
+  final double total_pass;
+  @override
+  final double auto_pass;
+  @override
+  final double teleop_pass;
+  @override
   final double endgame_points;
   @override
-  @JsonKey()
   final double teleop_points;
   @override
-  @JsonKey()
   final double auto_points;
   @override
-  @JsonKey()
   final double climbing_points;
   @override
-  @JsonKey()
-  final double mobility;
-  @override
-  @JsonKey()
-  final double parking;
-// Failure rate
-  @override
-  @JsonKey()
   final double death_rate;
-// Simulated rank points / RP
   @override
-  @JsonKey()
+  final double auto_fuel_cycles;
+  @override
+  final double teleop_fuel_cycles;
+  @override
+  final double foul_points;
+  @override
   final int simulated_rp;
   @override
-  @JsonKey()
   final int simulated_rank;
 
   @override
   String toString() {
-    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, mobility: $mobility, parking: $parking, death_rate: $death_rate, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
+    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, auto_fuel_cycles: $auto_fuel_cycles, teleop_fuel_cycles: $teleop_fuel_cycles, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
   }
 
   @override
@@ -406,6 +440,12 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
                 other.match_count == match_count) &&
             (identical(other.OPR, OPR) || other.OPR == OPR) &&
             (identical(other.OPRRank, OPRRank) || other.OPRRank == OPRRank) &&
+            (identical(other.total_pass, total_pass) ||
+                other.total_pass == total_pass) &&
+            (identical(other.auto_pass, auto_pass) ||
+                other.auto_pass == auto_pass) &&
+            (identical(other.teleop_pass, teleop_pass) ||
+                other.teleop_pass == teleop_pass) &&
             (identical(other.endgame_points, endgame_points) ||
                 other.endgame_points == endgame_points) &&
             (identical(other.teleop_points, teleop_points) ||
@@ -414,11 +454,14 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
                 other.auto_points == auto_points) &&
             (identical(other.climbing_points, climbing_points) ||
                 other.climbing_points == climbing_points) &&
-            (identical(other.mobility, mobility) ||
-                other.mobility == mobility) &&
-            (identical(other.parking, parking) || other.parking == parking) &&
             (identical(other.death_rate, death_rate) ||
                 other.death_rate == death_rate) &&
+            (identical(other.auto_fuel_cycles, auto_fuel_cycles) ||
+                other.auto_fuel_cycles == auto_fuel_cycles) &&
+            (identical(other.teleop_fuel_cycles, teleop_fuel_cycles) ||
+                other.teleop_fuel_cycles == teleop_fuel_cycles) &&
+            (identical(other.foul_points, foul_points) ||
+                other.foul_points == foul_points) &&
             (identical(other.simulated_rp, simulated_rp) ||
                 other.simulated_rp == simulated_rp) &&
             (identical(other.simulated_rank, simulated_rank) ||
@@ -427,24 +470,29 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      historical,
-      key,
-      rank,
-      team_number,
-      match_count,
-      OPR,
-      OPRRank,
-      endgame_points,
-      teleop_points,
-      auto_points,
-      climbing_points,
-      mobility,
-      parking,
-      death_rate,
-      simulated_rp,
-      simulated_rank);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        historical,
+        key,
+        rank,
+        team_number,
+        match_count,
+        OPR,
+        OPRRank,
+        total_pass,
+        auto_pass,
+        teleop_pass,
+        endgame_points,
+        teleop_points,
+        auto_points,
+        climbing_points,
+        death_rate,
+        auto_fuel_cycles,
+        teleop_fuel_cycles,
+        foul_points,
+        simulated_rp,
+        simulated_rank
+      ]);
 
   /// Create a copy of TeamStats2026
   /// with the given fields replaced by the non-null parameter values.
@@ -464,41 +512,50 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
 
 abstract class _TeamStats2026 implements TeamStats2026 {
   factory _TeamStats2026(
-      {final bool historical,
-      final String key,
-      final int rank,
-      final int team_number,
-      final double match_count,
-      final double OPR,
+      {required final bool historical,
+      required final String key,
+      required final int rank,
+      required final String team_number,
+      required final double match_count,
+      required final double OPR,
       final int? OPRRank,
-      final double endgame_points,
-      final double teleop_points,
-      final double auto_points,
-      final double climbing_points,
-      final double mobility,
-      final double parking,
-      final double death_rate,
-      final int simulated_rp,
-      final int simulated_rank}) = _$TeamStats2026Impl;
+      required final double total_pass,
+      required final double auto_pass,
+      required final double teleop_pass,
+      required final double endgame_points,
+      required final double teleop_points,
+      required final double auto_points,
+      required final double climbing_points,
+      required final double death_rate,
+      required final double auto_fuel_cycles,
+      required final double teleop_fuel_cycles,
+      required final double foul_points,
+      required final int simulated_rp,
+      required final int simulated_rank}) = _$TeamStats2026Impl;
 
   factory _TeamStats2026.fromJson(Map<String, dynamic> json) =
       _$TeamStats2026Impl.fromJson;
 
-// Historical from backend? Default false
   @override
-  bool get historical; // Unique key for the team, e.g., "frc6328"
+  bool get historical;
   @override
-  String get key; // Event rank
+  String get key;
   @override
-  int get rank; // Team number as string
+  int get rank;
   @override
-  int get team_number; // Total matches played
+  String get team_number;
   @override
-  double get match_count; // Offensive Power Rating
+  double get match_count;
   @override
-  double get OPR; // Optional OPR ranking
+  double get OPR;
   @override
-  int? get OPRRank; // Scoring breakdown
+  int? get OPRRank;
+  @override
+  double get total_pass;
+  @override
+  double get auto_pass;
+  @override
+  double get teleop_pass;
   @override
   double get endgame_points;
   @override
@@ -508,11 +565,13 @@ abstract class _TeamStats2026 implements TeamStats2026 {
   @override
   double get climbing_points;
   @override
-  double get mobility;
+  double get death_rate;
   @override
-  double get parking; // Failure rate
+  double get auto_fuel_cycles;
   @override
-  double get death_rate; // Simulated rank points / RP
+  double get teleop_fuel_cycles;
+  @override
+  double get foul_points;
   @override
   int get simulated_rp;
   @override

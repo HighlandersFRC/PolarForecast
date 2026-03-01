@@ -360,10 +360,10 @@ mixin _$PitData2026 {
   String get favorite_color => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
   int get hopper_capacity => throw _privateConstructorUsedError;
-  int get mag_unload_speed =>
+  double get mag_unload_speed =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<Auto2026>? get autos => throw _privateConstructorUsedError;
-  int get robot_height => throw _privateConstructorUsedError;
+  double get robot_height => throw _privateConstructorUsedError;
   bool get straddling_pole_climb_right => throw _privateConstructorUsedError;
   bool get straddling_pole_climb_left => throw _privateConstructorUsedError;
   bool get left_pole_climb => throw _privateConstructorUsedError;
@@ -404,9 +404,9 @@ abstract class $PitData2026CopyWith<$Res> {
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
-      int mag_unload_speed,
+      double mag_unload_speed,
       List<Auto2026>? autos,
-      int robot_height,
+      double robot_height,
       bool straddling_pole_climb_right,
       bool straddling_pole_climb_left,
       bool left_pole_climb,
@@ -529,7 +529,7 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
       mag_unload_speed: null == mag_unload_speed
           ? _value.mag_unload_speed
           : mag_unload_speed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       autos: freezed == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -537,7 +537,7 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
       robot_height: null == robot_height
           ? _value.robot_height
           : robot_height // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       straddling_pole_climb_right: null == straddling_pole_climb_right
           ? _value.straddling_pole_climb_right
           : straddling_pole_climb_right // ignore: cast_nullable_to_non_nullable
@@ -602,9 +602,9 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
-      int mag_unload_speed,
+      double mag_unload_speed,
       List<Auto2026>? autos,
-      int robot_height,
+      double robot_height,
       bool straddling_pole_climb_right,
       bool straddling_pole_climb_left,
       bool left_pole_climb,
@@ -726,7 +726,7 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
       mag_unload_speed: null == mag_unload_speed
           ? _value.mag_unload_speed
           : mag_unload_speed // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       autos: freezed == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -734,7 +734,7 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
       robot_height: null == robot_height
           ? _value.robot_height
           : robot_height // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       straddling_pole_climb_right: null == straddling_pole_climb_right
           ? _value.straddling_pole_climb_right
           : straddling_pole_climb_right // ignore: cast_nullable_to_non_nullable
@@ -835,7 +835,7 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final int hopper_capacity;
   @override
-  final int mag_unload_speed;
+  final double mag_unload_speed;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<Auto2026>? _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
@@ -849,7 +849,7 @@ class _$PitData2026Impl implements _PitData2026 {
   }
 
   @override
-  final int robot_height;
+  final double robot_height;
   @override
   final bool straddling_pole_climb_right;
   @override
@@ -988,9 +988,9 @@ abstract class _PitData2026 implements PitData2026 {
       required final String favorite_color,
       final Auto2026? auto,
       required final int hopper_capacity,
-      required final int mag_unload_speed,
+      required final double mag_unload_speed,
       final List<Auto2026>? autos,
-      required final int robot_height,
+      required final double robot_height,
       required final bool straddling_pole_climb_right,
       required final bool straddling_pole_climb_left,
       required final bool left_pole_climb,
@@ -1035,11 +1035,12 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   int get hopper_capacity;
   @override
-  int get mag_unload_speed; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  double
+      get mag_unload_speed; // keep autos dynamic to avoid type-mismatch with other code/widgets
   @override
   List<Auto2026>? get autos;
   @override
-  int get robot_height;
+  double get robot_height;
   @override
   bool get straddling_pole_climb_right;
   @override

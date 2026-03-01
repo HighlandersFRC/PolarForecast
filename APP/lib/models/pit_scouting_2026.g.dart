@@ -57,11 +57,11 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
           ? null
           : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       hopper_capacity: (json['hopper_capacity'] as num).toInt(),
-      mag_unload_speed: (json['mag_unload_speed'] as num).toInt(),
+      mag_unload_speed: (json['mag_unload_speed'] as num).toDouble(),
       autos: (json['autos'] as List<dynamic>?)
           ?.map((e) => Auto2026.fromJson(e as Map<String, dynamic>))
           .toList(),
-      robot_height: (json['robot_height'] as num).toInt(),
+      robot_height: (json['robot_height'] as num).toDouble(),
       straddling_pole_climb_right: json['straddling_pole_climb_right'] as bool,
       straddling_pole_climb_left: json['straddling_pole_climb_left'] as bool,
       left_pole_climb: json['left_pole_climb'] as bool,

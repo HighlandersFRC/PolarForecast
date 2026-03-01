@@ -1,8 +1,9 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flat/flat.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
@@ -149,12 +150,25 @@ class _StatsTabState extends State<_StatsTab> {
 
   void fetchStats() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
+
+    final parts = widget.widget.tournament.page.split('/');
+
+    // ["", "event", "2026week0", "team", "frc190"]
+
+    final eventCode = parts[2]; // "2026week0"
+    final teamKey = parts[4]; // "frc190"
+
+    final year = int.parse(eventCode.substring(0, 4));
+    final event = eventCode.substring(4);
+
+    print("YEAR: $year"); // 2026
+    print("EVENT: $event"); // week0
+    print("TEAM: $teamKey"); // frc190
+
     try {
-      final fetchedStats = await apiService.fetchTeamStats(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-        'frc${widget.widget.teamNumber}',
-      );
+      final fetchedStats =
+          await apiService.fetchTeamStats(year, event, teamKey);
+
       if (mounted) {
         setState(() {
           stats = fetchedStats;
@@ -906,13 +920,16 @@ class _MatchScoutingTab extends StatefulWidget {
   _MatchScoutingTabState createState() => _MatchScoutingTabState();
 }
 
+// Assuming you have these imports based on your code
+// import 'your_models.dart';
+// import 'api_service.dart';
+
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   List<MatchScouting2026> scouting = [];
-  List<DataGridRow> rows = [];
-  List<GridColumn> columns = [];
   late ScrollController scrollController;
   String? role, token;
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -922,182 +939,323 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    // try {
-    this.token = await apiService.token;
+
+    token = await apiService.token;
     if (token != null) {
-      final fetchedStats = (await apiService.fetchTeamMatchScouting(
+      final fetchedStats = await apiService.fetchTeamMatchScouting(
         int.parse(widget.widget.tournament.page.split('/')[3]),
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
-      ));
-      final groups = (await apiService.get_user_groups_detailed());
+      );
+
+      final groups = await apiService.get_user_groups_detailed();
       if (groups.isNotEmpty) {
-        final (_group, _role) = (await apiService.get_group(groups[0].name));
-        if (mounted)
+        final (_, _role) = await apiService.get_group(groups[0].name);
+        if (mounted) {
           setState(() {
             role = _role;
-            scouting = [...fetchedStats];
+            scouting = fetchedStats;
           });
-        role = _role;
-        scouting = [...fetchedStats];
+        }
       }
     }
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-    isLoading = false;
-    // } catch (e) {
-    //   print('Error fetching data: $e');
-    // }
+
+    if (mounted) setState(() => isLoading = false);
   }
 
+  // Kept for compatibility – triggers a rebuild (no longer builds grid rows)
   void updateGrid() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _refreshData() async {
+    setState(() => isLoading = true);
+    await fetchData();
+    updateGrid();
+  }
+
+  void _deleteEntry(int index) {
+    // Optional: call API to delete from backend
     setState(() {
-      columns = [
-        GridColumn(
-            columnName: 'scout_name',
-            label: Text('Scout Name', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'match_number',
-            label: Text('Match', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'fuel_cycles_auto',
-            label: Text('Fuel Shot in Auto',
-                style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'fuel_cycles',
-            label: Text('Fuel Shot in Teleop',
-                style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'passing_cycles_auto',
-            label: Text('Passing Cycles in Auto',
-                style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'passing_cycles',
-            label: Text('Passing Cycles in Teleop',
-                style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'died',
-            label: Text('Died', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'defense',
-            label:
-                Text('Played Defense', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'comments',
-            label: Text('Comments', style: TextStyle(fontFamily: 'Font'))),
-        GridColumn(
-            columnName: 'delete',
-            label: Text('Delete', style: TextStyle(fontFamily: 'Font')))
-      ];
-      rows = [];
-      for (var entry in scouting) {
-        var flattened = flatten(entry.toJson()['data'], delimiter: '_');
-        flattened = {
-          ...flattened,
-          ...entry.data.miscellaneous.toJson(),
-          'scout_name': entry.scout_info.first_name ??
-              'From Team ${entry.scout_info.team_number}',
-        };
-        rows.add(DataGridRow(cells: [
-          DataGridCell(
-              columnName: 'scout_name',
-              value: entry.scout_info.first_name ??
-                  'Scout from ${entry.scout_info.team_number}'),
-          DataGridCell(columnName: 'match_number', value: entry.match_number),
-          DataGridCell(
-              columnName: 'fuel_cycles_auto',
-              value: entry.data.auto_scoring.fuel_cycles),
-          DataGridCell(
-              columnName: 'fuel_cycles',
-              value: entry.data.teleop_scoring.fuel_cycles),
-          DataGridCell(
-              columnName: 'passing_cycles_auto',
-              value: entry.data.auto_scoring.passing_cycles),
-          DataGridCell(
-              columnName: 'passing_cycles',
-              value: entry.data.teleop_scoring.passing_cycles),
-          DataGridCell(
-              columnName: 'died', value: entry.data.miscellaneous.died),
-          DataGridCell(
-              columnName: 'defense', value: entry.data.miscellaneous.defense),
-          DataGridCell(
-              columnName: 'comments', value: entry.data.miscellaneous.comments),
-          DataGridCell(
-              columnName: 'delete',
-              value: entry.scout_info.first_name != null &&
-                  (role == 'admin' || role == 'owner')),
-        ]));
-      }
+      scouting.removeAt(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: isLoading
-            ? CircularProgressIndicator(color: Colors.blue)
-            : token == null
-                ? LoginWidget(
-                    redirect_path:
-                        '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
-                  )
-                : scouting.isEmpty
-                    ? Text('No Entries')
-                    : LayoutBuilder(
-                        builder: (context, constraints) => Container(
-                            height: constraints.maxHeight,
-                            width: constraints.maxWidth,
-                            child: InteractiveViewer(
-                              scaleEnabled: false,
-                              child: SfDataGrid(
-                                allowFiltering: true,
-                                allowSorting: true,
-                                columns: columns,
-                                frozenColumnsCount: 0,
-                                columnWidthMode: ColumnWidthMode.auto,
-                                source: _MatchScoutingSource(rows, scouting,
-                                    (delete_index) {
-                                  setState(() {
-                                    scouting.removeAt(delete_index);
-                                    updateGrid();
-                                  });
-                                }),
-                              ),
-                            ))));
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+
+    if (scouting.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assignment_outlined, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No Scouting Entries Yet',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull down to refresh',
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(12),
+        itemCount: scouting.length,
+        itemBuilder: (context, index) {
+          final data = scouting[index];
+          final backgroundColor = index % 2 == 0
+              ? Colors.blueGrey.shade900
+              : Colors.blueGrey.shade800;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _ScoutingCard(
+              data: data,
+              backgroundColor: backgroundColor,
+              role: role,
+              onDelete: () => _confirmDelete(context, index),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Entry'),
+        content:
+            const Text('Are you sure you want to delete this scouting entry?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteEntry(index);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _MatchScoutingSource extends DataGridSource {
-  final List<DataGridRow> rows;
-  final List<MatchScouting2026> scoutingData;
-  final void Function(int) onDelete;
-  _MatchScoutingSource(
-      List<DataGridRow> this.rows, this.scoutingData, this.onDelete);
+// Extracted card widget (identical to previous version)
+class _ScoutingCard extends StatelessWidget {
+  final MatchScouting2026 data;
+  final Color backgroundColor;
+  final String? role;
+  final VoidCallback onDelete;
+
+  const _ScoutingCard({
+    required this.data,
+    required this.backgroundColor,
+    required this.role,
+    required this.onDelete,
+  });
+
   @override
-  DataGridRowAdapter? buildRow(
-    DataGridRow row,
-  ) {
-    int index = rows.indexOf(row);
-    List<Widget> cells = [];
-    for (var cell in row.getCells()) {
-      if (cell.columnName == 'delete') {
-        if (cell.value)
-          cells.add(DeleteButton(
-            data: scoutingData[index],
-            onDelete: () {
-              onDelete(index);
-            },
-          ));
-        else
-          cells.add(SizedBox.shrink());
-      } else
-        cells.add(
-            Text(cell.value.toString(), style: TextStyle(fontFamily: 'Font')));
-    }
-    return DataGridRowAdapter(cells: cells);
+  Widget build(BuildContext context) {
+    return Card(
+      color: backgroundColor,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.blue[800],
+                      child: Text(
+                        data.scout_info.first_name?[0] ?? 'S',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.scout_info.first_name ??
+                              'Scout ${data.scout_info.team_number}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Match ${data.match_number}',
+                          style:
+                              TextStyle(color: Colors.blue[200], fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (role == 'admin' || role == 'owner')
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.redAccent),
+                    onPressed: onDelete,
+                    tooltip: 'Delete',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Stats sections with icons
+            _buildSection(
+              title: 'Auto',
+              icon: Icons.smart_toy_outlined,
+              chips: [
+                _StatChip(
+                    label: 'Fuel',
+                    value: data.data.auto_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.auto_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Teleop',
+              icon: Icons.videogame_asset_outlined,
+              chips: [
+                _StatChip(
+                    label: 'Fuel',
+                    value: data.data.teleop_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.teleop_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Misc',
+              icon: Icons.widgets_outlined,
+              chips: [
+                _StatChip(
+                  label: 'Died',
+                  value: data.data.miscellaneous.died ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.died ? Colors.orange : null,
+                ),
+                _StatChip(
+                  label: 'Defense',
+                  value: data.data.miscellaneous.defense ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.defense ? Colors.purple : null,
+                ),
+              ],
+            ),
+
+            // Comments (if any)
+            if (data.data.miscellaneous.comments.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Comments: ${data.data.miscellaneous.comments}',
+                  style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Updated _buildSection with an icon parameter
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> chips,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.blue[200]),
+            const SizedBox(width: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue[200],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: chips,
+        ),
+      ],
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+
+  const _StatChip({required this.label, required this.value, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      backgroundColor: color ?? Colors.blueGrey[700],
+      label: Text(
+        '$label: $value',
+        style: const TextStyle(fontSize: 13, color: Colors.white),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    );
   }
 }
 

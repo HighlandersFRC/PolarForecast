@@ -6,41 +6,26 @@ part 'team_stats_2026.g.dart';
 @freezed
 class TeamStats2026 with _$TeamStats2026 {
   factory TeamStats2026({
-    // Historical from backend? Default false
-    @Default(false) bool historical,
-
-    // Unique key for the team, e.g., "frc6328"
-    @Default('') String key,
-
-    // Event rank
-    @Default(0) int rank,
-
-    // Team number as string
-    @Default(0) int team_number,
-
-    // Total matches played
-    @Default(0.0) double match_count,
-
-    // Offensive Power Rating
-    @Default(0.0) double OPR,
-
-    // Optional OPR ranking
+    required bool historical,
+    required String key,
+    required int rank,
+    required String team_number,
+    required double match_count,
+    required double OPR,
     int? OPRRank,
-
-    // Scoring breakdown
-    @Default(0.0) double endgame_points,
-    @Default(0.0) double teleop_points,
-    @Default(0.0) double auto_points,
-    @Default(0.0) double climbing_points,
-    @Default(0.0) double mobility,
-    @Default(0.0) double parking,
-
-    // Failure rate
-    @Default(0.0) double death_rate,
-
-    // Simulated rank points / RP
-    @Default(0) int simulated_rp,
-    @Default(0) int simulated_rank,
+    required double total_pass,
+    required double auto_pass,
+    required double teleop_pass,
+    required double endgame_points,
+    required double teleop_points,
+    required double auto_points,
+    required double climbing_points,
+    required double death_rate,
+    required double auto_fuel_cycles,
+    required double teleop_fuel_cycles,
+    required double foul_points,
+    required int simulated_rp,
+    required int simulated_rank,
   }) = _TeamStats2026;
 
   factory TeamStats2026.fromJson(Map<String, dynamic> json) =>

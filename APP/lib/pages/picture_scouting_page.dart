@@ -60,7 +60,7 @@ class PictureScoutingPage extends StatefulWidget {
 }
 
 class _PictureScoutingPageState extends State<PictureScoutingPage> {
-  final List<String> _sections = ['full robot', 'shooter', 'intake'];
+  final List<String> _sections = ['full_robot', 'shooter', 'intake'];
   late Map<String, List<Uint8List?>> _sectionEncodedImages;
   late Map<String, List<bool>> _sectionUploading;
   late Map<String, bool> _capturing;

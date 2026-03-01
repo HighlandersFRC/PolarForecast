@@ -185,13 +185,13 @@ class _RankingsTabState extends State<_RankingsTab> {
     GridColumn(
       allowSorting: true,
       label: Text('Auto Fuel Points', style: TextStyle(fontFamily: 'Font')),
-      columnName: 'auto_fuel_points',
+      columnName: 'auto_fuel_cycles',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
       label: Text('Teleop Fuel Points', style: TextStyle(fontFamily: 'Font')),
-      columnName: 'teleop_fuel_points',
+      columnName: 'teleop_fuel_cycles',
       allowFiltering: false,
     ),
     GridColumn(
@@ -212,8 +212,8 @@ class _RankingsTabState extends State<_RankingsTab> {
     'OPR': true,
     'rank': true,
     'simulated_rp': true,
-    'auto_fuel_points': true,
-    'teleop_fuel_points': true,
+    'auto_fuel_cycles': true,
+    'teleop_fuel_cycles': true,
     'climbing_points': true,
     'death_rate': true,
   };
@@ -335,7 +335,23 @@ class _RankingsTabState extends State<_RankingsTab> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator(color: Colors.blue));
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.blue),
+            SizedBox(height: 16),
+            Text(
+              'Loading rankings...',
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
     }
     const columnMinWidth = 95.0;
     bool isWide = MediaQuery.of(context).size.width >=
@@ -530,18 +546,14 @@ class _OvertimeChartOnClick extends StatelessWidget {
           'entries': [],
         };
         List<String> seriesLabels = [
-          'auto_scoring_l_1',
-          'auto_scoring_l_2',
-          'auto_scoring_l_3',
-          'auto_scoring_l_4',
-          'auto_scoring_net',
-          'auto_scoring_processor',
-          'teleop_scoring_l_1',
-          'teleop_scoring_l_2',
-          'teleop_scoring_l_3',
-          'teleop_scoring_l_4',
-          'teleop_scoring_net',
-          'teleop_scoring_processor',
+          'auto_scoring_fuel_cycles',
+          'auto_scoring_passing_cycles',
+          'auto_scoring_scoring_cycles',
+          'auto_scoring_cycles_completed',
+          'teleop_scoring_fuel_cycles',
+          'teleop_scoring_passing_cycles',
+          'teleop_scoring_scoring_cycles',
+          'teleop_scoring_cycles_completed',
         ];
         for (var series in seriesLabels) {
           seriesData[series] = [];
@@ -789,7 +801,23 @@ class _ChartsTabState extends State<_ChartsTab> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator(color: Colors.blue));
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.blue),
+            SizedBox(height: 16),
+            Text(
+              'Loading Charts...',
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
     }
     return Center(
         child: SingleChildScrollView(
@@ -828,18 +856,14 @@ class _ChartsTabState extends State<_ChartsTab> {
                 'entries': [],
               };
               List<String> seriesLabels = [
-                'auto_scoring_l_1',
-                'auto_scoring_l_2',
-                'auto_scoring_l_3',
-                'auto_scoring_l_4',
-                'auto_scoring_net',
-                'auto_scoring_processor',
-                'teleop_scoring_l_1',
-                'teleop_scoring_l_2',
-                'teleop_scoring_l_3',
-                'teleop_scoring_l_4',
-                'teleop_scoring_net',
-                'teleop_scoring_processor',
+                'auto_scoring_fuel_cycles',
+                'auto_scoring_passing_cycles',
+                'auto_scoring_scoring_cycles',
+                'auto_scoring_cycles_completed',
+                'teleop_scoring_fuel_cycles',
+                'teleop_scoring_passing_cycles',
+                'teleop_scoring_scoring_cycles',
+                'teleop_scoring_cycles_completed',
               ];
               for (var series in seriesLabels) {
                 seriesData[series] = [];
@@ -1509,7 +1533,25 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     scoutNameController.text = data.scout_info.first_name ?? '';
 
     if (loading) {
-      return const Center(child: CircularProgressIndicator(color: primaryBlue));
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: Colors.blue,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Loading Match Scouting...',
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     if (token == null) {
@@ -1546,7 +1588,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
                 // 1. PRE-MATCH INFO
                 _buildDarkCard(
-                  title: "Pre-Match Info",
+                  title: 'Pre-Match Info',
                   icon: Icons.assignment_outlined,
                   cardColor: cardDb,
                   accentColor: primaryBlue,
@@ -1609,7 +1651,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
                 // 2. AUTO PHASE
                 _buildDarkCard(
-                  title: "Autonomous",
+                  title: 'Autonomous',
                   icon: Icons.smart_toy_outlined,
                   cardColor: cardDb,
                   accentColor: primaryBlue,
@@ -1654,7 +1696,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
                 // 3. TELEOP PHASE
                 _buildDarkCard(
-                  title: "Teleop Phase",
+                  title: 'Teleop Phase',
                   icon: Icons.videogame_asset_outlined,
                   cardColor: cardDb,
                   accentColor: primaryBlue,
@@ -1679,8 +1721,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
                 // 4. MISCELLANEOUS
                 _buildDarkCard(
-                  title: "Post-Match & Misc",
-                  icon: Icons.widgets,
+                  title: 'Post-Match & Misc',
+                  icon: Icons.widgets_outlined,
                   cardColor: cardDb,
                   accentColor: primaryBlue,
                   children: [
@@ -1739,11 +1781,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12))),
                     onPressed: submitted ? _update : _submit,
-                    child: Text(submitted ? 'UPDATE' : 'SUBMIT',
-                        style: const TextStyle(
-                            fontFamily: customFont,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.send, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(submitted ? 'Update' : 'Submit',
+                            style: const TextStyle(
+                                fontFamily: customFont,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold))
+                      ],
+                    ),
                   ),
                 ),
                 if (submitted)
@@ -1914,7 +1962,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       children: [
         Text(label,
             style: TextStyle(fontFamily: 'Font', color: textCol, fontSize: 16)),
-        Switch(value: val, onChanged: onChanged, activeColor: accent),
+        Switch(value: val, onChanged: onChanged, activeThumbColor: accent),
       ],
     );
   }
@@ -1947,6 +1995,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
   String? token;
   bool isLoading = true;
   bool hasGoodGroup = true;
+  double _progress = 0.0;
 
   @override
   void initState() {
@@ -1979,7 +2028,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
 
     try {
       token = await apiService.token;
-
       if (token == null) {
         setState(() => isLoading = false);
         return;
@@ -1993,10 +2041,10 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
       if (!mounted) return;
 
       statuses = fetchedStatus;
-      statuses.sort(
-        (a, b) => int.parse(a['key']).compareTo(int.parse(b['key'])),
-      );
+      statuses
+          .sort((a, b) => int.parse(a['key']).compareTo(int.parse(b['key'])));
 
+      _calculateProgress();
       _buildGrid();
 
       setState(() => isLoading = false);
@@ -2006,6 +2054,29 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
         hasGoodGroup = false;
       });
     }
+  }
+
+  void _calculateProgress() {
+    if (statuses.isEmpty) {
+      _progress = 0.0;
+      return;
+    }
+
+    int totalFields = statuses.length * 2; // pit + pictures
+    int completedFields = statuses.fold(0, (sum, status) {
+      int c = 0;
+
+      // Count "Done" as completed
+      if (status['pit_status'] == 'Done') c++;
+      if (status['picture_status'] == 'Done') c++;
+
+      return sum + c;
+    });
+
+    // Update state so UI refreshes
+    setState(() {
+      _progress = totalFields > 0 ? completedFields / totalFields : 0.0;
+    });
   }
 
   void _buildGrid() {
@@ -2060,10 +2131,10 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
+            CircularProgressIndicator(color: Colors.blue),
             SizedBox(height: 16),
             Text(
-              "Loading Pit Status...",
+              'Loading Pit Status...',
               style: TextStyle(
                 fontFamily: 'Font',
                 fontSize: 16,
@@ -2091,7 +2162,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
           child: const Padding(
             padding: EdgeInsets.all(24),
             child: Text(
-              "Your team is not part of this event",
+              'Your team is not part of this event',
               style: TextStyle(
                 fontFamily: 'Font',
                 fontSize: 16,
@@ -2105,27 +2176,102 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SfDataGrid(
-            source: _StatusSource(context, dataRows, widget.widget.tournament),
-            columns: dataColumns,
-            allowSorting: true,
-            frozenColumnsCount: 1,
-            defaultColumnWidth: columnMinWidth,
-            columnWidthMode:
-                isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-            rowHeight: 60,
-            headerRowHeight: 56,
-            gridLinesVisibility: GridLinesVisibility.none,
-            headerGridLinesVisibility: GridLinesVisibility.none,
+      child: Column(
+        children: [
+          // Progress bar for pit + pictures
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Form Progress',
+                    style: TextStyle(
+                      fontFamily: 'Font', // clean modern font
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  Text(
+                    '${(_progress * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                      fontFamily: 'Font',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.lightBlueAccent,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Stack(
+                children: [
+                  // Background container
+                  Container(
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade800.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  // Animated progress fill
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    height: 12,
+                    width: MediaQuery.of(context).size.width * _progress,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueAccent.shade400,
+                          Colors.blueAccent.shade700,
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blueAccent.shade200.withOpacity(0.4),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 16),
+          // Data grid
+          Expanded(
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SfDataGrid(
+                  source: _StatusSource(
+                      context, dataRows, widget.widget.tournament),
+                  columns: dataColumns,
+                  allowSorting: true,
+                  frozenColumnsCount: 1,
+                  defaultColumnWidth: columnMinWidth,
+                  columnWidthMode:
+                      isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+                  rowHeight: 60,
+                  headerRowHeight: 56,
+                  gridLinesVisibility: GridLinesVisibility.none,
+                  headerGridLinesVisibility: GridLinesVisibility.none,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2218,12 +2364,12 @@ class _StatusSource extends DataGridSource {
 }
 
 class _MatchStatusSource extends DataGridSource {
-  final BuildContext context;
   final List<DataGridRow> rows;
   final Tournament tournament;
   final List<dynamic> statuses;
+  final Color primaryColor;
   _MatchStatusSource(
-      BuildContext this.context, this.rows, this.tournament, this.statuses);
+      this.primaryColor, this.rows, this.tournament, this.statuses);
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
     List<DataGridCell> cells = row.getCells();
@@ -2241,9 +2387,8 @@ class _MatchStatusSource extends DataGridSource {
       int rowNumber = rows.indexOf(row);
 
       bool even = rowNumber % 2 == 0;
-      final color = even
-          ? Theme.of(context).primaryColor.withOpacity(0.3)
-          : Colors.black.withOpacity(0);
+      final color =
+          even ? primaryColor.withOpacity(0.3) : Colors.black.withOpacity(0);
       if (cell.columnName == 'key') {
         String matchNumber = cell.value.toString().split(' ')[1];
         String type = cell.value.toString().contains('Quals')
@@ -2379,50 +2524,56 @@ class _QualsTabState extends State<_QualsTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Match',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Match',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Type',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
       GridColumn(
           columnName: 'blue_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Blue Score',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Blue Score',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
       GridColumn(
           columnName: 'red_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Red Score',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Red Score',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
       GridColumn(
           columnName: 'blue_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Blue RP',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Blue RP',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
       GridColumn(
           columnName: 'red_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text('Red RP',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.25),
-                  style: TextStyle(fontFamily: 'Font')))),
+              child: Text(
+                'Red RP',
+                textAlign: TextAlign.center,
+                textScaler: TextScaler.linear(1.25),
+              ))),
     ];
 
     statuses.sort((a, b) {
@@ -2477,8 +2628,8 @@ class _QualsTabState extends State<_QualsTab> {
                     columnWidthMode:
                         isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
                     frozenColumnsCount: 0,
-                    source: _MatchStatusSource(
-                        context, dataRows, widget.widget.tournament, statuses),
+                    source: _MatchStatusSource(Theme.of(context).primaryColor,
+                        dataRows, widget.widget.tournament, statuses),
                   ),
                 ))));
   }
@@ -2628,8 +2779,8 @@ class _ElimsTabState extends State<_ElimsTab> {
                     columnWidthMode:
                         isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
                     frozenColumnsCount: 0,
-                    source: _MatchStatusSource(
-                        context, dataRows, widget.widget.tournament, statuses),
+                    source: _MatchStatusSource(Theme.of(context).primaryColor,
+                        dataRows, widget.widget.tournament, statuses),
                   ),
                 ))));
   }
