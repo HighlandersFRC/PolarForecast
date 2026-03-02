@@ -6,6 +6,7 @@ import logging
 import math
 import random
 import string
+import traceback
 from types import TracebackType
 from typing import Annotated
 import uuid
@@ -535,7 +536,16 @@ def get_pit_scouting_data(
             event_code=event_code,
             data=PitData2026(),
             user_id="",
-            auto={}  # or an Auto2026 object with defaults if needed
+            auto={
+                "starting_position_meters_from_hub_center": 0.0,
+                "field_side": [],
+                "preload": False,
+                "both_sides": False,
+                "contacts_robot": False,
+                "auto_pieces": 0,
+                "climb": False,
+                "steps": [],
+            }  # or an Auto2026 object with defaults if needed
         )
 
     return PitScouting2026(**data)
@@ -791,7 +801,6 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                     "OPR": 0,
                     "auto_points": 0,
                     "teleop_points": 0,
-                    "totalTowerPoints": 0,
                     "totalCount": 0,
                     "foul_points": 0,
                     "simulated_rp": 0,
@@ -1069,7 +1078,12 @@ def updateGroupGridPitData(group: Group, event_code: str):
         if "key" not in doc:
             continue
 
-        team_number = int(doc["key"])
+        key = doc["key"]
+
+        if isinstance(key, str) and key.startswith("frc"):
+            team_number = int(key[3:])
+        else:
+            team_number = int(key)
 
         teamPitEntries = [
             x for x in pitEntries if x.team_number == team_number
@@ -2762,7 +2776,7 @@ def convertData(calculatedData, year, event_code):
             if item["team_key"] == data["key"]:
                 data["rank"] = item["rank"]
                 break
-        idx = calculatedData["team_number"].index(f"{team}")
+        idx = calculatedData["team_number"].index(team)
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
         retvallist.append(data)
@@ -2918,156 +2932,135 @@ def updateData(event_code: str, event_type: int):
 
 
 
-def updatePredictions(
-    TBAData: list[TBAMatch2026],
-    calculatedData,
-    eventType: int
-):
-
-    team_lookup = {
-        team["key"]: team
-        for team in calculatedData[1:]
-    }
-
+def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
     matchPredictions = []
-
     for match in TBAData:
-
-        has_score = match.score_breakdown is not None
-
-        matchPrediction = {
-            "comp_level": match.comp_level,
-            "key": match.key,
-            "match_number": match.match_number,
-            "set_number": match.set_number,
-            "predicted": not has_score,
-        }
-
-        # -----------------------------
-        # Initialize alliances
-        # -----------------------------
-        for alliance in ["blue", "red"]:
-            alliance_data = match.alliances[alliance]
-
-            matchPrediction.update({
-                f"{alliance}_teams": alliance_data.team_keys,
-                f"{alliance}_dq_team_keys": alliance_data.dq_team_keys,
-                f"{alliance}_surrogate_team_keys": alliance_data.surrogate_team_keys,
-                f"{alliance}_score": 0,
-                f"{alliance}_auto_points": 0,
-                f"{alliance}_teleop_points": 0,
-                f"{alliance}_tower_points": 0,
-                f"{alliance}_fuel_count": 0,
-                f"{alliance}_human_player": 0,
-            })
-
-            if has_score:
-                sb = match.score_breakdown[alliance]
-
-                matchPrediction[f"{alliance}_actual_score"] = sb.totalPoints
-                matchPrediction[f"{alliance}_actual_rp"] = sb.rp
+        if match.score_breakdown is not None:
+            matchPrediction = {
+                "comp_level": match.comp_level,
+                "key": match.key,
+                "match_number": match.match_number,
+                "set_number": match.set_number,
+                "blue_teams": match.alliances['blue'].team_keys,
+                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
+                "blue_score": 0,
+                "blue_climbing": 0,
+                "blue_auto_points": 0,
+                "blue_teleop_points": 0,
+                "blue_endgame_points": 0,
+                "blue_auto_fuel_cycles": 0,
+                "blue_teleop_fuel_cycles": 0,
+                "blue_auto_passing_cycles": 0,
+                "blue_teleop_passing_cycles": 0,
+                "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                "red_teams": match.alliances['red'].team_keys,
+                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                "red_score": 0,
+                "red_climbing": 0,
+                "red_auto_points": 0,
+                "red_teleop_points": 0,
+                "red_endgame_points": 0,
+                "red_auto_fuel_cycles": 0,
+                "red_teleop_fuel_cycles": 0,
+                "red_auto_passing_cycles": 0,
+                "red_teleop_passing_cycles": 0,
+                "red_actual_score": match.score_breakdown["red"].totalPoints,
+                "predicted": False,
+            }
+        else:
+            matchPrediction = {
+                "comp_level": match.comp_level,
+                "key": match.key,
+                "match_number": match.match_number,
+                "set_number": match.set_number,
+                "blue_teams": match.alliances['blue'].team_keys,
+                "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
+                "blue_score": 0,
+                "blue_climbing": 0,
+                "blue_auto_points": 0,
+                "blue_teleop_points": 0,
+                "blue_endgame_points": 0,
+                "blue_auto_fuel_cycles": 0,
+                "blue_teleop_fuel_cycles": 0,
+                "blue_auto_passing_cycles": 0,
+                "blue_teleop_passing_cycles": 0,
+                "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                "red_teams": match.alliances['red'].team_keys,
+                "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                "red_score": 0,
+                "red_climbing": 0,
+                "red_auto_points": 0,
+                "red_teleop_points": 0,
+                "red_endgame_points": 0,
+                "red_auto_fuel_cycles": 0,
+                "red_teleop_fuel_cycles": 0,
+                "red_auto_passing_cycles": 0,
+                "red_teleop_passing_cycles": 0,
+                "red_actual_score": match.score_breakdown["red"].totalPoints,
+                "predicted": False,
+            }
+        for alliance in match.alliances:
+            for team in match.alliances[alliance].team_keys:
+                for i in range(1, len(calculatedData)):
+                    teamData = {}
+                    if calculatedData[i]["key"] == team:
+                        teamData = calculatedData[i]
+                    if teamData != {}:
+                        matchPrediction[f"{alliance}_score"] += teamData["OPR"]
+                        matchPrediction[f"{alliance}_climbing"] += teamData["climbing_points"]
+                        matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
+                        matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
+                        matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
+                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_cycles"]
+                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_cycles"]
+                        matchPrediction[f"{alliance}_auto_passing_cycles"] += teamData["auto_pass"]
+                        matchPrediction[f"{alliance}_teleop_passing_cycles"] += teamData["teleop_pass"]
+        for alliance in match.alliances:
+            if alliance == "red":
+                opponent = "blue"
             else:
-                matchPrediction[f"{alliance}_actual_score"] = None
-                matchPrediction[f"{alliance}_actual_rp"] = None
-
-        # -----------------------------
-        # Predicted score from OPR
-        # -----------------------------
-        for alliance in ["blue", "red"]:
-            for team in matchPrediction[f"{alliance}_teams"]:
-                teamData = team_lookup.get(team)
-                if not teamData:
-                    continue
-
-                matchPrediction[f"{alliance}_score"] += teamData.get("OPR", 0)
-                matchPrediction[f"{alliance}_auto_points"] += teamData.get("auto_points", 0)
-                matchPrediction[f"{alliance}_teleop_points"] += teamData.get("teleop_points", 0)
-                matchPrediction[f"{alliance}_tower_points"] += teamData.get("totalTowerPoints", 0)
-                matchPrediction[f"{alliance}_fuel_count"] += teamData.get("totalCount", 0)
-
-        # -----------------------------
-        # RP Calculations (Fuel Game)
-        # -----------------------------
-        for alliance in ["blue", "red"]:
-
-            opponent = "red" if alliance == "blue" else "blue"
-
-            # Win RP
-            if matchPrediction[f"{alliance}_score"] > matchPrediction[f"{opponent}_score"]:
-                win_rp = 2
-            elif matchPrediction[f"{alliance}_score"] == matchPrediction[f"{opponent}_score"]:
-                win_rp = 1
+                opponent = "red"
+            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
+                f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
+            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"]
+            if not matchPrediction["predicted"]:
+                matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
-                win_rp = 0
-
-            # Fuel RP (example threshold)
-            fuel_rp = 1 if matchPrediction[f"{alliance}_fuel_count"] >= 40 else 0
-
-            # Tower RP (example threshold)
-            tower_rp = 1 if matchPrediction[f"{alliance}_tower_points"] >= 15 else 0
-
-            total_rp = win_rp + fuel_rp + tower_rp
-
-            matchPrediction[f"{alliance}_win_rp"] = win_rp
-            matchPrediction[f"{alliance}_fuel_rp"] = fuel_rp
-            matchPrediction[f"{alliance}_tower_rp"] = tower_rp
-            matchPrediction[f"{alliance}_total_rp"] = total_rp
-
-            if has_score and match.comp_level == "qm":
-                matchPrediction[f"{alliance}_display_rp"] = \
-                    matchPrediction[f"{alliance}_actual_rp"]
-            else:
-                matchPrediction[f"{alliance}_display_rp"] = total_rp
-
+                matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
         matchPredictions.append(matchPrediction)
-
-    # -----------------------------
-    # Reset simulated values
-    # -----------------------------
-    for team in calculatedData[1:]:
-        team["simulated_rp"] = 0
-        team["simulated_rank"] = 0
-
-    # -----------------------------
-    # Apply RP to Teams
-    # -----------------------------
+    for i in range(1, len(calculatedData)):
+        calculatedData[i]["simulated_rp"] = 0
+        calculatedData[i]["simulated_rank"] = int(0)
     for matchPrediction in matchPredictions:
-
-        if matchPrediction["comp_level"] != "qm":
-            continue
-
-        for alliance in ["blue", "red"]:
-
-            valid_teams = [
-                t for t in matchPrediction[f"{alliance}_teams"]
-                if t not in matchPrediction[f"{alliance}_dq_team_keys"]
-                and t not in matchPrediction[f"{alliance}_surrogate_team_keys"]
-            ]
-
-            for team in valid_teams:
-                teamData = team_lookup.get(team)
-                if not teamData:
-                    continue
-
-                teamData["simulated_rp"] += \
-                    matchPrediction[f"{alliance}_display_rp"]
-
-    # -----------------------------
-    # Rank teams
-    # -----------------------------
-    sorted_teams = sorted(
-        calculatedData[1:],
-        key=lambda x: x["simulated_rp"],
-        reverse=True
-    )
-
-    for i, team in enumerate(sorted_teams):
-        team["simulated_rank"] = i + 1
-
-    sorted_teams.insert(0, calculatedData[0])
-
-    return sorted_teams, matchPredictions
-
+        for alliance in ["red", "blue"]:
+            for team in [x for x in matchPrediction[f"{alliance}_teams"] if x not in matchPrediction[f"{alliance}_dq_team_keys"] and x not in matchPrediction[f"{alliance}_surrogate_team_keys"]]:
+                dataTeam = {}
+                idx = 0
+                try:
+                    for i in range(1, len(calculatedData)):
+                        if calculatedData[i]["key"] == team:
+                            dataTeam = calculatedData[i]
+                            idx = i
+                            break
+                    if matchPrediction["predicted"] and matchPrediction["comp_level"] == "qm":
+                        dataTeam["simulated_rp"] += matchPrediction[f"{alliance}_total_rp"]
+                    else:
+                        for match in TBAData:
+                            if match.key == matchPrediction["key"] and matchPrediction["comp_level"] == "qm":
+                                dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
+                    calculatedData[idx] = dataTeam
+                except Exception as e:
+                    pass
+    sorted_list = sorted(
+        calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
+    for i, item in enumerate(sorted_list):
+        sorted_list[i]["simulated_rank"] = int(i + 1)
+    sorted_list.insert(0, calculatedData[0])
+    return (sorted_list, matchPredictions)
 
 
 
@@ -3319,7 +3312,7 @@ def update_database():
             for event in group.events:
                 # print(event)
                 if not event.up_to_date:
-                    try:
+                    
                         for eventData in etags:
                             if eventData["key"] == event.event_code:
                                 eventData = eventData
@@ -3330,8 +3323,8 @@ def update_database():
                         updateGroupGridPitData(group, event.event_code)
                         GroupCollection.update_one(
                             {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
-                    except Exception as e:
-                        logging.error(str(e))
+                    
+                        # logging.error(str(e))
         numRuns += 1
     except Exception as e:
         logging.error(e)

@@ -53,6 +53,8 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         "auto_fuel_cycles": 0,
         "teleop_fuel_cycles": 0,
 
+    
+
         "foul_points": 0,
 
         "station1": 0,
@@ -430,6 +432,10 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
     XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))
     XMatrix.insert(0, 'endgame_points', pd.Series(endgamePoints))
+    XMatrix.insert(0, 'auto_climb_rate', pd.Series(autoClimb))
+    XMatrix.insert(0, 'endgame_climb_L1_rate', pd.Series(endgameClimbL1))
+    XMatrix.insert(0, 'endgame_climb_L2_rate', pd.Series(endgameClimbL2))
+    XMatrix.insert(0, 'endgame_climb_L3_rate', pd.Series(endgameClimbL3))
     XMatrix.insert(0, 'teleop_pass', pd.Series(telePass))
     XMatrix.insert(0, 'auto_pass', pd.Series(autoPass))
     XMatrix.insert(0, 'total_pass', pd.Series(telePass + autoPass))

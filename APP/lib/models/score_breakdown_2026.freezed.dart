@@ -20,24 +20,24 @@ HubScore _$HubScoreFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$HubScore {
-  int get autoCount => throw _privateConstructorUsedError;
-  int get autoPoints => throw _privateConstructorUsedError;
-  int get endgameCount => throw _privateConstructorUsedError;
-  int get endgamePoints => throw _privateConstructorUsedError;
-  int get shift1Count => throw _privateConstructorUsedError;
-  int get shift1Points => throw _privateConstructorUsedError;
-  int get shift2Count => throw _privateConstructorUsedError;
-  int get shift2Points => throw _privateConstructorUsedError;
-  int get shift3Count => throw _privateConstructorUsedError;
-  int get shift3Points => throw _privateConstructorUsedError;
-  int get shift4Count => throw _privateConstructorUsedError;
-  int get shift4Points => throw _privateConstructorUsedError;
-  int get teleopCount => throw _privateConstructorUsedError;
-  int get totalCount => throw _privateConstructorUsedError;
-  int get totalPoints => throw _privateConstructorUsedError;
-  int get transitionCount => throw _privateConstructorUsedError;
-  int get transitionPoints => throw _privateConstructorUsedError;
-  int get uncounted => throw _privateConstructorUsedError;
+  int? get autoCount => throw _privateConstructorUsedError;
+  int? get autoPoints => throw _privateConstructorUsedError;
+  int? get endgameCount => throw _privateConstructorUsedError;
+  int? get endgamePoints => throw _privateConstructorUsedError;
+  int? get shift1Count => throw _privateConstructorUsedError;
+  int? get shift1Points => throw _privateConstructorUsedError;
+  int? get shift2Count => throw _privateConstructorUsedError;
+  int? get shift2Points => throw _privateConstructorUsedError;
+  int? get shift3Count => throw _privateConstructorUsedError;
+  int? get shift3Points => throw _privateConstructorUsedError;
+  int? get shift4Count => throw _privateConstructorUsedError;
+  int? get shift4Points => throw _privateConstructorUsedError;
+  int? get teleopCount => throw _privateConstructorUsedError;
+  int? get totalCount => throw _privateConstructorUsedError;
+  int? get totalPoints => throw _privateConstructorUsedError;
+  int? get transitionCount => throw _privateConstructorUsedError;
+  int? get transitionPoints => throw _privateConstructorUsedError;
+  int? get uncounted => throw _privateConstructorUsedError;
 
   /// Serializes this HubScore to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -55,24 +55,24 @@ abstract class $HubScoreCopyWith<$Res> {
       _$HubScoreCopyWithImpl<$Res, HubScore>;
   @useResult
   $Res call(
-      {int autoCount,
-      int autoPoints,
-      int endgameCount,
-      int endgamePoints,
-      int shift1Count,
-      int shift1Points,
-      int shift2Count,
-      int shift2Points,
-      int shift3Count,
-      int shift3Points,
-      int shift4Count,
-      int shift4Points,
-      int teleopCount,
-      int totalCount,
-      int totalPoints,
-      int transitionCount,
-      int transitionPoints,
-      int uncounted});
+      {int? autoCount,
+      int? autoPoints,
+      int? endgameCount,
+      int? endgamePoints,
+      int? shift1Count,
+      int? shift1Points,
+      int? shift2Count,
+      int? shift2Points,
+      int? shift3Count,
+      int? shift3Points,
+      int? shift4Count,
+      int? shift4Points,
+      int? teleopCount,
+      int? totalCount,
+      int? totalPoints,
+      int? transitionCount,
+      int? transitionPoints,
+      int? uncounted});
 }
 
 /// @nodoc
@@ -90,98 +90,98 @@ class _$HubScoreCopyWithImpl<$Res, $Val extends HubScore>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? autoCount = null,
-    Object? autoPoints = null,
-    Object? endgameCount = null,
-    Object? endgamePoints = null,
-    Object? shift1Count = null,
-    Object? shift1Points = null,
-    Object? shift2Count = null,
-    Object? shift2Points = null,
-    Object? shift3Count = null,
-    Object? shift3Points = null,
-    Object? shift4Count = null,
-    Object? shift4Points = null,
-    Object? teleopCount = null,
-    Object? totalCount = null,
-    Object? totalPoints = null,
-    Object? transitionCount = null,
-    Object? transitionPoints = null,
-    Object? uncounted = null,
+    Object? autoCount = freezed,
+    Object? autoPoints = freezed,
+    Object? endgameCount = freezed,
+    Object? endgamePoints = freezed,
+    Object? shift1Count = freezed,
+    Object? shift1Points = freezed,
+    Object? shift2Count = freezed,
+    Object? shift2Points = freezed,
+    Object? shift3Count = freezed,
+    Object? shift3Points = freezed,
+    Object? shift4Count = freezed,
+    Object? shift4Points = freezed,
+    Object? teleopCount = freezed,
+    Object? totalCount = freezed,
+    Object? totalPoints = freezed,
+    Object? transitionCount = freezed,
+    Object? transitionPoints = freezed,
+    Object? uncounted = freezed,
   }) {
     return _then(_value.copyWith(
-      autoCount: null == autoCount
+      autoCount: freezed == autoCount
           ? _value.autoCount
           : autoCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoPoints: null == autoPoints
+              as int?,
+      autoPoints: freezed == autoPoints
           ? _value.autoPoints
           : autoPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      endgameCount: null == endgameCount
+              as int?,
+      endgameCount: freezed == endgameCount
           ? _value.endgameCount
           : endgameCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      endgamePoints: null == endgamePoints
+              as int?,
+      endgamePoints: freezed == endgamePoints
           ? _value.endgamePoints
           : endgamePoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift1Count: null == shift1Count
+              as int?,
+      shift1Count: freezed == shift1Count
           ? _value.shift1Count
           : shift1Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift1Points: null == shift1Points
+              as int?,
+      shift1Points: freezed == shift1Points
           ? _value.shift1Points
           : shift1Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift2Count: null == shift2Count
+              as int?,
+      shift2Count: freezed == shift2Count
           ? _value.shift2Count
           : shift2Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift2Points: null == shift2Points
+              as int?,
+      shift2Points: freezed == shift2Points
           ? _value.shift2Points
           : shift2Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift3Count: null == shift3Count
+              as int?,
+      shift3Count: freezed == shift3Count
           ? _value.shift3Count
           : shift3Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift3Points: null == shift3Points
+              as int?,
+      shift3Points: freezed == shift3Points
           ? _value.shift3Points
           : shift3Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift4Count: null == shift4Count
+              as int?,
+      shift4Count: freezed == shift4Count
           ? _value.shift4Count
           : shift4Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift4Points: null == shift4Points
+              as int?,
+      shift4Points: freezed == shift4Points
           ? _value.shift4Points
           : shift4Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      teleopCount: null == teleopCount
+              as int?,
+      teleopCount: freezed == teleopCount
           ? _value.teleopCount
           : teleopCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalCount: null == totalCount
+              as int?,
+      totalCount: freezed == totalCount
           ? _value.totalCount
           : totalCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalPoints: null == totalPoints
+              as int?,
+      totalPoints: freezed == totalPoints
           ? _value.totalPoints
           : totalPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      transitionCount: null == transitionCount
+              as int?,
+      transitionCount: freezed == transitionCount
           ? _value.transitionCount
           : transitionCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      transitionPoints: null == transitionPoints
+              as int?,
+      transitionPoints: freezed == transitionPoints
           ? _value.transitionPoints
           : transitionPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      uncounted: null == uncounted
+              as int?,
+      uncounted: freezed == uncounted
           ? _value.uncounted
           : uncounted // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ) as $Val);
   }
 }
@@ -195,24 +195,24 @@ abstract class _$$HubScoreImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int autoCount,
-      int autoPoints,
-      int endgameCount,
-      int endgamePoints,
-      int shift1Count,
-      int shift1Points,
-      int shift2Count,
-      int shift2Points,
-      int shift3Count,
-      int shift3Points,
-      int shift4Count,
-      int shift4Points,
-      int teleopCount,
-      int totalCount,
-      int totalPoints,
-      int transitionCount,
-      int transitionPoints,
-      int uncounted});
+      {int? autoCount,
+      int? autoPoints,
+      int? endgameCount,
+      int? endgamePoints,
+      int? shift1Count,
+      int? shift1Points,
+      int? shift2Count,
+      int? shift2Points,
+      int? shift3Count,
+      int? shift3Points,
+      int? shift4Count,
+      int? shift4Points,
+      int? teleopCount,
+      int? totalCount,
+      int? totalPoints,
+      int? transitionCount,
+      int? transitionPoints,
+      int? uncounted});
 }
 
 /// @nodoc
@@ -228,98 +228,98 @@ class __$$HubScoreImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? autoCount = null,
-    Object? autoPoints = null,
-    Object? endgameCount = null,
-    Object? endgamePoints = null,
-    Object? shift1Count = null,
-    Object? shift1Points = null,
-    Object? shift2Count = null,
-    Object? shift2Points = null,
-    Object? shift3Count = null,
-    Object? shift3Points = null,
-    Object? shift4Count = null,
-    Object? shift4Points = null,
-    Object? teleopCount = null,
-    Object? totalCount = null,
-    Object? totalPoints = null,
-    Object? transitionCount = null,
-    Object? transitionPoints = null,
-    Object? uncounted = null,
+    Object? autoCount = freezed,
+    Object? autoPoints = freezed,
+    Object? endgameCount = freezed,
+    Object? endgamePoints = freezed,
+    Object? shift1Count = freezed,
+    Object? shift1Points = freezed,
+    Object? shift2Count = freezed,
+    Object? shift2Points = freezed,
+    Object? shift3Count = freezed,
+    Object? shift3Points = freezed,
+    Object? shift4Count = freezed,
+    Object? shift4Points = freezed,
+    Object? teleopCount = freezed,
+    Object? totalCount = freezed,
+    Object? totalPoints = freezed,
+    Object? transitionCount = freezed,
+    Object? transitionPoints = freezed,
+    Object? uncounted = freezed,
   }) {
     return _then(_$HubScoreImpl(
-      autoCount: null == autoCount
+      autoCount: freezed == autoCount
           ? _value.autoCount
           : autoCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoPoints: null == autoPoints
+              as int?,
+      autoPoints: freezed == autoPoints
           ? _value.autoPoints
           : autoPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      endgameCount: null == endgameCount
+              as int?,
+      endgameCount: freezed == endgameCount
           ? _value.endgameCount
           : endgameCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      endgamePoints: null == endgamePoints
+              as int?,
+      endgamePoints: freezed == endgamePoints
           ? _value.endgamePoints
           : endgamePoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift1Count: null == shift1Count
+              as int?,
+      shift1Count: freezed == shift1Count
           ? _value.shift1Count
           : shift1Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift1Points: null == shift1Points
+              as int?,
+      shift1Points: freezed == shift1Points
           ? _value.shift1Points
           : shift1Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift2Count: null == shift2Count
+              as int?,
+      shift2Count: freezed == shift2Count
           ? _value.shift2Count
           : shift2Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift2Points: null == shift2Points
+              as int?,
+      shift2Points: freezed == shift2Points
           ? _value.shift2Points
           : shift2Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift3Count: null == shift3Count
+              as int?,
+      shift3Count: freezed == shift3Count
           ? _value.shift3Count
           : shift3Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift3Points: null == shift3Points
+              as int?,
+      shift3Points: freezed == shift3Points
           ? _value.shift3Points
           : shift3Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift4Count: null == shift4Count
+              as int?,
+      shift4Count: freezed == shift4Count
           ? _value.shift4Count
           : shift4Count // ignore: cast_nullable_to_non_nullable
-              as int,
-      shift4Points: null == shift4Points
+              as int?,
+      shift4Points: freezed == shift4Points
           ? _value.shift4Points
           : shift4Points // ignore: cast_nullable_to_non_nullable
-              as int,
-      teleopCount: null == teleopCount
+              as int?,
+      teleopCount: freezed == teleopCount
           ? _value.teleopCount
           : teleopCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalCount: null == totalCount
+              as int?,
+      totalCount: freezed == totalCount
           ? _value.totalCount
           : totalCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalPoints: null == totalPoints
+              as int?,
+      totalPoints: freezed == totalPoints
           ? _value.totalPoints
           : totalPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      transitionCount: null == transitionCount
+              as int?,
+      transitionCount: freezed == transitionCount
           ? _value.transitionCount
           : transitionCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      transitionPoints: null == transitionPoints
+              as int?,
+      transitionPoints: freezed == transitionPoints
           ? _value.transitionPoints
           : transitionPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      uncounted: null == uncounted
+              as int?,
+      uncounted: freezed == uncounted
           ? _value.uncounted
           : uncounted // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ));
   }
 }
@@ -328,64 +328,64 @@ class __$$HubScoreImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$HubScoreImpl implements _HubScore {
   const _$HubScoreImpl(
-      {required this.autoCount,
-      required this.autoPoints,
-      required this.endgameCount,
-      required this.endgamePoints,
-      required this.shift1Count,
-      required this.shift1Points,
-      required this.shift2Count,
-      required this.shift2Points,
-      required this.shift3Count,
-      required this.shift3Points,
-      required this.shift4Count,
-      required this.shift4Points,
-      required this.teleopCount,
-      required this.totalCount,
-      required this.totalPoints,
-      required this.transitionCount,
-      required this.transitionPoints,
-      required this.uncounted});
+      {this.autoCount,
+      this.autoPoints,
+      this.endgameCount,
+      this.endgamePoints,
+      this.shift1Count,
+      this.shift1Points,
+      this.shift2Count,
+      this.shift2Points,
+      this.shift3Count,
+      this.shift3Points,
+      this.shift4Count,
+      this.shift4Points,
+      this.teleopCount,
+      this.totalCount,
+      this.totalPoints,
+      this.transitionCount,
+      this.transitionPoints,
+      this.uncounted});
 
   factory _$HubScoreImpl.fromJson(Map<String, dynamic> json) =>
       _$$HubScoreImplFromJson(json);
 
   @override
-  final int autoCount;
+  final int? autoCount;
   @override
-  final int autoPoints;
+  final int? autoPoints;
   @override
-  final int endgameCount;
+  final int? endgameCount;
   @override
-  final int endgamePoints;
+  final int? endgamePoints;
   @override
-  final int shift1Count;
+  final int? shift1Count;
   @override
-  final int shift1Points;
+  final int? shift1Points;
   @override
-  final int shift2Count;
+  final int? shift2Count;
   @override
-  final int shift2Points;
+  final int? shift2Points;
   @override
-  final int shift3Count;
+  final int? shift3Count;
   @override
-  final int shift3Points;
+  final int? shift3Points;
   @override
-  final int shift4Count;
+  final int? shift4Count;
   @override
-  final int shift4Points;
+  final int? shift4Points;
   @override
-  final int teleopCount;
+  final int? teleopCount;
   @override
-  final int totalCount;
+  final int? totalCount;
   @override
-  final int totalPoints;
+  final int? totalPoints;
   @override
-  final int transitionCount;
+  final int? transitionCount;
   @override
-  final int transitionPoints;
+  final int? transitionPoints;
   @override
-  final int uncounted;
+  final int? uncounted;
 
   @override
   String toString() {
@@ -476,64 +476,64 @@ class _$HubScoreImpl implements _HubScore {
 
 abstract class _HubScore implements HubScore {
   const factory _HubScore(
-      {required final int autoCount,
-      required final int autoPoints,
-      required final int endgameCount,
-      required final int endgamePoints,
-      required final int shift1Count,
-      required final int shift1Points,
-      required final int shift2Count,
-      required final int shift2Points,
-      required final int shift3Count,
-      required final int shift3Points,
-      required final int shift4Count,
-      required final int shift4Points,
-      required final int teleopCount,
-      required final int totalCount,
-      required final int totalPoints,
-      required final int transitionCount,
-      required final int transitionPoints,
-      required final int uncounted}) = _$HubScoreImpl;
+      {final int? autoCount,
+      final int? autoPoints,
+      final int? endgameCount,
+      final int? endgamePoints,
+      final int? shift1Count,
+      final int? shift1Points,
+      final int? shift2Count,
+      final int? shift2Points,
+      final int? shift3Count,
+      final int? shift3Points,
+      final int? shift4Count,
+      final int? shift4Points,
+      final int? teleopCount,
+      final int? totalCount,
+      final int? totalPoints,
+      final int? transitionCount,
+      final int? transitionPoints,
+      final int? uncounted}) = _$HubScoreImpl;
 
   factory _HubScore.fromJson(Map<String, dynamic> json) =
       _$HubScoreImpl.fromJson;
 
   @override
-  int get autoCount;
+  int? get autoCount;
   @override
-  int get autoPoints;
+  int? get autoPoints;
   @override
-  int get endgameCount;
+  int? get endgameCount;
   @override
-  int get endgamePoints;
+  int? get endgamePoints;
   @override
-  int get shift1Count;
+  int? get shift1Count;
   @override
-  int get shift1Points;
+  int? get shift1Points;
   @override
-  int get shift2Count;
+  int? get shift2Count;
   @override
-  int get shift2Points;
+  int? get shift2Points;
   @override
-  int get shift3Count;
+  int? get shift3Count;
   @override
-  int get shift3Points;
+  int? get shift3Points;
   @override
-  int get shift4Count;
+  int? get shift4Count;
   @override
-  int get shift4Points;
+  int? get shift4Points;
   @override
-  int get teleopCount;
+  int? get teleopCount;
   @override
-  int get totalCount;
+  int? get totalCount;
   @override
-  int get totalPoints;
+  int? get totalPoints;
   @override
-  int get transitionCount;
+  int? get transitionCount;
   @override
-  int get transitionPoints;
+  int? get transitionPoints;
   @override
-  int get uncounted;
+  int? get uncounted;
 
   /// Create a copy of HubScore
   /// with the given fields replaced by the non-null parameter values.
@@ -549,29 +549,29 @@ ScoreBreakdown2026 _$ScoreBreakdown2026FromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ScoreBreakdown2026 {
-  int get adjustPoints => throw _privateConstructorUsedError;
-  int get autoTowerPoints => throw _privateConstructorUsedError;
-  String get autoTowerRobot1 => throw _privateConstructorUsedError;
-  String get autoTowerRobot2 => throw _privateConstructorUsedError;
-  String get autoTowerRobot3 => throw _privateConstructorUsedError;
-  int get endGameTowerPoints => throw _privateConstructorUsedError;
-  String get endGameTowerRobot1 => throw _privateConstructorUsedError;
-  String get endGameTowerRobot2 => throw _privateConstructorUsedError;
-  String get endGameTowerRobot3 => throw _privateConstructorUsedError;
-  bool get energizedAchieved => throw _privateConstructorUsedError;
-  int get foulPoints => throw _privateConstructorUsedError;
-  bool get g206Penalty => throw _privateConstructorUsedError;
-  HubScore get hubScore => throw _privateConstructorUsedError;
-  int get majorFoulCount => throw _privateConstructorUsedError;
-  int get minorFoulCount => throw _privateConstructorUsedError;
-  String get penalties => throw _privateConstructorUsedError;
-  int get rp => throw _privateConstructorUsedError;
-  bool get superchargedAchieved => throw _privateConstructorUsedError;
-  int get totalAutoPoints => throw _privateConstructorUsedError;
-  int get totalPoints => throw _privateConstructorUsedError;
-  int get totalTeleopPoints => throw _privateConstructorUsedError;
-  int get totalTowerPoints => throw _privateConstructorUsedError;
-  int get traversalAchieved => throw _privateConstructorUsedError;
+  int? get adjustPoints => throw _privateConstructorUsedError;
+  int? get autoTowerPoints => throw _privateConstructorUsedError;
+  String? get autoTowerRobot1 => throw _privateConstructorUsedError;
+  String? get autoTowerRobot2 => throw _privateConstructorUsedError;
+  String? get autoTowerRobot3 => throw _privateConstructorUsedError;
+  int? get endGameTowerPoints => throw _privateConstructorUsedError;
+  String? get endGameTowerRobot1 => throw _privateConstructorUsedError;
+  String? get endGameTowerRobot2 => throw _privateConstructorUsedError;
+  String? get endGameTowerRobot3 => throw _privateConstructorUsedError;
+  bool? get energizedAchieved => throw _privateConstructorUsedError;
+  int? get foulPoints => throw _privateConstructorUsedError;
+  bool? get g206Penalty => throw _privateConstructorUsedError;
+  HubScore? get hubScore => throw _privateConstructorUsedError;
+  int? get majorFoulCount => throw _privateConstructorUsedError;
+  int? get minorFoulCount => throw _privateConstructorUsedError;
+  String? get penalties => throw _privateConstructorUsedError;
+  int? get rp => throw _privateConstructorUsedError;
+  bool? get superchargedAchieved => throw _privateConstructorUsedError;
+  int? get totalAutoPoints => throw _privateConstructorUsedError;
+  int? get totalPoints => throw _privateConstructorUsedError;
+  int? get totalTeleopPoints => throw _privateConstructorUsedError;
+  int? get totalTowerPoints => throw _privateConstructorUsedError;
+  bool? get traversalAchieved => throw _privateConstructorUsedError;
 
   /// Serializes this ScoreBreakdown2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -590,31 +590,31 @@ abstract class $ScoreBreakdown2026CopyWith<$Res> {
       _$ScoreBreakdown2026CopyWithImpl<$Res, ScoreBreakdown2026>;
   @useResult
   $Res call(
-      {int adjustPoints,
-      int autoTowerPoints,
-      String autoTowerRobot1,
-      String autoTowerRobot2,
-      String autoTowerRobot3,
-      int endGameTowerPoints,
-      String endGameTowerRobot1,
-      String endGameTowerRobot2,
-      String endGameTowerRobot3,
-      bool energizedAchieved,
-      int foulPoints,
-      bool g206Penalty,
-      HubScore hubScore,
-      int majorFoulCount,
-      int minorFoulCount,
-      String penalties,
-      int rp,
-      bool superchargedAchieved,
-      int totalAutoPoints,
-      int totalPoints,
-      int totalTeleopPoints,
-      int totalTowerPoints,
-      int traversalAchieved});
+      {int? adjustPoints,
+      int? autoTowerPoints,
+      String? autoTowerRobot1,
+      String? autoTowerRobot2,
+      String? autoTowerRobot3,
+      int? endGameTowerPoints,
+      String? endGameTowerRobot1,
+      String? endGameTowerRobot2,
+      String? endGameTowerRobot3,
+      bool? energizedAchieved,
+      int? foulPoints,
+      bool? g206Penalty,
+      HubScore? hubScore,
+      int? majorFoulCount,
+      int? minorFoulCount,
+      String? penalties,
+      int? rp,
+      bool? superchargedAchieved,
+      int? totalAutoPoints,
+      int? totalPoints,
+      int? totalTeleopPoints,
+      int? totalTowerPoints,
+      bool? traversalAchieved});
 
-  $HubScoreCopyWith<$Res> get hubScore;
+  $HubScoreCopyWith<$Res>? get hubScore;
 }
 
 /// @nodoc
@@ -632,123 +632,123 @@ class _$ScoreBreakdown2026CopyWithImpl<$Res, $Val extends ScoreBreakdown2026>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? adjustPoints = null,
-    Object? autoTowerPoints = null,
-    Object? autoTowerRobot1 = null,
-    Object? autoTowerRobot2 = null,
-    Object? autoTowerRobot3 = null,
-    Object? endGameTowerPoints = null,
-    Object? endGameTowerRobot1 = null,
-    Object? endGameTowerRobot2 = null,
-    Object? endGameTowerRobot3 = null,
-    Object? energizedAchieved = null,
-    Object? foulPoints = null,
-    Object? g206Penalty = null,
-    Object? hubScore = null,
-    Object? majorFoulCount = null,
-    Object? minorFoulCount = null,
-    Object? penalties = null,
-    Object? rp = null,
-    Object? superchargedAchieved = null,
-    Object? totalAutoPoints = null,
-    Object? totalPoints = null,
-    Object? totalTeleopPoints = null,
-    Object? totalTowerPoints = null,
-    Object? traversalAchieved = null,
+    Object? adjustPoints = freezed,
+    Object? autoTowerPoints = freezed,
+    Object? autoTowerRobot1 = freezed,
+    Object? autoTowerRobot2 = freezed,
+    Object? autoTowerRobot3 = freezed,
+    Object? endGameTowerPoints = freezed,
+    Object? endGameTowerRobot1 = freezed,
+    Object? endGameTowerRobot2 = freezed,
+    Object? endGameTowerRobot3 = freezed,
+    Object? energizedAchieved = freezed,
+    Object? foulPoints = freezed,
+    Object? g206Penalty = freezed,
+    Object? hubScore = freezed,
+    Object? majorFoulCount = freezed,
+    Object? minorFoulCount = freezed,
+    Object? penalties = freezed,
+    Object? rp = freezed,
+    Object? superchargedAchieved = freezed,
+    Object? totalAutoPoints = freezed,
+    Object? totalPoints = freezed,
+    Object? totalTeleopPoints = freezed,
+    Object? totalTowerPoints = freezed,
+    Object? traversalAchieved = freezed,
   }) {
     return _then(_value.copyWith(
-      adjustPoints: null == adjustPoints
+      adjustPoints: freezed == adjustPoints
           ? _value.adjustPoints
           : adjustPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoTowerPoints: null == autoTowerPoints
+              as int?,
+      autoTowerPoints: freezed == autoTowerPoints
           ? _value.autoTowerPoints
           : autoTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoTowerRobot1: null == autoTowerRobot1
+              as int?,
+      autoTowerRobot1: freezed == autoTowerRobot1
           ? _value.autoTowerRobot1
           : autoTowerRobot1 // ignore: cast_nullable_to_non_nullable
-              as String,
-      autoTowerRobot2: null == autoTowerRobot2
+              as String?,
+      autoTowerRobot2: freezed == autoTowerRobot2
           ? _value.autoTowerRobot2
           : autoTowerRobot2 // ignore: cast_nullable_to_non_nullable
-              as String,
-      autoTowerRobot3: null == autoTowerRobot3
+              as String?,
+      autoTowerRobot3: freezed == autoTowerRobot3
           ? _value.autoTowerRobot3
           : autoTowerRobot3 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerPoints: null == endGameTowerPoints
+              as String?,
+      endGameTowerPoints: freezed == endGameTowerPoints
           ? _value.endGameTowerPoints
           : endGameTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      endGameTowerRobot1: null == endGameTowerRobot1
+              as int?,
+      endGameTowerRobot1: freezed == endGameTowerRobot1
           ? _value.endGameTowerRobot1
           : endGameTowerRobot1 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerRobot2: null == endGameTowerRobot2
+              as String?,
+      endGameTowerRobot2: freezed == endGameTowerRobot2
           ? _value.endGameTowerRobot2
           : endGameTowerRobot2 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerRobot3: null == endGameTowerRobot3
+              as String?,
+      endGameTowerRobot3: freezed == endGameTowerRobot3
           ? _value.endGameTowerRobot3
           : endGameTowerRobot3 // ignore: cast_nullable_to_non_nullable
-              as String,
-      energizedAchieved: null == energizedAchieved
+              as String?,
+      energizedAchieved: freezed == energizedAchieved
           ? _value.energizedAchieved
           : energizedAchieved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      foulPoints: null == foulPoints
+              as bool?,
+      foulPoints: freezed == foulPoints
           ? _value.foulPoints
           : foulPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      g206Penalty: null == g206Penalty
+              as int?,
+      g206Penalty: freezed == g206Penalty
           ? _value.g206Penalty
           : g206Penalty // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hubScore: null == hubScore
+              as bool?,
+      hubScore: freezed == hubScore
           ? _value.hubScore
           : hubScore // ignore: cast_nullable_to_non_nullable
-              as HubScore,
-      majorFoulCount: null == majorFoulCount
+              as HubScore?,
+      majorFoulCount: freezed == majorFoulCount
           ? _value.majorFoulCount
           : majorFoulCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      minorFoulCount: null == minorFoulCount
+              as int?,
+      minorFoulCount: freezed == minorFoulCount
           ? _value.minorFoulCount
           : minorFoulCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      penalties: null == penalties
+              as int?,
+      penalties: freezed == penalties
           ? _value.penalties
           : penalties // ignore: cast_nullable_to_non_nullable
-              as String,
-      rp: null == rp
+              as String?,
+      rp: freezed == rp
           ? _value.rp
           : rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      superchargedAchieved: null == superchargedAchieved
+              as int?,
+      superchargedAchieved: freezed == superchargedAchieved
           ? _value.superchargedAchieved
           : superchargedAchieved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      totalAutoPoints: null == totalAutoPoints
+              as bool?,
+      totalAutoPoints: freezed == totalAutoPoints
           ? _value.totalAutoPoints
           : totalAutoPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalPoints: null == totalPoints
+              as int?,
+      totalPoints: freezed == totalPoints
           ? _value.totalPoints
           : totalPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalTeleopPoints: null == totalTeleopPoints
+              as int?,
+      totalTeleopPoints: freezed == totalTeleopPoints
           ? _value.totalTeleopPoints
           : totalTeleopPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalTowerPoints: null == totalTowerPoints
+              as int?,
+      totalTowerPoints: freezed == totalTowerPoints
           ? _value.totalTowerPoints
           : totalTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      traversalAchieved: null == traversalAchieved
+              as int?,
+      traversalAchieved: freezed == traversalAchieved
           ? _value.traversalAchieved
           : traversalAchieved // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool?,
     ) as $Val);
   }
 
@@ -756,8 +756,12 @@ class _$ScoreBreakdown2026CopyWithImpl<$Res, $Val extends ScoreBreakdown2026>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $HubScoreCopyWith<$Res> get hubScore {
-    return $HubScoreCopyWith<$Res>(_value.hubScore, (value) {
+  $HubScoreCopyWith<$Res>? get hubScore {
+    if (_value.hubScore == null) {
+      return null;
+    }
+
+    return $HubScoreCopyWith<$Res>(_value.hubScore!, (value) {
       return _then(_value.copyWith(hubScore: value) as $Val);
     });
   }
@@ -772,32 +776,32 @@ abstract class _$$ScoreBreakdown2026ImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int adjustPoints,
-      int autoTowerPoints,
-      String autoTowerRobot1,
-      String autoTowerRobot2,
-      String autoTowerRobot3,
-      int endGameTowerPoints,
-      String endGameTowerRobot1,
-      String endGameTowerRobot2,
-      String endGameTowerRobot3,
-      bool energizedAchieved,
-      int foulPoints,
-      bool g206Penalty,
-      HubScore hubScore,
-      int majorFoulCount,
-      int minorFoulCount,
-      String penalties,
-      int rp,
-      bool superchargedAchieved,
-      int totalAutoPoints,
-      int totalPoints,
-      int totalTeleopPoints,
-      int totalTowerPoints,
-      int traversalAchieved});
+      {int? adjustPoints,
+      int? autoTowerPoints,
+      String? autoTowerRobot1,
+      String? autoTowerRobot2,
+      String? autoTowerRobot3,
+      int? endGameTowerPoints,
+      String? endGameTowerRobot1,
+      String? endGameTowerRobot2,
+      String? endGameTowerRobot3,
+      bool? energizedAchieved,
+      int? foulPoints,
+      bool? g206Penalty,
+      HubScore? hubScore,
+      int? majorFoulCount,
+      int? minorFoulCount,
+      String? penalties,
+      int? rp,
+      bool? superchargedAchieved,
+      int? totalAutoPoints,
+      int? totalPoints,
+      int? totalTeleopPoints,
+      int? totalTowerPoints,
+      bool? traversalAchieved});
 
   @override
-  $HubScoreCopyWith<$Res> get hubScore;
+  $HubScoreCopyWith<$Res>? get hubScore;
 }
 
 /// @nodoc
@@ -813,123 +817,123 @@ class __$$ScoreBreakdown2026ImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? adjustPoints = null,
-    Object? autoTowerPoints = null,
-    Object? autoTowerRobot1 = null,
-    Object? autoTowerRobot2 = null,
-    Object? autoTowerRobot3 = null,
-    Object? endGameTowerPoints = null,
-    Object? endGameTowerRobot1 = null,
-    Object? endGameTowerRobot2 = null,
-    Object? endGameTowerRobot3 = null,
-    Object? energizedAchieved = null,
-    Object? foulPoints = null,
-    Object? g206Penalty = null,
-    Object? hubScore = null,
-    Object? majorFoulCount = null,
-    Object? minorFoulCount = null,
-    Object? penalties = null,
-    Object? rp = null,
-    Object? superchargedAchieved = null,
-    Object? totalAutoPoints = null,
-    Object? totalPoints = null,
-    Object? totalTeleopPoints = null,
-    Object? totalTowerPoints = null,
-    Object? traversalAchieved = null,
+    Object? adjustPoints = freezed,
+    Object? autoTowerPoints = freezed,
+    Object? autoTowerRobot1 = freezed,
+    Object? autoTowerRobot2 = freezed,
+    Object? autoTowerRobot3 = freezed,
+    Object? endGameTowerPoints = freezed,
+    Object? endGameTowerRobot1 = freezed,
+    Object? endGameTowerRobot2 = freezed,
+    Object? endGameTowerRobot3 = freezed,
+    Object? energizedAchieved = freezed,
+    Object? foulPoints = freezed,
+    Object? g206Penalty = freezed,
+    Object? hubScore = freezed,
+    Object? majorFoulCount = freezed,
+    Object? minorFoulCount = freezed,
+    Object? penalties = freezed,
+    Object? rp = freezed,
+    Object? superchargedAchieved = freezed,
+    Object? totalAutoPoints = freezed,
+    Object? totalPoints = freezed,
+    Object? totalTeleopPoints = freezed,
+    Object? totalTowerPoints = freezed,
+    Object? traversalAchieved = freezed,
   }) {
     return _then(_$ScoreBreakdown2026Impl(
-      adjustPoints: null == adjustPoints
+      adjustPoints: freezed == adjustPoints
           ? _value.adjustPoints
           : adjustPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoTowerPoints: null == autoTowerPoints
+              as int?,
+      autoTowerPoints: freezed == autoTowerPoints
           ? _value.autoTowerPoints
           : autoTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      autoTowerRobot1: null == autoTowerRobot1
+              as int?,
+      autoTowerRobot1: freezed == autoTowerRobot1
           ? _value.autoTowerRobot1
           : autoTowerRobot1 // ignore: cast_nullable_to_non_nullable
-              as String,
-      autoTowerRobot2: null == autoTowerRobot2
+              as String?,
+      autoTowerRobot2: freezed == autoTowerRobot2
           ? _value.autoTowerRobot2
           : autoTowerRobot2 // ignore: cast_nullable_to_non_nullable
-              as String,
-      autoTowerRobot3: null == autoTowerRobot3
+              as String?,
+      autoTowerRobot3: freezed == autoTowerRobot3
           ? _value.autoTowerRobot3
           : autoTowerRobot3 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerPoints: null == endGameTowerPoints
+              as String?,
+      endGameTowerPoints: freezed == endGameTowerPoints
           ? _value.endGameTowerPoints
           : endGameTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      endGameTowerRobot1: null == endGameTowerRobot1
+              as int?,
+      endGameTowerRobot1: freezed == endGameTowerRobot1
           ? _value.endGameTowerRobot1
           : endGameTowerRobot1 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerRobot2: null == endGameTowerRobot2
+              as String?,
+      endGameTowerRobot2: freezed == endGameTowerRobot2
           ? _value.endGameTowerRobot2
           : endGameTowerRobot2 // ignore: cast_nullable_to_non_nullable
-              as String,
-      endGameTowerRobot3: null == endGameTowerRobot3
+              as String?,
+      endGameTowerRobot3: freezed == endGameTowerRobot3
           ? _value.endGameTowerRobot3
           : endGameTowerRobot3 // ignore: cast_nullable_to_non_nullable
-              as String,
-      energizedAchieved: null == energizedAchieved
+              as String?,
+      energizedAchieved: freezed == energizedAchieved
           ? _value.energizedAchieved
           : energizedAchieved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      foulPoints: null == foulPoints
+              as bool?,
+      foulPoints: freezed == foulPoints
           ? _value.foulPoints
           : foulPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      g206Penalty: null == g206Penalty
+              as int?,
+      g206Penalty: freezed == g206Penalty
           ? _value.g206Penalty
           : g206Penalty // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hubScore: null == hubScore
+              as bool?,
+      hubScore: freezed == hubScore
           ? _value.hubScore
           : hubScore // ignore: cast_nullable_to_non_nullable
-              as HubScore,
-      majorFoulCount: null == majorFoulCount
+              as HubScore?,
+      majorFoulCount: freezed == majorFoulCount
           ? _value.majorFoulCount
           : majorFoulCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      minorFoulCount: null == minorFoulCount
+              as int?,
+      minorFoulCount: freezed == minorFoulCount
           ? _value.minorFoulCount
           : minorFoulCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      penalties: null == penalties
+              as int?,
+      penalties: freezed == penalties
           ? _value.penalties
           : penalties // ignore: cast_nullable_to_non_nullable
-              as String,
-      rp: null == rp
+              as String?,
+      rp: freezed == rp
           ? _value.rp
           : rp // ignore: cast_nullable_to_non_nullable
-              as int,
-      superchargedAchieved: null == superchargedAchieved
+              as int?,
+      superchargedAchieved: freezed == superchargedAchieved
           ? _value.superchargedAchieved
           : superchargedAchieved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      totalAutoPoints: null == totalAutoPoints
+              as bool?,
+      totalAutoPoints: freezed == totalAutoPoints
           ? _value.totalAutoPoints
           : totalAutoPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalPoints: null == totalPoints
+              as int?,
+      totalPoints: freezed == totalPoints
           ? _value.totalPoints
           : totalPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalTeleopPoints: null == totalTeleopPoints
+              as int?,
+      totalTeleopPoints: freezed == totalTeleopPoints
           ? _value.totalTeleopPoints
           : totalTeleopPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      totalTowerPoints: null == totalTowerPoints
+              as int?,
+      totalTowerPoints: freezed == totalTowerPoints
           ? _value.totalTowerPoints
           : totalTowerPoints // ignore: cast_nullable_to_non_nullable
-              as int,
-      traversalAchieved: null == traversalAchieved
+              as int?,
+      traversalAchieved: freezed == traversalAchieved
           ? _value.traversalAchieved
           : traversalAchieved // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool?,
     ));
   }
 }
@@ -938,79 +942,79 @@ class __$$ScoreBreakdown2026ImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ScoreBreakdown2026Impl implements _ScoreBreakdown2026 {
   const _$ScoreBreakdown2026Impl(
-      {required this.adjustPoints,
-      required this.autoTowerPoints,
-      required this.autoTowerRobot1,
-      required this.autoTowerRobot2,
-      required this.autoTowerRobot3,
-      required this.endGameTowerPoints,
-      required this.endGameTowerRobot1,
-      required this.endGameTowerRobot2,
-      required this.endGameTowerRobot3,
-      required this.energizedAchieved,
-      required this.foulPoints,
-      required this.g206Penalty,
-      required this.hubScore,
-      required this.majorFoulCount,
-      required this.minorFoulCount,
-      required this.penalties,
-      required this.rp,
-      required this.superchargedAchieved,
-      required this.totalAutoPoints,
-      required this.totalPoints,
-      required this.totalTeleopPoints,
-      required this.totalTowerPoints,
-      required this.traversalAchieved});
+      {this.adjustPoints,
+      this.autoTowerPoints,
+      this.autoTowerRobot1,
+      this.autoTowerRobot2,
+      this.autoTowerRobot3,
+      this.endGameTowerPoints,
+      this.endGameTowerRobot1,
+      this.endGameTowerRobot2,
+      this.endGameTowerRobot3,
+      this.energizedAchieved,
+      this.foulPoints,
+      this.g206Penalty,
+      this.hubScore,
+      this.majorFoulCount,
+      this.minorFoulCount,
+      this.penalties,
+      this.rp,
+      this.superchargedAchieved,
+      this.totalAutoPoints,
+      this.totalPoints,
+      this.totalTeleopPoints,
+      this.totalTowerPoints,
+      this.traversalAchieved});
 
   factory _$ScoreBreakdown2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$ScoreBreakdown2026ImplFromJson(json);
 
   @override
-  final int adjustPoints;
+  final int? adjustPoints;
   @override
-  final int autoTowerPoints;
+  final int? autoTowerPoints;
   @override
-  final String autoTowerRobot1;
+  final String? autoTowerRobot1;
   @override
-  final String autoTowerRobot2;
+  final String? autoTowerRobot2;
   @override
-  final String autoTowerRobot3;
+  final String? autoTowerRobot3;
   @override
-  final int endGameTowerPoints;
+  final int? endGameTowerPoints;
   @override
-  final String endGameTowerRobot1;
+  final String? endGameTowerRobot1;
   @override
-  final String endGameTowerRobot2;
+  final String? endGameTowerRobot2;
   @override
-  final String endGameTowerRobot3;
+  final String? endGameTowerRobot3;
   @override
-  final bool energizedAchieved;
+  final bool? energizedAchieved;
   @override
-  final int foulPoints;
+  final int? foulPoints;
   @override
-  final bool g206Penalty;
+  final bool? g206Penalty;
   @override
-  final HubScore hubScore;
+  final HubScore? hubScore;
   @override
-  final int majorFoulCount;
+  final int? majorFoulCount;
   @override
-  final int minorFoulCount;
+  final int? minorFoulCount;
   @override
-  final String penalties;
+  final String? penalties;
   @override
-  final int rp;
+  final int? rp;
   @override
-  final bool superchargedAchieved;
+  final bool? superchargedAchieved;
   @override
-  final int totalAutoPoints;
+  final int? totalAutoPoints;
   @override
-  final int totalPoints;
+  final int? totalPoints;
   @override
-  final int totalTeleopPoints;
+  final int? totalTeleopPoints;
   @override
-  final int totalTowerPoints;
+  final int? totalTowerPoints;
   @override
-  final int traversalAchieved;
+  final bool? traversalAchieved;
 
   @override
   String toString() {
@@ -1117,79 +1121,79 @@ class _$ScoreBreakdown2026Impl implements _ScoreBreakdown2026 {
 
 abstract class _ScoreBreakdown2026 implements ScoreBreakdown2026 {
   const factory _ScoreBreakdown2026(
-      {required final int adjustPoints,
-      required final int autoTowerPoints,
-      required final String autoTowerRobot1,
-      required final String autoTowerRobot2,
-      required final String autoTowerRobot3,
-      required final int endGameTowerPoints,
-      required final String endGameTowerRobot1,
-      required final String endGameTowerRobot2,
-      required final String endGameTowerRobot3,
-      required final bool energizedAchieved,
-      required final int foulPoints,
-      required final bool g206Penalty,
-      required final HubScore hubScore,
-      required final int majorFoulCount,
-      required final int minorFoulCount,
-      required final String penalties,
-      required final int rp,
-      required final bool superchargedAchieved,
-      required final int totalAutoPoints,
-      required final int totalPoints,
-      required final int totalTeleopPoints,
-      required final int totalTowerPoints,
-      required final int traversalAchieved}) = _$ScoreBreakdown2026Impl;
+      {final int? adjustPoints,
+      final int? autoTowerPoints,
+      final String? autoTowerRobot1,
+      final String? autoTowerRobot2,
+      final String? autoTowerRobot3,
+      final int? endGameTowerPoints,
+      final String? endGameTowerRobot1,
+      final String? endGameTowerRobot2,
+      final String? endGameTowerRobot3,
+      final bool? energizedAchieved,
+      final int? foulPoints,
+      final bool? g206Penalty,
+      final HubScore? hubScore,
+      final int? majorFoulCount,
+      final int? minorFoulCount,
+      final String? penalties,
+      final int? rp,
+      final bool? superchargedAchieved,
+      final int? totalAutoPoints,
+      final int? totalPoints,
+      final int? totalTeleopPoints,
+      final int? totalTowerPoints,
+      final bool? traversalAchieved}) = _$ScoreBreakdown2026Impl;
 
   factory _ScoreBreakdown2026.fromJson(Map<String, dynamic> json) =
       _$ScoreBreakdown2026Impl.fromJson;
 
   @override
-  int get adjustPoints;
+  int? get adjustPoints;
   @override
-  int get autoTowerPoints;
+  int? get autoTowerPoints;
   @override
-  String get autoTowerRobot1;
+  String? get autoTowerRobot1;
   @override
-  String get autoTowerRobot2;
+  String? get autoTowerRobot2;
   @override
-  String get autoTowerRobot3;
+  String? get autoTowerRobot3;
   @override
-  int get endGameTowerPoints;
+  int? get endGameTowerPoints;
   @override
-  String get endGameTowerRobot1;
+  String? get endGameTowerRobot1;
   @override
-  String get endGameTowerRobot2;
+  String? get endGameTowerRobot2;
   @override
-  String get endGameTowerRobot3;
+  String? get endGameTowerRobot3;
   @override
-  bool get energizedAchieved;
+  bool? get energizedAchieved;
   @override
-  int get foulPoints;
+  int? get foulPoints;
   @override
-  bool get g206Penalty;
+  bool? get g206Penalty;
   @override
-  HubScore get hubScore;
+  HubScore? get hubScore;
   @override
-  int get majorFoulCount;
+  int? get majorFoulCount;
   @override
-  int get minorFoulCount;
+  int? get minorFoulCount;
   @override
-  String get penalties;
+  String? get penalties;
   @override
-  int get rp;
+  int? get rp;
   @override
-  bool get superchargedAchieved;
+  bool? get superchargedAchieved;
   @override
-  int get totalAutoPoints;
+  int? get totalAutoPoints;
   @override
-  int get totalPoints;
+  int? get totalPoints;
   @override
-  int get totalTeleopPoints;
+  int? get totalTeleopPoints;
   @override
-  int get totalTowerPoints;
+  int? get totalTowerPoints;
   @override
-  int get traversalAchieved;
+  bool? get traversalAchieved;
 
   /// Create a copy of ScoreBreakdown2026
   /// with the given fields replaced by the non-null parameter values.

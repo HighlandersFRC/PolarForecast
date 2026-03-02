@@ -298,7 +298,16 @@ def TeamBasedData(
                     team_number=0
                 ),
                 data=Data2026(
-                    auto=Auto2026(),
+                    auto=Auto2026(
+                        starting_position_meters_from_hub_center=0.0,
+                        field_side=[],
+                        preload=False,
+                        both_sides=False,
+                        contacts_robot=False,
+                        auto_pieces=0,
+                        climb=False,
+                        steps=[],
+                    ),
                     auto_scoring=Scoring2026(),
                     teleop_scoring=Scoring2026(),
                     miscellaneous=Miscellaneous2026()

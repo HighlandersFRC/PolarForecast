@@ -165,17 +165,33 @@ class _StatsTabState extends State<_StatsTab> {
           style: TextStyle(fontFamily: 'Font'),
         )),
     GridColumn(
-        columnName: 'fuel_points',
-        label: Text(
-          'Fuel Points',
-          style: TextStyle(fontFamily: 'Font'),
-        )),
+      columnName: 'auto_fuel',
+      label: Text(
+        'Auto Fuel',
+        style: TextStyle(fontFamily: 'Font'),
+      ),
+    ),
     GridColumn(
-        columnName: 'climb_points',
-        label: Text(
-          'Climb Points',
-          style: TextStyle(fontFamily: 'Font'),
-        )),
+      columnName: 'tele_fuel',
+      label: Text(
+        'Teleop Fuel',
+        style: TextStyle(fontFamily: 'Font'),
+      ),
+    ),
+    GridColumn(
+      columnName: 'auto_pass',
+      label: Text(
+        'Auto Passing',
+        style: TextStyle(fontFamily: 'Font'),
+      ),
+    ),
+    GridColumn(
+      columnName: 'tele_pass',
+      label: Text(
+        'Teleop Passing',
+        style: TextStyle(fontFamily: 'Font'),
+      ),
+    )
   ];
   bool isLoading = true;
   @override
@@ -186,20 +202,16 @@ class _StatsTabState extends State<_StatsTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    try {
-      final fetchedStats = (await apiService.fetchMatchDetails(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
-        widget.widget.match_key,
-      ));
-      if (mounted) {
-        setState(() {
-          stats = fetchedStats;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
+    final fetchedStats = (await apiService.fetchMatchDetails(
+      int.parse(widget.widget.tournament.page.split('/')[3]),
+      widget.widget.tournament.page.split('/')[4],
+      widget.widget.match_key,
+    ));
+    if (mounted) {
+      setState(() {
+        stats = fetchedStats;
+        isLoading = false;
+      });
     }
   }
 
@@ -207,47 +219,68 @@ class _StatsTabState extends State<_StatsTab> {
     if (stats != null) {
       setState(() {
         blueRows = [];
-        double blueOPR = 0, blueFuel = 0, blueClimb = 0;
+        double blueOPR = 0;
+        double blueAutoFuel = 0;
+        double blueTeleFuel = 0;
+        double blueAutoPass = 0;
+        double blueTelePass = 0;
         for (var blueTeam in stats?.blue_teams ?? []) {
           blueOPR += blueTeam.OPR;
-          blueFuel += blueTeam.fuel_points;
-          blueClimb += blueTeam.climbing_points;
+          blueAutoFuel += blueTeam.auto_fuel_cycles;
+          blueTeleFuel += blueTeam.teleop_fuel_cycles;
+          blueAutoPass += blueTeam.auto_pass;
+          blueTelePass += blueTeam.teleop_pass;
           blueRows.add(DataGridRow(cells: [
             DataGridCell(
                 columnName: 'team_number', value: blueTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: blueTeam.OPR),
             DataGridCell(
-                columnName: 'fuel_points', value: blueTeam.fuel_points),
+                columnName: 'auto_fuel', value: blueTeam.auto_fuel_cycles),
             DataGridCell(
-                columnName: 'climb_points', value: blueTeam.climbing_points),
+                columnName: 'tele_fuel', value: blueTeam.teleop_fuel_cycles),
+            DataGridCell(columnName: 'auto_pass', value: blueTeam.auto_pass),
+            DataGridCell(columnName: 'tele_pass', value: blueTeam.teleop_pass),
           ]));
         }
         blueRows.add(DataGridRow(cells: [
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: blueOPR),
-          DataGridCell(columnName: 'fuel_points', value: blueFuel),
-          DataGridCell(columnName: 'climb_points', value: blueClimb),
+          DataGridCell(columnName: 'auto_fuel', value: blueAutoFuel),
+          DataGridCell(columnName: 'tele_fuel', value: blueTeleFuel),
+          DataGridCell(columnName: 'auto_pass', value: blueAutoPass),
+          DataGridCell(columnName: 'tele_pass', value: blueTelePass),
         ]));
         redRows = [];
-        double redOPR = 0, redFuel = 0, redClimb = 0;
+        double redOPR = 0;
+        double redAutoFuel = 0;
+        double redTeleFuel = 0;
+        double redAutoPass = 0;
+        double redTelePass = 0;
         for (var redTeam in stats?.red_teams ?? []) {
           redOPR += redTeam.OPR;
-          redFuel += redTeam.fuel_points;
-          redClimb += redTeam.climbing_points;
+          redAutoFuel += redTeam.auto_fuel_cycles;
+          redTeleFuel += redTeam.teleop_fuel_cycles;
+          redAutoPass += redTeam.auto_pass;
+          redTelePass += redTeam.teleop_pass;
           redRows.add(DataGridRow(cells: [
             DataGridCell(
                 columnName: 'team_number', value: redTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: redTeam.OPR),
-            DataGridCell(columnName: 'fuel_points', value: redTeam.fuel_points),
             DataGridCell(
-                columnName: 'climb_points', value: redTeam.climbing_points),
+                columnName: 'auto_fuel', value: redTeam.auto_fuel_cycles),
+            DataGridCell(
+                columnName: 'tele_fuel', value: redTeam.teleop_fuel_cycles),
+            DataGridCell(columnName: 'auto_pass', value: redTeam.auto_pass),
+            DataGridCell(columnName: 'tele_pass', value: redTeam.teleop_pass),
           ]));
         }
         redRows.add(DataGridRow(cells: [
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: redOPR),
-          DataGridCell(columnName: 'fuel_points', value: redFuel),
-          DataGridCell(columnName: 'climb_points', value: redClimb),
+          DataGridCell(columnName: 'auto_fuel', value: redAutoFuel),
+          DataGridCell(columnName: 'tele_fuel', value: redTeleFuel),
+          DataGridCell(columnName: 'auto_pass', value: redAutoPass),
+          DataGridCell(columnName: 'tele_pass', value: redTelePass),
         ]));
       });
     }
@@ -255,6 +288,8 @@ class _StatsTabState extends State<_StatsTab> {
 
   @override
   Widget build(BuildContext context) {
+    print(fetchData);
+    String formatNum(num? value) => value?.toStringAsFixed(2) ?? 'N/A';
     return isLoading
         ? Center(
             child: CircularProgressIndicator(
@@ -282,7 +317,7 @@ class _StatsTabState extends State<_StatsTab> {
                               height: 8,
                             ),
                             Text(
-                              'Blue Predicted Score: ${stats?.prediction?.blue_score.toStringAsFixed(2)}',
+                              'Blue Predicted Score: ${formatNum(stats?.prediction?.blue_score)}',
                               style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.blue,
@@ -339,7 +374,7 @@ class _StatsTabState extends State<_StatsTab> {
                               height: 8,
                             ),
                             Text(
-                              'Red Predicted Score: ${stats?.prediction?.red_score.toStringAsFixed(2)}',
+                              'Red Predicted Score: ${formatNum(stats?.prediction?.red_score)}',
                               style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.red,
