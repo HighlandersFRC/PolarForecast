@@ -13,4 +13,4 @@ class PictureData(BaseModel):
     link: str
     permissions: list[str] = []
     image_type: Literal['full_robot',
-                        'manipulator', 'wires'] = 'full_robot'
+                        'manipulator', 'wires', 'shooter', 'intake'] = 'full_robot'

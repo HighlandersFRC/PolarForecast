@@ -23,10 +23,13 @@ class TeamStats2026 with _$TeamStats2026 {
     required double death_rate,
     required double auto_fuel_cycles,
     required double teleop_fuel_cycles,
+    double? total_fuel_cycles,
     required double foul_points,
     required int simulated_rp,
     required int simulated_rank,
   }) = _TeamStats2026;
+
+  /// Computed property: sum of auto and teleop fuel cycles
 
   factory TeamStats2026.fromJson(Map<String, dynamic> json) =>
       _$TeamStats2026FromJson(json);

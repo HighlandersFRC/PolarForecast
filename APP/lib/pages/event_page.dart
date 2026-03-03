@@ -1181,12 +1181,12 @@ class _ChartsTabState extends State<_ChartsTab> {
                   startingFields: [
                     Field(
                         name: 'Teleop Fuel',
-                        key: 'teleop_fuel',
+                        key: 'teleop_fuel_cycles',
                         enabled: true,
                         weight: 1),
                     Field(
                         name: 'Auto Fuel',
-                        key: 'auto_fuel',
+                        key: 'auto_fuel_cycles',
                         enabled: true,
                         weight: 1),
                   ])),
@@ -1200,34 +1200,11 @@ class _ChartsTabState extends State<_ChartsTab> {
                   startingFields: [
                     Field(
                         name: 'Fuel',
-                        key: 'fuel_points',
+                        key: 'total_fuel_cycles',
                         enabled: true,
                         weight: 1)
                   ])),
           Divider(color: Colors.blue),
-          Padding(
-              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-              child: BarChartWithWeights(
-                  title: 'Full OPR Breakdown',
-                  data: rankings,
-                  number: 24,
-                  startingFields: [
-                    new Field(
-                        name: 'Mobility',
-                        key: 'mobility',
-                        enabled: true,
-                        weight: 3),
-                    new Field(
-                        name: 'Climb',
-                        key: 'climb_rate',
-                        enabled: true,
-                        weight: 6),
-                    Field(
-                        name: 'Deathrate',
-                        key: 'death_rate',
-                        enabled: true,
-                        weight: -10),
-                  ])),
         ],
       ),
     ));

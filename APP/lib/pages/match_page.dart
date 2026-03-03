@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/match_details_2026.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 import '../utils.dart';
 import '../widgets/auto_display_2026.dart';
 import '../widgets/field_whiteboard.dart';
@@ -148,6 +149,7 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   MatchDetails2026? stats;
+  String? _hoveredAlliance;
   Map<String, dynamic> statDescription = {'scoutingData': {}};
   List<DataGridRow> redRows = [];
   List<DataGridRow> blueRows = [];
@@ -286,161 +288,324 @@ class _StatsTabState extends State<_StatsTab> {
     }
   }
 
+  Widget _buildAllianceCard({
+    required String title,
+    required Color color,
+    required String predictedScore,
+    required String predictedRP,
+    String? actualScore,
+    String? actualRP,
+    required List<DataGridRow> rows,
+    required bool isWinner,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hoveredAlliance = title),
+      onExit: (_) => setState(() => _hoveredAlliance = null),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 180),
+        scale: _hoveredAlliance == title ? 1.015 : 1,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            color: scheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
+              ),
+              if (isWinner)
+                BoxShadow(
+                  color: color.withOpacity(0.35),
+                  blurRadius: 50,
+                  spreadRadius: 4,
+                ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ───── HEADER ─────
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color, color.withOpacity(0.6)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                      fontFamily: 'Font',
+                    ),
+                  ),
+                  const Spacer(),
+                  if (actualScore != null) _resultBadge(isWinner, color),
+                ],
+              ),
+
+              const SizedBox(height: 34),
+
+              // ───── PREDICTIONS ─────
+              _sectionLabel("Predictions"),
+              const SizedBox(height: 14),
+              _statsBlock(
+                color,
+                [
+                  _animatedStat("Score", predictedScore, color),
+                  _animatedStat("Ranking Points", predictedRP, color),
+                ],
+              ),
+
+              if (actualScore != null) ...[
+                const SizedBox(height: 32),
+
+                // ───── ACTUAL RESULTS ─────
+                _sectionLabel("Actual Results"),
+                const SizedBox(height: 14),
+                _statsBlock(
+                  color,
+                  [
+                    _animatedStat("Score", actualScore, color),
+                    if (actualRP != null)
+                      _animatedStat("Ranking Points", actualRP, color),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 36),
+
+              // ───── RESPONSIVE DATA GRID ─────
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final gridHeight = constraints.maxWidth < 700 ? 220.0 : 300.0;
+
+                  return Container(
+                    height: gridHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: scheme.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: SfDataGridTheme(
+                        data: SfDataGridThemeData(
+                          headerColor: scheme.surfaceContainerHighest,
+                          selectionColor: color.withOpacity(0.10),
+                          rowHoverColor: scheme.primary.withOpacity(0.04),
+                          gridLineColor: color,
+                        ),
+                        child: SfDataGrid(
+                          source: _StatsTableSource(rows, color, scheme),
+                          columns: columns,
+                          columnWidthMode: ColumnWidthMode.fill,
+                          rowHeight: 64,
+                          headerRowHeight: 64,
+                          gridLinesVisibility: GridLinesVisibility.none,
+                          headerGridLinesVisibility: GridLinesVisibility.none,
+                          highlightRowOnHover: true,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statsBlock(Color color, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 20,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: color.withOpacity(0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _animatedStat(String label, String value, Color accent) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          transitionBuilder: (child, animation) =>
+              ScaleTransition(scale: animation, child: child),
+          child: Text(
+            value,
+            key: ValueKey(value),
+            style: TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.bold,
+                color: accent,
+                fontFamily: 'Font'),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+              fontFamily: 'Font'),
+        ),
+      ],
+    );
+  }
+
+  Widget _resultBadge(bool isWinner, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color:
+            isWinner ? color.withOpacity(0.15) : Colors.grey.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Text(
+        isWinner ? "WIN" : "LOSS",
+        style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isWinner ? color : Colors.grey,
+            fontFamily: 'Font'),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey.shade700,
+          letterSpacing: 0.5,
+          fontFamily: 'Font'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    print(fetchData);
-    String formatNum(num? value) => value?.toStringAsFixed(2) ?? 'N/A';
-    return isLoading
-        ? Center(
-            child: CircularProgressIndicator(
+    String formatNum(num? value) => value?.toStringAsFixed(2) ?? "N/A";
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final blueActual = stats?.prediction?.blue_actual_score ?? 0;
+    final redActual = stats?.prediction?.red_actual_score ?? 0;
+
+    final blueWinner = blueActual > redActual;
+    final redWinner = redActual > blueActual;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          _buildAllianceCard(
+            title: "Blue Alliance",
             color: Colors.blue,
-          ))
-        : LayoutBuilder(builder: (context, constraints) {
-            return Row(
-              children: [
-                SingleChildScrollView(
-                    child: SizedBox(
-                        width: constraints.maxWidth,
-                        child: Column(
-                          children: [
-                            Text(
-                              'Blue Alliance',
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  color: Colors.blue,
-                                  fontFamily: 'Font'),
-                            ),
-                            Divider(
-                              color: Colors.blue,
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              'Blue Predicted Score: ${formatNum(stats?.prediction?.blue_score)}',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.blue,
-                                  fontFamily: 'Font'),
-                            ),
-                            if (stats?.prediction?.blue_actual_score != null)
-                              Text(
-                                'Blue Actual Score: ${stats?.prediction?.blue_actual_score}',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.blue,
-                                    fontFamily: 'Font'),
-                              ),
-                            Text(
-                              'Blue Predicted RP: ${stats?.prediction?.blue_total_rp}',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.blue,
-                                  fontFamily: 'Font'),
-                            ),
-                            if (!(stats?.prediction?.predicted ?? true))
-                              Text(
-                                'Blue Actual RP: ${stats?.prediction?.blue_display_rp}',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.blue,
-                                    fontFamily: 'Font'),
-                              ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            SizedBox(
-                              height: 30 * 4 + 50,
-                              child: SfDataGrid(
-                                columnWidthMode: ColumnWidthMode.fill,
-                                source: _StatsTableSource(
-                                    blueRows, Colors.blue.shade900),
-                                columns: columns,
-                                rowHeight: 30,
-                                headerRowHeight: 50,
-                              ),
-                            ),
-                            Text(
-                              'Red Alliance',
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  color: Colors.red,
-                                  fontFamily: 'Font'),
-                            ),
-                            Divider(
-                              color: Colors.red,
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              'Red Predicted Score: ${formatNum(stats?.prediction?.red_score)}',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.red,
-                                  fontFamily: 'Font'),
-                            ),
-                            if (stats?.prediction?.red_actual_score != null)
-                              Text(
-                                'Red Actual Score: ${stats?.prediction?.red_actual_score}',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.red,
-                                    fontFamily: 'Font'),
-                              ),
-                            Text(
-                              'Red Predicted RP: ${stats?.prediction?.red_total_rp}',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.red,
-                                  fontFamily: 'Font'),
-                            ),
-                            if (!(stats?.prediction?.predicted ?? true))
-                              Text(
-                                'Red Actual RP: ${stats?.prediction?.red_display_rp}',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.red,
-                                    fontFamily: 'Font'),
-                              ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            SizedBox(
-                              height: 30 * 4 + 50,
-                              child: SfDataGrid(
-                                  columnWidthMode: ColumnWidthMode.fill,
-                                  source: _StatsTableSource(
-                                      redRows, Colors.red.shade900),
-                                  headerRowHeight: 50,
-                                  rowHeight: 30,
-                                  columns: columns),
-                            )
-                          ],
-                        )))
-              ],
-            );
-          });
+            predictedScore: formatNum(stats?.prediction?.blue_score),
+            predictedRP: stats?.prediction?.blue_total_rp?.toString() ?? "-",
+            actualScore: stats?.prediction?.blue_actual_score?.toString(),
+            actualRP: stats?.prediction?.blue_display_rp?.toString(),
+            rows: blueRows,
+            isWinner: blueWinner,
+          ),
+          const SizedBox(height: 32),
+          _buildAllianceCard(
+            title: "Red Alliance",
+            color: Colors.red,
+            predictedScore: formatNum(stats?.prediction?.red_score),
+            predictedRP: stats?.prediction?.red_total_rp?.toString() ?? "-",
+            actualScore: stats?.prediction?.red_actual_score?.toString(),
+            actualRP: stats?.prediction?.red_display_rp?.toString(),
+            rows: redRows,
+            isWinner: redWinner,
+          ),
+        ],
+      ),
+    );
   }
 }
 
 class _StatsTableSource extends DataGridSource {
   final List<DataGridRow> rows;
-  final Color color;
-  _StatsTableSource(this.rows, this.color);
+  final Color accent;
+  final ColorScheme scheme;
+
+  _StatsTableSource(this.rows, this.accent, this.scheme);
 
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
-    List<Widget> cells = [];
-    for (var cell in row.getCells()) {
-      if (cell.value is num)
-        cells.add(Text((cell.value as num).toStringAsFixed(2),
-            style: TextStyle(fontFamily: 'Font')));
-      else
-        cells.add(
-            Text(cell.value.toString(), style: TextStyle(fontFamily: 'Font')));
-    }
-    return DataGridRowAdapter(cells: cells, color: color);
+    final rowIndex = rows.indexOf(row);
+    final isEven = rowIndex % 2 == 0;
+
+    return DataGridRowAdapter(
+      color: isEven
+          ? scheme.surface
+          : scheme.surfaceContainerLowest.withOpacity(0.4),
+      cells: row.getCells().asMap().entries.map((entry) {
+        final index = entry.key;
+        final cell = entry.value;
+        final isNumeric = cell.value is num;
+
+        final text = isNumeric
+            ? (cell.value as num).toStringAsFixed(2)
+            : cell.value.toString();
+
+        return Container(
+          alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Font',
+              fontSize: 14,
+              fontWeight: index == 0 ? FontWeight.w600 : FontWeight.w500,
+              color: index == 0 ? accent : scheme.onSurface.withOpacity(0.85),
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 }
 

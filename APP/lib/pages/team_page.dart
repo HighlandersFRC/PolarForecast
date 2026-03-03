@@ -142,6 +142,27 @@ class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
   bool isLoading = true;
 
+  // Only show these fields in the UI
+  final List<String> displayFields = [
+    'rank',
+    'match_count',
+    'OPR',
+    'OPRRank',
+    'total_pass',
+    'auto_pass',
+    'teleop_pass',
+    'endgame_points',
+    'teleop_points',
+    'auto_points',
+    'climbing_points',
+    'auto_fuel_cycles',
+    'teleop_fuel_cycles',
+    'total_fuel_cycles',
+    'foul_points',
+    'simulated_rp',
+    'simulated_rank',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -150,25 +171,12 @@ class _StatsTabState extends State<_StatsTab> {
 
   void fetchStats() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-
-    final parts = widget.widget.tournament.page.split('/');
-
-    // ["", "event", "2026week0", "team", "frc190"]
-
-    final eventCode = parts[2]; // "2026week0"
-    final teamKey = parts[4]; // "frc190"
-
-    final year = int.parse(eventCode.substring(0, 4));
-    final event = eventCode.substring(4);
-
-    print("YEAR: $year"); // 2026
-    print("EVENT: $event"); // week0
-    print("TEAM: $teamKey"); // frc190
-
     try {
-      final fetchedStats =
-          await apiService.fetchTeamStats(year, event, teamKey);
-
+      final fetchedStats = await apiService.fetchTeamStats(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
       if (mounted) {
         setState(() {
           stats = fetchedStats;
@@ -204,15 +212,17 @@ class _StatsTabState extends State<_StatsTab> {
                       style: TextStyle(
                           color: theme.primaryColor,
                           fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Font'),
+                          fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
                     Wrap(
                       spacing: 16,
                       runSpacing: 16,
                       children: [
-                        ...stats.entries.map((entry) {
+                        // Only display selected fields
+                        ...stats.entries
+                            .where((entry) => displayFields.contains(entry.key))
+                            .map((entry) {
                           return Card(
                             elevation: 5,
                             shadowColor: theme.primaryColor.withOpacity(0.3),
@@ -229,14 +239,12 @@ class _StatsTabState extends State<_StatsTab> {
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: theme.primaryColor,
-                                        fontFamily: 'Font'),
+                                        color: theme.primaryColor),
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     formatValue(entry.value),
-                                    style: TextStyle(
-                                        fontSize: 16, fontFamily: 'Font'),
+                                    style: TextStyle(fontSize: 16),
                                   ),
                                 ],
                               ),

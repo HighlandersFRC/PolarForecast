@@ -52,8 +52,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         
         "auto_fuel_cycles": 0,
         "teleop_fuel_cycles": 0,
-
-    
+        "total_fuel_cycles": 0,
 
         "foul_points": 0,
 
@@ -106,6 +105,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
             oprMatchEntry["total_points"] = breakdown.totalPoints
             oprMatchEntry["auto_fuel_cycles"] = breakdown.hubScore.autoCount
             oprMatchEntry["teleop_fuel_cycles"] = breakdown.hubScore.teleopCount
+            oprMatchEntry["total_fuel_cycles"] = breakdown.hubScore.autoCount + breakdown.hubScore.teleopCount
            
             oprMatchEntry["foul_points"] = breakdown.foulPoints
             # print(oprMatchEntry)
@@ -140,6 +140,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     matchScoutingCount = np.zeros(len(teams))
     autoPass = np.zeros(len(teams))
     telePass = np.zeros(len(teams))
+    
 
     # Counting the number of matches that each team has
     stations = ['station1', 'station2', 'station3']
@@ -443,6 +444,12 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     XMatrix.insert(0, 'scouting_data_count', pd.Series(matchScoutingCount))
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
+    XMatrix.insert(
+    0,
+    'total_fuel_cycles',
+    XMatrix['auto_fuel_cycles'] + XMatrix['teleop_fuel_cycles']
+)
+
     
     # print(XMatrix)
     return XMatrix, ratings
