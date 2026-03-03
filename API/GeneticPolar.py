@@ -137,6 +137,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     autoPoints = np.zeros(len(teams))
     teleopPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
+    teamDefenses = np.zeros(len(teams))
     matchScoutingCount = np.zeros(len(teams))
     autoPass = np.zeros(len(teams))
     telePass = np.zeros(len(teams))
@@ -190,6 +191,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         if idx is not None:
             matchScoutingCount[idx] += 1
             teamDeaths[idx] += 1 if entry.data.miscellaneous.died else 0
+            teamDefenses[idx] += entry.data.miscellaneous.defense or 0
             autoPass[idx] += entry.data.auto_scoring.passing_cycles or 0
             telePass[idx] += entry.data.teleop_scoring.passing_cycles or 0
         else:
@@ -422,6 +424,10 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     for i in range(len(teamDeaths)):
         if math.isnan(teamDeaths[i]):
             teamDeaths[i] = 0
+    teamDefenses /= matchScoutingCount
+    for i in range(len(teamDefenses)):
+        if math.isnan(teamDefenses[i]):
+            teamDefenses[i] = 0
     endgamePoints = endgameClimbL1 * 10 + endgameClimbL2 * 20 + endgameClimbL3 * 30
     autoPoints += autoClimb * 15
     teamClimbingPoints = endgameClimbL1 * 10 + endgameClimbL2 * 20 + endgameClimbL3 * 30 + autoClimb * 15
@@ -429,6 +435,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     teamOPR = endgamePoints + autoPoints + teleopPoints
 
     XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))
+    XMatrix.insert(0, 'defense_rate', pd.Series(teamDefenses))
     XMatrix.insert(0, 'climbing_points', pd.Series(teamClimbingPoints))
     XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
     XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))

@@ -21,6 +21,7 @@ class TeamStats2026 with _$TeamStats2026 {
     required double auto_points,
     required double climbing_points,
     required double death_rate,
+    required double defense_rate,
     required double auto_fuel_cycles,
     required double teleop_fuel_cycles,
     double? total_fuel_cycles,

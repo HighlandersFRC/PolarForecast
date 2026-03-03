@@ -206,6 +206,12 @@ class _RankingsTabState extends State<_RankingsTab> {
       columnName: 'death_rate',
       allowFiltering: false,
     ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Defense Rate', style: TextStyle(fontFamily: 'Font')),
+      columnName: 'defense_rate',
+      allowFiltering: false,
+    ),
   ];
   Map<String, bool> heatMapFromKey = {
     'team_number': false,
@@ -215,6 +221,7 @@ class _RankingsTabState extends State<_RankingsTab> {
     'auto_fuel_cycles': true,
     'teleop_fuel_cycles': true,
     'climbing_points': true,
+    'defense_rate': true,
     'death_rate': true,
   };
   List<MatchScouting2026> scouting = [];
@@ -438,10 +445,18 @@ class _TeamDataSource extends DataGridSource {
                 maxValues[e.columnName],
                 e.columnName == 'rank' ||
                     e.columnName == 'simulated_rank' ||
-                    e.columnName == 'death_rate')
+                    e.columnName == 'death_rate' ||
+                    e.columnName == 'defense_rate')
             : even
                 ? Theme.of(context).primaryColor.withOpacity(0.3)
                 : Colors.black.withOpacity(0);
+        if (e.columnName == 'defense_rate') {
+          return _DefenseMatchesOnClick(
+            teamNumber: int.parse(row.getCells()[0].value.toString()),
+            color: color,
+            scouting: scouting,
+          );
+        }
         if (e.columnName == 'team_number') {
           // print(e.columnName.runtimeType);
           return Container(
@@ -507,6 +522,114 @@ class _TeamDataSource extends DataGridSource {
       return _roundToTenths(value).toStringAsFixed(1);
     }
     return value;
+  }
+}
+
+class _DefenseMatchesOnClick extends StatelessWidget {
+  final int teamNumber;
+  final Color color;
+  final List<MatchScouting2026> scouting;
+
+  const _DefenseMatchesOnClick({
+    required this.teamNumber,
+    required this.color,
+    required this.scouting,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        final defenseMatches = scouting
+            .where((match) =>
+                match.team_number == teamNumber &&
+                match.data.miscellaneous.defense)
+            .toList()
+          ..sort((a, b) => a.match_number.compareTo(b.match_number));
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: Colors.grey[900],
+            title: Text(
+              'Matches that $teamNumber played defense in - ',
+              style: const TextStyle(color: Colors.white, fontFamily: 'Font'),
+            ),
+            content: SizedBox(
+              width: 350,
+              child: defenseMatches.isEmpty
+                  ? const Text(
+                      'No matches where defense was played.',
+                      style: TextStyle(color: Colors.white70),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: defenseMatches.length,
+                      itemBuilder: (_, index) {
+                        final match = defenseMatches[index];
+
+                        return ListTile(
+                          onTap: () {
+                            final matchKey =
+                                '${match.event_code}_qm${match.match_number}';
+
+                            html.window.open(
+                              'https://www.thebluealliance.com/match/$matchKey',
+                              '_blank',
+                            );
+                          },
+                          title: Text(
+                            '${match.event_code}_qm${match.match_number}',
+                            style: const TextStyle(
+                              color: Colors.blueAccent,
+                              fontFamily: 'Font',
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          subtitle: Text(
+                            match.data.miscellaneous.comments.isNotEmpty
+                                ? match.data.miscellaneous.comments
+                                : 'No comments',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(color: Colors.blueAccent),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.center,
+        color: color,
+        child: Text(
+          '${_formatValueForDisplay(teamNumber)}',
+          style: const TextStyle(color: Colors.white, fontFamily: 'Font'),
+        ),
+      ),
+    );
+  }
+
+  String _formatValueForDisplay(int team) {
+    final teamMatches = scouting.where((m) => m.team_number == team).length;
+    final defenseMatches = scouting
+        .where((m) => m.team_number == team && m.data.miscellaneous.defense)
+        .length;
+
+    if (teamMatches == 0) return "0.0";
+
+    final rate = defenseMatches / teamMatches;
+    return rate.toStringAsFixed(1);
   }
 }
 
@@ -1205,6 +1328,39 @@ class _ChartsTabState extends State<_ChartsTab> {
                         weight: 1)
                   ])),
           Divider(color: Colors.blue),
+          Padding(
+              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: BarChartWithWeights(
+                  title: 'Full OPR Breakdown',
+                  data: rankings,
+                  number: 24,
+                  startingFields: [
+                    Field(
+                        name: 'Teleop Fuel',
+                        key: 'teleop_fuel_cycles',
+                        enabled: true,
+                        weight: 1),
+                    Field(
+                        name: 'Auto Fuel',
+                        key: 'auto_fuel_cycles',
+                        enabled: true,
+                        weight: 1),
+                    Field(
+                        name: 'Teleop Pass',
+                        key: 'teleop_pass',
+                        enabled: true,
+                        weight: 1),
+                    Field(
+                        name: 'Auto Pass',
+                        key: 'auto_pass',
+                        enabled: true,
+                        weight: 1),
+                    Field(
+                        name: 'Climb',
+                        key: 'climbing_points',
+                        enabled: true,
+                        weight: 1)
+                  ])),
         ],
       ),
     ));
