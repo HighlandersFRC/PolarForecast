@@ -192,21 +192,21 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
     switch (widget.auto.field_side.length) {
       case 1:
         if (widget.auto.field_side[0] == 'red') {
-          imagePath = '2026GameField_Red.png';
+          imagePath = 'assets/2026GameField_Red.png';
           imageRotation = -1.5708;
         } else {
-          imagePath = '2026GameField_Blue.png';
+          imagePath = 'assets/2026GameField_Blue.png';
           imageRotation = 1.5708;
         }
         break;
 
       case 2:
-        imagePath = '2026GameField_Blue.png';
+        imagePath = 'assets/2026GameField_Blue.png';
         imageRotation = 1.5708;
         break;
 
       default:
-        imagePath = '2026GameField_Blue.png';
+        imagePath = 'assets/2026GameField_Blue.png';
         imageRotation = 1.5708;
         break;
     }
