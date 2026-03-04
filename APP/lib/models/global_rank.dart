@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import 'team_stats_2025.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 
 part 'global_rank.freezed.dart';
 part 'global_rank.g.dart';
@@ -12,7 +11,7 @@ class GlobalRank with _$GlobalRank {
     required DateTime eventDate,
     required String event,
     @Default([]) List<String> all_events,
-    required TeamStats2025 data,
+    required TeamStats2026 data,
   }) = _GlobalRank;
 
   factory GlobalRank.fromJson(Map<String, dynamic> json) =>

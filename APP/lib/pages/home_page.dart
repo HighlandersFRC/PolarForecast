@@ -37,7 +37,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('Team'),
+        child: Text(
+          'Team',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
     GridColumn(
@@ -46,7 +49,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('OPR'),
+        child: Text(
+          'OPR',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
     GridColumn(
@@ -55,7 +61,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('OPR Rank'),
+        child: Text(
+          'OPR Rank',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
     GridColumn(
@@ -64,7 +73,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('Auto Points'),
+        child: Text(
+          'Auto Points',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
     GridColumn(
@@ -73,7 +85,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('Teleop Points'),
+        child: Text(
+          'Teleop Points',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
     GridColumn(
@@ -82,7 +97,10 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text('Endgame Points'),
+        child: Text(
+          'Endgame Points',
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
     ),
   ];
@@ -134,7 +152,11 @@ class _HomePageState extends State<HomePage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching events: $e')),
+        SnackBar(
+            content: Text(
+          'Error fetching events: $e',
+          style: TextStyle(fontFamily: 'Font'),
+        )),
       );
     }
   }
@@ -167,7 +189,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           Text(
             'Global Rankings',
-            style: TextStyle(color: Colors.blue, fontSize: 24),
+            style:
+                TextStyle(color: Colors.blue, fontSize: 24, fontFamily: 'Font'),
           ),
           GestureDetector(
             onTap: () {
@@ -176,10 +199,10 @@ class _HomePageState extends State<HomePage> {
             child: Text(
               'Powered by The Blue Alliance',
               style: TextStyle(
-                color: Colors.blueAccent,
-                fontSize: 18,
-                decoration: TextDecoration.underline,
-              ),
+                  color: Colors.blueAccent,
+                  fontSize: 18,
+                  decoration: TextDecoration.underline,
+                  fontFamily: 'Font'),
             ),
           ),
           Expanded(
@@ -340,9 +363,9 @@ class GlobalRankDataSource extends DataGridSource {
               child: Text(
                 cell.value.toString(),
                 style: TextStyle(
-                  color: Colors.blue,
-                  decoration: TextDecoration.underline,
-                ),
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                    fontFamily: 'Font'),
               ),
             ),
           );
@@ -360,9 +383,12 @@ class GlobalRankDataSource extends DataGridSource {
           padding: EdgeInsets.all(8.0),
           alignment: Alignment.center,
           color: color,
-          child: Text(cell.value.runtimeType == double
-              ? (cell.value as double).toStringAsFixed(1)
-              : cell.value.toString()),
+          child: Text(
+            cell.value.runtimeType == double
+                ? (cell.value as double).toStringAsFixed(1)
+                : cell.value.toString(),
+            style: TextStyle(fontFamily: 'Font'),
+          ),
         );
       })
     ]);

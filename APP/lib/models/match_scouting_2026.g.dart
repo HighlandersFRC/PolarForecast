@@ -30,7 +30,7 @@ Map<String, dynamic> _$$MatchScouting2026ImplToJson(
     };
 
 _$DataImpl _$$DataImplFromJson(Map<String, dynamic> json) => _$DataImpl(
-      auto: Auto.fromJson(json['auto'] as Map<String, dynamic>),
+      auto: Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       auto_scoring:
           AutoScoring.fromJson(json['auto_scoring'] as Map<String, dynamic>),
       teleop_scoring: TeleopScoring.fromJson(
@@ -47,73 +47,44 @@ Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
       'miscellaneous': instance.miscellaneous.toJson(),
     };
 
-_$AutoImpl _$$AutoImplFromJson(Map<String, dynamic> json) => _$AutoImpl(
-      starting_position_meters_from_hub_center:
-          (json['starting_position_meters_from_hub_center'] as num).toDouble(),
-      steps: json['steps'] as List<dynamic>,
-      field_side: (json['field_side'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      preload: json['preload'] as bool,
-      climb: json['climb'] as bool,
-      contacts_robot: json['contacts_robot'] as bool,
-    );
-
-Map<String, dynamic> _$$AutoImplToJson(_$AutoImpl instance) =>
-    <String, dynamic>{
-      'starting_position_meters_from_hub_center':
-          instance.starting_position_meters_from_hub_center,
-      'steps': instance.steps,
-      'field_side': instance.field_side,
-      'preload': instance.preload,
-      'climb': instance.climb,
-      'contacts_robot': instance.contacts_robot,
-    };
-
 _$AutoScoringImpl _$$AutoScoringImplFromJson(Map<String, dynamic> json) =>
     _$AutoScoringImpl(
-      feed_amount: (json['feed_amount'] as num).toInt(),
-      intake_amount: (json['intake_amount'] as num).toInt(),
-      shoot_amount: (json['shoot_amount'] as num).toInt(),
-      goes_under_trench: (json['goes_under_trench'] as num).toInt(),
-      goes_over_bump: (json['goes_over_bump'] as num).toInt(),
-      climb_side: (json['climb_side'] as num).toInt(),
+      passing_cycles: (json['passing_cycles'] as num).toInt(),
+      scoring_cycles: (json['scoring_cycles'] as num).toInt(),
+      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
+      cycles_completed: (json['cycles_completed'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
     <String, dynamic>{
-      'feed_amount': instance.feed_amount,
-      'intake_amount': instance.intake_amount,
-      'shoot_amount': instance.shoot_amount,
-      'goes_under_trench': instance.goes_under_trench,
-      'goes_over_bump': instance.goes_over_bump,
-      'climb_side': instance.climb_side,
+      'passing_cycles': instance.passing_cycles,
+      'scoring_cycles': instance.scoring_cycles,
+      'fuel_cycles': instance.fuel_cycles,
+      'cycles_completed': instance.cycles_completed,
     };
 
 _$TeleopScoringImpl _$$TeleopScoringImplFromJson(Map<String, dynamic> json) =>
     _$TeleopScoringImpl(
-      cycles_completed: (json['cycles_completed'] as num).toInt(),
-      shoots_from_X: (json['shoots_from_X'] as num).toInt(),
-      shoots_from_Y: (json['shoots_from_Y'] as num).toInt(),
-      shoot_amount: (json['shoot_amount'] as num).toInt(),
+      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
+      passing_cycles: (json['passing_cycles'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$TeleopScoringImplToJson(_$TeleopScoringImpl instance) =>
     <String, dynamic>{
-      'cycles_completed': instance.cycles_completed,
-      'shoots_from_X': instance.shoots_from_X,
-      'shoots_from_Y': instance.shoots_from_Y,
-      'shoot_amount': instance.shoot_amount,
+      'fuel_cycles': instance.fuel_cycles,
+      'passing_cycles': instance.passing_cycles,
     };
 
 _$MiscellaneousImpl _$$MiscellaneousImplFromJson(Map<String, dynamic> json) =>
     _$MiscellaneousImpl(
-      died: (json['died'] as num).toInt(),
+      died: json['died'] as bool,
+      defense: json['defense'] as bool,
       comments: json['comments'] as String,
     );
 
 Map<String, dynamic> _$$MiscellaneousImplToJson(_$MiscellaneousImpl instance) =>
     <String, dynamic>{
       'died': instance.died,
+      'defense': instance.defense,
       'comments': instance.comments,
     };

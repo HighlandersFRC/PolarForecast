@@ -24,7 +24,7 @@ mixin _$GlobalRank {
   DateTime get eventDate => throw _privateConstructorUsedError;
   String get event => throw _privateConstructorUsedError;
   List<String> get all_events => throw _privateConstructorUsedError;
-  TeamStats2025 get data => throw _privateConstructorUsedError;
+  TeamStats2026 get data => throw _privateConstructorUsedError;
 
   /// Serializes this GlobalRank to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,9 +47,9 @@ abstract class $GlobalRankCopyWith<$Res> {
       DateTime eventDate,
       String event,
       List<String> all_events,
-      TeamStats2025 data});
+      TeamStats2026 data});
 
-  $TeamStats2025CopyWith<$Res> get data;
+  $TeamStats2026CopyWith<$Res> get data;
 }
 
 /// @nodoc
@@ -93,7 +93,7 @@ class _$GlobalRankCopyWithImpl<$Res, $Val extends GlobalRank>
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
-              as TeamStats2025,
+              as TeamStats2026,
     ) as $Val);
   }
 
@@ -101,8 +101,8 @@ class _$GlobalRankCopyWithImpl<$Res, $Val extends GlobalRank>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $TeamStats2025CopyWith<$Res> get data {
-    return $TeamStats2025CopyWith<$Res>(_value.data, (value) {
+  $TeamStats2026CopyWith<$Res> get data {
+    return $TeamStats2026CopyWith<$Res>(_value.data, (value) {
       return _then(_value.copyWith(data: value) as $Val);
     });
   }
@@ -121,10 +121,10 @@ abstract class _$$GlobalRankImplCopyWith<$Res>
       DateTime eventDate,
       String event,
       List<String> all_events,
-      TeamStats2025 data});
+      TeamStats2026 data});
 
   @override
-  $TeamStats2025CopyWith<$Res> get data;
+  $TeamStats2026CopyWith<$Res> get data;
 }
 
 /// @nodoc
@@ -166,7 +166,7 @@ class __$$GlobalRankImplCopyWithImpl<$Res>
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
-              as TeamStats2025,
+              as TeamStats2026,
     ));
   }
 }
@@ -201,7 +201,7 @@ class _$GlobalRankImpl implements _GlobalRank {
   }
 
   @override
-  final TeamStats2025 data;
+  final TeamStats2026 data;
 
   @override
   String toString() {
@@ -249,7 +249,7 @@ abstract class _GlobalRank implements GlobalRank {
       required final DateTime eventDate,
       required final String event,
       final List<String> all_events,
-      required final TeamStats2025 data}) = _$GlobalRankImpl;
+      required final TeamStats2026 data}) = _$GlobalRankImpl;
 
   factory _GlobalRank.fromJson(Map<String, dynamic> json) =
       _$GlobalRankImpl.fromJson;
@@ -263,7 +263,7 @@ abstract class _GlobalRank implements GlobalRank {
   @override
   List<String> get all_events;
   @override
-  TeamStats2025 get data;
+  TeamStats2026 get data;
 
   /// Create a copy of GlobalRank
   /// with the given fields replaced by the non-null parameter values.

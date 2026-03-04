@@ -26,7 +26,8 @@ class MatchLink extends StatelessWidget {
             style: TextStyle(
                 color: theme.primaryColor,
                 decoration: TextDecoration.underline,
-                decorationColor: theme.primaryColor),
+                decorationColor: theme.primaryColor,
+                fontFamily: 'Font'),
           ),
         ));
   }

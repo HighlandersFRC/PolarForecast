@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'scout_info.dart';
+import 'pit_scouting_2026.dart';
 
 part 'match_scouting_2026.freezed.dart';
 part 'match_scouting_2026.g.dart';
@@ -22,7 +23,7 @@ class MatchScouting2026 with _$MatchScouting2026 {
 @freezed
 class Data with _$Data {
   factory Data({
-    required Auto auto,
+    required Auto2026 auto,
     required AutoScoring auto_scoring,
     required TeleopScoring teleop_scoring,
     required Miscellaneous miscellaneous,
@@ -32,28 +33,16 @@ class Data with _$Data {
 }
 
 @freezed
-class Auto with _$Auto {
-  factory Auto({
-    required double starting_position_meters_from_hub_center,
-    required List<dynamic> steps,
-    required List<String> field_side,
-    required bool preload,
-    required bool climb,
-    required bool contacts_robot,
-  }) = _Auto;
-
-  factory Auto.fromJson(Map<String, dynamic> json) => _$AutoFromJson(json);
-}
-
-@freezed
 class AutoScoring with _$AutoScoring {
   factory AutoScoring({
-    required int feed_amount,
-    required int intake_amount,
-    required int shoot_amount,
-    required int goes_under_trench,
-    required int goes_over_bump,
-    required int climb_side,
+    // required int feed_amount,
+    // required int intake_amount,
+    // required int shoot_amount,
+
+    required int passing_cycles,
+    required int scoring_cycles,
+    required int fuel_cycles,
+    required int cycles_completed,
   }) = _AutoScoring;
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>
@@ -63,10 +52,8 @@ class AutoScoring with _$AutoScoring {
 @freezed
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
-    required int cycles_completed,
-    required int shoots_from_X,
-    required int shoots_from_Y,
-    required int shoot_amount,
+    required int fuel_cycles,
+    required int passing_cycles,
   }) = _TeleopScoring;
 
   factory TeleopScoring.fromJson(Map<String, dynamic> json) =>
@@ -76,7 +63,8 @@ class TeleopScoring with _$TeleopScoring {
 @freezed
 class Miscellaneous with _$Miscellaneous {
   factory Miscellaneous({
-    required int died,
+    required bool died,
+    required bool defense,
     required String comments,
   }) = _Miscellaneous;
 

@@ -2284,7 +2284,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                       ]),
                 if (!widget.matchScouting)
                   SwitchListTile(
-                    activeColor: Colors.blue,
+                    activeThumbColor: Colors.blue,
                     inactiveThumbColor: Colors.blue,
                     title: Text('Exit'),
                     value: widget.auto.exit,
@@ -2298,7 +2298,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                   ),
                 if (!widget.matchScouting)
                   SwitchListTile(
-                    activeColor: Colors.blue,
+                    activeThumbColor: Colors.blue,
                     inactiveThumbColor: Colors.blue,
                     title: Text('Preload'),
                     value: widget.auto.preload,
@@ -2312,7 +2312,7 @@ class _AutoPieces2025State extends State<AutoPieces2025> {
                   ),
                 if (!widget.matchScouting)
                   SwitchListTile(
-                    activeColor: Colors.blue,
+                    activeThumbColor: Colors.blue,
                     inactiveThumbColor: Colors.blue,
                     title: Text('Works on Left and Right?'),
                     value: widget.auto.both_sides,

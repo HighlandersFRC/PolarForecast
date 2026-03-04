@@ -23,6 +23,7 @@ class PicturesLink extends StatelessWidget {
             '${value}',
             textScaler: TextScaler.linear(1.25),
             style: TextStyle(
+              fontFamily: 'Font',
               color: value == 'Incomplete'
                   ? Colors.yellow
                   : value == 'Done'

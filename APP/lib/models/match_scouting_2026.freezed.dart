@@ -307,7 +307,7 @@ Data _$DataFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Data {
-  Auto get auto => throw _privateConstructorUsedError;
+  Auto2026 get auto => throw _privateConstructorUsedError;
   AutoScoring get auto_scoring => throw _privateConstructorUsedError;
   TeleopScoring get teleop_scoring => throw _privateConstructorUsedError;
   Miscellaneous get miscellaneous => throw _privateConstructorUsedError;
@@ -327,12 +327,12 @@ abstract class $DataCopyWith<$Res> {
       _$DataCopyWithImpl<$Res, Data>;
   @useResult
   $Res call(
-      {Auto auto,
+      {Auto2026 auto,
       AutoScoring auto_scoring,
       TeleopScoring teleop_scoring,
       Miscellaneous miscellaneous});
 
-  $AutoCopyWith<$Res> get auto;
+  $Auto2026CopyWith<$Res> get auto;
   $AutoScoringCopyWith<$Res> get auto_scoring;
   $TeleopScoringCopyWith<$Res> get teleop_scoring;
   $MiscellaneousCopyWith<$Res> get miscellaneous;
@@ -362,7 +362,7 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
       auto: null == auto
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
-              as Auto,
+              as Auto2026,
       auto_scoring: null == auto_scoring
           ? _value.auto_scoring
           : auto_scoring // ignore: cast_nullable_to_non_nullable
@@ -382,8 +382,8 @@ class _$DataCopyWithImpl<$Res, $Val extends Data>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $AutoCopyWith<$Res> get auto {
-    return $AutoCopyWith<$Res>(_value.auto, (value) {
+  $Auto2026CopyWith<$Res> get auto {
+    return $Auto2026CopyWith<$Res>(_value.auto, (value) {
       return _then(_value.copyWith(auto: value) as $Val);
     });
   }
@@ -427,13 +427,13 @@ abstract class _$$DataImplCopyWith<$Res> implements $DataCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {Auto auto,
+      {Auto2026 auto,
       AutoScoring auto_scoring,
       TeleopScoring teleop_scoring,
       Miscellaneous miscellaneous});
 
   @override
-  $AutoCopyWith<$Res> get auto;
+  $Auto2026CopyWith<$Res> get auto;
   @override
   $AutoScoringCopyWith<$Res> get auto_scoring;
   @override
@@ -463,7 +463,7 @@ class __$$DataImplCopyWithImpl<$Res>
       auto: null == auto
           ? _value.auto
           : auto // ignore: cast_nullable_to_non_nullable
-              as Auto,
+              as Auto2026,
       auto_scoring: null == auto_scoring
           ? _value.auto_scoring
           : auto_scoring // ignore: cast_nullable_to_non_nullable
@@ -493,7 +493,7 @@ class _$DataImpl implements _Data {
       _$$DataImplFromJson(json);
 
   @override
-  final Auto auto;
+  final Auto2026 auto;
   @override
   final AutoScoring auto_scoring;
   @override
@@ -543,7 +543,7 @@ class _$DataImpl implements _Data {
 
 abstract class _Data implements Data {
   factory _Data(
-      {required final Auto auto,
+      {required final Auto2026 auto,
       required final AutoScoring auto_scoring,
       required final TeleopScoring teleop_scoring,
       required final Miscellaneous miscellaneous}) = _$DataImpl;
@@ -551,7 +551,7 @@ abstract class _Data implements Data {
   factory _Data.fromJson(Map<String, dynamic> json) = _$DataImpl.fromJson;
 
   @override
-  Auto get auto;
+  Auto2026 get auto;
   @override
   AutoScoring get auto_scoring;
   @override
@@ -567,295 +567,19 @@ abstract class _Data implements Data {
       throw _privateConstructorUsedError;
 }
 
-Auto _$AutoFromJson(Map<String, dynamic> json) {
-  return _Auto.fromJson(json);
-}
-
-/// @nodoc
-mixin _$Auto {
-  double get starting_position_meters_from_hub_center =>
-      throw _privateConstructorUsedError;
-  List<dynamic> get steps => throw _privateConstructorUsedError;
-  List<String> get field_side => throw _privateConstructorUsedError;
-  bool get preload => throw _privateConstructorUsedError;
-  bool get climb => throw _privateConstructorUsedError;
-  bool get contacts_robot => throw _privateConstructorUsedError;
-
-  /// Serializes this Auto to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Auto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $AutoCopyWith<Auto> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AutoCopyWith<$Res> {
-  factory $AutoCopyWith(Auto value, $Res Function(Auto) then) =
-      _$AutoCopyWithImpl<$Res, Auto>;
-  @useResult
-  $Res call(
-      {double starting_position_meters_from_hub_center,
-      List<dynamic> steps,
-      List<String> field_side,
-      bool preload,
-      bool climb,
-      bool contacts_robot});
-}
-
-/// @nodoc
-class _$AutoCopyWithImpl<$Res, $Val extends Auto>
-    implements $AutoCopyWith<$Res> {
-  _$AutoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Auto
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? starting_position_meters_from_hub_center = null,
-    Object? steps = null,
-    Object? field_side = null,
-    Object? preload = null,
-    Object? climb = null,
-    Object? contacts_robot = null,
-  }) {
-    return _then(_value.copyWith(
-      starting_position_meters_from_hub_center: null ==
-              starting_position_meters_from_hub_center
-          ? _value.starting_position_meters_from_hub_center
-          : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as double,
-      steps: null == steps
-          ? _value.steps
-          : steps // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
-      field_side: null == field_side
-          ? _value.field_side
-          : field_side // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      preload: null == preload
-          ? _value.preload
-          : preload // ignore: cast_nullable_to_non_nullable
-              as bool,
-      climb: null == climb
-          ? _value.climb
-          : climb // ignore: cast_nullable_to_non_nullable
-              as bool,
-      contacts_robot: null == contacts_robot
-          ? _value.contacts_robot
-          : contacts_robot // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$AutoImplCopyWith<$Res> implements $AutoCopyWith<$Res> {
-  factory _$$AutoImplCopyWith(
-          _$AutoImpl value, $Res Function(_$AutoImpl) then) =
-      __$$AutoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {double starting_position_meters_from_hub_center,
-      List<dynamic> steps,
-      List<String> field_side,
-      bool preload,
-      bool climb,
-      bool contacts_robot});
-}
-
-/// @nodoc
-class __$$AutoImplCopyWithImpl<$Res>
-    extends _$AutoCopyWithImpl<$Res, _$AutoImpl>
-    implements _$$AutoImplCopyWith<$Res> {
-  __$$AutoImplCopyWithImpl(_$AutoImpl _value, $Res Function(_$AutoImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of Auto
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? starting_position_meters_from_hub_center = null,
-    Object? steps = null,
-    Object? field_side = null,
-    Object? preload = null,
-    Object? climb = null,
-    Object? contacts_robot = null,
-  }) {
-    return _then(_$AutoImpl(
-      starting_position_meters_from_hub_center: null ==
-              starting_position_meters_from_hub_center
-          ? _value.starting_position_meters_from_hub_center
-          : starting_position_meters_from_hub_center // ignore: cast_nullable_to_non_nullable
-              as double,
-      steps: null == steps
-          ? _value._steps
-          : steps // ignore: cast_nullable_to_non_nullable
-              as List<dynamic>,
-      field_side: null == field_side
-          ? _value._field_side
-          : field_side // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      preload: null == preload
-          ? _value.preload
-          : preload // ignore: cast_nullable_to_non_nullable
-              as bool,
-      climb: null == climb
-          ? _value.climb
-          : climb // ignore: cast_nullable_to_non_nullable
-              as bool,
-      contacts_robot: null == contacts_robot
-          ? _value.contacts_robot
-          : contacts_robot // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$AutoImpl implements _Auto {
-  _$AutoImpl(
-      {required this.starting_position_meters_from_hub_center,
-      required final List<dynamic> steps,
-      required final List<String> field_side,
-      required this.preload,
-      required this.climb,
-      required this.contacts_robot})
-      : _steps = steps,
-        _field_side = field_side;
-
-  factory _$AutoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AutoImplFromJson(json);
-
-  @override
-  final double starting_position_meters_from_hub_center;
-  final List<dynamic> _steps;
-  @override
-  List<dynamic> get steps {
-    if (_steps is EqualUnmodifiableListView) return _steps;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_steps);
-  }
-
-  final List<String> _field_side;
-  @override
-  List<String> get field_side {
-    if (_field_side is EqualUnmodifiableListView) return _field_side;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_field_side);
-  }
-
-  @override
-  final bool preload;
-  @override
-  final bool climb;
-  @override
-  final bool contacts_robot;
-
-  @override
-  String toString() {
-    return 'Auto(starting_position_meters_from_hub_center: $starting_position_meters_from_hub_center, steps: $steps, field_side: $field_side, preload: $preload, climb: $climb, contacts_robot: $contacts_robot)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AutoImpl &&
-            (identical(other.starting_position_meters_from_hub_center,
-                    starting_position_meters_from_hub_center) ||
-                other.starting_position_meters_from_hub_center ==
-                    starting_position_meters_from_hub_center) &&
-            const DeepCollectionEquality().equals(other._steps, _steps) &&
-            const DeepCollectionEquality()
-                .equals(other._field_side, _field_side) &&
-            (identical(other.preload, preload) || other.preload == preload) &&
-            (identical(other.climb, climb) || other.climb == climb) &&
-            (identical(other.contacts_robot, contacts_robot) ||
-                other.contacts_robot == contacts_robot));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      starting_position_meters_from_hub_center,
-      const DeepCollectionEquality().hash(_steps),
-      const DeepCollectionEquality().hash(_field_side),
-      preload,
-      climb,
-      contacts_robot);
-
-  /// Create a copy of Auto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AutoImplCopyWith<_$AutoImpl> get copyWith =>
-      __$$AutoImplCopyWithImpl<_$AutoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AutoImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _Auto implements Auto {
-  factory _Auto(
-      {required final double starting_position_meters_from_hub_center,
-      required final List<dynamic> steps,
-      required final List<String> field_side,
-      required final bool preload,
-      required final bool climb,
-      required final bool contacts_robot}) = _$AutoImpl;
-
-  factory _Auto.fromJson(Map<String, dynamic> json) = _$AutoImpl.fromJson;
-
-  @override
-  double get starting_position_meters_from_hub_center;
-  @override
-  List<dynamic> get steps;
-  @override
-  List<String> get field_side;
-  @override
-  bool get preload;
-  @override
-  bool get climb;
-  @override
-  bool get contacts_robot;
-
-  /// Create a copy of Auto
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AutoImplCopyWith<_$AutoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
 AutoScoring _$AutoScoringFromJson(Map<String, dynamic> json) {
   return _AutoScoring.fromJson(json);
 }
 
 /// @nodoc
 mixin _$AutoScoring {
-  int get feed_amount => throw _privateConstructorUsedError;
-  int get intake_amount => throw _privateConstructorUsedError;
-  int get shoot_amount => throw _privateConstructorUsedError;
-  int get goes_under_trench => throw _privateConstructorUsedError;
-  int get goes_over_bump => throw _privateConstructorUsedError;
-  int get climb_side => throw _privateConstructorUsedError;
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
+  int get passing_cycles => throw _privateConstructorUsedError;
+  int get scoring_cycles => throw _privateConstructorUsedError;
+  int get fuel_cycles => throw _privateConstructorUsedError;
+  int get cycles_completed => throw _privateConstructorUsedError;
 
   /// Serializes this AutoScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -874,12 +598,10 @@ abstract class $AutoScoringCopyWith<$Res> {
       _$AutoScoringCopyWithImpl<$Res, AutoScoring>;
   @useResult
   $Res call(
-      {int feed_amount,
-      int intake_amount,
-      int shoot_amount,
-      int goes_under_trench,
-      int goes_over_bump,
-      int climb_side});
+      {int passing_cycles,
+      int scoring_cycles,
+      int fuel_cycles,
+      int cycles_completed});
 }
 
 /// @nodoc
@@ -897,37 +619,27 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? feed_amount = null,
-    Object? intake_amount = null,
-    Object? shoot_amount = null,
-    Object? goes_under_trench = null,
-    Object? goes_over_bump = null,
-    Object? climb_side = null,
+    Object? passing_cycles = null,
+    Object? scoring_cycles = null,
+    Object? fuel_cycles = null,
+    Object? cycles_completed = null,
   }) {
     return _then(_value.copyWith(
-      feed_amount: null == feed_amount
-          ? _value.feed_amount
-          : feed_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      intake_amount: null == intake_amount
-          ? _value.intake_amount
-          : intake_amount // ignore: cast_nullable_to_non_nullable
+      scoring_cycles: null == scoring_cycles
+          ? _value.scoring_cycles
+          : scoring_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_under_trench: null == goes_under_trench
-          ? _value.goes_under_trench
-          : goes_under_trench // ignore: cast_nullable_to_non_nullable
-              as int,
-      goes_over_bump: null == goes_over_bump
-          ? _value.goes_over_bump
-          : goes_over_bump // ignore: cast_nullable_to_non_nullable
-              as int,
-      climb_side: null == climb_side
-          ? _value.climb_side
-          : climb_side // ignore: cast_nullable_to_non_nullable
+      cycles_completed: null == cycles_completed
+          ? _value.cycles_completed
+          : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -942,12 +654,10 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int feed_amount,
-      int intake_amount,
-      int shoot_amount,
-      int goes_under_trench,
-      int goes_over_bump,
-      int climb_side});
+      {int passing_cycles,
+      int scoring_cycles,
+      int fuel_cycles,
+      int cycles_completed});
 }
 
 /// @nodoc
@@ -963,37 +673,27 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? feed_amount = null,
-    Object? intake_amount = null,
-    Object? shoot_amount = null,
-    Object? goes_under_trench = null,
-    Object? goes_over_bump = null,
-    Object? climb_side = null,
+    Object? passing_cycles = null,
+    Object? scoring_cycles = null,
+    Object? fuel_cycles = null,
+    Object? cycles_completed = null,
   }) {
     return _then(_$AutoScoringImpl(
-      feed_amount: null == feed_amount
-          ? _value.feed_amount
-          : feed_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      intake_amount: null == intake_amount
-          ? _value.intake_amount
-          : intake_amount // ignore: cast_nullable_to_non_nullable
+      scoring_cycles: null == scoring_cycles
+          ? _value.scoring_cycles
+          : scoring_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      goes_under_trench: null == goes_under_trench
-          ? _value.goes_under_trench
-          : goes_under_trench // ignore: cast_nullable_to_non_nullable
-              as int,
-      goes_over_bump: null == goes_over_bump
-          ? _value.goes_over_bump
-          : goes_over_bump // ignore: cast_nullable_to_non_nullable
-              as int,
-      climb_side: null == climb_side
-          ? _value.climb_side
-          : climb_side // ignore: cast_nullable_to_non_nullable
+      cycles_completed: null == cycles_completed
+          ? _value.cycles_completed
+          : cycles_completed // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -1003,32 +703,29 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
-      {required this.feed_amount,
-      required this.intake_amount,
-      required this.shoot_amount,
-      required this.goes_under_trench,
-      required this.goes_over_bump,
-      required this.climb_side});
+      {required this.passing_cycles,
+      required this.scoring_cycles,
+      required this.fuel_cycles,
+      required this.cycles_completed});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
 
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
   @override
-  final int feed_amount;
+  final int passing_cycles;
   @override
-  final int intake_amount;
+  final int scoring_cycles;
   @override
-  final int shoot_amount;
+  final int fuel_cycles;
   @override
-  final int goes_under_trench;
-  @override
-  final int goes_over_bump;
-  @override
-  final int climb_side;
+  final int cycles_completed;
 
   @override
   String toString() {
-    return 'AutoScoring(feed_amount: $feed_amount, intake_amount: $intake_amount, shoot_amount: $shoot_amount, goes_under_trench: $goes_under_trench, goes_over_bump: $goes_over_bump, climb_side: $climb_side)';
+    return 'AutoScoring(passing_cycles: $passing_cycles, scoring_cycles: $scoring_cycles, fuel_cycles: $fuel_cycles, cycles_completed: $cycles_completed)';
   }
 
   @override
@@ -1036,24 +733,20 @@ class _$AutoScoringImpl implements _AutoScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AutoScoringImpl &&
-            (identical(other.feed_amount, feed_amount) ||
-                other.feed_amount == feed_amount) &&
-            (identical(other.intake_amount, intake_amount) ||
-                other.intake_amount == intake_amount) &&
-            (identical(other.shoot_amount, shoot_amount) ||
-                other.shoot_amount == shoot_amount) &&
-            (identical(other.goes_under_trench, goes_under_trench) ||
-                other.goes_under_trench == goes_under_trench) &&
-            (identical(other.goes_over_bump, goes_over_bump) ||
-                other.goes_over_bump == goes_over_bump) &&
-            (identical(other.climb_side, climb_side) ||
-                other.climb_side == climb_side));
+            (identical(other.passing_cycles, passing_cycles) ||
+                other.passing_cycles == passing_cycles) &&
+            (identical(other.scoring_cycles, scoring_cycles) ||
+                other.scoring_cycles == scoring_cycles) &&
+            (identical(other.fuel_cycles, fuel_cycles) ||
+                other.fuel_cycles == fuel_cycles) &&
+            (identical(other.cycles_completed, cycles_completed) ||
+                other.cycles_completed == cycles_completed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, feed_amount, intake_amount,
-      shoot_amount, goes_under_trench, goes_over_bump, climb_side);
+  int get hashCode => Object.hash(runtimeType, passing_cycles, scoring_cycles,
+      fuel_cycles, cycles_completed);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1073,28 +766,25 @@ class _$AutoScoringImpl implements _AutoScoring {
 
 abstract class _AutoScoring implements AutoScoring {
   factory _AutoScoring(
-      {required final int feed_amount,
-      required final int intake_amount,
-      required final int shoot_amount,
-      required final int goes_under_trench,
-      required final int goes_over_bump,
-      required final int climb_side}) = _$AutoScoringImpl;
+      {required final int passing_cycles,
+      required final int scoring_cycles,
+      required final int fuel_cycles,
+      required final int cycles_completed}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
 
+// required int feed_amount,
+// required int intake_amount,
+// required int shoot_amount,
   @override
-  int get feed_amount;
+  int get passing_cycles;
   @override
-  int get intake_amount;
+  int get scoring_cycles;
   @override
-  int get shoot_amount;
+  int get fuel_cycles;
   @override
-  int get goes_under_trench;
-  @override
-  int get goes_over_bump;
-  @override
-  int get climb_side;
+  int get cycles_completed;
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1110,10 +800,8 @@ TeleopScoring _$TeleopScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TeleopScoring {
-  int get cycles_completed => throw _privateConstructorUsedError;
-  int get shoots_from_X => throw _privateConstructorUsedError;
-  int get shoots_from_Y => throw _privateConstructorUsedError;
-  int get shoot_amount => throw _privateConstructorUsedError;
+  int get fuel_cycles => throw _privateConstructorUsedError;
+  int get passing_cycles => throw _privateConstructorUsedError;
 
   /// Serializes this TeleopScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1131,11 +819,7 @@ abstract class $TeleopScoringCopyWith<$Res> {
           TeleopScoring value, $Res Function(TeleopScoring) then) =
       _$TeleopScoringCopyWithImpl<$Res, TeleopScoring>;
   @useResult
-  $Res call(
-      {int cycles_completed,
-      int shoots_from_X,
-      int shoots_from_Y,
-      int shoot_amount});
+  $Res call({int fuel_cycles, int passing_cycles});
 }
 
 /// @nodoc
@@ -1153,27 +837,17 @@ class _$TeleopScoringCopyWithImpl<$Res, $Val extends TeleopScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cycles_completed = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
-    Object? shoot_amount = null,
+    Object? fuel_cycles = null,
+    Object? passing_cycles = null,
   }) {
     return _then(_value.copyWith(
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -1187,11 +861,7 @@ abstract class _$$TeleopScoringImplCopyWith<$Res>
       __$$TeleopScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {int cycles_completed,
-      int shoots_from_X,
-      int shoots_from_Y,
-      int shoot_amount});
+  $Res call({int fuel_cycles, int passing_cycles});
 }
 
 /// @nodoc
@@ -1207,27 +877,17 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cycles_completed = null,
-    Object? shoots_from_X = null,
-    Object? shoots_from_Y = null,
-    Object? shoot_amount = null,
+    Object? fuel_cycles = null,
+    Object? passing_cycles = null,
   }) {
     return _then(_$TeleopScoringImpl(
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      fuel_cycles: null == fuel_cycles
+          ? _value.fuel_cycles
+          : fuel_cycles // ignore: cast_nullable_to_non_nullable
               as int,
-      shoots_from_X: null == shoots_from_X
-          ? _value.shoots_from_X
-          : shoots_from_X // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoots_from_Y: null == shoots_from_Y
-          ? _value.shoots_from_Y
-          : shoots_from_Y // ignore: cast_nullable_to_non_nullable
-              as int,
-      shoot_amount: null == shoot_amount
-          ? _value.shoot_amount
-          : shoot_amount // ignore: cast_nullable_to_non_nullable
+      passing_cycles: null == passing_cycles
+          ? _value.passing_cycles
+          : passing_cycles // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -1237,26 +897,19 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
-      {required this.cycles_completed,
-      required this.shoots_from_X,
-      required this.shoots_from_Y,
-      required this.shoot_amount});
+      {required this.fuel_cycles, required this.passing_cycles});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$TeleopScoringImplFromJson(json);
 
   @override
-  final int cycles_completed;
+  final int fuel_cycles;
   @override
-  final int shoots_from_X;
-  @override
-  final int shoots_from_Y;
-  @override
-  final int shoot_amount;
+  final int passing_cycles;
 
   @override
   String toString() {
-    return 'TeleopScoring(cycles_completed: $cycles_completed, shoots_from_X: $shoots_from_X, shoots_from_Y: $shoots_from_Y, shoot_amount: $shoot_amount)';
+    return 'TeleopScoring(fuel_cycles: $fuel_cycles, passing_cycles: $passing_cycles)';
   }
 
   @override
@@ -1264,20 +917,15 @@ class _$TeleopScoringImpl implements _TeleopScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$TeleopScoringImpl &&
-            (identical(other.cycles_completed, cycles_completed) ||
-                other.cycles_completed == cycles_completed) &&
-            (identical(other.shoots_from_X, shoots_from_X) ||
-                other.shoots_from_X == shoots_from_X) &&
-            (identical(other.shoots_from_Y, shoots_from_Y) ||
-                other.shoots_from_Y == shoots_from_Y) &&
-            (identical(other.shoot_amount, shoot_amount) ||
-                other.shoot_amount == shoot_amount));
+            (identical(other.fuel_cycles, fuel_cycles) ||
+                other.fuel_cycles == fuel_cycles) &&
+            (identical(other.passing_cycles, passing_cycles) ||
+                other.passing_cycles == passing_cycles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, cycles_completed, shoots_from_X,
-      shoots_from_Y, shoot_amount);
+  int get hashCode => Object.hash(runtimeType, fuel_cycles, passing_cycles);
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1297,22 +945,16 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
-      {required final int cycles_completed,
-      required final int shoots_from_X,
-      required final int shoots_from_Y,
-      required final int shoot_amount}) = _$TeleopScoringImpl;
+      {required final int fuel_cycles,
+      required final int passing_cycles}) = _$TeleopScoringImpl;
 
   factory _TeleopScoring.fromJson(Map<String, dynamic> json) =
       _$TeleopScoringImpl.fromJson;
 
   @override
-  int get cycles_completed;
+  int get fuel_cycles;
   @override
-  int get shoots_from_X;
-  @override
-  int get shoots_from_Y;
-  @override
-  int get shoot_amount;
+  int get passing_cycles;
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -1328,7 +970,8 @@ Miscellaneous _$MiscellaneousFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Miscellaneous {
-  int get died => throw _privateConstructorUsedError;
+  bool get died => throw _privateConstructorUsedError;
+  bool get defense => throw _privateConstructorUsedError;
   String get comments => throw _privateConstructorUsedError;
 
   /// Serializes this Miscellaneous to a JSON map.
@@ -1347,7 +990,7 @@ abstract class $MiscellaneousCopyWith<$Res> {
           Miscellaneous value, $Res Function(Miscellaneous) then) =
       _$MiscellaneousCopyWithImpl<$Res, Miscellaneous>;
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, bool defense, String comments});
 }
 
 /// @nodoc
@@ -1366,13 +1009,18 @@ class _$MiscellaneousCopyWithImpl<$Res, $Val extends Miscellaneous>
   @override
   $Res call({
     Object? died = null,
+    Object? defense = null,
     Object? comments = null,
   }) {
     return _then(_value.copyWith(
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
+      defense: null == defense
+          ? _value.defense
+          : defense // ignore: cast_nullable_to_non_nullable
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1389,7 +1037,7 @@ abstract class _$$MiscellaneousImplCopyWith<$Res>
       __$$MiscellaneousImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int died, String comments});
+  $Res call({bool died, bool defense, String comments});
 }
 
 /// @nodoc
@@ -1406,13 +1054,18 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? died = null,
+    Object? defense = null,
     Object? comments = null,
   }) {
     return _then(_$MiscellaneousImpl(
       died: null == died
           ? _value.died
           : died // ignore: cast_nullable_to_non_nullable
-              as int,
+              as bool,
+      defense: null == defense
+          ? _value.defense
+          : defense // ignore: cast_nullable_to_non_nullable
+              as bool,
       comments: null == comments
           ? _value.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -1424,19 +1077,22 @@ class __$$MiscellaneousImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$MiscellaneousImpl implements _Miscellaneous {
-  _$MiscellaneousImpl({required this.died, required this.comments});
+  _$MiscellaneousImpl(
+      {required this.died, required this.defense, required this.comments});
 
   factory _$MiscellaneousImpl.fromJson(Map<String, dynamic> json) =>
       _$$MiscellaneousImplFromJson(json);
 
   @override
-  final int died;
+  final bool died;
+  @override
+  final bool defense;
   @override
   final String comments;
 
   @override
   String toString() {
-    return 'Miscellaneous(died: $died, comments: $comments)';
+    return 'Miscellaneous(died: $died, defense: $defense, comments: $comments)';
   }
 
   @override
@@ -1445,13 +1101,14 @@ class _$MiscellaneousImpl implements _Miscellaneous {
         (other.runtimeType == runtimeType &&
             other is _$MiscellaneousImpl &&
             (identical(other.died, died) || other.died == died) &&
+            (identical(other.defense, defense) || other.defense == defense) &&
             (identical(other.comments, comments) ||
                 other.comments == comments));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, died, comments);
+  int get hashCode => Object.hash(runtimeType, died, defense, comments);
 
   /// Create a copy of Miscellaneous
   /// with the given fields replaced by the non-null parameter values.
@@ -1471,14 +1128,17 @@ class _$MiscellaneousImpl implements _Miscellaneous {
 
 abstract class _Miscellaneous implements Miscellaneous {
   factory _Miscellaneous(
-      {required final int died,
+      {required final bool died,
+      required final bool defense,
       required final String comments}) = _$MiscellaneousImpl;
 
   factory _Miscellaneous.fromJson(Map<String, dynamic> json) =
       _$MiscellaneousImpl.fromJson;
 
   @override
-  int get died;
+  bool get died;
+  @override
+  bool get defense;
   @override
   String get comments;
 
