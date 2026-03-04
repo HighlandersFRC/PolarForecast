@@ -198,7 +198,6 @@ class PolarForecastSliverBar extends StatefulWidget
 class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
   late final Future<List<Tournament>> tournaments;
   String? token;
-  bool isSearching = false;
 
   @override
   void initState() {
@@ -211,6 +210,13 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 900;
+
+    // Adjust sizes based on screen width
+    final logoHeight = isDesktop ? 24.0 : 28.0;
+    final titleFontSize = isDesktop ? 16.0 : 18.0;
+    final iconSize = isDesktop ? 20.0 : 24.0;
 
     return SliverAppBar(
       automaticallyImplyLeading: widget.showBackButton,
@@ -219,58 +225,78 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
       expandedHeight: 120,
       backgroundColor: Colors.blue,
       elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        centerTitle: isMobile(),
-        titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Hero(
-              tag: 'app_logo',
-              child: Image.asset('assets/PolarBearHead.png', height: 32),
-            ),
-            if (!isMobile()) ...[
-              const SizedBox(width: 12),
-              Text(
-                'Polar Forecast ${widget.extraText ?? ''}',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-              ),
-            ]
-          ],
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [Colors.blue, Colors.black],
-            ),
-          ),
-        ),
-      ),
-      actions: _buildActions(context, apiService),
-    );
-  }
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final topPadding = MediaQuery.of(context).padding.top;
 
-  List<Widget> _buildActions(BuildContext context, ApiService apiService) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.help_outline_rounded),
-        tooltip: 'Documentation',
-        onPressed: () => _openDocumentationSheet(context),
-      ),
-      _AccountMenuButton(token: token, apiService: apiService),
-      IconButton(
-        icon: const Icon(Icons.search_rounded),
-        onPressed: () async {
-          final list = await tournaments;
-          showSearch(
-              context: context, delegate: TournamentSearchDelegate(list));
+          return FlexibleSpaceBar(
+            centerTitle: false,
+            titlePadding: const EdgeInsetsDirectional.only(
+              start: 72, // space for back button
+              end: 120, // reserve space for actions
+              bottom: 16,
+            ),
+            title: Row(
+              children: [
+                Hero(
+                  tag: 'app_logo',
+                  child: Image.asset(
+                    'assets/PolarBearHead.png',
+                    height: logoHeight,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Polar Forecast ${widget.extraText ?? ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: titleFontSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            background: Container(
+              padding: EdgeInsets.only(top: topPadding),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [Colors.blue, Colors.black],
+                ),
+              ),
+            ),
+          );
         },
       ),
-      const SizedBox(width: 8),
-    ];
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.help_outline_rounded),
+          tooltip: 'Documentation',
+          iconSize: iconSize,
+          onPressed: () => _openDocumentationSheet(context),
+        ),
+        _AccountMenuButton(
+          token: token,
+          apiService: apiService,
+        ),
+        IconButton(
+          icon: const Icon(Icons.search_rounded),
+          iconSize: iconSize,
+          onPressed: () async {
+            final list = await tournaments;
+            showSearch(
+              context: context,
+              delegate: TournamentSearchDelegate(list),
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
   }
 }
 
@@ -388,62 +414,79 @@ class PolarForecastAppBar extends StatelessWidget
   final String? extraText;
   final bool backButton;
 
-  const PolarForecastAppBar(
-      {super.key, this.extraText, this.backButton = true});
+  const PolarForecastAppBar({
+    super.key,
+    this.extraText,
+    this.backButton = true,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
+  bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 900;
+
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
+    final desktop = isDesktop(context);
+
+    // Sizes based on desktop vs mobile
+    final logoHeight = desktop ? 24.0 : 32.0;
+    final titleFontSize = desktop ? 16.0 : 20.0;
+    final iconSize = desktop ? 20.0 : 24.0;
+    final spacing = desktop ? 8.0 : 12.0;
 
     return AppBar(
       automaticallyImplyLeading: backButton,
       backgroundColor: Colors.blue,
       elevation: 0,
-      centerTitle: isMobile(),
+      centerTitle: !desktop,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset('assets/PolarBearHead.png', height: 32),
-          if (!isMobile()) ...[
-            const SizedBox(width: 12),
-            Text(
+          Image.asset('assets/PolarBearHead.png', height: logoHeight),
+          SizedBox(width: spacing),
+          Flexible(
+            child: Text(
               extraText ?? 'Polar Forecast',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Font',
-                fontSize: 25,
+                fontSize: titleFontSize,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-          ]
+          ),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline_rounded),
+          icon: Icon(Icons.help_outline_rounded, size: iconSize),
           onPressed: () => _openDocumentationSheet(context),
         ),
-        // We use a FutureBuilder here to get the token since this is a StatelessWidget
         FutureBuilder<String?>(
           future: apiService.token,
           builder: (context, snapshot) {
             return _AccountMenuButton(
-                token: snapshot.data, apiService: apiService);
+                token: snapshot.data,
+                apiService: apiService // pass down icon size
+                );
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search_rounded),
+          icon: Icon(Icons.search_rounded, size: iconSize),
           onPressed: () async {
             final list = await apiService.fetchTournaments();
             if (context.mounted) {
               showSearch(
-                  context: context, delegate: TournamentSearchDelegate(list));
+                context: context,
+                delegate: TournamentSearchDelegate(list),
+              );
             }
           },
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: spacing),
       ],
     );
   }
@@ -458,15 +501,18 @@ void _showCreateGroupDialog(BuildContext context) {
       content: TextField(
         controller: controller,
         decoration: const InputDecoration(
-            border: OutlineInputBorder(), labelText: 'Group Name'),
+          border: OutlineInputBorder(),
+          labelText: 'Group Name',
+        ),
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]'))
         ],
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
           onPressed: () {
             // Your API logic here

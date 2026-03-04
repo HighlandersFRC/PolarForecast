@@ -391,45 +391,68 @@ class _StatsTabState extends State<_StatsTab> {
               // ───── RESPONSIVE DATA GRID ─────
               LayoutBuilder(
                 builder: (context, constraints) {
+                  final isMobileScreen =
+                      MediaQuery.of(context).size.width < 900;
+
+                  final gridWidth =
+                      isMobileScreen ? 400.0 : constraints.maxWidth / 3;
                   final gridHeight = constraints.maxWidth < 700 ? 220.0 : 300.0;
 
-                  return Container(
-                    height: gridHeight,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      color: scheme.surface,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: SfDataGridTheme(
-                        data: SfDataGridThemeData(
-                          headerColor: scheme.surfaceContainerHighest,
-                          selectionColor: color.withOpacity(0.10),
-                          rowHoverColor: scheme.primary.withOpacity(0.04),
-                          gridLineColor: color,
-                        ),
-                        child: SfDataGrid(
-                          source: _StatsTableSource(rows, color, scheme),
-                          columns: columns,
-                          columnWidthMode: ColumnWidthMode.fill,
-                          rowHeight: 64,
-                          headerRowHeight: 64,
-                          gridLinesVisibility: GridLinesVisibility.none,
-                          headerGridLinesVisibility: GridLinesVisibility.none,
-                          highlightRowOnHover: true,
-                        ),
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: List.generate(
+                        1,
+                        (i) {
+                          return Container(
+                            width: gridWidth, // 👈 important
+                            height: gridHeight,
+                            margin: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              color: scheme.surface,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SfDataGridTheme(
+                                data: SfDataGridThemeData(
+                                  headerColor: scheme.surfaceContainerHighest,
+                                  selectionColor: color.withOpacity(0.10),
+                                  rowHoverColor:
+                                      scheme.primary.withOpacity(0.04),
+                                  gridLineColor: color,
+                                ),
+                                child: SfDataGrid(
+                                  source:
+                                      _StatsTableSource(rows, color, scheme),
+                                  columns: columns,
+                                  columnWidthMode: ColumnWidthMode.auto,
+                                  // 👈 change from fill to auto
+                                  rowHeight: 64,
+                                  headerRowHeight: 64,
+                                  gridLinesVisibility: GridLinesVisibility.none,
+                                  headerGridLinesVisibility:
+                                      GridLinesVisibility.none,
+                                  highlightRowOnHover: true,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   );
                 },
-              ),
+              )
+              // 67
             ],
           ),
         ),
