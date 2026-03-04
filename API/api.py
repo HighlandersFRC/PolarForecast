@@ -1033,7 +1033,7 @@ def updateGroupStatus(group: Group, event_code: str):
         if teamPictures:
             image_types = {pic.image_type for pic in teamPictures}
 
-            if {"full_robot", "shooter", "intake"} <= image_types:
+            if {"full_robot", "shooter", "intake", "feeder", "wires"} <= image_types:
                 status.picture_status = "Done"
             else:
                 status.picture_status = "Incomplete"
