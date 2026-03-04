@@ -583,192 +583,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                             SizedBox(
                               height: 20,
                             ),
-                            _buildSectionCard(
-                                child: Column(
-                              children: [
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    child: Wrap(
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      spacing: 8,
-                                      children: [
-                                        Icon(Icons.star_border_outlined,
-                                            color: Colors.blue),
-                                        Text(
-                                          'Qualitative Questions',
-                                          style: TextStyle(
-                                            fontSize: isMobile ? 22 : 30,
-                                            color: Colors.blue,
-                                            fontFamily: 'Font',
-                                          ),
-                                        ),
-                                      ],
-                                    )),
-                                // Favorite Color
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Favorite Color',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        TextField(
-                                          controller: favoriteColorController,
-                                          enabled: !widget.locked,
-                                          style: TextStyle(fontFamily: 'Font'),
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) => handleChange(
-                                                  'favorite_color', val),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                // Drive Train
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Drive Train',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        DropdownButton<String>(
-                                          isExpanded: true,
-                                          value:
-                                              pitScoutingData.data.drive_train,
-                                          items: [
-                                            DropdownMenuItem(
-                                                value: '',
-                                                child: Text('Choose...',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Tank',
-                                                child: Text('Tank',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Swerve',
-                                                child: Text('Swerve',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Mecanum',
-                                                child: Text('Mecanum',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                          ],
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) {
-                                                  if (val != null)
-                                                    handleChange(
-                                                        'drive_train', val);
-                                                },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                // # of Events Driver has Driven
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('# of Events Driver has Driven',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        Counter(
-                                          label: '',
-                                          value: pitScoutingData
-                                              .data.driver_experience_events,
-                                          max: 500,
-                                          locked: widget.locked,
-                                          onChanged: (val) {
-                                            setState(() {
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                        driver_experience_events:
-                                                            val),
-                                              );
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                // Main Strategy
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Main Strategy',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        TextField(
-                                          controller: mainStrategyController,
-                                          enabled: !widget.locked,
-                                          style: TextStyle(fontFamily: 'Font'),
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) => handleChange(
-                                                  'main_strategy', val),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )),
                             Divider(color: Colors.blue),
                             _buildSectionCard(
                                 child: Column(
@@ -1212,6 +1026,192 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                                               capacity));
                                         });
                                       },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )),
+                            _buildSectionCard(
+                                child: Column(
+                              children: [
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    child: Wrap(
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      spacing: 8,
+                                      children: [
+                                        Icon(Icons.star_border_outlined,
+                                            color: Colors.blue),
+                                        Text(
+                                          'Qualitative Questions',
+                                          style: TextStyle(
+                                            fontSize: isMobile ? 22 : 30,
+                                            color: Colors.blue,
+                                            fontFamily: 'Font',
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+                                // Favorite Color
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Favorite Color',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        TextField(
+                                          controller: favoriteColorController,
+                                          enabled: !widget.locked,
+                                          style: TextStyle(fontFamily: 'Font'),
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (val) => handleChange(
+                                                  'favorite_color', val),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Drive Train
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Drive Train',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        DropdownButton<String>(
+                                          isExpanded: true,
+                                          value:
+                                              pitScoutingData.data.drive_train,
+                                          items: [
+                                            DropdownMenuItem(
+                                                value: '',
+                                                child: Text('Choose...',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Tank',
+                                                child: Text('Tank',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Swerve',
+                                                child: Text('Swerve',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Mecanum',
+                                                child: Text('Mecanum',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                          ],
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (val) {
+                                                  if (val != null)
+                                                    handleChange(
+                                                        'drive_train', val);
+                                                },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // # of Events Driver has Driven
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('# of Events Driver has Driven',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        Counter(
+                                          label: '',
+                                          value: pitScoutingData
+                                              .data.driver_experience_events,
+                                          max: 500,
+                                          locked: widget.locked,
+                                          onChanged: (val) {
+                                            setState(() {
+                                              pitScoutingData =
+                                                  pitScoutingData.copyWith(
+                                                data: pitScoutingData.data
+                                                    .copyWith(
+                                                        driver_experience_events:
+                                                            val),
+                                              );
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Main Strategy
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Main Strategy',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        TextField(
+                                          controller: mainStrategyController,
+                                          enabled: !widget.locked,
+                                          style: TextStyle(fontFamily: 'Font'),
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (val) => handleChange(
+                                                  'main_strategy', val),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),

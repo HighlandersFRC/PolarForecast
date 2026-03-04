@@ -387,7 +387,13 @@ class ApiService {
   Future<(Group, String)> get_group(String name) async {
     final endpoint = '$APIURL/Group/$name';
     final data = await _fetchFromAPI(endpoint, '', useCache: false);
-    return (Group.fromJson(data['group']), data['group_role'].toString());
+    var group = Group.fromJson(data['group']);
+    var role = data['group_role'].toString();
+    group = group.copyWith(
+        events: group.events
+            .where((e) => e.event_code.startsWith('2026'))
+            .toList());
+    return (group, role);
   }
 
   Future<Map> get_group_members(String name) async {

@@ -393,63 +393,62 @@ class _StatsTabState extends State<_StatsTab> {
                 builder: (context, constraints) {
                   final isMobileScreen =
                       MediaQuery.of(context).size.width < 900;
+                  final gridHeight = constraints.maxWidth < 700 ? 220.0 : 400.0;
 
-                  final gridWidth =
-                      isMobileScreen ? 400.0 : constraints.maxWidth / 3;
-                  final gridHeight = constraints.maxWidth < 700 ? 220.0 : 300.0;
-
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: List.generate(
-                        1,
-                        (i) {
-                          return Container(
-                            width: gridWidth, // 👈 important
-                            height: gridHeight,
-                            margin: const EdgeInsets.only(right: 16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(28),
-                              color: scheme.surface,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 12),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: SfDataGridTheme(
-                                data: SfDataGridThemeData(
-                                  headerColor: scheme.surfaceContainerHighest,
-                                  selectionColor: color.withOpacity(0.10),
-                                  rowHoverColor:
-                                      scheme.primary.withOpacity(0.04),
-                                  gridLineColor: color,
-                                ),
-                                child: SfDataGrid(
-                                  source:
-                                      _StatsTableSource(rows, color, scheme),
-                                  columns: columns,
-                                  columnWidthMode: ColumnWidthMode.auto,
-                                  // 👈 change from fill to auto
-                                  rowHeight: 64,
-                                  headerRowHeight: 64,
-                                  gridLinesVisibility: GridLinesVisibility.none,
-                                  headerGridLinesVisibility:
-                                      GridLinesVisibility.none,
-                                  highlightRowOnHover: true,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                  Widget table = Container(
+                    height: gridHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: scheme.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SfDataGridTheme(
+                        data: SfDataGridThemeData(
+                          headerColor: scheme.surfaceContainerHighest,
+                          selectionColor: color.withOpacity(0.10),
+                          rowHoverColor: scheme.primary.withOpacity(0.04),
+                          gridLineColor: color,
+                        ),
+                        child: SfDataGrid(
+                          source: _StatsTableSource(rows, color, scheme),
+                          columns: columns,
+                          columnWidthMode: isMobileScreen
+                              ? ColumnWidthMode.auto
+                              : ColumnWidthMode.fill, // fill on desktop
+                          rowHeight: 64,
+                          headerRowHeight: 64,
+                          gridLinesVisibility: GridLinesVisibility.none,
+                          headerGridLinesVisibility: GridLinesVisibility.none,
+                          highlightRowOnHover: true,
+                        ),
                       ),
                     ),
                   );
+
+                  if (isMobileScreen) {
+                    // Scroll horizontally only on mobile
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: 400, // fixed width for mobile
+                        child: table,
+                      ),
+                    );
+                  } else {
+                    // Full width for desktop
+                    return SizedBox(
+                      width: double.infinity, // full screen width
+                      child: table,
+                    );
+                  }
                 },
               )
               // 67

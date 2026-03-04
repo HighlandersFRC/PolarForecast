@@ -33,5 +33,5 @@ class MatchScouting2026(BaseModel):
     match_number: int
     scout_info: ScoutInfo
     data: Data2026
-    time: int = 0  # Will be set by server, so default is fine
+    time: float= 0  # Will be set by server, so default is fine
     
