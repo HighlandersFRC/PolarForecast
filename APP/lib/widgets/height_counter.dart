@@ -20,7 +20,7 @@ class TapeMeasurePicker extends StatefulWidget {
     this.step = 0.01,
     this.decimalPlaces = 2,
     required this.onChanged,
-    required this.locked, // <-- default false
+    required this.locked,
   }) : super(key: key);
 
   @override

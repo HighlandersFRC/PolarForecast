@@ -302,15 +302,15 @@ class _DeathsFormState extends State<DeathsForm> {
         const DropdownMenuItem(value: -1, child: Text('Choose...')),
         DropdownMenuItem(
             value: 1,
-            child: Text('1 - Minor',
+            child: Text('1 - One Time Incident',
                 style: TextStyle(color: Colors.greenAccent[400]))),
         const DropdownMenuItem(
             value: 2,
-            child: Text('2 - Concerning',
+            child: Text('2 - Fixable Before Elims',
                 style: TextStyle(color: Colors.orangeAccent))),
         DropdownMenuItem(
             value: 3,
-            child: Text('3 - Critical',
+            child: Text('3 - Permanent/Unfixable',
                 style: TextStyle(color: Colors.redAccent[200]))),
       ],
     );
