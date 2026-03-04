@@ -140,6 +140,8 @@ class _FloatyCounterState extends State<FloatyCounter> {
               max: widget.max,
               divisions: ((widget.max - widget.min) / widget.step).round(),
               label: _currentValue.toStringAsFixed(widget.decimalPlaces),
+              activeColor: Colors.blue, // <-- change the active track color
+              inactiveColor: Colors.grey,
               onChanged: widget.locked
                   ? null
                   : (value) {

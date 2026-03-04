@@ -2880,25 +2880,26 @@ def updateData(event_code: str, event_type: int):
             keyList.append(keyStr+team[3:])
         retval0 = {"data": {"keys": keyList}}
         data = [retval0]
-        data.extend([{"historical": False,
-                      "key": team,
-                      "rank": 0,
-                      "team_number": team[3:],
-                      "match_count": 0,
-                      "OPR": 0.0,
-                      "total_pass": 0.0,
-                      "auto_pass": 0.0,
-                      "teleop_pass": 0.0,
-                      "endgame_points": 0.0,
-                      "teleop_points": 0.0,
-                      "auto_points": 0.0,
-                      "climbing_points": 0.0,
-                      "death_rate": 0.0,
-                      "auto_fuel_cycles": 0.0,
-                      "teleop_fuel_cycles": 0.0,
-                      "foul_points": 0.0,
-                      "simulated_rp": 0,
-                      "simulated_rank": 0,
+        data.extend([{  "historical": False,
+                        "key": team,
+                        "rank": 0,
+                        "team_number": team[3:],
+                        "match_count": 0,
+                        "OPR": 0.0,
+                        "total_pass": 0.0,
+                        "auto_pass": 0.0,
+                        "teleop_pass": 0.0,
+                        "endgame_points": 0.0,
+                        "teleop_points": 0.0,
+                        "auto_points": 0.0,
+                        "climbing_points": 0.0,
+                        "death_rate": 0.0,
+                        "defense_rate": 0.0,          # added because constructor requires it
+                        "auto_fuel_cycles": 0.0,
+                        "teleop_fuel_cycles": 0.0,
+                        "foul_points": 0.0,
+                        "simulated_rp": 0,
+                        "simulated_rank": 0
                       }
                      for team in teams])
     try:

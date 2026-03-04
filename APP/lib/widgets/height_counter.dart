@@ -53,8 +53,10 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
     if (widget.locked) return; // <-- prevent scrolling when locked
 
     final index = (_controller.offset / _itemHeight).round();
-    final value =
-        (widget.min + index * widget.step).clamp(widget.min, widget.max);
+    final int minInt = (widget.min * 100).round();
+    final int stepInt = (widget.step * 100).round();
+
+    final value = (minInt + index * stepInt) / 100.0;
 
     if (value != _currentValue) {
       HapticFeedback.selectionClick();
