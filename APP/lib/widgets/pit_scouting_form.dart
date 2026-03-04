@@ -1217,6 +1217,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                           child: Padding(
                                             padding: const EdgeInsets.all(16),
                                             child: TapeMeasurePicker(
+                                              locked: widget.locked,
                                               label: 'Robot Height (Inches)',
                                               value: pitScoutingData
                                                   .data.robot_height,
@@ -1249,6 +1250,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                           child: Padding(
                                             padding: const EdgeInsets.all(16),
                                             child: FloatyCounter(
+                                              locked: widget.locked,
                                               label:
                                                   'Mag Unload Speed (seconds)',
                                               value: pitScoutingData

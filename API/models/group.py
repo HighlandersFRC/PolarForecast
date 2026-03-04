@@ -7,6 +7,11 @@ class AllianceGroup(BaseModel):
     name: str
     affiliation: str
 
+class PickList2026(BaseModel):
+    picks: List[int]
+    dnp: List[int]
+
+
 
 class GroupEventSettings(BaseModel):
     crowd_sourced_match_scouting: bool
@@ -18,6 +23,7 @@ class GroupEvent(BaseModel):
     up_to_date: bool
     settings: GroupEventSettings
     alliance_groups: List[AllianceGroup]
+    pick_list: Optional[PickList2026] = None
 
 
 class GroupSettings(BaseModel):

@@ -28,7 +28,7 @@ from models.pit_scouting_status import PitScoutingStatus
 from models.picture_data import PictureData
 from models.pit_scouting_2026 import PitScouting2026, PitData2026
 from models.alliance_request import AllianceRequest
-from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
+from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickList2026
 from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
@@ -100,6 +100,7 @@ TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 MatchScoutingCollection = testDB["Scouting2026Data"]
 MatchScoutingCollection.create_index([("event_code", pymongo.ASCENDING), (
     "team_number", pymongo.ASCENDING), ("scout_info.user_id", pymongo.ASCENDING), ("match_number", pymongo.ASCENDING)], unique=True)
+
 
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
@@ -1110,6 +1111,9 @@ def updateGroupGridPitData(group: Group, event_code: str):
 numRuns = 0
 
 
+
+
+
 @app.post("/MatchScouting/", tags=["scouting"])
 def post_match_scouting(
     data: MatchScouting2026,
@@ -1629,31 +1633,50 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
 
 @app.post("/Group/{group_name}/Event/{event}/Add", tags=["groups"])
 def add_event_to_group(group_name: str, event: str, token: str = Depends(check_token_active)):
+    # ---- Fetch the group from DB ----
     try:
         DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
     except:
+        raise HTTPException(404, "This group does not exist")
+
+    # ---- Check if event already exists in group ----
+    if event in [e.event_code for e in DB_Entry.events]:
         raise HTTPException(
-            404, "This group does not exist")
-    if event in [event.event_code for event in DB_Entry.events]:
-        raise HTTPException(
-            400, f"This group already has an event with the code '{event}'")
+            400, f"This group already has an event with the code '{event}'"
+        )
+
+    # ---- Check admin rights ----
     kc_groups = get_user_groups(token=token)
-    admin = False
-    for kc_group in kc_groups:
-        if kc_group["id"] == DB_Entry.admin_group_id:
-            admin = True
-            break
+    admin = any(kc_group["id"] == DB_Entry.admin_group_id for kc_group in kc_groups)
     if not admin:
         raise HTTPException(
-            401, "You must be an admin of this group to add events")
-    new_event = GroupEvent(event_code=event, settings=GroupEventSettings(
-        crowd_sourced_match_scouting=False, crowd_sourced_pit_scouting=False), up_to_date=False, alliance_groups=[])
+            401, "You must be an admin of this group to add events"
+        )
+
+    # ---- Create new GroupEvent with empty pick_list ----
+    new_event = GroupEvent(
+        event_code=event,
+        settings=GroupEventSettings(
+            crowd_sourced_match_scouting=False,
+            crowd_sourced_pit_scouting=False
+        ),
+        up_to_date=False,
+        alliance_groups=[],
+        pick_list=PickList2026(picks=[], dnp=[])  # <-- empty picklist added
+    )
+
+    # ---- Append event and update DB ----
     DB_Entry.events.append(new_event)
     GroupCollection.find_one_and_update(
-        {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+        {"name": group_name},
+        {'$set': {"events": [e.dict() for e in DB_Entry.events]}}
+    )
+
+    # ---- Update auxiliary group data ----
     updateGroupStatus(DB_Entry, event)
     updateGroupData(DB_Entry, event)
     updateGroupGridPitData(DB_Entry, event)
+
     return get_group(group_name=group_name, token=token)
 
 
@@ -1736,6 +1759,7 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
     eventGroups = GroupCollection.find(
         {"events.event_code": eventCode})
     return [Group(**group).dict(exclude={"join_code", "settings", "events", "owner_group_id", "admin_group_id", "member_group_id", "group_id"}) for group in eventGroups]
+
 
 
 @app.get("/Group/{group_name}/Event/{event_code}/ScoutingReport", tags=["groups"])

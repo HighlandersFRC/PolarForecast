@@ -9,6 +9,7 @@ class TapeMeasurePicker extends StatefulWidget {
   final double step; // e.g., 0.01
   final int decimalPlaces;
   final ValueChanged<double> onChanged;
+  final bool locked; // <-- added
 
   const TapeMeasurePicker({
     Key? key,
@@ -19,6 +20,7 @@ class TapeMeasurePicker extends StatefulWidget {
     this.step = 0.01,
     this.decimalPlaces = 2,
     required this.onChanged,
+    required this.locked, // <-- default false
   }) : super(key: key);
 
   @override
@@ -39,7 +41,6 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
         text: _currentValue.toStringAsFixed(widget.decimalPlaces));
     _controller = ScrollController();
 
-    // Jump to the initial value after layout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final initialIndex = ((_currentValue - widget.min) / widget.step).round();
       _controller.jumpTo(initialIndex * _itemHeight);
@@ -49,6 +50,8 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
   }
 
   void _onScroll() {
+    if (widget.locked) return; // <-- prevent scrolling when locked
+
     final index = (_controller.offset / _itemHeight).round();
     final value =
         (widget.min + index * widget.step).clamp(widget.min, widget.max);
@@ -65,6 +68,8 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
   }
 
   void _manualSubmit(String val) {
+    if (widget.locked) return; // <-- prevent manual entry when locked
+
     final parsed = double.tryParse(val);
     if (parsed != null) {
       final clamped = parsed.clamp(widget.min, widget.max);
@@ -86,7 +91,7 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
       _textController.text =
           _currentValue.toStringAsFixed(widget.decimalPlaces);
       final index = ((_currentValue - widget.min) / widget.step).round();
-      _controller.jumpTo(index * _itemHeight);
+      if (!widget.locked) _controller.jumpTo(index * _itemHeight);
     }
   }
 
@@ -105,7 +110,7 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// Label
+        // Label
         Text(
           widget.label,
           style: const TextStyle(
@@ -116,7 +121,7 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
         ),
         const SizedBox(height: 12),
 
-        /// Selected value + manual input
+        // Selected value + manual input
         Row(
           children: [
             Expanded(
@@ -134,6 +139,7 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
             SizedBox(
               width: 80,
               child: TextField(
+                readOnly: widget.locked,
                 controller: _textController,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -153,13 +159,16 @@ class _TapeMeasurePickerState extends State<TapeMeasurePicker> {
         ),
         const SizedBox(height: 16),
 
-        /// Vertical Tape Measure
+        // Vertical Tape Measure
         SizedBox(
           height: 300,
           child: Stack(
             alignment: Alignment.center,
             children: [
               ListView.builder(
+                physics: widget.locked
+                    ? const NeverScrollableScrollPhysics()
+                    : const BouncingScrollPhysics(),
                 controller: _controller,
                 scrollDirection: Axis.vertical,
                 itemCount: itemCount,

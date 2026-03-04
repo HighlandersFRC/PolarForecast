@@ -81,7 +81,7 @@ class _EventPageState extends State<EventPage> {
       _MatchScoutingTab(widget),
       _PitScoutingTab(widget),
       _QualsTab(widget),
-      _ElimsTab(widget),
+      _ElimsTab(widget)
     ];
     return Scaffold(
         appBar: PolarForecastAppBar(
@@ -122,7 +122,7 @@ class _EventPageState extends State<EventPage> {
                     color: theme.primaryColor),
                 activeIcon:
                     Icon(Icons.workspace_premium, color: theme.primaryColor),
-                label: 'Elims'),
+                label: 'Elims')
           ],
           type: BottomNavigationBarType.shifting,
           selectedLabelStyle: TextStyle(
@@ -1312,20 +1312,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                         key: 'auto_fuel_cycles',
                         enabled: true,
                         weight: 1),
-                  ])),
-          Divider(color: Colors.blue),
-          Padding(
-              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-              child: BarChartWithWeights(
-                  title: 'OPR by Game Piece',
-                  data: rankings,
-                  number: 24,
-                  startingFields: [
-                    Field(
-                        name: 'Fuel',
-                        key: 'total_fuel_cycles',
-                        enabled: true,
-                        weight: 1)
                   ])),
           Divider(color: Colors.blue),
           Padding(

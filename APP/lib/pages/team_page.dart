@@ -143,25 +143,53 @@ class _StatsTabState extends State<_StatsTab> {
   bool isLoading = true;
 
   // Only show these fields in the UI
-  final List<String> displayFields = [
-    'rank',
-    'match_count',
-    'OPR',
-    'OPRRank',
-    'total_pass',
-    'auto_pass',
-    'teleop_pass',
-    'endgame_points',
-    'teleop_points',
-    'auto_points',
-    'climbing_points',
-    'auto_fuel_cycles',
-    'teleop_fuel_cycles',
-    'total_fuel_cycles',
-    'foul_points',
-    'simulated_rp',
-    'simulated_rank',
-  ];
+  final Map<String, String> fieldLabels = {
+    'rank': 'Rank',
+    'match_count': 'Match Count',
+    'OPR': 'OPR',
+    'OPRRank': 'OPR Rank',
+    'total_pass': 'Total Pass',
+    'auto_pass': 'Auto Pass',
+    'teleop_pass': 'Teleop Pass',
+    'endgame_points': 'Endgame Points',
+    'teleop_points': 'Teleop Points',
+    'auto_points': 'Auto Points',
+    'climbing_points': 'Climbing Points',
+    'auto_fuel_cycles': 'Auto Fuel Scored',
+    'teleop_fuel_cycles': 'Teleop Fuel Scored',
+    'total_fuel_cycles': 'Total Fuel Scored',
+    'foul_points': 'Foul Points',
+    'simulated_rp': 'Simulated RP',
+    'simulated_rank': 'Simulated Rank',
+  };
+
+  final Map<String, List<String>> groupedFields = {
+    'Rankings': [
+      'rank',
+      'simulated_rank',
+      'match_count',
+      'OPR',
+      'OPRRank',
+      'simulated_rp',
+    ],
+    'Scoring Breakdown': [
+      'auto_points',
+      'teleop_points',
+      'endgame_points',
+      'climbing_points',
+      'foul_points',
+    ],
+    'Passing': [
+      'total_pass',
+      'auto_pass',
+      'teleop_pass',
+    ],
+    'Fuel Scored': [
+      'auto_fuel_cycles',
+      'teleop_fuel_cycles',
+      'total_fuel_cycles',
+    ],
+  };
 
   @override
   void initState() {
@@ -215,43 +243,63 @@ class _StatsTabState extends State<_StatsTab> {
                           fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        // Only display selected fields
-                        ...stats.entries
-                            .where((entry) => displayFields.contains(entry.key))
-                            .map((entry) {
-                          return Card(
-                            elevation: 5,
-                            shadowColor: theme.primaryColor.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.primaryColor),
+                    Column(
+                      children: groupedFields.entries.map((group) {
+                        final groupTitle = group.key;
+                        final keys = group.value
+                            .where((key) => stats.containsKey(key))
+                            .toList();
+
+                        if (keys.isEmpty) return SizedBox();
+
+                        return Card(
+                          elevation: 6,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  groupTitle,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    formatValue(entry.value),
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 16),
+                                ...keys.map((key) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          fieldLabels[key] ?? key,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        Text(
+                                          formatValue(stats[key]),
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
