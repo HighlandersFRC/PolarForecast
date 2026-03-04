@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:scouting_app/models/team_stats_2025.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csv/csv.dart';
 
 import '../utils.dart';
 
 class BarChartWithWeights extends StatefulWidget {
-  final List<TeamStats2025> data;
+  final List<TeamStats2026> data;
   final int number;
   final List<Field> startingFields;
   final String title;
@@ -41,7 +41,7 @@ class Field {
 
 class _BarChartWithWeightsState extends State<BarChartWithWeights> {
   late List<Field> fields;
-  late List<TeamStats2025> originalData;
+  late List<TeamStats2026> originalData;
   late List<Map<String, dynamic>> chartData;
 
   @override
@@ -50,7 +50,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
   }
 
   List<Map<String, dynamic>> _updateData(
-      List<Field> fields, List<TeamStats2025> originalData) {
+      List<Field> fields, List<TeamStats2026> originalData) {
     List<Map<String, dynamic>> adjustedData = originalData.map((item) {
       final newItem = {...item.toJson()};
       for (var field in fields) {
@@ -163,7 +163,8 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
         Text(
           widget.title,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.blue, fontSize: 20),
+          style:
+              TextStyle(color: Colors.blue, fontSize: 20, fontFamily: 'Font'),
         ),
         SfCartesianChart(
           tooltipBehavior: TooltipBehavior(
@@ -200,10 +201,12 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
               child: TextField(
                 decoration: InputDecoration(
                     labelText: field.name,
-                    labelStyle:
-                        TextStyle(color: palette[index % palette.length]),
-                    floatingLabelStyle:
-                        TextStyle(color: palette[index % palette.length])),
+                    labelStyle: TextStyle(
+                        color: palette[index % palette.length],
+                        fontFamily: 'Font'),
+                    floatingLabelStyle: TextStyle(
+                        color: palette[index % palette.length],
+                        fontFamily: 'Font')),
                 controller:
                     new TextEditingController(text: field.weight.toString()),
                 keyboardType: TextInputType.number,
@@ -220,7 +223,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
         SizedBox(height: 8),
         ElevatedButton(
           onPressed: _exportToCSV,
-          child: Text('Export to CSV'),
+          child: Text('Export to CSV', style: TextStyle(fontFamily: 'Font')),
         ),
       ],
     );

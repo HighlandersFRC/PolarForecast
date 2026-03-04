@@ -40,8 +40,6 @@ dependencies:
   csv: ^6.0.0
   syncfusion_flutter_core: ^26.2.14
   qr_code_scanner_plus: ^2.0.10+1
-
-
 dev_dependencies:
   build_runner: ^2.4.13
   flutter_test:
@@ -51,6 +49,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
     - staticwebapp.config.json
     - assets/PolarBearHead.png
@@ -60,5 +59,15 @@ flutter:
     - assets/AutosGameField.png
     - assets/2025 REEFSCAPE Gray Background blue.png
     - assets/2025 REEFSCAPE Gray Background red.png
+    - assets/2026GameField.png
+    - assets/2026GameField_Blue.png
+    - assets/2026GameField_Red.png
     - assets/2025GameField.png
     - assets/documentation/
+
+  fonts:
+    - family: Font
+      fonts:
+        - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf #Light
+        - asset: assets/fonts/Roboto-Bold.ttf #Bold
+          weight: 700

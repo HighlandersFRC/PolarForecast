@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from models.scout_info import ScoutInfo
 
@@ -17,3 +17,8 @@ class DeathScoutingForm (BaseModel):
     total: int
     average: int
     time: int
+    @field_validator("time", mode="before")
+    def cast_time_to_int(cls, v):
+        if isinstance(v, float):
+            return int(v)
+        return v

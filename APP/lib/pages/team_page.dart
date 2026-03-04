@@ -1,16 +1,17 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flat/flat.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import 'package:scouting_app/widgets/auto_display_2025.dart';
+import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/pit_scouting_form.dart';
-import '../models/match_scouting_2025.dart';
+import '../models/match_scouting_2026.dart';
 import '../widgets/deaths_form.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../widgets/login_widget.dart';
@@ -116,8 +117,9 @@ class _TeamPageState extends State<TeamPage> {
               label: 'Deaths')
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(color: Colors.white),
-        unselectedLabelStyle: TextStyle(color: Colors.white),
+        selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
+        unselectedLabelStyle:
+            TextStyle(color: Colors.white, fontFamily: 'Font'),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,
@@ -139,6 +141,55 @@ class _StatsTab extends StatefulWidget {
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
   bool isLoading = true;
+
+  // Only show these fields in the UI
+  final Map<String, String> fieldLabels = {
+    'rank': 'Rank',
+    'match_count': 'Match Count',
+    'OPR': 'OPR',
+    'OPRRank': 'OPR Rank',
+    'total_pass': 'Total Pass',
+    'auto_pass': 'Auto Pass',
+    'teleop_pass': 'Teleop Pass',
+    'endgame_points': 'Endgame Points',
+    'teleop_points': 'Teleop Points',
+    'auto_points': 'Auto Points',
+    'climbing_points': 'Climbing Points',
+    'auto_fuel_cycles': 'Auto Fuel Scored',
+    'teleop_fuel_cycles': 'Teleop Fuel Scored',
+    'total_fuel_cycles': 'Total Fuel Scored',
+    'foul_points': 'Foul Points',
+    'simulated_rp': 'Simulated RP',
+    'simulated_rank': 'Simulated Rank',
+  };
+
+  final Map<String, List<String>> groupedFields = {
+    'Rankings': [
+      'rank',
+      'simulated_rank',
+      'match_count',
+      'OPR',
+      'OPRRank',
+      'simulated_rp',
+    ],
+    'Scoring Breakdown': [
+      'auto_points',
+      'teleop_points',
+      'endgame_points',
+      'climbing_points',
+      'foul_points',
+    ],
+    'Passing': [
+      'total_pass',
+      'auto_pass',
+      'teleop_pass',
+    ],
+    'Fuel Scored': [
+      'auto_fuel_cycles',
+      'teleop_fuel_cycles',
+      'total_fuel_cycles',
+    ],
+  };
 
   @override
   void initState() {
@@ -192,40 +243,63 @@ class _StatsTabState extends State<_StatsTab> {
                           fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        ...stats.entries.map((entry) {
-                          return Card(
-                            elevation: 5,
-                            shadowColor: theme.primaryColor.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.primaryColor),
+                    Column(
+                      children: groupedFields.entries.map((group) {
+                        final groupTitle = group.key;
+                        final keys = group.value
+                            .where((key) => stats.containsKey(key))
+                            .toList();
+
+                        if (keys.isEmpty) return SizedBox();
+
+                        return Card(
+                          elevation: 6,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  groupTitle,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    formatValue(entry.value),
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 16),
+                                ...keys.map((key) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          fieldLabels[key] ?? key,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        Text(
+                                          formatValue(stats[key]),
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
@@ -339,9 +413,9 @@ class _ScheduleStatusSource extends DataGridSource {
                       .withOpacity(0.6)
                   : Colors.grey.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'color')
         returnCells.add(Container(
@@ -353,9 +427,9 @@ class _ScheduleStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'team_score')
         returnCells.add(Container(
@@ -416,9 +490,9 @@ class _ScheduleStatusSource extends DataGridSource {
                                       : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6)
                               : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'opponent_score')
         returnCells.add(Container(
@@ -461,9 +535,9 @@ class _ScheduleStatusSource extends DataGridSource {
                           : Color.lerp(Colors.red, Colors.green, 0.5)!
                               .withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else
         returnCells.add(Container(
@@ -471,9 +545,9 @@ class _ScheduleStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
     }
     return DataGridRowAdapter(
@@ -543,56 +617,50 @@ class _ScheduleTabState extends State<_ScheduleTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Match',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Type',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'color',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Alliance',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Alliance',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Team Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Team Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'opponent_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Opponent Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Opponent Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Ranking Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Ranking Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
     ];
 
     statuses.sort((a, b) {
@@ -780,7 +848,7 @@ class _PicturesTabState extends State<_PicturesTab> {
                   redirect_path:
                       '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
               : images.isEmpty
-                  ? Text('No Images')
+                  ? Text('No Images', style: TextStyle(fontFamily: 'Font'))
                   : LayoutBuilder(
                       builder: (context, constraints) {
                         return GridView.builder(
@@ -811,7 +879,9 @@ class _PicturesTabState extends State<_PicturesTab> {
                                           ),
                                           actions: [
                                             Text(
-                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}'),
+                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
                                             if (images[index]
                                                 .permissions
                                                 .contains('delete'))
@@ -837,12 +907,16 @@ class _PicturesTabState extends State<_PicturesTab> {
                                                       });
                                                     });
                                                   },
-                                                  child: Text('Delete')),
+                                                  child: Text('Delete',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
                                             TextButton(
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                 },
-                                                child: Text('Close'))
+                                                child: Text('Close',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')))
                                           ],
                                         ));
                                   },
@@ -902,13 +976,16 @@ class _MatchScoutingTab extends StatefulWidget {
   _MatchScoutingTabState createState() => _MatchScoutingTabState();
 }
 
+// Assuming you have these imports based on your code
+// import 'your_models.dart';
+// import 'api_service.dart';
+
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
-  List<MatchScouting2025> scouting = [];
-  List<DataGridRow> rows = [];
-  List<GridColumn> columns = [];
+  List<MatchScouting2026> scouting = [];
   late ScrollController scrollController;
   String? role, token;
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -918,197 +995,328 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    // try {
-    this.token = await apiService.token;
+
+    token = await apiService.token;
     if (token != null) {
-      final fetchedStats = (await apiService.fetchTeamMatchScouting(
+      final fetchedStats = await apiService.fetchTeamMatchScouting(
         int.parse(widget.widget.tournament.page.split('/')[3]),
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
-      ));
-      final groups = (await apiService.get_user_groups_detailed());
+      );
+
+      final groups = await apiService.get_user_groups_detailed();
       if (groups.isNotEmpty) {
-        final (_group, _role) = (await apiService.get_group(groups[0].name));
-        if (mounted)
+        final (_, _role) = await apiService.get_group(groups[0].name);
+        if (mounted) {
           setState(() {
             role = _role;
-            scouting = [...fetchedStats];
+            scouting = fetchedStats;
           });
-        role = _role;
-        scouting = [...fetchedStats];
+        }
       }
     }
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-    isLoading = false;
-    // } catch (e) {
-    //   print('Error fetching data: $e');
-    // }
+
+    if (mounted) setState(() => isLoading = false);
   }
 
+  // Kept for compatibility – triggers a rebuild (no longer builds grid rows)
   void updateGrid() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _refreshData() async {
+    setState(() => isLoading = true);
+    await fetchData();
+    updateGrid();
+  }
+
+  void _deleteEntry(int index) {
+    // Optional: call API to delete from backend
     setState(() {
-      columns = [
-        GridColumn(columnName: 'scout_name', label: Text('Scout Name')),
-        GridColumn(columnName: 'match_number', label: Text('Match')),
-        GridColumn(columnName: 'auto_scoring_l_1', label: Text('Auto L1')),
-        GridColumn(columnName: 'auto_scoring_l_2', label: Text('Auto L2')),
-        GridColumn(columnName: 'auto_scoring_l_3', label: Text('Auto L3')),
-        GridColumn(columnName: 'auto_scoring_l_4', label: Text('Auto L4')),
-        GridColumn(columnName: 'auto_scoring_net', label: Text('Auto Net')),
-        GridColumn(
-            columnName: 'auto_scoring_processor',
-            label: Text('Auto Processor')),
-        GridColumn(columnName: 'teleop_scoring_l_1', label: Text('Teleop L1')),
-        GridColumn(columnName: 'teleop_scoring_l_2', label: Text('Teleop L2')),
-        GridColumn(columnName: 'teleop_scoring_l_3', label: Text('Teleop L3')),
-        GridColumn(columnName: 'teleop_scoring_l_4', label: Text('Teleop L4')),
-        GridColumn(columnName: 'teleop_scoring_net', label: Text('Teleop Net')),
-        GridColumn(
-            columnName: 'teleop_scoring_processor',
-            label: Text('Teleop Processor')),
-        GridColumn(columnName: 'died', label: Text('Died')),
-        GridColumn(columnName: 'comments', label: Text('Comments')),
-        GridColumn(columnName: 'delete', label: Text('Delete'))
-      ];
-      rows = [];
-      for (var entry in scouting) {
-        var flattened = flatten(entry.toJson()['data'], delimiter: '_');
-        flattened = {
-          ...flattened,
-          ...entry.data.miscellaneous.toJson(),
-          'scout_name': entry.scout_info.first_name ??
-              'From Team ${entry.scout_info.team_number}',
-        };
-        rows.add(DataGridRow(cells: [
-          DataGridCell(
-              columnName: 'scout_name',
-              value: entry.scout_info.first_name ??
-                  'Scout from ${entry.scout_info.team_number}'),
-          DataGridCell(columnName: 'match_number', value: entry.match_number),
-          DataGridCell(
-              columnName: 'auto_scoring_l_1',
-              value: entry.data.auto_scoring.l_1),
-          DataGridCell(
-              columnName: 'auto_scoring_l_2',
-              value: entry.data.auto_scoring.l_2),
-          DataGridCell(
-              columnName: 'auto_scoring_l_3',
-              value: entry.data.auto_scoring.l_3),
-          DataGridCell(
-              columnName: 'auto_scoring_l_4',
-              value: entry.data.auto_scoring.l_4),
-          DataGridCell(
-              columnName: 'auto_scoring_net',
-              value: entry.data.auto_scoring.net),
-          DataGridCell(
-              columnName: 'auto_scoring_processor',
-              value: entry.data.auto_scoring.processor),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_1',
-              value: entry.data.teleop_scoring.l_1),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_2',
-              value: entry.data.teleop_scoring.l_2),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_3',
-              value: entry.data.teleop_scoring.l_3),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_4',
-              value: entry.data.teleop_scoring.l_4),
-          DataGridCell(
-              columnName: 'teleop_scoring_net',
-              value: entry.data.teleop_scoring.net),
-          DataGridCell(
-              columnName: 'teleop_scoring_processor',
-              value: entry.data.teleop_scoring.processor),
-          DataGridCell(
-              columnName: 'died', value: entry.data.miscellaneous.died),
-          DataGridCell(
-              columnName: 'comments', value: entry.data.miscellaneous.comments),
-          DataGridCell(
-            columnName: 'delete',
-            value: entry.scout_info.first_name != null &&
-                (role == 'admin' || role == 'owner'),
-          ),
-        ]));
-      }
+      scouting.removeAt(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: isLoading
-            ? CircularProgressIndicator(color: Colors.blue)
-            : token == null
-                ? LoginWidget(
-                    redirect_path:
-                        '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
-                  )
-                : scouting.isEmpty
-                    ? Text('No Entries')
-                    : LayoutBuilder(
-                        builder: (context, constraints) => Container(
-                            height: constraints.maxHeight,
-                            width: constraints.maxWidth,
-                            child: InteractiveViewer(
-                              scaleEnabled: false,
-                              child: SfDataGrid(
-                                allowFiltering: true,
-                                allowSorting: true,
-                                columns: columns,
-                                frozenColumnsCount: 0,
-                                columnWidthMode: ColumnWidthMode.auto,
-                                source: _MatchScoutingSource(rows, scouting,
-                                    (delete_index) {
-                                  setState(() {
-                                    scouting.removeAt(delete_index);
-                                    updateGrid();
-                                  });
-                                }),
-                              ),
-                            ))));
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+
+    if (scouting.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assignment_outlined, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No Scouting Entries Yet',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull down to refresh',
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(12),
+        itemCount: scouting.length,
+        itemBuilder: (context, index) {
+          final data = scouting[index];
+          final backgroundColor = index % 2 == 0
+              ? Colors.blueGrey.shade900
+              : Colors.blueGrey.shade800;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _ScoutingCard(
+              data: data,
+              backgroundColor: backgroundColor,
+              role: role,
+              onDelete: () => _confirmDelete(context, index),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Entry'),
+        content:
+            const Text('Are you sure you want to delete this scouting entry?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteEntry(index);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _MatchScoutingSource extends DataGridSource {
-  final List<DataGridRow> rows;
-  final List<MatchScouting2025> scoutingData;
-  final void Function(int) onDelete;
-  _MatchScoutingSource(
-      List<DataGridRow> this.rows, this.scoutingData, this.onDelete);
+// Extracted card widget (identical to previous version)
+class _ScoutingCard extends StatelessWidget {
+  final MatchScouting2026 data;
+  final Color backgroundColor;
+  final String? role;
+  final VoidCallback onDelete;
+
+  const _ScoutingCard({
+    required this.data,
+    required this.backgroundColor,
+    required this.role,
+    required this.onDelete,
+  });
+
   @override
-  DataGridRowAdapter? buildRow(
-    DataGridRow row,
-  ) {
-    int index = rows.indexOf(row);
-    List<Widget> cells = [];
-    for (var cell in row.getCells()) {
-      if (cell.columnName == 'delete') {
-        if (cell.value)
-          cells.add(DeleteButton(
-            data: scoutingData[index],
-            onDelete: () {
-              onDelete(index);
-            },
-          ));
-        else
-          cells.add(SizedBox.shrink());
-      } else
-        cells.add(Text(
-          cell.value.toString(),
-        ));
-    }
-    return DataGridRowAdapter(cells: cells);
+  Widget build(BuildContext context) {
+    return Card(
+      color: backgroundColor,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.blue[800],
+                      child: Text(
+                        data.scout_info.first_name?[0] ?? 'S',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.scout_info.first_name ??
+                              'Scout ${data.scout_info.team_number}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Match ${data.match_number}',
+                          style:
+                              TextStyle(color: Colors.blue[200], fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (role == 'admin' || role == 'owner')
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.redAccent),
+                    onPressed: onDelete,
+                    tooltip: 'Delete',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Stats sections with icons
+            _buildSection(
+              title: 'Auto',
+              icon: Icons.smart_toy_outlined,
+              chips: [
+                _StatChip(
+                    label: 'Fuel',
+                    value: data.data.auto_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.auto_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Teleop',
+              icon: Icons.videogame_asset_outlined,
+              chips: [
+                _StatChip(
+                    label: 'Fuel',
+                    value: data.data.teleop_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.teleop_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Misc',
+              icon: Icons.widgets_outlined,
+              chips: [
+                _StatChip(
+                  label: 'Died',
+                  value: data.data.miscellaneous.died ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.died ? Colors.orange : null,
+                ),
+                _StatChip(
+                  label: 'Defense',
+                  value: data.data.miscellaneous.defense ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.defense ? Colors.purple : null,
+                ),
+              ],
+            ),
+
+            // Comments (if any)
+            if (data.data.miscellaneous.comments.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Comments: ${data.data.miscellaneous.comments}',
+                  style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Updated _buildSection with an icon parameter
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> chips,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.blue[200]),
+            const SizedBox(width: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue[200],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: chips,
+        ),
+      ],
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+
+  const _StatChip({required this.label, required this.value, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      backgroundColor: color ?? Colors.blueGrey[700],
+      label: Text(
+        '$label: $value',
+        style: const TextStyle(fontSize: 13, color: Colors.white),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    );
   }
 }
 
 class DeleteButton extends StatefulWidget {
-  final MatchScouting2025 data;
+  final MatchScouting2026 data;
   final void Function() onDelete;
   DeleteButton({Key? key, required this.data, required this.onDelete})
       : super(key: key);
@@ -1133,13 +1341,15 @@ class _DeleteButtonState extends State<DeleteButton> {
         ApiService api = Provider.of<ApiService>(context, listen: false);
         api.delete_match_scouting(widget.data).then(
           (_) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Successfully Deleted')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Successfully Deleted',
+                    style: TextStyle(fontFamily: 'Font'))));
             widget.onDelete();
           },
         ).onError((e, trace) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
         });
       },
       icon: Icon(Icons.delete_forever),
@@ -1177,7 +1387,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
@@ -1226,7 +1436,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2025> pageData = scouting.sublist(
+    List<MatchScouting2026> pageData = scouting.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -1243,7 +1453,7 @@ class _AutosTabState extends State<_AutosTab> {
                     if (scouting.length == 0)
                       Text(
                         'No data for this event',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 30, fontFamily: 'Font'),
                       ),
                     Expanded(
                         child: LayoutBuilder(builder: (context, constraints) {
@@ -1264,7 +1474,7 @@ class _AutosTabState extends State<_AutosTab> {
                                       int index =
                                           rowIndex * numColumns + colIndex;
                                       if (index < pageData.length) {
-                                        return AutoDisplay2025(
+                                        return AutoDisplay2026(
                                           scoutingData: pageData[index],
                                         );
                                       }

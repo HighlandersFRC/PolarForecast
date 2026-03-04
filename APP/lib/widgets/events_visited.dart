@@ -30,14 +30,16 @@ class _EventsVisitedState extends State<EventsVisited> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Team ${widget.teamNumber} visited'),
+      title: Text('Team ${widget.teamNumber} visited',
+          style: TextStyle(fontFamily: 'Font')),
       content: FutureBuilder<List<Tournament>>(
         future: tournamentsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
+            return Text('Error: ${snapshot.error}',
+                style: TextStyle(fontFamily: 'Font'));
           } else {
             final tournaments = snapshot.data ?? [];
             return SingleChildScrollView(
@@ -56,7 +58,8 @@ class _EventsVisitedState extends State<EventsVisited> {
                   );
                   return ListTile(
                     leading: const Icon(Icons.event),
-                    title: Text(tournament.display),
+                    title: Text(tournament.display,
+                        style: TextStyle(fontFamily: 'Font')),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/event/$code');
@@ -71,7 +74,7 @@ class _EventsVisitedState extends State<EventsVisited> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: const Text('Close', style: TextStyle(fontFamily: 'Font')),
         ),
       ],
     );

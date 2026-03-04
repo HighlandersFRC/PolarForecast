@@ -23,6 +23,7 @@ class TeamLink extends StatelessWidget {
             '${number}',
             textScaler: TextScaler.linear(1.25),
             style: TextStyle(
+                fontFamily: 'Font',
                 color: theme.primaryColor,
                 decoration: TextDecoration.underline,
                 decorationColor: theme.primaryColor),

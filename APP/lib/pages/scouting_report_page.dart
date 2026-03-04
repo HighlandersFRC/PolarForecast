@@ -177,33 +177,38 @@ class ScoutingReportDataSource extends DataGridSource {
         alignment: Alignment.center,
         color: usernameColor,
         child: Text(row.getCells()[0].value.toString(),
-            style: const TextStyle(color: Colors.white)),
+            style: const TextStyle(color: Colors.white, fontFamily: 'Font')),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         color: firstNameColor,
         child: Text(row.getCells()[1].value.toString(),
-            style: const TextStyle(color: Colors.white)),
+            style: const TextStyle(color: Colors.white, fontFamily: 'Font')),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         color: getCellColor(trust, minTrust, maxTrust, false),
-        child: Text(trust.toStringAsFixed(2)),
+        child: Text(
+          trust.toStringAsFixed(2),
+          style: TextStyle(fontFamily: 'Font'),
+        ),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         color: getCellColor(entries, minEntries, maxEntries, false),
-        child: Text(entries.toStringAsFixed(1)),
+        child: Text(entries.toStringAsFixed(1),
+            style: TextStyle(fontFamily: 'Font')),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         color:
             getCellColor(contribution, minContribution, maxContribution, false),
-        child: Text(contribution.toStringAsFixed(2)),
+        child: Text(contribution.toStringAsFixed(2),
+            style: TextStyle(fontFamily: 'Font')),
       ),
     ]);
   }

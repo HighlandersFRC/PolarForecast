@@ -6,6 +6,7 @@ import logging
 import math
 import random
 import string
+import traceback
 from types import TracebackType
 from typing import Annotated
 import uuid
@@ -20,14 +21,14 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import pymongo
-from models.tba_match_2025 import TBAMatch2025
-from models.match_scouting_2025 import MatchScouting2025
+from models.tba_match_2026 import TBAMatch2026
+from models.match_scouting_2026 import MatchScouting2026
 from models.death_scouting_form import Death, DeathScoutingForm
 from models.pit_scouting_status import PitScoutingStatus
 from models.picture_data import PictureData
-from models.pit_scouting_2025 import PitScouting2025
+from models.pit_scouting_2026 import PitScouting2026, PitData2026
 from models.alliance_request import AllianceRequest
-from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
+from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickList2026
 from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
@@ -36,10 +37,14 @@ import requests
 from fastapi_utils.tasks import repeat_every
 from StatDescription import stat_description
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions, PublicAccess
+from fastapi.exceptions import RequestValidationError
+
+
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logging.info("Initialized Logger")
 
-YEAR = '2025'
+YEAR = '2026'
 tags_metadata = [
     {
         "name": "stats",
@@ -77,6 +82,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def handler(_, exc):
+    print(exc.errors())
+    raise
+
+
 # Set Up the Database
 client = MongoClient(MONGO_CONNECTION)
 testDB = client["Igloo"]
@@ -86,9 +97,10 @@ testCollection = testDB["Test"]
 TBACollection = testDB["TBA"]
 TBACollection.create_index([("key", pymongo.ASCENDING)], unique=True)
 
-MatchScoutingCollection = testDB["Scouting2025Data"]
+MatchScoutingCollection = testDB["Scouting2026Data"]
 MatchScoutingCollection.create_index([("event_code", pymongo.ASCENDING), (
     "team_number", pymongo.ASCENDING), ("scout_info.user_id", pymongo.ASCENDING), ("match_number", pymongo.ASCENDING)], unique=True)
+
 
 PictureCollection = testDB["Pictures"]
 PictureCollection.create_index([("key", pymongo.ASCENDING)], unique=False)
@@ -100,6 +112,10 @@ PitScoutingCollection.create_index(
 CalculatedDataCollection = testDB["CalculatedData"]
 CalculatedDataCollection.create_index(
     [("event_code", pymongo.ASCENDING)], unique=True)
+CalculatedDataCollection.update_many(
+    {"data": {"$type": "object"}},
+    {"$set": {"data": []}}
+)
 
 PredictionCollection = testDB["Predictions"]
 PredictionCollection.create_index(
@@ -266,50 +282,36 @@ def join_code(group_name):
 def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None)):
     event_code = str(year) + event
     foundTeam = False
+    data = None # Initialize to None
+
     if (token == None):
         data = getEventCalculatedData(event_code)
     else:
         if get_token_active(token=token):
-            groups = [Group(**group)
-                      for group in get_user_groups_detailed(token=token)]
-            foundGroup = False
+            groups = [Group(**group) for group in get_user_groups_detailed(token=token)]
+            foundGroup = False  
             for group in groups:
                 if event_code in [x.event_code for x in group.events]:
                     data = getGroupCalculatedData(event_code, group.group_id)
                     if data != None:
                         foundGroup = True
-                    break
+                        break
             if not foundGroup:
                 data = getEventCalculatedData(event_code)
         else:
             data = getEventCalculatedData(event_code)
-    i = 0
-    for doc in data["data"]:
-        i += 1
-        if not i == 1:
-            if doc["key"] == team:
-                foundTeam = True
-                break
-    if not foundTeam:
-        raise HTTPException(400, "No team key '"+team +
-                            "' in "+event_code)
-    return doc
 
+    # --- ADD THIS CHECK HERE ---
+    if data is None or "data" not in data:
+        raise HTTPException(404, f"No data found for event {event_code}")
+    # ---------------------------
 
-@app.get("/{year}/{event}/{team}/matches", tags=["stats"])
-@cacheValue()
-def get_Team_Event_Matches(year: int, event: str, team: str):
-    cursor = TBACollection.find({"event_key": str(
-        year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
-    data = list(cursor)
-    cursor = TBACollection.find({"event_key": str(
-        year) + event, "alliances.red.team_keys": {'$elemMatch': {'$eq': team}}})
-    data.extend(list(cursor))
-    for doc in data:
-        doc["_id"] = str(doc["_id"])
-    return data
+    for doc in data["data"][1:]:   # skip first metadata object
+        if doc.get("key") == team:
+            return doc
 
-
+    raise HTTPException(404, f"No team key '{team}' in {event_code}")
+        
 @app.get("/{year}/{event}/stats", tags=["stats"])
 def get_Event_Stats(year: int, event: str, token: str = Header(None)):
     event_code = str(year)+event
@@ -336,6 +338,34 @@ def get_Event_Stats(year: int, event: str, token: str = Header(None)):
         data["data"][i+1] = team
     data.pop("_id")
     return data
+
+@app.get("/{year}/{event}/{team}/matches", tags=["stats"])
+@cacheValue()
+def get_Team_Event_Matches(year: int, event: str, team: str):
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
+    data = list(cursor)
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.red.team_keys": {'$elemMatch': {'$eq': team}}})
+    data.extend(list(cursor))
+    for doc in data:
+        doc["_id"] = str(doc["_id"])
+    return data
+
+
+@app.get("/{year}/{event}/{team}/matches", tags=["stats"])
+@cacheValue()
+def get_Team_Event_Matches(year: int, event: str, team: str):
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.blue.team_keys": {'$elemMatch': {'$eq': team}}})
+    data = list(cursor)
+    cursor = TBACollection.find({"event_key": str(
+        year) + event, "alliances.red.team_keys": {'$elemMatch': {'$eq': team}}})
+    data.extend(list(cursor))
+    for doc in data:
+        doc["_id"] = str(doc["_id"])
+    return data
+
 
 
 @app.get("/events/{year}", tags=["miscellaneous"])
@@ -478,54 +508,48 @@ def get_Stat_Descriptions():
     return stat_description
 
 
-@app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"], response_model=PitScouting2025)
-def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_token_active)):
+@app.get(
+    "/{year}/{event}/{team}/PitScouting",
+    tags=["scouting"],
+    response_model=PitScouting2026
+)
+def get_pit_scouting_data(
+    year: int,
+    event: str,
+    team: str,
+    token=Depends(check_token_active)
+):
     user_info = get_user_info(token=token)
-    event_code = str(year) + event
-    groups = [Group(**group)
-              for group in get_user_groups_detailed(token=token)]
-    if len(groups) == 0:
-        try:
-            data = PitScouting2025(**PitScoutingCollection.find_one(
-                {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": user_info['sub']}))
-            return data
-        except Exception as e:
-            raise HTTPException(404, str(e))
-    group = groups[0]
-    members = fetch_group_members(group.group_id)
-    allianceMembers = []
-    for groupEvent in group.events:
-        if groupEvent.event_code == event_code:
-            for alliance in groupEvent.alliance_groups:
-                allianceMembers.extend(fetch_group_members(alliance.group_id))
-    member_ids = [member['id'] for member in members]
-    groupPitEntries = [PitScouting2025(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": member_ids}})]
-    alliancePitEntries = [PitScouting2025(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": [member['id'] for member in allianceMembers]}})]
-    if len(groupPitEntries) == 0 and len(alliancePitEntries) == 0:
-        raise HTTPException(404, f"No entries for {team} at {event} in {year}")
-    if len(groupPitEntries) != 0:
-        latestEntry = groupPitEntries[0]
-        alliance = False
-    else:
-        latestEntry = alliancePitEntries[0]
-        alliance = True
-    for entry in groupPitEntries:
-        if entry.time > latestEntry.time:
-            alliance = False
-            latestEntry = entry
-    for entry in alliancePitEntries:
-        if entry.time > latestEntry.time:
-            alliance = True
-            latestEntry = entry
-    if alliance:
-        retVal = latestEntry.dict(exclude={'scout_info'})
-        retVal['scout_info'] = latestEntry.scout_info.dict(
-            exclude={'first_name', 'username'})
-    else:
-        retVal = latestEntry.dict()
-    return retVal
+    event_code = f"{year}{event}"
+
+    data = PitScoutingCollection.find_one({
+    "event_code": event_code,
+    "team_number": int(team[3:])
+})
+
+    if not data:
+        # Return an empty PitScouting2026 with default PitData2026
+        empty_data = PitScouting2026()  # all defaults set inside model
+        return PitScouting2026(
+            scout_info=scout_info_from_token(token),
+            team_number=int(team[3:]),
+            time=0,
+            event_code=event_code,
+            data=PitData2026(),
+            user_id="",
+            auto={
+                "starting_position_meters_from_hub_center": 0.0,
+                "field_side": [],
+                "preload": False,
+                "both_sides": False,
+                "contacts_robot": False,
+                "auto_pieces": 0,
+                "climb": False,
+                "steps": [],
+            }  # or an Auto2026 object with defaults if needed
+        )
+
+    return PitScouting2026(**data)
 
 
 @app.get("/{year}/{event}/PitScoutingStatus", tags=["scouting"])
@@ -540,265 +564,750 @@ def get_pit_scouting_status(year: int, event: str, token: str = Depends(check_to
     data.pop("_id")
     return data
 
-
 @app.post("/PitScouting/", tags=["scouting"])
-def post_pit_scouting_data(data: PitScouting2025, token: str = Depends(check_token_active)):
-    data.time = datetime.utcnow().timestamp()
+def post_pit_scouting_data(
+    data: PitScouting2026,
+    token: str = Depends(check_token_active)
+):
+    # ---- Server-controlled fields ----
+    data.time = int(datetime.utcnow().timestamp())
     data.scout_info = scout_info_from_token(token)
-    data.data.favorite_color = profanity.censor(data.data.favorite_color)
+
+    # ---- Sanitize user-entered strings ----
+    data.data.favorite_color = profanity.censor(
+        data.data.favorite_color
+    )
+
+    # ---- Validate event + team ----
     try:
         teams = getEventTeams(data.event_code)
-    except:
-        raise HTTPException(404, 'Event does not exist')
-    teams = [team[3:] for team in teams]
-    team = str(data.team_number)
-    if not teams.__contains__(team):
-        raise HTTPException(400, "No team key '"+str(data.team_number) +
-                            "' in "+data.event_code)
-    try:
-        PitScoutingCollection.insert_one(data.dict())
-    except Exception as e:
-        PitScoutingCollection.find_one_and_replace(
-            {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id}, data.dict())
-    groups = [Group(**group)
-              for group in get_user_groups_detailed(token=token)]
-    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
-        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
-    for group in groupsNeedingUpdate:
+    except Exception:
+        raise HTTPException(404, "Event does not exist")
+
+    teams = [team[3:] for team in teams]  # strip 'frc'
+    team = str(data.team_number) # Temporary hardcoded team number for testing; replace with data.team_number in production
+
+    if team not in teams:
+        raise HTTPException(
+            400,
+            f"No team key '{data.team_number}' in {data.event_code}"
+        )
+
+    # ---- Debug: Print what we're trying to insert ----
+    print(f"Attempting to insert/update pit scouting data:")
+    print(f"Event: {data.event_code}")
+    print(f"Team: {data.team_number}")
+    print(f"User ID: {data.scout_info.user_id}")
+    
+    # Convert to dict for MongoDB
+    data_dict = data.dict()
+    print(f"Data to insert: {data_dict}")
+
+    # ---- Check if entry already exists ----
+    existing_entry = PitScoutingCollection.find_one({
+        "event_code": data.event_code,
+        "team_number": data.team_number,
+        "scout_info.user_id": data.scout_info.user_id
+    })
+    
+    if existing_entry:
+        print(f"Entry exists, updating...")
+        # Update existing entry
+        result = PitScoutingCollection.update_one(
+            {
+                "event_code": data.event_code,
+                "team_number": data.team_number,
+                "scout_info.user_id": data.scout_info.user_id
+            },
+            {"$set": data_dict}
+        )
+        print(f"Update result: matched={result.matched_count}, modified={result.modified_count}")
+    else:
+        print(f"No existing entry, inserting new...")
+        # Insert new entry
         try:
-            updateGroupStatus(group, data.event_code)
-            updateGroupGridPitData(group, data.event_code)
-        except:
-            pass
-    return {"message": "added it to the DB"}
+            result = PitScoutingCollection.insert_one(data_dict)
+            print(f"Insert result: inserted_id={result.inserted_id}")
+        except pymongo.errors.DuplicateKeyError as e:
+            print(f"Duplicate key error: {e}")
+            # Try to update if duplicate (race condition)
+            result = PitScoutingCollection.update_one(
+                {
+                    "event_code": data.event_code,
+                    "team_number": data.team_number,
+                    "scout_info.user_id": data.scout_info.user_id
+                },
+                {"$set": data_dict},
+                upsert=True
+            )
+            print(f"Upsert after duplicate: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")
+
+    # ---- Verify the data was saved ----
+    saved_data = PitScoutingCollection.find_one({
+        "event_code": data.event_code,
+        "team_number": data.team_number,
+        "scout_info.user_id": data.scout_info.user_id
+    })
+    
+    if saved_data:
+        print(f"✅ Data successfully saved: {saved_data.get('_id')}")
+    else:
+        print(f"❌ Data NOT saved - check MongoDB error logs")
+        raise HTTPException(500, "Failed to save data to database")
+
+    # ---- Get user's groups ----
+    groups = [
+        Group(**group)
+        for group in get_user_groups_detailed(token=token)
+    ]
+    
+    print(f"User belongs to {len(groups)} groups")
+
+    # ---- Update groups ----
+    for group in groups:
+        print(f"Processing group: {group.name}")
+        try:
+            # Check if this group is tracking this event
+            for event in group.events:
+                if event.event_code == data.event_code:
+                    print(f"  Updating status for event: {event.event_code}")
+                    updateGroupStatus(group, data.event_code)
+                    updateGroupGridPitData(group, data.event_code)
+                    break
+            else:
+                print(f"  Group {group.name} is not tracking event {data.event_code}")
+        except Exception as e:
+            print(f"  Error updating group {group.name}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            continue
+
+    return {"message": "Successfully saved pit scouting data"}
 
 
-def getStatus(data: PitScouting2025, originalStatus: dict):
+
+
+
+
+def getStatus(data: PitScouting2026, originalStatus: dict):
     status = "Incomplete"
     found = False
-    if data.data.drive_train != "":
-        if data.data.drive_train != "":
-            status = "Done"
-    for entry in originalStatus["data"]:
-        if entry["key"] == str(data.team_number):
+
+    # ---- Determine pit completion ----
+    if data.data.drive_train:
+        status = "Done"
+
+    # ---- Update team entry ----
+    for entry in originalStatus.get("data", []):
+        if entry.get("key") == str(data.team_number):
             found = True
             entry["pit_status"] = status
-    if (not found):
+            break
+
+    if not found:
         raise HTTPException(400, "No Such Team")
-    else:
-        return originalStatus
+
+    return originalStatus
+
+
+def updateGroupData(group: Group, event_code: str, event_type: int):
+
+    # ---------------------------------
+    # Load TBA Matches (2026)
+    # ---------------------------------
+    TBAData = [
+        TBAMatch2026(**x)
+        for x in TBACollection.find({'event_key': event_code})
+    ]
+
+    for event in group.events:
+
+        if event.event_code != event_code:
+            continue
+
+        # ---------------------------------
+        # Collect Group Members
+        # ---------------------------------
+        members = fetch_group_members(group.group_id)
+        member_ids = [member['id'] for member in members]
+
+        alliance_members = []
+        for groupEvent in group.events:
+            if groupEvent.event_code == event_code:
+                for alliance in groupEvent.alliance_groups:
+                    alliance_members.extend(
+                        fetch_group_members(alliance.group_id)
+                    )
+
+        alliance_member_ids = [m['id'] for m in alliance_members]
+
+        # ---------------------------------
+        # Load Scouting Entries (2026)
+        # ---------------------------------
+        member_entries = [
+            MatchScouting2026(**entry)
+            for entry in MatchScoutingCollection.find({
+                'event_code': event_code,
+                'scout_info.user_id': {'$in': member_ids}
+            })
+        ]
+
+        alliance_entries = [
+            MatchScouting2026(**entry)
+            for entry in MatchScoutingCollection.find({
+                'event_code': event_code,
+                'scout_info.user_id': {'$in': alliance_member_ids}
+            })
+        ]
+
+        combined_entries = member_entries + alliance_entries
+
+        # ---------------------------------
+        # Analyze Data
+        # ---------------------------------
+        try:
+            calculatedData, ratings = analyzeData(
+                TBAData,
+                combined_entries
+            )
+
+            data = calculatedData.to_dict("list")
+            data = convertData(data, YEAR, event_code)
+
+        except Exception as e:
+            logging.error(e)
+
+            ratings = {"scouts": [], "trustRatings": []}
+
+            keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
+            keyList = [keyStr + "index"]
+
+            etagData = ETagCollection.find_one({"key": event_code})
+            teams = etagData["teams"] if etagData else []
+
+            for team in teams:
+                keyList.append(keyStr + team[3:])
+
+            retval0 = {"data": {"keys": keyList}}
+            data = [retval0]
+
+            # ---- 2026 Fuel fallback structure ----
+            data.extend([
+                {
+                    "historical": False,
+                    "key": team,
+                    "rank": 0,
+                    "team_number": team[3:],
+                    "match_count": 0,
+                    "OPR": 0,
+                    "auto_points": 0,
+                    "teleop_points": 0,
+                    "totalCount": 0,
+                    "foul_points": 0,
+                    "simulated_rp": 0,
+                    "simulated_rank": 0
+                }
+                for team in teams
+            ])
+
+        # ---------------------------------
+        # Predictions
+        # ---------------------------------
+        try:
+            data, predictions = updatePredictions(
+                TBAData,
+                data,
+                eventType=event_type
+            )
+
+            GroupPredictionCollection.update_one(
+                {
+                    "event_code": event_code,
+                    "group_id": group.group_id
+                },
+                {
+                    "$set": {
+                        "event_code": event_code,
+                        "group_id": group.group_id,
+                        "data": predictions
+                    }
+                },
+                upsert=True
+            )
+
+        except Exception as e:
+            logging.error(e)
+
+        # ---------------------------------
+        # Metadata
+        # ---------------------------------
+        metadata = {
+            "last_modified": datetime.utcnow().timestamp(),
+            "etag": None,
+            "tba": False
+        }
+
+        # ---------------------------------
+        # Scout Ratings
+        # ---------------------------------
+        try:
+            ratings = {
+                "scouts": [
+                    scout_info_from_id(scout_id).dict()
+                    for scout_id in ratings["scouts"]
+                ],
+                "trustRatings": ratings["trustRatings"],
+                "entries": [],
+                "contribution": []
+            }
+
+            ratings["entries"] = [0] * len(ratings["scouts"])
+            ratings["contribution"] = [0] * len(ratings["scouts"])
+
+            for idx, scout in enumerate(ratings["scouts"]):
+                for entry in combined_entries:
+                    if entry.scout_info.user_id == scout['user_id']:
+                        ratings["entries"][idx] += 1
+
+                ratings["contribution"][idx] = (
+                    ratings["trustRatings"][idx] ** 2
+                ) * ratings["entries"][idx]
+
+        except Exception as e:
+            logging.error(e)
+
+        # ---------------------------------
+        # Save Group Data
+        # ---------------------------------
+        try:
+            GroupDataCollection.update_one(
+                {
+                    "event_code": event_code,
+                    "group_id": group.group_id
+                },
+                {
+                    "$set": {
+                        "data": data,
+                        "metadata": metadata,
+                        "scout_ratings": ratings
+                    }
+                },
+                upsert=True
+            )
+        except Exception as e:
+            logging.error(e)
+
+        break
 
 
 def updateGroupStatus(group: Group, event_code: str):
-    statuses = list[PitScoutingStatus]()
+    statuses: list[PitScoutingStatus] = []
+
+    # ---- Initialize all teams ----
     teams = getEventTeams(event_code)
     for team in teams:
-        statuses.append(PitScoutingStatus(key=team[3:], pit_status="Not Started", picture_status="Not Started",
-                                          follow_up_status="Not Started"))
+        statuses.append(
+            PitScoutingStatus(
+                key=team[3:],
+                pit_status="Not Started",
+                picture_status="Not Started",
+                follow_up_status="Not Started",
+            )
+        )
+
+    # ---- Gather group + alliance members ----
     members = fetch_group_members(group.group_id)
     for event in group.events:
         if event.event_code == event_code:
             for alliance in event.alliance_groups:
                 members.extend(fetch_group_members(alliance.group_id))
-    member_ids = [member['id'] for member in members]
-    pitScoutingEntries = [PitScouting2025(**entry) for entry in PitScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
-    followUpScoutingEntries = [DeathScoutingForm(**entry)
-                               for entry in FollowUpCollection.find({'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
-    pictures = [PictureData(**entry) for entry in PictureCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
-    matchScoutingEntries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
+
+    member_ids = [member["id"] for member in members]
+
+    # ---- Load scouting data (2026) ----
+    pitScoutingEntries = [
+        PitScouting2026(**entry)
+        for entry in PitScoutingCollection.find(
+            {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+        )
+    ]
+
+    # FIXED: Handle float time values for MatchScouting2026
+    matchScoutingEntries = []
+    for entry in MatchScoutingCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            matchScoutingEntries.append(MatchScouting2026(**entry))
+        except Exception as e:
+            print(f"Error parsing match scouting entry: {e}")
+            continue
+
+    # FIXED: Handle float time values for DeathScoutingForm
+    followUpScoutingEntries = []
+    for entry in FollowUpCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            followUpScoutingEntries.append(DeathScoutingForm(**entry))
+        except Exception as e:
+            print(f"Error parsing follow-up entry: {e}")
+            continue
+
+    # FIXED: Handle float time values for PictureData
+    pictures = []
+    for entry in PictureCollection.find(
+        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+    ):
+        # Convert float time to int if needed
+        if "time" in entry and isinstance(entry["time"], float):
+            entry["time"] = int(entry["time"])
+        try:
+            pictures.append(PictureData(**entry))
+        except Exception as e:
+            print(f"Error parsing picture entry: {e}")
+            continue
+
+    # ---- Compute status per team ----
     for status in statuses:
-        teamPitScoutingEntries = [
-            x for x in pitScoutingEntries if x.team_number == int(status.key)]
-        if len(teamPitScoutingEntries) > 0:
-            latestEntry = teamPitScoutingEntries[0]
-            for entry in teamPitScoutingEntries:
-                if entry.time > latestEntry.time:
-                    latestEntry = entry
-            if latestEntry.data.drive_train != "" and latestEntry.data.favorite_color != "":
+        team_number = int(status.key)
+
+        # ===== PIT SCOUTING =====
+        teamPitEntries = [
+            x for x in pitScoutingEntries if x.team_number == team_number
+        ]
+
+        if teamPitEntries:
+            latestEntry = max(teamPitEntries, key=lambda x: x.time)
+
+            if (
+                latestEntry.data.drive_train
+                and latestEntry.data.favorite_color
+            ):
                 status.pit_status = "Done"
             else:
                 status.pit_status = "Incomplete"
         else:
             status.pit_status = "Not Started"
-        teamFollowUpScoutingEntries = [
-            x for x in followUpScoutingEntries if x.team_key == f'frc{status.key}']
-        if len(teamFollowUpScoutingEntries) > 0:
+
+        # ===== FOLLOW-UP SCOUTING =====
+        teamFollowUps = [
+            x for x in followUpScoutingEntries
+            if x.team_key == f"frc{status.key}"
+        ]
+
+        deathMatches = [
+            x for x in matchScoutingEntries
+            if x.data.miscellaneous.died and x.team_number == team_number
+        ]
+
+        if teamFollowUps:
+            latestFollowUp = max(teamFollowUps, key=lambda x: x.time)
             status.follow_up_status = "Done"
-            latestEntry = teamFollowUpScoutingEntries[0]
-            for entry in teamFollowUpScoutingEntries:
-                if entry.time > latestEntry.time:
-                    latestEntry = entry
-            deathMatches = [
-                x for x in matchScoutingEntries if x.data.miscellaneous.died and int(status.key) == x.team_number]
+
             for match in deathMatches:
-                if not match.match_number in [death.match_number for death in latestEntry.deaths if death.death_reason != '']:
+                if match.match_number not in [
+                    death.match_number
+                    for death in latestFollowUp.deaths
+                    if death.death_reason != ""
+                ]:
                     status.follow_up_status = "Incomplete"
                     break
         else:
-            deathMatches = [
-                x for x in matchScoutingEntries if x.data.miscellaneous.died and int(status.key) == x.team_number]
-            if len(deathMatches) == 0:
+            if not deathMatches:
                 status.follow_up_status = "Done"
             else:
                 status.follow_up_status = "Not Started"
+
+        # ===== PICTURES =====
         teamPictures = [
-            x for x in pictures if x.team_number == int(status.key)]
-        if len(teamPictures) > 0:
-            full_robot = False
-            manipulator = False
-            wires = False
-            for picture in teamPictures:
-                if picture.image_type == "full_robot":
-                    full_robot = True
-                elif picture.image_type == "manipulator":
-                    manipulator = True
-                elif picture.image_type == "wires":
-                    wires = True
-            if full_robot and manipulator and wires:
+            x for x in pictures if x.team_number == team_number
+        ]
+
+        if teamPictures:
+            image_types = {pic.image_type for pic in teamPictures}
+
+            if {"full_robot", "shooter", "intake", "feeder", "wires"} <= image_types:
                 status.picture_status = "Done"
             else:
                 status.picture_status = "Incomplete"
         else:
             status.picture_status = "Not Started"
-    try:
-        GroupPitStatusCollection.insert_one(
-            {"event_code": event_code, "group_id": group.group_id, "data": [x.dict() for x in statuses]})
-    except:
-        GroupPitStatusCollection.update_one(
-            {"event_code": event_code, "group_id": group.group_id}, {"$set": {"data": [x.dict() for x in statuses]}})
+
+    # ---- Store group status ----
+    GroupPitStatusCollection.update_one(
+        {"event_code": event_code, "group_id": group.group_id},
+        {"$set": {"data": [x.dict() for x in statuses]}},
+        upsert=True
+    )
+
 
 
 def updateGroupGridPitData(group: Group, event_code: str):
     data = GroupDataCollection.find_one(
-        {'group_id': group.group_id, 'event_code': event_code})
+        {"group_id": group.group_id, "event_code": event_code}
+    )
+
+    if not data or "data" not in data:
+        return
+
+    # ---- Gather group + alliance members ----
     members = fetch_group_members(group.group_id)
     for event in group.events:
         if event.event_code == event_code:
             for alliance in event.alliance_groups:
                 members.extend(fetch_group_members(alliance.group_id))
-    member_ids = [member['id'] for member in members]
-    pitEntries = [PitScouting2025(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}})]
+
+    member_ids = [member["id"] for member in members]
+
+    # ---- Load pit scouting (2026) ----
+    pitEntries = [
+        PitScouting2026(**entry)
+        for entry in PitScoutingCollection.find(
+            {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
+        )
+    ]
+
+    # ---- Update grid rows per team ----
     for doc in data["data"]:
+        if "key" not in doc:
+            continue
+
+        key = doc["key"]
+
+        if isinstance(key, str) and key.startswith("frc"):
+            team_number = int(key[3:])
+        else:
+            team_number = int(key)
+
         teamPitEntries = [
-            x for x in pitEntries if x.team_number == int(doc['key'] if doc.__contains__('key') else -1)]
-        if len(teamPitEntries) == 0:
-            break
-        latestEntry = teamPitEntries[0]
-        for entry in teamPitEntries:
-            if entry.time > latestEntry.time:
-                latestEntry = entry
+            x for x in pitEntries if x.team_number == team_number
+        ]
+
+        if not teamPitEntries:
+            continue
+
+        latestEntry = max(teamPitEntries, key=lambda x: x.time)
         dictEntry = latestEntry.data.dict()
-        for key in dictEntry:
-            if not key == "_id":
-                doc[key] = dictEntry[key]
-        break
-    GroupDataCollection.update_one({'group_id': group.group_id, 'event_code': event_code}, {
-                                   "$set": {"data": data["data"]}})
+
+        for key, value in dictEntry.items():
+            if key != "_id":
+                doc[key] = value
+
+    # ---- Persist updates ----
+    GroupDataCollection.update_one(
+        {"group_id": group.group_id, "event_code": event_code},
+        {"$set": {"data": data["data"]}}
+    )
+
 
 
 numRuns = 0
 
 
+
+
+
 @app.post("/MatchScouting/", tags=["scouting"])
-def post_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
+def post_match_scouting(
+    data: MatchScouting2026,
+    token: str = Depends(check_token_active)
+):
+    # ---- Server-controlled fields ----
     data.scout_info = scout_info_from_token(token)
-    data.time = datetime.utcnow().timestamp()
+    data.time = int(datetime.utcnow().timestamp())
+
     eventCode = data.event_code
     matchNumber = data.match_number
     teamNumber = data.team_number
+
+    # ---- Fetch match from TBA cache ----
     match = TBACollection.find_one(
-        {"key": f"{eventCode}_qm{str(matchNumber)}"})
+        {"key": f"{eventCode}_qm{matchNumber}"}
+    )
+
+    # ---- Sanitize comments ----
     data.data.miscellaneous.comments = profanity.censor(
-        data.data.miscellaneous.comments)
+        data.data.miscellaneous.comments
+    )
+
     if match is None:
         raise HTTPException(400, "Check Your Match Number")
+
+    # ---- Validate team is in match ----
     exists = False
-    for i in range(2):
-        if i == 0:
-            allianceStr = "blue"
-        else:
-            allianceStr = "red"
-        if (match["alliances"][allianceStr]["team_keys"].__contains__("frc"+str(teamNumber))):
+    for allianceStr in ("blue", "red"):
+        if f"frc{teamNumber}" in match["alliances"][allianceStr]["team_keys"]:
             exists = True
+            break
+
     if not exists:
         eventTeams = getEventTeams(eventCode)
         if str(teamNumber) in [team[3:] for team in eventTeams]:
             raise HTTPException(400, "Check Your Match And Team Number")
         else:
             raise HTTPException(400, "Check Your Team Number")
-    try:
-        MatchScoutingCollection.insert_one(data.dict())
-    except pymongo.errors.DuplicateKeyError as e:
-        raise HTTPException(status_code=307, detail="Duplicate Entry")
-    groups = [Group(**group)
-              for group in get_user_groups_detailed(token=token)]
-    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
-        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
-    if (data.data.miscellaneous.died):
-        for group in groupsNeedingUpdate:
-            try:
-                updateGroupStatus(group, data.event_code)
-            except:
-                pass
-    for group in groupsNeedingUpdate:
-        primeGroupForAnalysis(group=group, event_code=data.event_code)
-    return data.dict()
 
-
-@app.post("/MatchScouting/Offline/", tags=["scouting"])
-def post_offline_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
-    user_info = get_user_info(token)
-    # Check if the user is part of the same group
-    user_groups = [group['id'] for group in get_user_groups(token)]
-    scout_groups = [group['id']
-                    for group in find_user_groups(user_id=data.scout_info.user_id)]
-    if not any(group in user_groups for group in scout_groups):
-        raise HTTPException(
-            403, "You can only submit match scouting data for members of your group")
-    # Perform the same checks as in post_match_scouting
-    eventCode = data.event_code
-    matchNumber = data.match_number
-    teamNumber = data.team_number
-    match = TBACollection.find_one(
-        {"key": f"{eventCode}_qm{str(matchNumber)}"})
-    data.data.miscellaneous.comments = profanity.censor(
-        data.data.miscellaneous.comments)
-    if match is None:
-        raise HTTPException(400, "Check Your Match Number")
-    exists = False
-    for i in range(2):
-        allianceStr = "blue" if i == 0 else "red"
-        if match["alliances"][allianceStr]["team_keys"].__contains__("frc" + str(teamNumber)):
-            exists = True
-    if not exists:
-        eventTeams = getEventTeams(eventCode)
-        if str(teamNumber) in [team[3:] for team in eventTeams]:
-            raise HTTPException(400, "Check Your Match And Team Number")
-        else:
-            raise HTTPException(400, "Check Your Team Number")
-    # Insert the match scouting data into the database
+    # ---- Insert match scouting ----
     try:
         MatchScoutingCollection.insert_one(data.dict())
     except pymongo.errors.DuplicateKeyError:
-        MatchScoutingCollection.find_one_and_replace(
-            {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id, "match_number": data.match_number}, data.dict())
-    # Update group data and status
-    groups = [Group(**group)
-              for group in get_user_groups_detailed(token=token)]
-    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
-        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
+        raise HTTPException(status_code=307, detail="Duplicate Entry")
+
+    # ---- Determine affected groups ----
+    groups = [
+        Group(**group)
+        for group in get_user_groups_detailed(token=token)
+    ]
+
+    groupsNeedingUpdate = (
+        [
+            Group(**group)
+            for group in GroupCollection.find({
+                "events": {
+                    "$elemMatch": {
+                        "event_code": data.event_code,
+                        "alliance_groups.group_id": {
+                            "$in": [g.group_id for g in groups]
+                        }
+                    }
+                }
+            })
+        ]
+        + groups
+    )
+
+    # ---- Update group pit/follow-up status if robot died ----
     if data.data.miscellaneous.died:
         for group in groupsNeedingUpdate:
             try:
                 updateGroupStatus(group, data.event_code)
-            except:
+            except Exception:
                 pass
+
+    # ---- Re-run analysis for all affected groups ----
     for group in groupsNeedingUpdate:
-        primeGroupForAnalysis(group=group, event_code=data.event_code)
+        primeGroupForAnalysis(
+            group=group,
+            event_code=data.event_code
+        )
+
+    return data.dict()
+
+
+@app.post("/MatchScouting/Offline/", tags=["scouting"])
+def post_offline_match_scouting(
+    data: MatchScouting2026,
+    token: str = Depends(check_token_active)
+):
+    # ---- Auth / permission check ----
+    user_info = get_user_info(token)
+
+    user_groups = [group["id"] for group in get_user_groups(token)]
+    scout_groups = [
+        group["id"]
+        for group in find_user_groups(user_id=data.scout_info.user_id)
+    ]
+
+    if not any(group in user_groups for group in scout_groups):
+        raise HTTPException(
+            403,
+            "You can only submit match scouting data for members of your group"
+        )
+
+    # ---- Server-controlled fields ----
+    data.time = int(datetime.utcnow().timestamp())
+
+    eventCode = data.event_code
+    matchNumber = data.match_number
+    teamNumber = data.team_number
+
+    # ---- Fetch match from TBA cache ----
+    match = TBACollection.find_one(
+        {"key": f"{eventCode}_qm{matchNumber}"}
+    )
+
+    # ---- Sanitize comments ----
+    data.data.miscellaneous.comments = profanity.censor(
+        data.data.miscellaneous.comments
+    )
+
+    if match is None:
+        raise HTTPException(400, "Check Your Match Number")
+
+    # ---- Validate team is in match ----
+    exists = False
+    for allianceStr in ("blue", "red"):
+        if f"frc{teamNumber}" in match["alliances"][allianceStr]["team_keys"]:
+            exists = True
+            break
+
+    if not exists:
+        eventTeams = getEventTeams(eventCode)
+        if str(teamNumber) in [team[3:] for team in eventTeams]:
+            raise HTTPException(400, "Check Your Match And Team Number")
+        else:
+            raise HTTPException(400, "Check Your Team Number")
+
+    # ---- Insert or replace match scouting ----
+    try:
+        MatchScoutingCollection.insert_one(data.dict())
+    except pymongo.errors.DuplicateKeyError:
+        MatchScoutingCollection.find_one_and_replace(
+            {
+                "event_code": data.event_code,
+                "match_number": data.match_number,
+                "team_number": data.team_number,
+                "scout_info.user_id": data.scout_info.user_id,
+            },
+            data.dict(),
+            upsert=True
+        )
+
+    # ---- Determine affected groups ----
+    groups = [
+        Group(**group)
+        for group in get_user_groups_detailed(token=token)
+    ]
+
+    groupsNeedingUpdate = (
+        [
+            Group(**group)
+            for group in GroupCollection.find({
+                "events": {
+                    "$elemMatch": {
+                        "event_code": data.event_code,
+                        "alliance_groups.group_id": {
+                            "$in": [g.group_id for g in groups]
+                        }
+                    }
+                }
+            })
+        ]
+        + groups
+    )
+
+    # ---- Update group status if robot died ----
+    if data.data.miscellaneous.died:
+        for group in groupsNeedingUpdate:
+            try:
+                updateGroupStatus(group, data.event_code)
+            except Exception:
+                pass
+
+    # ---- Re-run analysis ----
+    for group in groupsNeedingUpdate:
+        primeGroupForAnalysis(
+            group=group,
+            event_code=data.event_code
+        )
+
     return data.dict()
 
 
@@ -860,9 +1369,9 @@ def request_alliance(group_name: str | None = None, token: str = Depends(check_t
         if _event.event_code == event:
             m_event = _event
             break
-    if m_event is None:
-        raise HTTPException(
-            400, f"Your Group is not part of event '{event}'")
+    # if m_event is None:
+    #     raise HTTPException(
+    #         400, f"Your Group is not part of event '{event}'")
     try:
         m_other_group = Group(
             **GroupCollection.find_one({'name': other_group}))
@@ -1124,31 +1633,50 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
 
 @app.post("/Group/{group_name}/Event/{event}/Add", tags=["groups"])
 def add_event_to_group(group_name: str, event: str, token: str = Depends(check_token_active)):
+    # ---- Fetch the group from DB ----
     try:
         DB_Entry = Group(**GroupCollection.find_one({"name": group_name}))
     except:
+        raise HTTPException(404, "This group does not exist")
+
+    # ---- Check if event already exists in group ----
+    if event in [e.event_code for e in DB_Entry.events]:
         raise HTTPException(
-            404, "This group does not exist")
-    if event in [event.event_code for event in DB_Entry.events]:
-        raise HTTPException(
-            400, f"This group already has an event with the code '{event}'")
+            400, f"This group already has an event with the code '{event}'"
+        )
+
+    # ---- Check admin rights ----
     kc_groups = get_user_groups(token=token)
-    admin = False
-    for kc_group in kc_groups:
-        if kc_group["id"] == DB_Entry.admin_group_id:
-            admin = True
-            break
+    admin = any(kc_group["id"] == DB_Entry.admin_group_id for kc_group in kc_groups)
     if not admin:
         raise HTTPException(
-            401, "You must be an admin of this group to add events")
-    new_event = GroupEvent(event_code=event, settings=GroupEventSettings(
-        crowd_sourced_match_scouting=False, crowd_sourced_pit_scouting=False), up_to_date=False, alliance_groups=[])
+            401, "You must be an admin of this group to add events"
+        )
+
+    # ---- Create new GroupEvent with empty pick_list ----
+    new_event = GroupEvent(
+        event_code=event,
+        settings=GroupEventSettings(
+            crowd_sourced_match_scouting=False,
+            crowd_sourced_pit_scouting=False
+        ),
+        up_to_date=False,
+        alliance_groups=[],
+        pick_list=PickList2026(picks=[], dnp=[])  # <-- empty picklist added
+    )
+
+    # ---- Append event and update DB ----
     DB_Entry.events.append(new_event)
     GroupCollection.find_one_and_update(
-        {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
+        {"name": group_name},
+        {'$set': {"events": [e.dict() for e in DB_Entry.events]}}
+    )
+
+    # ---- Update auxiliary group data ----
     updateGroupStatus(DB_Entry, event)
     updateGroupData(DB_Entry, event)
     updateGroupGridPitData(DB_Entry, event)
+
     return get_group(group_name=group_name, token=token)
 
 
@@ -1231,6 +1759,7 @@ def get_event_groups(year: int, event: str, token: str = Depends(check_token_act
     eventGroups = GroupCollection.find(
         {"events.event_code": eventCode})
     return [Group(**group).dict(exclude={"join_code", "settings", "events", "owner_group_id", "admin_group_id", "member_group_id", "group_id"}) for group in eventGroups]
+
 
 
 @app.get("/Group/{group_name}/Event/{event_code}/ScoutingReport", tags=["groups"])
@@ -1359,7 +1888,7 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
         group_name=group_name,
         user_id=user_info['sub'],
         username=user_info['preferred_username'],
-        request_time=datetime.now().timestamp(),
+        request_time=int(datetime.now().timestamp()),
         group_id=DBgroup.group_id,
         accepted=False,
     )
@@ -1733,10 +2262,10 @@ def delete_group(group_name: str, token: str = Depends(check_token_active)):
 
 
 @app.put("/MatchScouting/", tags=["scouting"])
-def update_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
+def update_match_scouting(data: MatchScouting2026, token: str = Depends(check_token_active)):
     data.scout_info = scout_info_from_token(token=token)
     oldEntry = MatchScoutingCollection.find_one(
-        {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id})
+        {'event_code': data.event_code, 'match_number': data.match_number, 'team_number': data.team_number, 'scout_info.user_id': data.scout_info.user_id,  "match_number": data.match_number})
     data.time = datetime.utcnow().timestamp()
     data.data.miscellaneous.comments = profanity.censor(
         data.data.miscellaneous.comments)
@@ -1765,7 +2294,14 @@ def update_match_scouting(data: MatchScouting2025, token: str = Depends(check_to
         else:
             raise HTTPException(400, "Check Your Team Number")
     MatchScoutingCollection.find_one_and_replace(
-        {"event_code": data.event_code, "team_number": data.team_number, "scout_info.user_id": data.scout_info.user_id}, data.dict())
+    {
+        "event_code": data.event_code,
+        "team_number": data.team_number,
+        "scout_info.user_id": data.scout_info.user_id,
+        "match_number": data.match_number
+    },
+    data.dict()
+)
     groups = [Group(**group)
               for group in get_user_groups_detailed(token=token)]
     groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
@@ -1995,9 +2531,9 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
                         alliance_members.extend(
                             fetch_group_members(alliance.group_id))
         alliance_member_ids = [member['id'] for member in alliance_members]
-        member_entries = [MatchScouting2025(
+        member_entries = [MatchScouting2026(
             **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
-        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+        alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
             {'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': alliance_member_ids}})]
         retval = []
         retval.extend([entry.dict() for entry in member_entries])
@@ -2008,7 +2544,7 @@ def get_scout_team_entries(team: str, event: str, year: int, token: str = Depend
             retval.append(entry_dict)
     else:
         user_id = get_user_info(token)['sub']
-        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+        retval = [MatchScouting2026(**entry).dict() for entry in MatchScoutingCollection.find(
             {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
@@ -2030,9 +2566,9 @@ def get_scout_event_entries(event: str, year: int, token: str = Depends(check_to
                         alliance_members.extend(
                             fetch_group_members(alliance.group_id))
         alliance_member_ids = [member['id'] for member in alliance_members]
-        member_entries = [MatchScouting2025(
+        member_entries = [MatchScouting2026(
             **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
-        alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
+        alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
             {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
         retval = []
         retval.extend([entry.dict() for entry in member_entries])
@@ -2043,7 +2579,7 @@ def get_scout_event_entries(event: str, year: int, token: str = Depends(check_to
             retval.append(entry_dict)
     else:
         user_id = get_user_info(token)['sub']
-        retval = [MatchScouting2025(**entry).dict() for entry in MatchScoutingCollection.find(
+        retval = [MatchScouting2026(**entry).dict() for entry in MatchScoutingCollection.find(
             {'event_code': event_code, 'scout_info.user_id': user_id})]
     return retval
 
@@ -2062,7 +2598,7 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
         for idx, death in enumerate(data.deaths):
             match_number = int(death.match_number)
             teamInMatch = False
-            matchScoutingEntries = [MatchScouting2025(
+            matchScoutingEntries = [MatchScouting2026(
                 **entry) for entry in get_scout_team_entries(team, event, year, token)]
             for entry in matchScoutingEntries:
                 if entry.match_number == match_number:
@@ -2134,7 +2670,7 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
                 alliance = True
                 latestEntry = entry
         formData = latestEntry
-        scoutEntries = [x for x in [MatchScouting2025(
+        scoutEntries = [x for x in [MatchScouting2026(
             **entry) for entry in get_scout_team_entries(team, event, year, token)]]
         deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
         for entry in deathEntries:
@@ -2152,14 +2688,14 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
                 exclude={'first_name', 'username'})
             return retVal
     else:
-        scoutEntries = [x for x in [MatchScouting2025(
+        scoutEntries = [x for x in [MatchScouting2026(
             **entry) for entry in get_scout_team_entries(team, event, year, token)]]
         deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
         if len(deathEntries) == 0:
             return DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
         else:
             formData = DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(
-                year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
+                year)+event, team_key=team, total=0, average=0, time=int(datetime.utcnow().timestamp()))
             notRecorded = True
             for entry in deathEntries:
                 for death in formData.deaths:
@@ -2245,7 +2781,7 @@ def get_team_global_rank(team: str) -> dict:
         raise HTTPException(404, "Team Not Found In Global Rankings")
     return returnData
 
-
+# 1 function not hardcoded
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
@@ -2264,7 +2800,7 @@ def convertData(calculatedData, year, event_code):
             if item["team_key"] == data["key"]:
                 data["rank"] = item["rank"]
                 break
-        idx = calculatedData["team_number"].index(f"{team}")
+        idx = calculatedData["team_number"].index(team)
         for key in calculatedData:
             data[key] = calculatedData[key][idx]
         retvallist.append(data)
@@ -2309,9 +2845,11 @@ def _getGroupMembers(group_id: str) -> tuple[list, list, list]:
     return owners, admins, members
 
 
+
+
 def updateData(event_code: str, event_type: int):
     # print(event_code)
-    TBAData = [TBAMatch2025(**match)
+    TBAData = [TBAMatch2026(**match)
                for match in TBACollection.find({'event_key': event_code})]
     ScoutingData = []
     scouts = []
@@ -2347,43 +2885,20 @@ def updateData(event_code: str, event_type: int):
                       "rank": 0,
                       "team_number": team[3:],
                       "match_count": 0,
-                      "OPR": 0,
-                      "endgame_points": 0,
-                      "teleop_points": 0,
-                      "auto_points": 0,
-                      "climbing_points": 0,
-                      "deep_climb_rate": 0,
-                      "shallow_climb_rate": 0,
-                      "coral_total": 0,
-                      "coral_points": 0,
-                      "algae_total": 0,
-                      "algae_points": 0,
-                      "total_pieces": 0,
-                      "auto_coral": 0,
-                      "auto_coral_points": 0,
-                      "teleop_coral": 0,
-                      "teleop_coral_points": 0,
-                      "l_1_total": 0,
-                      "l_2_total": 0,
-                      "l_3_total": 0,
-                      "l_4_total": 0,
-                      "auto_scoring_l_1": 0,
-                      "auto_scoring_l_2": 0,
-                      "auto_scoring_l_3": 0,
-                      "auto_scoring_l_4": 0,
-                      "teleop_scoring_l_1": 0,
-                      "teleop_scoring_l_2": 0,
-                      "teleop_scoring_l_3": 0,
-                      "teleop_scoring_l_4": 0,
-                      "net": 0,
-                      "processor": 0,
-                      "foul_points": 0,
-                      "mobility": 0,
-                      "death_rate": 0,
-                      "parking": 0,
-                      "coopertition": 0,
+                      "OPR": 0.0,
+                      "total_pass": 0.0,
+                      "auto_pass": 0.0,
+                      "teleop_pass": 0.0,
+                      "endgame_points": 0.0,
+                      "teleop_points": 0.0,
+                      "auto_points": 0.0,
+                      "climbing_points": 0.0,
+                      "death_rate": 0.0,
+                      "auto_fuel_cycles": 0.0,
+                      "teleop_fuel_cycles": 0.0,
+                      "foul_points": 0.0,
                       "simulated_rp": 0,
-                      "simulated_rank": 0
+                      "simulated_rank": 0,
                       }
                      for team in teams])
     try:
@@ -2439,139 +2954,9 @@ def updateData(event_code: str, event_type: int):
             pass
 
 
-def updateGroupData(group: Group, event_code: str, event_type: int):
-    TBAData = [TBAMatch2025(**x)
-               for x in TBACollection.find({'event_key': event_code})]
-    for event in group.events:
-        if event.event_code == event_code:
-            members = []
-            members.extend(fetch_group_members(group.group_id))
-            member_ids = [member['id'] for member in members]
-            alliance_members = []
-            for groupEvent in group.events:
-                if groupEvent.event_code == event_code:
-                    for alliance in groupEvent.alliance_groups:
-                        alliance_members.extend(
-                            fetch_group_members(alliance.group_id))
-            alliance_member_ids = [member['id'] for member in alliance_members]
-            member_entries = [MatchScouting2025(
-                **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
-            alliance_entries = [MatchScouting2025(**entry) for entry in MatchScoutingCollection.find(
-                {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
-            try:
-                calculatedData, ratings = analyzeData(
-                    TBAData, member_entries+alliance_entries)
-                print("analyzed")
-                data = calculatedData.to_dict("list")
-                data = convertData(data, YEAR, event_code)
-            except Exception as e:
-                logging.error(e)
-                ratings = {"scouts": [], "trustRatings": []}
-                keyStr = f"/year/{YEAR}/event/{event_code}/teams/"
-                keyList = [keyStr+"index"]
-                etagData = ETagCollection.find_one({"key": event_code})
-                # print(etagData)
-                teams = etagData["teams"]
-                for team in teams:
-                    keyList.append(keyStr+team[3:])
-                retval0 = {"data": {"keys": keyList}}
-                data = [retval0]
-                data.extend([{"historical": False,
-                              "key": team,
-                              "rank": 0,
-                              "team_number": team[3:],
-                              "match_count": 0,
-                              "OPR": 0,
-                              "endgame_points": 0,
-                              "teleop_points": 0,
-                              "auto_points": 0,
-                              "climbing_points": 0,
-                              "deep_climb_rate": 0,
-                              "shallow_climb_rate": 0,
-                              "coral_total": 0,
-                              "coral_points": 0,
-                              "algae_total": 0,
-                              "algae_points": 0,
-                              "total_pieces": 0,
-                              "auto_coral": 0,
-                              "auto_coral_points": 0,
-                              "teleop_coral": 0,
-                              "teleop_coral_points": 0,
-                              "l_1_total": 0,
-                              "l_2_total": 0,
-                              "l_3_total": 0,
-                              "l_4_total": 0,
-                              "auto_scoring_l_1": 0,
-                              "auto_scoring_l_2": 0,
-                              "auto_scoring_l_3": 0,
-                              "auto_scoring_l_4": 0,
-                              "teleop_scoring_l_1": 0,
-                              "teleop_scoring_l_2": 0,
-                              "teleop_scoring_l_3": 0,
-                              "teleop_scoring_l_4": 0,
-                              "net": 0,
-                              "processor": 0,
-                              "foul_points": 0,
-                              "mobility": 0,
-                              "death_rate": 0,
-                              "parking": 0,
-                              "coopertition": 0,
-                              "simulated_rp": 0,
-                              "simulated_rank": 0
-                              }
-                             for team in teams])
-            try:
-                (data, predictions) = updatePredictions(
-                    TBAData, data, eventType=event_type)
-                try:
-                    GroupPredictionCollection.insert_one(
-                        {"event_code": event_code, "group_id": group.group_id, "data": predictions})
-                except Exception as e:
-                    try:
-                        GroupPredictionCollection.find_one_and_replace({"event_code": event_code, "group_id": group.group_id}, {
-                            "event_code": event_code, "group_id": group.group_id, "data": predictions})
-                    except Exception as ex:
-                        print(ex)
-                        pass
-            except Exception as e:
-                logging.error(e)
-                pass
-            metadata = {"last_modified": datetime.utcnow().timestamp(),
-                        "etag": None, "tba": False}
-            try:
-                # print("manufacturing scout rankings")
-                ratings = {
-                    "scouts": [scout_info_from_id(scout_id).dict() for scout_id in ratings["scouts"]], "trustRatings": ratings["trustRatings"], "entries": [], "contribution": []}
-                # print(ratings)
-                ratings["entries"] = list(
-                    numpy.zeros(len(ratings["scouts"])))
-                ratings["contribution"] = list(
-                    numpy.zeros(len(ratings["scouts"])))
-                for idx, scout in enumerate(ratings["scouts"]):
-                    for entry in member_entries+alliance_entries:
-                        if entry.scout_info.user_id == scout['user_id']:
-                            ratings["entries"][idx] += 1
-                    ratings["contribution"][idx] = (
-                        ratings["trustRatings"][idx] ** 2)*ratings["entries"][idx]
-                # print("Made Ratings")
-            except Exception as e:
-                logging.error(e)
-            try:
-                # print("Inserting data")
-                GroupDataCollection.insert_one(
-                    {"event_code": event_code, "group_id": group.group_id, "data": data, "metadata": metadata, "scout_ratings": ratings})
-            except Exception as e:
-                # logging.error(e)
-                try:
-                    result = GroupDataCollection.find_one_and_replace(
-                        {"event_code": event_code, "group_id": group.group_id}, {"event_code": event_code, "group_id": group.group_id, "data": data, "metadata": metadata, "scout_ratings": ratings})
-                except Exception as ex:
-                    print(ex)
-                    pass
-            break
 
 
-def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: int):
+def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
     matchPredictions = []
     for match in TBAData:
         if match.score_breakdown is not None:
@@ -2581,42 +2966,30 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
                 "match_number": match.match_number,
                 "set_number": match.set_number,
                 "blue_teams": match.alliances['blue'].team_keys,
-                "blue_human_player": 0,
                 "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
                 "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
-                "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
-                "blue_coopertition": 0,
+                "blue_auto_fuel_cycles": 0,
+                "blue_teleop_fuel_cycles": 0,
+                "blue_auto_passing_cycles": 0,
+                "blue_teleop_passing_cycles": 0,
                 "blue_actual_score": match.score_breakdown["blue"].totalPoints,
-                "blue_coral_l_1": 0,
-                "blue_coral_l_2": 0,
-                "blue_coral_l_3": 0,
-                "blue_coral_l_4": 0,
-                "blue_processor": 0,
-                "blue_net": 0,
-                "blue_auto_coral": 0,
                 "red_teams": match.alliances['red'].team_keys,
-                "red_human_player": 0,
                 "red_dq_team_keys": match.alliances['red'].dq_team_keys,
                 "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
-                "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
                 "red_auto_points": 0,
                 "red_teleop_points": 0,
                 "red_endgame_points": 0,
-                "red_coopertition": 0,
-                "red_coral_l_1": 0,
-                "red_coral_l_2": 0,
-                "red_coral_l_3": 0,
-                "red_coral_l_4": 0,
-                "red_processor": 0,
-                "red_net": 0,
-                "red_auto_coral": 0,
+                "red_auto_fuel_cycles": 0,
+                "red_teleop_fuel_cycles": 0,
+                "red_auto_passing_cycles": 0,
+                "red_teleop_passing_cycles": 0,
                 "red_actual_score": match.score_breakdown["red"].totalPoints,
                 "predicted": False,
             }
@@ -2626,43 +2999,33 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
                 "key": match.key,
                 "match_number": match.match_number,
                 "set_number": match.set_number,
-                "blue_teams": match.alliances["blue"].team_keys,
-                "blue_human_player": 0,
+                "blue_teams": match.alliances['blue'].team_keys,
                 "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
                 "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
-                "blue_mobility": 0,
                 "blue_score": 0,
                 "blue_climbing": 0,
                 "blue_auto_points": 0,
                 "blue_teleop_points": 0,
                 "blue_endgame_points": 0,
-                "blue_coopertition": 0,
-                "blue_coral_l_1": 0,
-                "blue_coral_l_2": 0,
-                "blue_coral_l_3": 0,
-                "blue_coral_l_4": 0,
-                "blue_processor": 0,
-                "blue_net": 0,
-                "blue_auto_coral": 0,
-                "red_teams": match.alliances["red"].team_keys,
-                "red_human_player": 0,
+                "blue_auto_fuel_cycles": 0,
+                "blue_teleop_fuel_cycles": 0,
+                "blue_auto_passing_cycles": 0,
+                "blue_teleop_passing_cycles": 0,
+                "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                "red_teams": match.alliances['red'].team_keys,
                 "red_dq_team_keys": match.alliances['red'].dq_team_keys,
                 "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
-                "red_mobility": 0,
                 "red_score": 0,
                 "red_climbing": 0,
                 "red_auto_points": 0,
                 "red_teleop_points": 0,
                 "red_endgame_points": 0,
-                "red_coopertition": 0,
-                "red_coral_l_1": 0,
-                "red_coral_l_2": 0,
-                "red_coral_l_3": 0,
-                "red_coral_l_4": 0,
-                "red_processor": 0,
-                "red_net": 0,
-                "red_auto_coral": 0,
-                "predicted": True,
+                "red_auto_fuel_cycles": 0,
+                "red_teleop_fuel_cycles": 0,
+                "red_auto_passing_cycles": 0,
+                "red_teleop_passing_cycles": 0,
+                "red_actual_score": match.score_breakdown["red"].totalPoints,
+                "predicted": False,
             }
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
@@ -2676,41 +3039,18 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
                         matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
                         matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
                         matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                        matchPrediction[f"{alliance}_coral_l_1"] += teamData["l_1_total"]
-                        matchPrediction[f"{alliance}_coral_l_2"] += teamData["l_2_total"]
-                        matchPrediction[f"{alliance}_coral_l_3"] += teamData["l_3_total"]
-                        matchPrediction[f"{alliance}_coral_l_4"] += teamData["l_4_total"]
-                        matchPrediction[f"{alliance}_auto_coral"] += teamData["auto_coral"]
-                        matchPrediction[f"{alliance}_coopertition"] += teamData["coopertition"]
-                        matchPrediction[f"{alliance}_mobility"] += teamData["mobility"]
-                        matchPrediction[f"{alliance}_net"] += teamData["net"]
-                        matchPrediction[f"{alliance}_processor"] += teamData["processor"]
+                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_cycles"]
+                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_cycles"]
+                        matchPrediction[f"{alliance}_auto_passing_cycles"] += teamData["auto_pass"]
+                        matchPrediction[f"{alliance}_teleop_passing_cycles"] += teamData["teleop_pass"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
             else:
                 opponent = "red"
-            matchPrediction[f"{alliance}_human_player"] = matchPrediction[f'{opponent}_processor']*4
-            matchPrediction[f"{alliance}_score"] += matchPrediction[f"{alliance}_human_player"]
             matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
                 f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            # print('auto_coral', matchPrediction[f"{alliance}_auto_coral"], 'mobility', round(
-            #     matchPrediction[f"{alliance}_mobility"]))
-            matchPrediction[f"{alliance}_auto_rp"] = 1 if round(matchPrediction[f"{alliance}_auto_coral"]) >= 1 and round(
-                matchPrediction[f"{alliance}_mobility"]) == 3 else 0
-            # print(matchPrediction[f"{alliance}_auto_rp"])
-            levels_with_5_coral = 0
-            for i in range(1, 5):
-                if (matchPrediction[f"{alliance}_coral_l_{i}"]) >= (6.5 if eventType in [4, 5]else 4.5):
-                    levels_with_5_coral += 1
-            matchPrediction[f"{alliance}_coral_rp"] = 1 if levels_with_5_coral >= 4 or (
-                matchPrediction[f"{alliance}_coopertition"] > 0.5 and levels_with_5_coral >= 3) else 0
-            matchPrediction[f"{alliance}_barge_rp"] = 1 if matchPrediction[f"{alliance}_endgame_points"] >= (
-                15.5 if eventType in [4, 5]else 6.5) else 0
-            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"] + \
-                matchPrediction[f"{alliance}_coral_rp"] + \
-                matchPrediction[f"{alliance}_barge_rp"] + \
-                matchPrediction[f"{alliance}_auto_rp"]
+            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"]
             if not matchPrediction["predicted"]:
                 matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
@@ -2738,7 +3078,6 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
                                 dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
                     calculatedData[idx] = dataTeam
                 except Exception as e:
-                    # logging.error(e)
                     pass
     sorted_list = sorted(
         calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
@@ -2746,6 +3085,7 @@ def updatePredictions(TBAData: list[TBAMatch2025], calculatedData, eventType: in
         sorted_list[i]["simulated_rank"] = int(i + 1)
     sorted_list.insert(0, calculatedData[0])
     return (sorted_list, matchPredictions)
+
 
 
 def primeGroupForAnalysis(group: Group, event_code: str):
@@ -2759,50 +3099,76 @@ def primeGroupForAnalysis(group: Group, event_code: str):
 
 
 @app.delete("/MatchScouting/Delete", tags=["scouting"])
-def delete_match_scouting(data: MatchScouting2025, token: str = Depends(check_token_active)):
-    DBEntry = MatchScoutingCollection.find_one({'scout_info.user_id': data.scout_info.user_id,
-                                               'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
+def delete_match_scouting_2026(data: MatchScouting2026, token: str = Depends(check_token_active)):
+    # Fetch the DB entry
+    DBEntry = MatchScoutingCollection.find_one({
+        'scout_info.user_id': data.scout_info.user_id,
+        'match_number': data.match_number,
+        'team_number': data.team_number,
+        'event_code': data.event_code
+    })
+
     if DBEntry is None:
         raise HTTPException(404, "Entry Not Found")
-    if (data.scout_info.user_id == get_user_info(token)["sub"]):
-        delete_result = MatchScoutingCollection.delete_one({'scout_info.user_id': data.scout_info.user_id,
-                                                            'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
+
+    # Check if user is owner of the entry
+    deleted = False
+    current_user_id = get_user_info(token)["sub"]
+
+    if data.scout_info.user_id == current_user_id:
+        delete_result = MatchScoutingCollection.delete_one({
+            'scout_info.user_id': data.scout_info.user_id,
+            'match_number': data.match_number,
+            'team_number': data.team_number,
+            'event_code': data.event_code
+        })
         deleted = True
     else:
+        # Check if user is admin/owner of any relevant group
         kc_groups = get_user_groups(token)
-        detailed_groups = [Group(**group)
-                           for group in get_user_groups_detailed(token)]
-        deleted = False
+        detailed_groups = [Group(**group) for group in get_user_groups_detailed(token)]
         for group in detailed_groups:
             for kc_group in kc_groups:
                 if group.admin_group_id == kc_group["id"] or group.owner_group_id == kc_group["id"]:
                     members = get_group_members(group.name, token)
-                    memberIds = [member["id"] for member in (
-                        members["members"] + members["admins"] + members["owners"])]
-                    if data.scout_info.user_id in memberIds:
-                        delete_result = MatchScoutingCollection.delete_one(
-                            {'scout_info.user_id': data.scout_info.user_id,
-                             'match_number': data.match_number, 'team_number': data.team_number, 'event_code': data.event_code})
+                    member_ids = [member["id"] for member in (members["members"] + members["admins"] + members["owners"])]
+                    if data.scout_info.user_id in member_ids:
+                        delete_result = MatchScoutingCollection.delete_one({
+                            'scout_info.user_id': data.scout_info.user_id,
+                            'match_number': data.match_number,
+                            'team_number': data.team_number,
+                            'event_code': data.event_code
+                        })
                         deleted = True
-                    break
+                        break
             if deleted:
                 break
+
     if not deleted:
-        raise HTTPException(
-            403, "You do not have permission to delete this picture")
-    groups = [Group(**group)
-              for group in get_user_groups_detailed(token=token)]
-    groupsNeedingUpdate = [Group(**group) for group in GroupCollection.find(
-        {"events": {"$elemMatch": {"event_code": data.event_code, "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}}}})] + groups
-    if (data.data.miscellaneous.died):
-        for group in groupsNeedingUpdate:
+        raise HTTPException(403, "You do not have permission to delete this entry")
+
+    # Update related group statuses if the robot died in the match
+    groups = [Group(**group) for group in get_user_groups_detailed(token=token)]
+    groups_needing_update = [Group(**group) for group in GroupCollection.find({
+        "events": {"$elemMatch": {
+            "event_code": data.event_code,
+            "alliance_groups.group_id": {"$in": [group.group_id for group in groups]}
+        }}
+    })] + groups
+
+    if data.data.miscellaneous.died:
+        for group in groups_needing_update:
             try:
                 updateGroupStatus(group, data.event_code)
             except:
                 pass
-    for group in groupsNeedingUpdate:
+
+    # Update group analysis
+    for group in groups_needing_update:
         primeGroupForAnalysis(group=group, event_code=data.event_code)
+
     return {"message": delete_result.raw_result}
+
 
 
 @app.get("/", tags=["miscellaneous"])
@@ -2920,7 +3286,7 @@ def update_database():
                     responseJson = []
                 for x in responseJson:
                     # print(event)
-                    tbaEntry = TBAMatch2025(**x)
+                    tbaEntry = TBAMatch2026(**x)
                     try:
                         TBACollection.insert_one(tbaEntry.dict())
                     except:
@@ -2970,7 +3336,7 @@ def update_database():
             for event in group.events:
                 # print(event)
                 if not event.up_to_date:
-                    try:
+                    
                         for eventData in etags:
                             if eventData["key"] == event.event_code:
                                 eventData = eventData
@@ -2981,8 +3347,8 @@ def update_database():
                         updateGroupGridPitData(group, event.event_code)
                         GroupCollection.update_one(
                             {'group_id': group.group_id}, {"$set": {"events.$[elem].up_to_date": True}}, array_filters=[{"elem.event_code": event.event_code}])
-                    except Exception as e:
-                        logging.error(str(e))
+                    
+                        # logging.error(str(e))
         numRuns += 1
     except Exception as e:
         logging.error(e)

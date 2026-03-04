@@ -1,12 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/deaths_form.dart';
-import 'package:scouting_app/models/match_scouting_2025.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/scout_info.dart';
 import '../api_service.dart';
-
 import '../models/tournament.dart';
 
 class DeathsForm extends StatefulWidget {
@@ -14,11 +11,7 @@ class DeathsForm extends StatefulWidget {
   final int teamNumber;
   final bool locked;
 
-  const DeathsForm(
-    this.tournament,
-    this.teamNumber,
-    this.locked,
-  );
+  const DeathsForm(this.tournament, this.teamNumber, this.locked, {super.key});
 
   @override
   _DeathsFormState createState() => _DeathsFormState();
@@ -32,10 +25,18 @@ class _DeathsFormState extends State<DeathsForm> {
       team_key: widget.teamNumber.toString(),
       total: 0,
       time: 0);
-  List<MatchScouting2025> matchScouting = [];
+
+  List<MatchScouting2026> matchScouting = [];
   List<TextEditingController> controllers = [];
   bool formSubmitted = false;
   bool loading = true, commentsLoading = true;
+
+  // --- Dark Theme Constants ---
+  final Color accentBlue = const Color(0xFF448AFF); // Bright Blue
+  final Color darkBackground = const Color(0xFF121212); // Deep Black/Grey
+  final Color surfaceColor = const Color(0xFF1E1E1E); // Elevated Dark Grey
+  final TextStyle fontStyle =
+      const TextStyle(fontFamily: 'Font', color: Colors.white);
 
   @override
   void initState() {
@@ -45,345 +46,303 @@ class _DeathsFormState extends State<DeathsForm> {
 
   void fetchFollowUpData() async {
     final api = Provider.of<ApiService>(context, listen: false);
-    api
-        .fetchFollowUp(
-          widget.tournament.page.split('/')[3],
-          widget.tournament.page.split('/')[4],
-          'frc${widget.teamNumber}',
-        )
-        .then((fetchedData) => setState(() {
-              deaths = fetchedData;
-              for (var death in deaths.deaths) {
-                controllers
-                    .add(TextEditingController(text: death.death_reason));
-              }
-              loading = false;
-              api
-                  .fetchTeamMatchScouting(
-                      int.parse(widget.tournament.page.split('/')[3]),
-                      widget.tournament.page.split('/')[4],
-                      'frc${widget.teamNumber.toString()}')
-                  .then(
-                (value) {
-                  setState(() {
-                    matchScouting = value;
-                    commentsLoading = false;
-                  });
-                },
-              );
-            }));
+    final eventParts = widget.tournament.page.split('/');
+
+    try {
+      final fetchedData = await api.fetchFollowUp(
+        eventParts[3],
+        eventParts[4],
+        'frc${widget.teamNumber}',
+      );
+
+      setState(() {
+        deaths = fetchedData;
+        controllers = deaths.deaths
+            .map((d) => TextEditingController(text: d.death_reason))
+            .toList();
+        loading = false;
+      });
+
+      final matchData = await api.fetchTeamMatchScouting(
+          int.parse(eventParts[3]), eventParts[4], 'frc${widget.teamNumber}');
+
+      setState(() {
+        matchScouting = matchData.cast<MatchScouting2026>();
+        commentsLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Fetch Error: $e");
+    }
   }
 
   void handleSubmit() async {
     final api = Provider.of<ApiService>(context, listen: false);
+    final eventParts = widget.tournament.page.split('/');
     final status = await api.postFollowUp(
       deaths,
-      widget.tournament.page.split('/')[3],
-      widget.tournament.page.split('/')[4],
+      eventParts[3],
+      eventParts[4],
       'frc${widget.teamNumber}',
     );
+
     if (status == 200) {
-      setState(() {
-        formSubmitted = true;
-      });
+      setState(() => formSubmitted = true);
     } else {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Submission failed. Please try again.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
+      _showErrorDialog();
     }
   }
 
-  void handleEditForm() {
-    setState(() {
-      formSubmitted = false;
-    });
-  }
-
-  void handleGoBack(BuildContext context) {
-    Navigator.pop(context);
+  void _showErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: Text('Error', style: fontStyle),
+        content: Text('Submission failed.',
+            style: fontStyle.copyWith(color: Colors.white70)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK', style: TextStyle(color: accentBlue))),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return loading
-        ? Center(child: CircularProgressIndicator(color: Colors.blue))
-        : Container(
-            alignment: Alignment.topLeft,
-            padding: EdgeInsets.all(16.0),
-            child: formSubmitted
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Submission Successful',
-                          style: TextStyle(fontSize: 24, color: Colors.green),
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: handleEditForm,
-                          child: Text('Edit Form'),
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () => handleGoBack(context),
-                          child: Text('Go Back'),
-                        ),
-                      ],
-                    ),
-                  )
-                : SingleChildScrollView(
-                    child: (deaths.deaths.isEmpty)
-                        ? Text('No Deaths Reported',
-                            style: TextStyle(fontSize: 24))
-                        : Column(children: [
-                            ...deaths.deaths.map((death) {
-                              TextEditingController _controller =
-                                  controllers[deaths.deaths.indexOf(death)];
-                              List<String> comments = matchScouting
-                                  .where((element) =>
-                                      element.match_number ==
-                                          death.match_number &&
-                                      element.data.miscellaneous.comments
-                                          .isNotEmpty)
-                                  .map((e) => e.data.miscellaneous.comments)
-                                  .toList();
-                              return Card(
-                                margin: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Death #${deaths.deaths.indexOf(death) + 1}',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      TextField(
-                                        readOnly: true,
-                                        decoration: InputDecoration(
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue,
-                                                  width: 3)),
-                                          floatingLabelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          labelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          labelText: 'Match Number',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        style: TextStyle(color: Colors.grey),
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) => setState(() {
-                                          int index =
-                                              deaths.deaths.indexOf(death);
-                                          int val = int.tryParse(value) ?? 0;
-                                          deaths = deaths.copyWith(deaths: [
-                                            ...deaths.deaths.sublist(
-                                              0,
-                                              min(deaths.deaths.length, index),
-                                            ),
-                                            death.copyWith(match_number: val),
-                                            if (index + 1 !=
-                                                deaths.deaths.length)
-                                              ...deaths.deaths
-                                                  .sublist(index + 1)
-                                          ]);
-                                        }),
-                                        controller: TextEditingController(
-                                          text: death.match_number.toString(),
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      TextField(
-                                        style: widget.locked
-                                            ? TextStyle(color: Colors.grey)
-                                            : null,
-                                        readOnly: widget.locked,
-                                        cursorColor: Colors.blue,
-                                        decoration: InputDecoration(
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue,
-                                                  width: 3)),
-                                          floatingLabelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          labelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          labelText: 'Reason for Team Death',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        onChanged: (value) => setState(() {
-                                          int index =
-                                              deaths.deaths.indexOf(death);
-                                          deaths = deaths.copyWith(deaths: [
-                                            ...deaths.deaths.sublist(
-                                              0,
-                                              min(deaths.deaths.length, index),
-                                            ),
-                                            death.copyWith(death_reason: value),
-                                            if (index + 1 !=
-                                                deaths.deaths.length)
-                                              ...deaths.deaths
-                                                  .sublist(index + 1)
-                                          ]);
-                                        }),
-                                        controller: _controller,
-                                      ),
-                                      SizedBox(height: 10),
-                                      DropdownButtonFormField<int>(
-                                        decoration: InputDecoration(
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue,
-                                                  width: 3)),
-                                          floatingLabelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          labelStyle: TextStyle(
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.bold),
-                                          focusColor: Colors.blue,
-                                          labelText: 'Severity',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        value: death.severity,
-                                        onChanged: widget.locked
-                                            ? null
-                                            : (value) => setState(() {
-                                                  int index = deaths.deaths
-                                                      .indexOf(death);
-                                                  deaths =
-                                                      deaths.copyWith(deaths: [
-                                                    ...deaths.deaths.sublist(
-                                                      0,
-                                                      min(deaths.deaths.length,
-                                                          index),
-                                                    ),
-                                                    death.copyWith(
-                                                        severity: value ?? -1),
-                                                    if (index + 1 !=
-                                                        deaths.deaths.length)
-                                                      ...deaths.deaths
-                                                          .sublist(index + 1)
-                                                  ]);
-                                                }),
-                                        items: [
-                                          DropdownMenuItem(
-                                            child: Text('Choose...'),
-                                            value: -1,
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 1,
-                                            child: Text(
-                                              '1 (One-time error)',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            ),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 2,
-                                            child: Text(
-                                              '2 (Fixable before elims)',
-                                              style: TextStyle(
-                                                  color: Colors.yellow),
-                                            ),
-                                          ),
-                                          DropdownMenuItem(
-                                            value: 3,
-                                            child: Text(
-                                              '3 (Permanently broken)',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        'Comments',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      if (commentsLoading)
-                                        Center(
-                                          child: CircularProgressIndicator(
-                                              color: Colors.blue),
-                                        )
-                                      else if (comments.isNotEmpty)
-                                        ...List.generate(
-                                          comments.length,
-                                          (commentIndex) {
-                                            return Card(
-                                              margin: EdgeInsets.symmetric(
-                                                  vertical: 8.0),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              color: Colors.grey[800],
-                                              child: ListTile(
-                                                title: Text(
-                                                  'Match ${death.match_number} - Comment ${commentIndex + 1}',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                subtitle: SingleChildScrollView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  child: Text(
-                                                    comments[commentIndex],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        )
-                                      else
-                                        Text('No comments found'),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }),
-                            if (!widget.locked)
-                              Card(
-                                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                                  child: TextButton(
-                                    onPressed: handleSubmit,
-                                    child: Row(children: [
-                                      Text(
-                                        'Submit  ',
-                                        style: TextStyle(color: Colors.blue),
-                                      ),
-                                      Icon(Icons.send, color: Colors.blue)
-                                    ]),
-                                  )),
-                          ])));
+    return Theme(
+      data: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: darkBackground,
+        colorScheme:
+            ColorScheme.dark(primary: accentBlue, surface: surfaceColor),
+      ),
+      child: Scaffold(
+        body: loading
+            ? Center(child: CircularProgressIndicator(color: accentBlue))
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: formSubmitted ? _buildSuccessView() : _buildFormView(),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle, color: Colors.greenAccent[400], size: 100),
+          const SizedBox(height: 20),
+          Text('REPORT SENT',
+              style: fontStyle.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5)),
+          const SizedBox(height: 40),
+          ElevatedButton(
+            onPressed: () => setState(() => formSubmitted = false),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: accentBlue, foregroundColor: Colors.white),
+            child: const Text('EDIT ENTRIES'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('RETURN TO LIST',
+                style: TextStyle(color: accentBlue.withOpacity(0.7))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormView() {
+    if (deaths.deaths.isEmpty) {
+      return Center(
+          child: Text('No Deaths Found',
+              style: fontStyle.copyWith(color: Colors.white38, fontSize: 18)));
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Column(
+        children: [
+          ...deaths.deaths
+              .asMap()
+              .entries
+              .map((entry) => _buildDeathCard(entry.value, entry.key)),
+          if (!widget.locked) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: handleSubmit,
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: Text('SUBMIT FOLLOW-UP',
+                    style: fontStyle.copyWith(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accentBlue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 50),
+          ]
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeathCard(dynamic death, int index) {
+    List<String> comments = matchScouting
+        .where((m) =>
+            m.match_number == death.match_number &&
+            m.data.miscellaneous.comments.isNotEmpty)
+        .map((e) => e.data.miscellaneous.comments)
+        .toList();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                    backgroundColor: accentBlue,
+                    radius: 14,
+                    child: Text('${index + 1}',
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.white))),
+                const SizedBox(width: 12),
+                Text('Match ${death.match_number}',
+                    style: fontStyle.copyWith(fontWeight: FontWeight.bold)),
+                const Spacer(),
+                const Icon(Icons.bolt, color: Colors.amber, size: 18),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDarkField('Reason', controllers[index], (val) {
+                  setState(() => deaths.deaths[index] =
+                      deaths.deaths[index].copyWith(death_reason: val));
+                }),
+                const SizedBox(height: 20),
+                _buildSeverityDropdown(death, index),
+                const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(color: Colors.white10)),
+                _buildScoutComments(comments),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDarkField(String label, TextEditingController controller,
+      Function(String) onChanged) {
+    return TextField(
+      controller: controller,
+      readOnly: widget.locked,
+      onChanged: onChanged,
+      style: fontStyle,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: accentBlue),
+        filled: true,
+        fillColor: Colors.black26,
+        enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.white12),
+            borderRadius: BorderRadius.circular(8)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: accentBlue),
+            borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  Widget _buildSeverityDropdown(dynamic death, int index) {
+    return DropdownButtonFormField<int>(
+      value: death.severity,
+      dropdownColor: surfaceColor,
+      decoration: InputDecoration(
+        labelText: 'Severity',
+        labelStyle: TextStyle(color: accentBlue),
+        border: const OutlineInputBorder(),
+      ),
+      onChanged: widget.locked
+          ? null
+          : (val) {
+              setState(() => deaths.deaths[index] =
+                  deaths.deaths[index].copyWith(severity: val ?? -1));
+            },
+      items: [
+        const DropdownMenuItem(value: -1, child: Text('Choose...')),
+        DropdownMenuItem(
+            value: 1,
+            child: Text('1 - One Time Incident',
+                style: TextStyle(color: Colors.greenAccent[400]))),
+        const DropdownMenuItem(
+            value: 2,
+            child: Text('2 - Fixable Before Elims',
+                style: TextStyle(color: Colors.orangeAccent))),
+        DropdownMenuItem(
+            value: 3,
+            child: Text('3 - Permanent/Unfixable',
+                style: TextStyle(color: Colors.redAccent[200]))),
+      ],
+    );
+  }
+
+  Widget _buildScoutComments(List<String> comments) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('SCOUT OBSERVATIONS',
+            style: fontStyle.copyWith(
+                fontSize: 12,
+                color: Colors.white38,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        if (commentsLoading)
+          const LinearProgressIndicator()
+        else if (comments.isEmpty)
+          const Text('No observations.',
+              style: TextStyle(color: Colors.white24, fontSize: 13))
+        else
+          ...comments.map((c) => Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(6)),
+                child: Text(c,
+                    style: fontStyle.copyWith(
+                        fontSize: 13, color: Colors.white70)),
+              )),
+      ],
+    );
   }
 }
