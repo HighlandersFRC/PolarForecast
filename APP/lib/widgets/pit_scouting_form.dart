@@ -9,7 +9,6 @@ import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import 'package:scouting_app/widgets/floatyCounter.dart';
-import 'package:scouting_app/widgets/height_counter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';
@@ -574,15 +573,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                 ],
                               ),
                             ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Divider(
-                              color: Colors.blue,
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
                             Divider(color: Colors.blue),
                             _buildSectionCard(
                                 child: Column(
@@ -951,7 +941,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                       borderRadius: BorderRadius.circular(12)),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
-                                    child: TapeMeasurePicker(
+                                    child: FloatyCounter(
                                       locked: widget.locked,
                                       label: 'Robot Height (Inches)',
                                       value: pitScoutingData.data.robot_height,
@@ -1031,6 +1021,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                 ),
                               ],
                             )),
+                            Divider(
+                              color: Colors.blue,
+                            ),
                             _buildSectionCard(
                                 child: Column(
                               children: [

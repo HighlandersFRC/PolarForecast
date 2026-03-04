@@ -1772,8 +1772,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 _buildDarkCard(
                   title: 'Autonomous',
                   icon: Icons.smart_toy_outlined,
-                  cardColor: cardDb,
-                  accentColor: primaryBlue,
+                  cardColor: const Color.fromARGB(16, 54, 244, 54),
+                  accentColor: Colors.green,
                   children: [
                     AutoPieces2026(
                       auto: data.data.auto,
@@ -1817,8 +1817,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 _buildDarkCard(
                   title: 'Teleop Phase',
                   icon: Icons.videogame_asset_outlined,
-                  cardColor: cardDb,
-                  accentColor: primaryBlue,
+                  cardColor: const Color.fromARGB(30, 155, 39, 176),
+                  accentColor: Colors.purple,
                   children: [
                     _buildCounterRow('Passing Cycles',
                         data.data.teleop_scoring.passing_cycles, (val) {
@@ -1842,8 +1842,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 _buildDarkCard(
                   title: 'Post-Match & Misc',
                   icon: Icons.widgets_outlined,
-                  cardColor: cardDb,
-                  accentColor: primaryBlue,
+                  cardColor: const Color.fromARGB(24, 255, 153, 0),
+                  accentColor: Colors.orange,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
