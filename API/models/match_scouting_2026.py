@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
 from models.scout_info import ScoutInfo
@@ -34,8 +34,4 @@ class MatchScouting2026(BaseModel):
     scout_info: ScoutInfo
     data: Data2026
     time: int = 0  # Will be set by server, so default is fine
-    @field_validator("time", mode="before")
-    def cast_time_to_int(cls, v):
-        if isinstance(v, float):
-            return int(v)
-        return v
+    
