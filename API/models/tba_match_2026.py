@@ -35,7 +35,7 @@ class HubScore(BaseModel):
 
 class ScoreBreakdown2026(BaseModel):
     """Score breakdown for 2026 FRC game - Rebuilt
-    Includes TBA Feilds"""
+    Includes TBA Fields"""
     
     adjustPoints: int
     autoTowerPoints: int
