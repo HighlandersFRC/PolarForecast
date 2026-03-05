@@ -2645,7 +2645,6 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
 
 
 @app.get("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
-@app.get("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
 def get_team_follow_up(
     team: str,
     event: str,
