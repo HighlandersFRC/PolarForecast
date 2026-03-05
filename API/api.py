@@ -239,7 +239,7 @@ def getGroupCalculatedData(event_code: str, group_id: str):
     return GroupDataCollection.find_one(
         {"event_code": event_code, "group_id": group_id})
 
-
+    
 @cacheValue()
 def getEventCalculatedData(event_code: str):
     return CalculatedDataCollection.find_one({"event_code": event_code})
@@ -961,8 +961,8 @@ def updateGroupStatus(group: Group, event_code: str):
         {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}}
     ):
         # Convert float time to int if needed
-        if "time" in entry and isinstance(entry["time"], float):
-            entry["time"] = int(entry["time"])
+        if "time" in entry:
+            entry["time"] = int(float(entry["time"]))
         try:
             followUpScoutingEntries.append(DeathScoutingForm(**entry))
         except Exception as e:
@@ -2645,76 +2645,122 @@ def post_team_follow_up(data: DeathScoutingForm, token: str = Depends(check_toke
 
 
 @app.get("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
-def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(check_token_active)):
-    groups = [Group(**group) for group in get_user_groups_detailed(token)]
-    members = []
+@app.get("/{year}/{event}/{team}/FollowUp", tags=["scouting"])
+def get_team_follow_up(
+    team: str,
+    event: str,
+    year: int,
+    token: str = Depends(check_token_active),
+):
+    event_code = f"{year}{event}"
+
+    # ----------------------------
+    # Collect group + alliance members
+    # ----------------------------
+    groups = [Group(**g) for g in get_user_groups_detailed(token)]
+
+    member_ids = []
+    alliance_member_ids = []
+
     for group in groups:
-        members.extend(fetch_group_members(group.group_id))
-    member_ids = [member['id'] for member in members]
-    alliance_members = []
-    for group in groups:
-        for groupEvent in group.events:
-            if groupEvent.event_code == str(year)+event:
-                for alliance in groupEvent.alliance_groups:
-                    alliance_members.extend(
-                        fetch_group_members(alliance.group_id))
-    alliance_member_ids = [member['id'] for member in alliance_members]
-    member_entries = [DeathScoutingForm(**form) for form in FollowUpCollection.find(
-        {"event_code": str(year)+event, "team_key": team, "scout_info.user_id": {"$in": member_ids}})]
-    alliance_entries = [DeathScoutingForm(**form) for form in FollowUpCollection.find(
-        {"event_code": str(year)+event, "team_key": team, "scout_info.user_id": {"$in": alliance_member_ids}})]
-    if len(member_entries) != 0 or len(alliance_entries) != 0:
-        if len(member_entries) != 0:
-            latestEntry = member_entries[0]
-            alliance = False
-        else:
-            alliance = True
-            latestEntry = alliance_entries[0]
-        for entry in member_entries:
-            if entry.time > latestEntry.time:
-                alliance = False
-                latestEntry = entry
-        for entry in alliance_entries:
-            if entry.time > latestEntry.time:
-                alliance = True
-                latestEntry = entry
-        formData = latestEntry
-        scoutEntries = [x for x in [MatchScouting2026(
-            **entry) for entry in get_scout_team_entries(team, event, year, token)]]
-        deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
-        for entry in deathEntries:
-            notRecorded = True
-            for death in formData.deaths:
-                if death.match_number == entry.match_number:
-                    notRecorded = False
-            if notRecorded:
-                formData.deaths.append(Death(match_number=entry.match_number))
+        member_ids.extend(m["id"] for m in fetch_group_members(group.group_id))
+
+        for group_event in group.events:
+            if group_event.event_code == event_code:
+                for alliance in group_event.alliance_groups:
+                    alliance_member_ids.extend(
+                        m["id"] for m in fetch_group_members(alliance.group_id)
+                    )
+
+    # Deduplicate
+    member_ids = list(set(member_ids))
+    alliance_member_ids = list(set(alliance_member_ids))
+
+    # ----------------------------
+    # Helper to fetch + coerce forms
+    # ----------------------------
+    def fetch_forms(user_ids):
+        forms = []
+        for form in FollowUpCollection.find(
+            {
+                "event_code": event_code,
+                "team_key": team,
+                "scout_info.user_id": {"$in": user_ids},
+            }
+        ):
+            form["time"] = int(form.get("time", 0))  # 🔥 prevents float crash
+            forms.append(DeathScoutingForm(**form))
+        return forms
+
+    member_entries = fetch_forms(member_ids)
+    alliance_entries = fetch_forms(alliance_member_ids)
+
+    # ----------------------------
+    # Determine latest entry
+    # ----------------------------
+    all_entries = [(False, e) for e in member_entries] + \
+                  [(True, e) for e in alliance_entries]
+
+    if all_entries:
+        alliance, latest_entry = max(all_entries, key=lambda x: x[1].time)
+        formData = latest_entry
+
+        # ----------------------------
+        # Sync deaths from scouting data
+        # ----------------------------
+        scout_entries = [
+            MatchScouting2026(**entry)
+            for entry in get_scout_team_entries(team, event, year, token)
+        ]
+
+        died_matches = {
+            entry.match_number
+            for entry in scout_entries
+            if entry.data.miscellaneous.died
+        }
+
+        existing_matches = {d.match_number for d in formData.deaths}
+
+        for match_number in died_matches - existing_matches:
+            formData.deaths.append(Death(match_number=match_number))
+
         if not alliance:
-            return formData.dict()
-        else:
-            retVal = formData.dict()
-            retVal['scout_info'] = formData.scout_info.dict(
-                exclude={'first_name', 'username'})
-            return retVal
-    else:
-        scoutEntries = [x for x in [MatchScouting2026(
-            **entry) for entry in get_scout_team_entries(team, event, year, token)]]
-        deathEntries = [x for x in scoutEntries if x.data.miscellaneous.died]
-        if len(deathEntries) == 0:
-            return DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
-        else:
-            formData = DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(
-                year)+event, team_key=team, total=0, average=0, time=int(datetime.utcnow().timestamp()))
-            notRecorded = True
-            for entry in deathEntries:
-                for death in formData.deaths:
-                    if death.match_number == entry.match_number:
-                        notRecorded = False
-                        break
-                if notRecorded:
-                    formData.deaths.append(
-                        Death(match_number=entry.match_number))
-            return formData.dict()
+            return formData.model_dump()
+
+        # Alliance view hides personal fields
+        ret = formData.model_dump()
+        ret["scout_info"] = formData.scout_info.model_dump(
+            exclude={"first_name", "username"}
+        )
+        return ret
+
+    # ----------------------------
+    # No existing follow-up form
+    # ----------------------------
+    scout_entries = [
+        MatchScouting2026(**entry)
+        for entry in get_scout_team_entries(team, event, year, token)
+    ]
+
+    died_matches = [
+        entry.match_number
+        for entry in scout_entries
+        if entry.data.miscellaneous.died
+    ]
+
+    new_form = DeathScoutingForm(
+        scout_info=scout_info_from_token(token),
+        event_code=event_code,
+        team_key=team,
+        total=0,
+        average=0,
+        time=int(datetime.utcnow().timestamp()),  # 🔥 always int
+    )
+
+    for match_number in set(died_matches):
+        new_form.deaths.append(Death(match_number=match_number))
+
+    return new_form.model_dump()
 
 
 @app.get('/User/Groups', tags=["users"])

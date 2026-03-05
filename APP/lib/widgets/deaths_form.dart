@@ -244,8 +244,16 @@ class _DeathsFormState extends State<DeathsForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDarkField('Reason', controllers[index], (val) {
-                  setState(() => deaths.deaths[index] =
-                      deaths.deaths[index].copyWith(death_reason: val));
+                  setState(() {
+                    deaths = deaths.copyWith(
+                      deaths: deaths.deaths
+                          .asMap()
+                          .map((i, d) => MapEntry(i,
+                              i == index ? d.copyWith(death_reason: val) : d))
+                          .values
+                          .toList(),
+                    );
+                  });
                 }),
                 const SizedBox(height: 20),
                 _buildSeverityDropdown(death, index),
@@ -295,8 +303,16 @@ class _DeathsFormState extends State<DeathsForm> {
       onChanged: widget.locked
           ? null
           : (val) {
-              setState(() => deaths.deaths[index] =
-                  deaths.deaths[index].copyWith(severity: val ?? -1));
+              setState(() {
+                deaths = deaths.copyWith(
+                  deaths: deaths.deaths
+                      .asMap()
+                      .map((i, d) => MapEntry(
+                          i, i == index ? d.copyWith(severity: val ?? -1) : d))
+                      .values
+                      .toList(),
+                );
+              });
             },
       items: [
         const DropdownMenuItem(value: -1, child: Text('Choose...')),
