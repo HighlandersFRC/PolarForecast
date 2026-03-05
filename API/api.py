@@ -332,10 +332,11 @@ def get_Event_Stats(year: int, event: str, token: str = Header(None)):
                 data = getEventCalculatedData(event_code)
         else:
             data = getEventCalculatedData(event_code)
-    for i, team in enumerate(data["data"][1:]):
-        if math.isnan(team["death_rate"]):
-            team["death_rate"] = 0
-        data["data"][i+1] = team
+    for team in data["data"][1:]:
+        death_rate = team.get("death_rate", 0)
+
+    if not isinstance(death_rate, (int, float)) or math.isnan(death_rate):
+        team["death_rate"] = 0
     data.pop("_id")
     return data
 
@@ -799,11 +800,19 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                     "rank": 0,
                     "team_number": team[3:],
                     "match_count": 0,
-                    "OPR": 0,
-                    "auto_points": 0,
-                    "teleop_points": 0,
-                    "totalCount": 0,
-                    "foul_points": 0,
+                    "OPR": 0.0,
+                    "total_pass": 0.0,
+                    "auto_pass": 0.0,
+                    "teleop_pass": 0.0,
+                    "endgame_points": 0.0,
+                    "teleop_points": 0.0,
+                    "auto_points": 0.0,
+                    "climbing_points": 0.0,
+                    "death_rate": 0.0,
+                    "defense_rate": 0.0,          # added because constructor requires it
+                    "auto_fuel_cycles": 0.0,
+                    "teleop_fuel_cycles": 0.0,
+                    "foul_points": 0.0,
                     "simulated_rp": 0,
                     "simulated_rank": 0
                 }
