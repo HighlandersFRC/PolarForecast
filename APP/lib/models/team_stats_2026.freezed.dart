@@ -38,7 +38,7 @@ mixin _$TeamStats2026 {
   double get defense_rate => throw _privateConstructorUsedError;
   double get auto_fuel_cycles => throw _privateConstructorUsedError;
   double get teleop_fuel_cycles => throw _privateConstructorUsedError;
-  double? get total_fuel_cycles => throw _privateConstructorUsedError;
+  double get total_fuel_cycles => throw _privateConstructorUsedError;
   double get foul_points => throw _privateConstructorUsedError;
   int get simulated_rp => throw _privateConstructorUsedError;
   int get simulated_rank => throw _privateConstructorUsedError;
@@ -78,7 +78,7 @@ abstract class $TeamStats2026CopyWith<$Res> {
       double defense_rate,
       double auto_fuel_cycles,
       double teleop_fuel_cycles,
-      double? total_fuel_cycles,
+      double total_fuel_cycles,
       double foul_points,
       int simulated_rp,
       int simulated_rank});
@@ -117,7 +117,7 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
     Object? defense_rate = null,
     Object? auto_fuel_cycles = null,
     Object? teleop_fuel_cycles = null,
-    Object? total_fuel_cycles = freezed,
+    Object? total_fuel_cycles = null,
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
@@ -195,10 +195,10 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.teleop_fuel_cycles
           : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
               as double,
-      total_fuel_cycles: freezed == total_fuel_cycles
+      total_fuel_cycles: null == total_fuel_cycles
           ? _value.total_fuel_cycles
           : total_fuel_cycles // ignore: cast_nullable_to_non_nullable
-              as double?,
+              as double,
       foul_points: null == foul_points
           ? _value.foul_points
           : foul_points // ignore: cast_nullable_to_non_nullable
@@ -242,7 +242,7 @@ abstract class _$$TeamStats2026ImplCopyWith<$Res>
       double defense_rate,
       double auto_fuel_cycles,
       double teleop_fuel_cycles,
-      double? total_fuel_cycles,
+      double total_fuel_cycles,
       double foul_points,
       int simulated_rp,
       int simulated_rank});
@@ -279,7 +279,7 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
     Object? defense_rate = null,
     Object? auto_fuel_cycles = null,
     Object? teleop_fuel_cycles = null,
-    Object? total_fuel_cycles = freezed,
+    Object? total_fuel_cycles = null,
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
@@ -357,10 +357,10 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.teleop_fuel_cycles
           : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
               as double,
-      total_fuel_cycles: freezed == total_fuel_cycles
+      total_fuel_cycles: null == total_fuel_cycles
           ? _value.total_fuel_cycles
           : total_fuel_cycles // ignore: cast_nullable_to_non_nullable
-              as double?,
+              as double,
       foul_points: null == foul_points
           ? _value.foul_points
           : foul_points // ignore: cast_nullable_to_non_nullable
@@ -385,24 +385,24 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
       required this.key,
       required this.rank,
       required this.team_number,
-      required this.match_count,
-      required this.OPR,
+      this.match_count = 0,
+      this.OPR = 0.0,
       this.OPRRank,
-      required this.total_pass,
-      required this.auto_pass,
-      required this.teleop_pass,
-      required this.endgame_points,
-      required this.teleop_points,
-      required this.auto_points,
-      required this.climbing_points,
-      required this.death_rate,
-      required this.defense_rate,
-      required this.auto_fuel_cycles,
-      required this.teleop_fuel_cycles,
-      this.total_fuel_cycles,
-      required this.foul_points,
-      required this.simulated_rp,
-      required this.simulated_rank});
+      this.total_pass = 0.0,
+      this.auto_pass = 0.0,
+      this.teleop_pass = 0.0,
+      this.endgame_points = 0.0,
+      this.teleop_points = 0.0,
+      this.auto_points = 0.0,
+      this.climbing_points = 0.0,
+      this.death_rate = 0.0,
+      this.defense_rate = 0.0,
+      this.auto_fuel_cycles = 0.0,
+      this.teleop_fuel_cycles = 0.0,
+      this.total_fuel_cycles = 0.0,
+      this.foul_points = 0.0,
+      this.simulated_rp = 0,
+      this.simulated_rank = 0});
 
   factory _$TeamStats2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$TeamStats2026ImplFromJson(json);
@@ -416,40 +416,57 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
   @override
   final String team_number;
   @override
+  @JsonKey()
   final double match_count;
   @override
+  @JsonKey()
   final double OPR;
   @override
   final int? OPRRank;
   @override
+  @JsonKey()
   final double total_pass;
   @override
+  @JsonKey()
   final double auto_pass;
   @override
+  @JsonKey()
   final double teleop_pass;
   @override
+  @JsonKey()
   final double endgame_points;
   @override
+  @JsonKey()
   final double teleop_points;
   @override
+  @JsonKey()
   final double auto_points;
   @override
+  @JsonKey()
   final double climbing_points;
   @override
+  @JsonKey()
   final double death_rate;
   @override
+  @JsonKey()
   final double defense_rate;
   @override
+  @JsonKey()
   final double auto_fuel_cycles;
   @override
+  @JsonKey()
   final double teleop_fuel_cycles;
   @override
-  final double? total_fuel_cycles;
+  @JsonKey()
+  final double total_fuel_cycles;
   @override
+  @JsonKey()
   final double foul_points;
   @override
+  @JsonKey()
   final int simulated_rp;
   @override
+  @JsonKey()
   final int simulated_rank;
 
   @override
@@ -554,24 +571,24 @@ abstract class _TeamStats2026 implements TeamStats2026 {
       required final String key,
       required final int rank,
       required final String team_number,
-      required final double match_count,
-      required final double OPR,
+      final double match_count,
+      final double OPR,
       final int? OPRRank,
-      required final double total_pass,
-      required final double auto_pass,
-      required final double teleop_pass,
-      required final double endgame_points,
-      required final double teleop_points,
-      required final double auto_points,
-      required final double climbing_points,
-      required final double death_rate,
-      required final double defense_rate,
-      required final double auto_fuel_cycles,
-      required final double teleop_fuel_cycles,
-      final double? total_fuel_cycles,
-      required final double foul_points,
-      required final int simulated_rp,
-      required final int simulated_rank}) = _$TeamStats2026Impl;
+      final double total_pass,
+      final double auto_pass,
+      final double teleop_pass,
+      final double endgame_points,
+      final double teleop_points,
+      final double auto_points,
+      final double climbing_points,
+      final double death_rate,
+      final double defense_rate,
+      final double auto_fuel_cycles,
+      final double teleop_fuel_cycles,
+      final double total_fuel_cycles,
+      final double foul_points,
+      final int simulated_rp,
+      final int simulated_rank}) = _$TeamStats2026Impl;
 
   factory _TeamStats2026.fromJson(Map<String, dynamic> json) =
       _$TeamStats2026Impl.fromJson;
@@ -613,7 +630,7 @@ abstract class _TeamStats2026 implements TeamStats2026 {
   @override
   double get teleop_fuel_cycles;
   @override
-  double? get total_fuel_cycles;
+  double get total_fuel_cycles;
   @override
   double get foul_points;
   @override
