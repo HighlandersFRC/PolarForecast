@@ -2724,11 +2724,11 @@ def get_team_follow_up(
             formData.deaths.append(Death(match_number=match_number))
 
         if not alliance:
-            return formData.model_dump()
+            return formData.dict()
 
         # Alliance view hides personal fields
-        ret = formData.model_dump()
-        ret["scout_info"] = formData.scout_info.model_dump(
+        ret = formData.dict()
+        ret["scout_info"] = formData.scout_info.dict(
             exclude={"first_name", "username"}
         )
         return ret
@@ -2759,7 +2759,7 @@ def get_team_follow_up(
     for match_number in set(died_matches):
         new_form.deaths.append(Death(match_number=match_number))
 
-    return new_form.model_dump()
+    return new_form.dict()
 
 
 @app.get('/User/Groups', tags=["users"])
