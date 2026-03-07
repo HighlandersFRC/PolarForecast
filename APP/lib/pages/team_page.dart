@@ -1031,9 +1031,20 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   }
 
   void _deleteEntry(int index) {
-    // Optional: call API to delete from backend
-    setState(() {
-      scouting.removeAt(index);
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+
+    api.delete_match_scouting(scouting[index]).then((_) {
+      setState(() {
+        scouting.removeAt(index);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Successfully Deleted')),
+      );
+    }).onError((e, trace) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     });
   }
 
