@@ -195,6 +195,11 @@ class _RankingsTabState extends State<_RankingsTab> {
       allowFiltering: false,
     ),
     GridColumn(
+        allowSorting: true,
+        label: Text('Teleop Passing', style: TextStyle(fontFamily: 'Font')),
+        columnName: 'teleop_pass',
+        allowFiltering: false),
+    GridColumn(
       allowSorting: true,
       label: Text('Climb Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'climbing_points',
@@ -223,6 +228,7 @@ class _RankingsTabState extends State<_RankingsTab> {
     'climbing_points': true,
     'defense_rate': true,
     'death_rate': true,
+    'teleop_pass': true,
   };
   List<MatchScouting2026> scouting = [];
   Map<String, num> minValues = {};
@@ -312,7 +318,6 @@ class _RankingsTabState extends State<_RankingsTab> {
         if (mounted) {
           setState(() {
             rankings = fetchedRankings;
-            print('Rankings length: ${fetchedRankings.length}');
             isLoading = false;
             scouting = fetchedScouting;
             scouting.forEach((entry) {
@@ -1795,20 +1800,20 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     ),
                     const SizedBox(height: 12),
                     _buildCounterRow(
-                        'Passing Cycles', data.data.auto_scoring.passing_cycles,
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              auto_scoring: data.data.auto_scoring
-                                  .copyWith(passing_cycles: val))));
-                    }),
-                    _buildCounterRow(
                         'Fuel Amount', data.data.auto_scoring.fuel_cycles,
                         (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
                               auto_scoring: data.data.auto_scoring
                                   .copyWith(fuel_cycles: val))));
+                    }),
+                    _buildCounterRow(
+                        'Passing Cycles', data.data.auto_scoring.passing_cycles,
+                        (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              auto_scoring: data.data.auto_scoring
+                                  .copyWith(passing_cycles: val))));
                     }),
                   ],
                 ),
@@ -1820,13 +1825,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   cardColor: const Color.fromARGB(30, 155, 39, 176),
                   accentColor: Colors.purple,
                   children: [
-                    _buildCounterRow('Passing Cycles',
-                        data.data.teleop_scoring.passing_cycles, (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              teleop_scoring: data.data.teleop_scoring
-                                  .copyWith(passing_cycles: val))));
-                    }),
                     _buildCounterRow(
                         'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
                         (val) {
@@ -1834,6 +1832,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                           data: data.data.copyWith(
                               teleop_scoring: data.data.teleop_scoring
                                   .copyWith(fuel_cycles: val))));
+                    }),
+                    _buildCounterRow('Passing Cycles',
+                        data.data.teleop_scoring.passing_cycles, (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              teleop_scoring: data.data.teleop_scoring
+                                  .copyWith(passing_cycles: val))));
                     }),
                   ],
                 ),
