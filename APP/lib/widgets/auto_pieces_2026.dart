@@ -1060,8 +1060,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
                         value: widget
                             .auto.starting_position_meters_from_hub_center
                             .toDouble(),
-                        inactiveColor: Colors.lightBlue,
-                        activeColor: Colors.lightBlue,
+                        inactiveColor: Colors.red,
+                        activeColor: Colors.blue,
                         thumbColor: Colors.white,
                         min: 0,
                         max: fieldWidthMeters,
