@@ -2165,7 +2165,7 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
             return DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
         else:
             formData = DeathScoutingForm(scout_info=scout_info_from_token(token), event_code=str(
-                year)+event, team_key=team, total=0, average=0, time=datetime.utcnow().timestamp())
+                year)+event, team_key=team, total=0, average=0, time=int(datetime.utcnow().timestamp()))
             notRecorded = True
             for entry in deathEntries:
                 for death in formData.deaths:
@@ -2365,7 +2365,7 @@ def updateData(event_code: str, event_type: int):
                     "death_rate": 0.0,
                     "defense_rate": 0.0,
                     "auto_scoring_fuel_cycles": 0.0,
-                    "teleop_scoring_fuel_cycles": 0.0,
+                    "teleop_fuel_cycles": 0.0,
                     "foul_points": 0.0,
                     "simulated_rp": 0,
                     "simulated_rank": 0
@@ -2477,8 +2477,8 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                     "climbing_points": 0.0,
                     "death_rate": 0.0,
                     "defense_rate": 0.0,
-                    "auto_scoring_fuel_cycles": 0.0,
-                    "teleop_scoring_fuel_cycles": 0.0,
+                    "auto_fuel_cycles": 0.0,
+                    "teleop_fuel_cycles": 0.0,
                     "foul_points": 0.0,
                     "simulated_rp": 0,
                     "simulated_rank": 0
@@ -2554,8 +2554,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_auto_points": 0,
                     "blue_teleop_points": 0,
                     "blue_endgame_points": 0,
-                    "blue_auto_scoring_fuel_cycles": 0,
-                    "blue_teleop_scoring_fuel_cycles": 0,
+                    "blue_auto_fuel_cycles": 0,
+                    "blue_teleop_fuel_cycles": 0,
                     "blue_auto_passing_cycles": 0,
                     "blue_teleop_passing_cycles": 0,
 
@@ -2570,8 +2570,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_auto_points": 0,
                     "red_teleop_points": 0,
                     "red_endgame_points": 0,
-                    "red_auto_scoring_fuel_cycles": 0,
-                    "red_teleop_scoring_fuel_cycles": 0,
+                    "red_auto_fuel_cycles": 0,
+                    "red_teleop_fuel_cycles": 0,
                     "red_auto_passing_cycles": 0,
                     "red_teleop_passing_cycles": 0,
 
@@ -2595,8 +2595,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_auto_points": 0,
                     "blue_teleop_points": 0,
                     "blue_endgame_points": 0,
-                    "blue_auto_scoring_fuel_cycles": 0,
-                    "blue_teleop_scoring_fuel_cycles": 0,
+                    "blue_auto_fuel_cycles": 0,
+                    "blue_teleop_fuel_cycles": 0,
                     "blue_auto_passing_cycles": 0,
                     "blue_teleop_passing_cycles": 0,
 
@@ -2611,8 +2611,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_auto_points": 0,
                     "red_teleop_points": 0,
                     "red_endgame_points": 0,
-                    "red_auto_scoring_fuel_cycles": 0,
-                    "red_teleop_scoring_fuel_cycles": 0,
+                    "red_auto_fuel_cycles": 0,
+                    "red_teleop_fuel_cycles": 0,
                     "red_auto_passing_cycles": 0,
                     "red_teleop_passing_cycles": 0,
 
@@ -2632,8 +2632,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                         matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
                         matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
                         matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                        matchPrediction[f"{alliance}_auto_scoring_fuel_cycles"] += teamData["auto_scoring_fuel_cycles"]
-                        matchPrediction[f"{alliance}_teleop_scoring_fuel_cycles"] += teamData["teleop_scoring_fuel_cycles"]
+                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_cycles"]
+                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_cycles"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
