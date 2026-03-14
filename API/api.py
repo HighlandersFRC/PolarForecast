@@ -649,7 +649,7 @@ def updateGroupStatus(group: Group, event_code: str):
         if len(teamPictures) > 0:
             full_robot = False
             feeder = False
-            shooter = False 
+            shooter = False
             intake = False
             wires = False
             for picture in teamPictures:
@@ -657,13 +657,13 @@ def updateGroupStatus(group: Group, event_code: str):
                     full_robot = True
                 elif picture.image_type == "feeder":
                     feeder = True
-                elif picture.image_type == "intake":
-                    intake = True
                 elif picture.image_type == "shooter":
                     shooter = True
+                elif picture.image_type == "intake":
+                    intake = True
                 elif picture.image_type == "wires":
                     wires = True
-            if full_robot and feeder and intake and shooter and wires:
+            if full_robot and feeder and shooter and intake and wires:
                 status.picture_status = "Done"
             else:
                 status.picture_status = "Incomplete"
@@ -1365,7 +1365,7 @@ def join_group(group_name: str, join_code: str, token: str = Depends(check_token
         group_name=group_name,
         user_id=user_info['sub'],
         username=user_info['preferred_username'],
-        request_time=datetime.now().timestamp(),
+        request_time=int(datetime.now().timestamp()),
         group_id=DBgroup.group_id,
         accepted=False,
     )
@@ -1800,7 +1800,7 @@ def get_picture_post_url(token: str = Depends(check_token_active)):
         blob_name=image_id_string,
         account_key=RobotPicturesClient.credential.account_key,
         permission=BlobSasPermissions(write=True),
-        expiry=datetime.utcnow()+timedelta(minutes=5),
+        expiry=int(datetime.utcnow()+timedelta(minutes=5)),
     )
     blob_url = f"{RobotPicturesClient.primary_endpoint}/{image_id_string}"
     presigned_url = f"{blob_url}?{sas}&Cache-Control=max-age=86400"
@@ -2364,12 +2364,12 @@ def updateData(event_code: str, event_type: int):
                     "climbing_points": 0.0,
                     "death_rate": 0.0,
                     "defense_rate": 0.0,
-                    "auto_fuel_cycles": 0.0,
-                    "teleop_fuel_cycles": 0.0,
+                    "auto_scoring_fuel_cycles": 0.0,
+                    "teleop_scoring_fuel_cycles": 0.0,
                     "foul_points": 0.0,
                     "simulated_rp": 0,
                     "simulated_rank": 0
-                    }
+                      }
                      for team in teams])
     try:
         (data, predictions) = updatePredictions(TBAData, data, eventType=event_type)
@@ -2461,26 +2461,27 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                     keyList.append(keyStr+team[3:])
                 retval0 = {"data": {"keys": keyList}}
                 data = [retval0]
-                data.extend([{"historical": False,
-                                "key": team,
-                                "rank": 0,
-                                "team_number": team[3:],
-                                "match_count": 0,
-                                "OPR": 0.0,
-                                "total_pass": 0.0,
-                                "auto_pass": 0.0,
-                                "teleop_pass": 0.0,
-                                "endgame_points": 0.0,
-                                "teleop_points": 0.0,
-                                "auto_points": 0.0,
-                                "climbing_points": 0.0,
-                                "death_rate": 0.0,
-                                "defense_rate": 0.0,
-                                "auto_fuel_cycles": 0.0,
-                                "teleop_fuel_cycles": 0.0,
-                                "foul_points": 0.0,
-                                "simulated_rp": 0,
-                                "simulated_rank": 0
+                data.extend([{
+                    "historical": False,
+                    "key": team,
+                    "rank": 0,
+                    "team_number": team[3:],
+                    "match_count": 0,
+                    "OPR": 0.0,
+                    "total_pass": 0.0,
+                    "auto_pass": 0.0,
+                    "teleop_pass": 0.0,
+                    "endgame_points": 0.0,
+                    "teleop_points": 0.0,
+                    "auto_points": 0.0,
+                    "climbing_points": 0.0,
+                    "death_rate": 0.0,
+                    "defense_rate": 0.0,
+                    "auto_scoring_fuel_cycles": 0.0,
+                    "teleop_scoring_fuel_cycles": 0.0,
+                    "foul_points": 0.0,
+                    "simulated_rp": 0,
+                    "simulated_rank": 0
                               }
                              for team in teams])
             try:
@@ -2539,85 +2540,85 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
     for match in TBAData:
         if match.score_breakdown is not None:
             matchPrediction = {
-                        "comp_level": match.comp_level,
-        "key": match.key,
-        "match_number": match.match_number,
-        "set_number": match.set_number,
+                    "comp_level": match.comp_level,
+                    "key": match.key,
+                    "match_number": match.match_number,
+                    "set_number": match.set_number,
 
-        "blue_teams": match.alliances['blue'].team_keys,
-        "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
-        "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
+                    "blue_teams": match.alliances['blue'].team_keys,
+                    "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                    "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
 
-        "blue_score": 0,
-        "blue_climbing": 0,
-        "blue_auto_points": 0,
-        "blue_teleop_points": 0,
-        "blue_endgame_points": 0,
-        "blue_auto_fuel_cycles": 0,
-        "blue_teleop_fuel_cycles": 0,
-        "blue_auto_passing_cycles": 0,
-        "blue_teleop_passing_cycles": 0,
+                    "blue_score": 0,
+                    "blue_climbing": 0,
+                    "blue_auto_points": 0,
+                    "blue_teleop_points": 0,
+                    "blue_endgame_points": 0,
+                    "blue_auto_scoring_fuel_cycles": 0,
+                    "blue_teleop_scoring_fuel_cycles": 0,
+                    "blue_auto_passing_cycles": 0,
+                    "blue_teleop_passing_cycles": 0,
 
-        "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                    "blue_actual_score": match.score_breakdown["blue"].totalPoints,
 
-        "red_teams": match.alliances['red'].team_keys,
-        "red_dq_team_keys": match.alliances['red'].dq_team_keys,
-        "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                    "red_teams": match.alliances['red'].team_keys,
+                    "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                    "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
 
-        "red_score": 0,
-        "red_climbing": 0,
-        "red_auto_points": 0,
-        "red_teleop_points": 0,
-        "red_endgame_points": 0,
-        "red_auto_fuel_cycles": 0,
-        "red_teleop_fuel_cycles": 0,
-        "red_auto_passing_cycles": 0,
-        "red_teleop_passing_cycles": 0,
+                    "red_score": 0,
+                    "red_climbing": 0,
+                    "red_auto_points": 0,
+                    "red_teleop_points": 0,
+                    "red_endgame_points": 0,
+                    "red_auto_scoring_fuel_cycles": 0,
+                    "red_teleop_scoring_fuel_cycles": 0,
+                    "red_auto_passing_cycles": 0,
+                    "red_teleop_passing_cycles": 0,
 
-        "red_actual_score": match.score_breakdown["red"].totalPoints,
+                    "red_actual_score": match.score_breakdown["red"].totalPoints,
 
-        "predicted": False,
+                    "predicted": False,
             }
         else:
             matchPrediction = {
-                        "comp_level": match.comp_level,
-        "key": match.key,
-        "match_number": match.match_number,
-        "set_number": match.set_number,
+                    "comp_level": match.comp_level,
+                    "key": match.key,
+                    "match_number": match.match_number,
+                    "set_number": match.set_number,
 
-        "blue_teams": match.alliances['blue'].team_keys,
-        "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
-        "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
+                    "blue_teams": match.alliances['blue'].team_keys,
+                    "blue_dq_team_keys": match.alliances['blue'].dq_team_keys,
+                    "blue_surrogate_team_keys": match.alliances['blue'].surrogate_team_keys,
 
-        "blue_score": 0,
-        "blue_climbing": 0,
-        "blue_auto_points": 0,
-        "blue_teleop_points": 0,
-        "blue_endgame_points": 0,
-        "blue_auto_fuel_cycles": 0,
-        "blue_teleop_fuel_cycles": 0,
-        "blue_auto_passing_cycles": 0,
-        "blue_teleop_passing_cycles": 0,
+                    "blue_score": 0,
+                    "blue_climbing": 0,
+                    "blue_auto_points": 0,
+                    "blue_teleop_points": 0,
+                    "blue_endgame_points": 0,
+                    "blue_auto_scoring_fuel_cycles": 0,
+                    "blue_teleop_scoring_fuel_cycles": 0,
+                    "blue_auto_passing_cycles": 0,
+                    "blue_teleop_passing_cycles": 0,
 
-        "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                    "blue_actual_score": match.score_breakdown["blue"].totalPoints,
 
-        "red_teams": match.alliances['red'].team_keys,
-        "red_dq_team_keys": match.alliances['red'].dq_team_keys,
-        "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
+                    "red_teams": match.alliances['red'].team_keys,
+                    "red_dq_team_keys": match.alliances['red'].dq_team_keys,
+                    "red_surrogate_team_keys": match.alliances['red'].surrogate_team_keys,
 
-        "red_score": 0,
-        "red_climbing": 0,
-        "red_auto_points": 0,
-        "red_teleop_points": 0,
-        "red_endgame_points": 0,
-        "red_auto_fuel_cycles": 0,
-        "red_teleop_fuel_cycles": 0,
-        "red_auto_passing_cycles": 0,
-        "red_teleop_passing_cycles": 0,
+                    "red_score": 0,
+                    "red_climbing": 0,
+                    "red_auto_points": 0,
+                    "red_teleop_points": 0,
+                    "red_endgame_points": 0,
+                    "red_auto_scoring_fuel_cycles": 0,
+                    "red_teleop_scoring_fuel_cycles": 0,
+                    "red_auto_passing_cycles": 0,
+                    "red_teleop_passing_cycles": 0,
 
-        "red_actual_score": match.score_breakdown["red"].totalPoints,
+                    "red_actual_score": match.score_breakdown["red"].totalPoints,
 
-        "predicted": False,
+                    "predicted": False,
             }
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
@@ -2631,41 +2632,20 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                         matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
                         matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
                         matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_cycles"]
-                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_cycles"]
+                        matchPrediction[f"{alliance}_auto_scoring_fuel_cycles"] += teamData["auto_scoring_fuel_cycles"]
+                        matchPrediction[f"{alliance}_teleop_scoring_fuel_cycles"] += teamData["teleop_scoring_fuel_cycles"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
             else:
                 opponent = "red"
-            
-            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[f"{alliance}_score"] \
-                else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-
-            score = matchPrediction[f"{alliance}_score"]
-
-            # ENERGIZED RP
-            matchPrediction[f"{alliance}_energized_rp"] = 1 if score >= 100 else 0
-
-            # SUPERCHARGED RP
-            matchPrediction[f"{alliance}_supercharged_rp"] = 1 if score >= 360 else 0
-
-            # TRAVERSAL RP
-            matchPrediction[f"{alliance}_traversal_rp"] = 1 if score >= 50 else 0
-
-            # TOTAL RP
-            matchPrediction[f"{alliance}_total_rp"] = (
-                matchPrediction[f"{alliance}_win_rp"] +
-                matchPrediction[f"{alliance}_energized_rp"] +
-                matchPrediction[f"{alliance}_supercharged_rp"] +
-                matchPrediction[f"{alliance}_traversal_rp"]
-)
-           
+            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
+                f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
+            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"]
             if not matchPrediction["predicted"]:
                 matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
                 matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
-            
         matchPredictions.append(matchPrediction)
     for i in range(1, len(calculatedData)):
         calculatedData[i]["simulated_rp"] = 0
@@ -2689,7 +2669,6 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                                 dataTeam["simulated_rp"] += match.score_breakdown[alliance].rp
                     calculatedData[idx] = dataTeam
                 except Exception as e:
-                    # logging.error(e)
                     pass
     sorted_list = sorted(
         calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
