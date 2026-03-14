@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/scouting_report.dart';
+import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:syncfusion_flutter_core/theme.dart'; // Needed for SfDataGridTheme
 
 class ScoutingReportPage extends StatefulWidget {
   final String group;
@@ -32,71 +34,112 @@ class _ScoutingReportPageState extends State<ScoutingReportPage> {
     );
   }
 
+  // Helper method to keep column definitions clean
+  Widget _buildHeaderCell(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      alignment: Alignment.center,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scouting Report')),
+      appBar: PolarForecastAppBar(
+        extraText: 'Scouting Report for ${widget.event}',
+      ),
       body: FutureBuilder<ScoutingReport>(
         future: futureReport,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading report',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    snapshot.error.toString(),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.report.isEmpty) {
-            return const Center(child: Text('No data available'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment_late_outlined,
+                      color: Colors.grey[400], size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No data available',
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
           }
 
           final reportList = snapshot.data!.report;
           dataSource = ScoutingReportDataSource(reportList);
 
-          return SfDataGrid(
-            source: dataSource,
-            allowSorting: true,
-            columns: [
-              GridColumn(
-                columnName: 'username',
-                allowSorting: false,
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Username'),
+          // Wrap the grid in a theme to make it look like a cohesive table
+          return SfDataGridTheme(
+            data: SfDataGridThemeData(
+              headerColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              gridLineColor: Colors.grey.withOpacity(0.3),
+              gridLineStrokeWidth: 1.0,
+            ),
+            child: SfDataGrid(
+              source: dataSource,
+              allowSorting: true,
+              columnWidthMode:
+                  ColumnWidthMode.fill, // Makes columns stretch to fit screen
+              gridLinesVisibility: GridLinesVisibility.both,
+              headerGridLinesVisibility: GridLinesVisibility.both,
+              columns: [
+                GridColumn(
+                  columnName: 'username',
+                  allowSorting: false,
+                  label: _buildHeaderCell('Username'),
                 ),
-              ),
-              GridColumn(
-                columnName: 'first_name',
-                allowSorting: false,
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('First Name'),
+                GridColumn(
+                  columnName: 'first_name',
+                  allowSorting: false,
+                  label: _buildHeaderCell('First Name'),
                 ),
-              ),
-              GridColumn(
-                columnName: 'trustRatings',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Trust Ratings'),
+                GridColumn(
+                  columnName: 'trustRatings',
+                  label: _buildHeaderCell('Trust Ratings'),
                 ),
-              ),
-              GridColumn(
-                columnName: 'entries',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Entries'),
+                GridColumn(
+                  columnName: 'entries',
+                  label: _buildHeaderCell('Entries'),
                 ),
-              ),
-              GridColumn(
-                columnName: 'contribution',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Contribution'),
+                GridColumn(
+                  columnName: 'contribution',
+                  label: _buildHeaderCell('Contribution'),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -114,6 +157,8 @@ class ScoutingReportDataSource extends DataGridSource {
   late double minTrust;
 
   ScoutingReportDataSource(List<ScoutingReportEntry> entries) {
+    if (entries.isEmpty) return;
+
     maxEntries = entries.map((e) => e.entries).reduce((a, b) => a > b ? a : b);
     minEntries = entries.map((e) => e.entries).reduce((a, b) => a < b ? a : b);
 
@@ -148,9 +193,13 @@ class ScoutingReportDataSource extends DataGridSource {
   List<DataGridRow> get rows => _rows;
 
   Color getCellColor(num value, num minValue, num maxValue, bool flip) {
+    // Safety check to prevent division by zero if all values are exactly the same
+    if (maxValue == minValue) return Colors.yellow[700]!;
+
     double normalizedValue = (value - minValue) / (maxValue - minValue);
     normalizedValue = normalizedValue.clamp(0.0, 1.0);
     if (flip) normalizedValue = 1 - normalizedValue;
+
     if (normalizedValue > 0.5) {
       return Color.lerp(Colors.yellow[700], Colors.green.shade800,
               (normalizedValue - 0.5) * 2) ??
@@ -162,53 +211,76 @@ class ScoutingReportDataSource extends DataGridSource {
     }
   }
 
+  // Helper for text readability against heatmap backgrounds
+  Color _getTextColorForBackground(Color backgroundColor) {
+    return backgroundColor.computeLuminance() > 0.5
+        ? Colors.black
+        : Colors.white;
+  }
+
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     final trust = row.getCells()[2].value as double;
     final entries = row.getCells()[3].value as double;
     final contribution = row.getCells()[4].value as double;
 
-    final Color usernameColor = Colors.black;
-    final Color firstNameColor = const Color.fromARGB(255, 10, 93, 161);
+    // Slightly softened the hardcoded colors to look better in a grid
+    final Color usernameColor = const Color(0xFF1E1E1E);
+    final Color firstNameColor = const Color(0xFF1565C0);
+
+    final trustColor = getCellColor(trust, minTrust, maxTrust, false);
+    final entriesColor = getCellColor(entries, minEntries, maxEntries, false);
+    final contributionColor =
+        getCellColor(contribution, minContribution, maxContribution, false);
 
     return DataGridRowAdapter(cells: [
       Container(
-        padding: const EdgeInsets.all(8),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        alignment: Alignment.centerLeft, // Left aligned looks better for names
         color: usernameColor,
         child: Text(row.getCells()[0].value.toString(),
-            style: const TextStyle(color: Colors.white, fontFamily: 'Font')),
+            style: const TextStyle(
+                color: Colors.white, fontFamily: 'Font', fontSize: 13)),
       ),
       Container(
-        padding: const EdgeInsets.all(8),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        alignment: Alignment.centerLeft, // Left aligned looks better for names
         color: firstNameColor,
         child: Text(row.getCells()[1].value.toString(),
-            style: const TextStyle(color: Colors.white, fontFamily: 'Font')),
+            style: const TextStyle(
+                color: Colors.white, fontFamily: 'Font', fontSize: 13)),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color: getCellColor(trust, minTrust, maxTrust, false),
+        color: trustColor,
         child: Text(
           trust.toStringAsFixed(2),
-          style: TextStyle(fontFamily: 'Font'),
+          style: TextStyle(
+              fontFamily: 'Font',
+              fontWeight: FontWeight.bold,
+              color: _getTextColorForBackground(trustColor)),
         ),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color: getCellColor(entries, minEntries, maxEntries, false),
+        color: entriesColor,
         child: Text(entries.toStringAsFixed(1),
-            style: TextStyle(fontFamily: 'Font')),
+            style: TextStyle(
+                fontFamily: 'Font',
+                fontWeight: FontWeight.bold,
+                color: _getTextColorForBackground(entriesColor))),
       ),
       Container(
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
-        color:
-            getCellColor(contribution, minContribution, maxContribution, false),
+        color: contributionColor,
         child: Text(contribution.toStringAsFixed(2),
-            style: TextStyle(fontFamily: 'Font')),
+            style: TextStyle(
+                fontFamily: 'Font',
+                fontWeight: FontWeight.bold,
+                color: _getTextColorForBackground(contributionColor))),
       ),
     ]);
   }

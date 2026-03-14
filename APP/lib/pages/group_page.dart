@@ -933,45 +933,48 @@ class _EventsTabState extends State<_EventsTab> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
                                             children: [
-                                              Text(
-                                                'Scouting Report',
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Font'),
-                                              ),
-                                              SizedBox(height: 8),
                                               Card(
-                                                child: Padding(
-                                                  padding: EdgeInsets.all(20.0),
-                                                  child: ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.blue,
-                                                      foregroundColor:
-                                                          Colors.white,
+                                                child: Column(
+                                                  children: [
+                                                    Text(
+                                                      'Scouting Report',
+                                                      style: TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontFamily: 'Font'),
                                                     ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pushNamed(
-                                                              '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/scouting_report');
-                                                    },
-                                                    child: Text(
-                                                        'View Scouting Report',
-                                                        style: TextStyle(
-                                                            fontFamily:
-                                                                'Font')),
-                                                  ),
+                                                    SizedBox(height: 8),
+                                                    ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.blue,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.of(context)
+                                                            .pushNamed(
+                                                                '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/scouting_report');
+                                                      },
+                                                      child: Text(
+                                                          'View Scouting Report',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Font')),
+                                                    ),
+                                                    SizedBox(height: 8),
+                                                    Text(
+                                                      'Tap to see detailed scouting data for this event.',
+                                                      style: TextStyle(
+                                                          fontSize: 14,
+                                                          color:
+                                                              Colors.grey[700],
+                                                          fontFamily: 'Font'),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                              SizedBox(height: 8),
-                                              Text(
-                                                'Tap to see detailed scouting data for this event.',
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.grey[700],
-                                                    fontFamily: 'Font'),
                                               ),
                                             ],
                                           ),

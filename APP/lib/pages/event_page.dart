@@ -631,7 +631,7 @@ class _DefenseMatchesOnClick extends StatelessWidget {
         .where((m) => m.team_number == team && m.data.miscellaneous.defense)
         .length;
 
-    if (teamMatches == 0) return "0.0";
+    if (teamMatches == 0) return '0.0';
 
     final rate = defenseMatches / teamMatches;
     return rate.toStringAsFixed(1);

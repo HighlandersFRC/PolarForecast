@@ -37,7 +37,7 @@ class Group(BaseModel):
     member_group_id: str
     name: str
     affiliation: str
-    join_code: Optional[str]
+    join_code: Optional[str] = None
     events: List[GroupEvent]
     settings: GroupSettings
     last_update: int = 0

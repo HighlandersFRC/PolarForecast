@@ -71,7 +71,7 @@ class _DeathsFormState extends State<DeathsForm> {
         commentsLoading = false;
       });
     } catch (e) {
-      debugPrint("Fetch Error: $e");
+      debugPrint('Fetch Error: $e');
     }
   }
 
@@ -293,7 +293,7 @@ class _DeathsFormState extends State<DeathsForm> {
 
   Widget _buildSeverityDropdown(dynamic death, int index) {
     return DropdownButtonFormField<int>(
-      value: death.severity,
+      initialValue: death.severity,
       dropdownColor: surfaceColor,
       decoration: InputDecoration(
         labelText: 'Severity',

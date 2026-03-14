@@ -360,13 +360,13 @@ class _StatsTabState extends State<_StatsTab> {
               const SizedBox(height: 34),
 
               // ───── PREDICTIONS ─────
-              _sectionLabel("Predictions"),
+              _sectionLabel('Predictions'),
               const SizedBox(height: 14),
               _statsBlock(
                 color,
                 [
-                  _animatedStat("Score", predictedScore, color),
-                  _animatedStat("Ranking Points", predictedRP, color),
+                  _animatedStat('Score', predictedScore, color),
+                  _animatedStat('Ranking Points', predictedRP, color),
                 ],
               ),
 
@@ -374,14 +374,14 @@ class _StatsTabState extends State<_StatsTab> {
                 const SizedBox(height: 32),
 
                 // ───── ACTUAL RESULTS ─────
-                _sectionLabel("Actual Results"),
+                _sectionLabel('Actual Results'),
                 const SizedBox(height: 14),
                 _statsBlock(
                   color,
                   [
-                    _animatedStat("Score", actualScore, color),
+                    _animatedStat('Score', actualScore, color),
                     if (actualRP != null)
-                      _animatedStat("Ranking Points", actualRP, color),
+                      _animatedStat('Ranking Points', actualRP, color),
                   ],
                 ),
               ],
@@ -522,7 +522,7 @@ class _StatsTabState extends State<_StatsTab> {
         borderRadius: BorderRadius.circular(40),
       ),
       child: Text(
-        isWinner ? "WIN" : "LOSS",
+        isWinner ? 'WIN' : 'LOSS',
         style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isWinner ? color : Colors.grey,
@@ -545,7 +545,7 @@ class _StatsTabState extends State<_StatsTab> {
 
   @override
   Widget build(BuildContext context) {
-    String formatNum(num? value) => value?.toStringAsFixed(2) ?? "N/A";
+    String formatNum(num? value) => value?.toStringAsFixed(2) ?? 'N/A';
 
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -562,10 +562,10 @@ class _StatsTabState extends State<_StatsTab> {
       child: Column(
         children: [
           _buildAllianceCard(
-            title: "Blue Alliance",
+            title: 'Blue Alliance',
             color: Colors.blue,
             predictedScore: formatNum(stats?.prediction?.blue_score),
-            predictedRP: stats?.prediction?.blue_total_rp?.toString() ?? "-",
+            predictedRP: stats?.prediction?.blue_total_rp?.toString() ?? '-',
             actualScore: stats?.prediction?.blue_actual_score?.toString(),
             actualRP: stats?.prediction?.blue_display_rp?.toString(),
             rows: blueRows,
@@ -573,10 +573,10 @@ class _StatsTabState extends State<_StatsTab> {
           ),
           const SizedBox(height: 32),
           _buildAllianceCard(
-            title: "Red Alliance",
+            title: 'Red Alliance',
             color: Colors.red,
             predictedScore: formatNum(stats?.prediction?.red_score),
-            predictedRP: stats?.prediction?.red_total_rp?.toString() ?? "-",
+            predictedRP: stats?.prediction?.red_total_rp?.toString() ?? '-',
             actualScore: stats?.prediction?.red_actual_score?.toString(),
             actualRP: stats?.prediction?.red_display_rp?.toString(),
             rows: redRows,
