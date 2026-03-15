@@ -11,6 +11,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
+import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
@@ -463,10 +464,116 @@ class _TeamDataSource extends DataGridSource {
           );
         }
         if (e.columnName == 'team_number') {
-          // print(e.columnName.runtimeType);
+          final teamNumber = int.parse(e.value.toString());
+
           return Container(
-              color: color,
-              child: TeamLink(int.parse(e.value.toString()), tournament));
+            color: color,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            alignment: Alignment.center,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: TeamLink(teamNumber, tournament),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    final teamNumber = int.parse(e.value.toString());
+                    final apiService =
+                        Provider.of<ApiService>(context, listen: false);
+
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(
+                          'Team $teamNumber Pictures',
+                          style: const TextStyle(fontFamily: 'Font'),
+                        ),
+                        content: SizedBox(
+                          width: 500,
+                          height: 400,
+                          child: FutureBuilder<List<PictureData>>(
+                              future: apiService.fetchTeamImages(
+                                int.parse(tournament.page.split('/')[3]),
+                                tournament.page.split('/')[4],
+                                'frc$teamNumber',
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+
+                                if (snapshot.hasError) {
+                                  return const Center(
+                                      child: Text('Error loading images'));
+                                }
+
+                                if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return const Center(
+                                      child: Text('No images found'));
+                                }
+
+                                final allImages = snapshot.data!;
+
+                                // 1️⃣ Try full_robot first
+                                List<PictureData> images = allImages
+                                    .where(
+                                        (img) => img.image_type == 'full_robot')
+                                    .toList();
+
+                                // 2️⃣ If none, try wires
+                                if (images.isEmpty) {
+                                  images = allImages
+                                      .where((img) => img.image_type == 'wires')
+                                      .toList();
+                                }
+
+                                // 3️⃣ If still none, pick any available image
+                                if (images.isEmpty) {
+                                  images = allImages;
+                                }
+
+                                final image = images.first;
+
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    image.link,
+                                    fit: BoxFit.contain,
+                                    loadingBuilder: (context, child, progress) {
+                                      if (progress == null) return child;
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    },
+                                  ),
+                                );
+                              }),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Icon(
+                      Icons.insert_photo_outlined,
+                      size: 36,
+                      color: Colors.blue,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          );
         }
         if (e.columnName == 'OPR') {
           return _OvertimeChartOnClick(
@@ -866,6 +973,88 @@ class _ChartsTab extends StatefulWidget {
   }
 }
 
+class _TeamCard extends StatelessWidget {
+  final int teamIndex;
+  final List<int> teams;
+  final Widget chart;
+  final Tournament tournament;
+  final List<MatchScouting2026> scouting;
+
+  const _TeamCard({
+    required this.teamIndex,
+    required this.teams,
+    required this.chart,
+    required this.tournament,
+    required this.scouting,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (teamIndex == 0) return const SizedBox.shrink();
+
+    final teamNumber = teams[teamIndex - 1];
+
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.all(12),
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            chart,
+            const SizedBox(height: 12),
+            FutureBuilder<List<PictureData>>(
+              future: Provider.of<ApiService>(context, listen: false)
+                  .fetchTeamImages(
+                int.parse(tournament.page.split('/')[3]),
+                tournament.page.split('/')[4],
+                'frc$teamNumber',
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError ||
+                    snapshot.data == null ||
+                    snapshot.data!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                final allImages = snapshot.data!;
+                List<PictureData> images = allImages
+                    .where((img) => img.image_type == 'full_robot')
+                    .toList();
+                if (images.isEmpty)
+                  images = allImages
+                      .where((img) => img.image_type == 'wires')
+                      .toList();
+                if (images.isEmpty) images = allImages;
+
+                final image = images.first;
+
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    image.link,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    height: 200,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ChartsTabState extends State<_ChartsTab> {
   List<TeamStats2026> rankings = [];
   bool isLoading = true;
@@ -946,6 +1135,7 @@ class _ChartsTabState extends State<_ChartsTab> {
         ),
       );
     }
+
     return Center(
         child: SingleChildScrollView(
       child: Column(
@@ -985,12 +1175,8 @@ class _ChartsTabState extends State<_ChartsTab> {
               List<String> seriesLabels = [
                 'auto_scoring_fuel_cycles',
                 'auto_scoring_passing_cycles',
-                'auto_scoring_scoring_cycles',
-                'auto_scoring_cycles_completed',
                 'teleop_scoring_fuel_cycles',
                 'teleop_scoring_passing_cycles',
-                'teleop_scoring_scoring_cycles',
-                'teleop_scoring_cycles_completed',
               ];
               for (var series in seriesLabels) {
                 seriesData[series] = [];
@@ -1102,6 +1288,59 @@ class _ChartsTabState extends State<_ChartsTab> {
                   maxY = max(maxY, sum + 1);
                 }
               if (selectedTeam != 0)
+                FutureBuilder<List<PictureData>>(
+                  future: Provider.of<ApiService>(context, listen: false)
+                      .fetchTeamImages(
+                    int.parse(widget.widget.tournament.page.split('/')[3]),
+                    widget.widget.tournament.page.split('/')[4],
+                    'frc${teams[selectedTeam - 1]}',
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Center(child: Text('Error loading images'));
+                    }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const SizedBox.shrink(); // no image
+                    }
+
+                    final allImages = snapshot.data!;
+
+                    // Priority list: full_robot > wires > any
+                    List<PictureData> images = allImages
+                        .where((img) => img.image_type == 'full_robot')
+                        .toList();
+                    if (images.isEmpty) {
+                      images = allImages
+                          .where((img) => img.image_type == 'wires')
+                          .toList();
+                    }
+                    if (images.isEmpty) images = allImages;
+
+                    final image = images.first;
+
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          image.link,
+                          fit: BoxFit.contain,
+                          width: 200,
+                          height: 200,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                );
+              if (selectedTeam != 0)
                 for (var match in matches) {
                   double sum = 0;
                   for (String label in seriesLabels) {
@@ -1177,63 +1416,16 @@ class _ChartsTabState extends State<_ChartsTab> {
                           yValueMapper: (data, _) => data);
                     })
                   ]);
-              return Row(children: [
-                Column(children: [
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Top controls: centered
                   Padding(
-                    padding: EdgeInsets.all(
-                      30,
-                    ),
-                    child: Row(children: [
-                      DropdownButton<int>(
-                        items: [
-                          DropdownMenuItem(
-                            child: Text('Select a Team',
-                                style: TextStyle(fontFamily: 'Font')),
-                            value: 0,
-                          ),
-                          ...teams.map((team) => DropdownMenuItem(
-                                child: Text('Team $team',
-                                    style: TextStyle(fontFamily: 'Font')),
-                                value: teams.indexOf(team) + 1,
-                              ))
-                        ],
-                        onChanged: (team) => setState(() {
-                          selectedTeam = team ?? 0;
-                        }),
-                        value: selectedTeam,
-                      ),
-                      if (landscape)
-                        Tooltip(
-                            message: 'Compare',
-                            child: IconButton(
-                                icon: comparing
-                                    ? Icon(Icons.compare_arrows)
-                                    : Icon(Icons.compare_arrows,
-                                        color: Colors.blue),
-                                onPressed: () => setState(() {
-                                      comparing = !comparing;
-                                    })))
-                    ]),
-                  ),
-                  Row(children: [
-                    AnimatedSize(
-                        curve: Curves.decelerate,
-                        alignment: Alignment(0, 0),
-                        duration: Duration(milliseconds: 500),
-                        child: Container(
-                            width: comparing
-                                ? constraints.maxWidth / 2
-                                : constraints.maxWidth,
-                            child: firstChart))
-                  ]),
-                ]),
-                if (comparing)
-                  Column(children: [
-                    Padding(
-                      padding: EdgeInsets.all(
-                        30,
-                      ),
-                      child: Row(children: [
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Team 1 dropdown
                         DropdownButton<int>(
                           items: [
                             DropdownMenuItem(
@@ -1248,23 +1440,87 @@ class _ChartsTabState extends State<_ChartsTab> {
                                 )),
                           ],
                           onChanged: (team) => setState(() {
-                            secondTeam = team ?? 0;
+                            selectedTeam = team ?? 0;
                           }),
-                          value: secondTeam,
+                          value: selectedTeam,
                         ),
-                      ]),
+
+                        const SizedBox(width: 16),
+
+                        // Compare toggle button
+                        ElevatedButton.icon(
+                          icon: Icon(
+                              comparing ? Icons.toggle_on : Icons.toggle_off),
+                          label: Text('Compare',
+                              style: TextStyle(fontFamily: 'Font')),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                comparing ? Colors.blue : Colors.grey,
+                          ),
+                          onPressed: () => setState(() {
+                            comparing = !comparing;
+                            if (!comparing)
+                              secondTeam =
+                                  0; // reset second team when turning off
+                          }),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        // Team 2 dropdown (only visible if comparing)
+                        if (comparing)
+                          DropdownButton<int>(
+                            items: [
+                              DropdownMenuItem(
+                                child: Text('Select a Team',
+                                    style: TextStyle(fontFamily: 'Font')),
+                                value: 0,
+                              ),
+                              ...teams.map((team) => DropdownMenuItem(
+                                    child: Text('Team $team',
+                                        style: TextStyle(fontFamily: 'Font')),
+                                    value: teams.indexOf(team) + 1,
+                                  )),
+                            ],
+                            onChanged: (team) => setState(() {
+                              secondTeam = team ?? 0;
+                            }),
+                            value: secondTeam,
+                          ),
+                      ],
                     ),
-                    Row(children: [
-                      AnimatedSize(
-                          curve: Curves.decelerate,
-                          alignment: Alignment(0, 0),
-                          duration: Duration(milliseconds: 500),
-                          child: Container(
-                              width: comparing ? constraints.maxWidth / 2 : 0,
-                              child: secondChart))
-                    ]),
-                  ])
-              ]);
+                  ),
+
+                  // Charts and images row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Team 1 Card
+                      Expanded(
+                        child: _TeamCard(
+                          teamIndex: selectedTeam,
+                          teams: teams,
+                          chart: firstChart,
+                          tournament: widget.widget.tournament,
+                          scouting: scouting,
+                        ),
+                      ),
+
+                      // Team 2 Card (only if comparing)
+                      if (comparing)
+                        Expanded(
+                          child: _TeamCard(
+                            teamIndex: secondTeam,
+                            teams: teams,
+                            chart: secondChart,
+                            tournament: widget.widget.tournament,
+                            scouting: scouting,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              );
             }),
           if (token == null)
             LoginWidget(redirect_path: 'event/${widget.widget.tournament.key}'),

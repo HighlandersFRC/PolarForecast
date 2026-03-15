@@ -140,6 +140,7 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
+  String nickname = '';
   bool isLoading = true;
 
   // Only show these fields in the UI
@@ -214,6 +215,18 @@ class _StatsTabState extends State<_StatsTab> {
     } catch (e) {
       print('Error fetching data: $e');
     }
+    try {
+      final fetchTeamNicknames =
+          await apiService.fetchTeamNicknames('frc${widget.widget.teamNumber}');
+      if (mounted) {
+        setState(() {
+          nickname = fetchTeamNicknames;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   String formatValue(dynamic value) {
@@ -236,7 +249,7 @@ class _StatsTabState extends State<_StatsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${widget.widget.tournament.display} - Team ${widget.widget.teamNumber} Stats',
+                      '${widget.widget.tournament.display} - Team ${widget.widget.teamNumber} Stats ${nickname != null ? " ($nickname)" : ""}',
                       style: TextStyle(
                           color: theme.primaryColor,
                           fontSize: 24,
