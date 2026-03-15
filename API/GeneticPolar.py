@@ -127,7 +127,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
             if not exists: 
                 teams.append(matchTeam)
     teams.sort()
-    # print("made list of teams")
+    # print("made list of team")
     # Initializing sets of Data
     teamMatchCount = np.zeros(len(teams))
     autoClimb = np.zeros(len(teams))
@@ -242,7 +242,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     ]
 
     numEntries = len(scoutingBaseData)
-    j = numEntries  # set j to the max number of scout entries to analyze
+    j = numEntries  # set j to the max number of scouting entries to analyze
     # print("setup hardcoded stuff")
     # TBA Data
     YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
