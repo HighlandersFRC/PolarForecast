@@ -27,7 +27,7 @@ from models.pit_scouting_status import PitScoutingStatus
 from models.picture_data import PictureData
 from models.pit_scouting_2026 import PitScouting2026
 from models.alliance_request import AllianceRequest
-from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings
+from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickListItem
 from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
@@ -344,7 +344,6 @@ def get_Year_Events(year: int):
     events = ETagCollection.find({})
     events = [event["event"] for event in events]
     return events
-
 
 
 @app.get("/search_keys", tags=["miscellaneous"])
@@ -1127,6 +1126,53 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
         raise HTTPException(
             400, "Failed to delete this request")
     return get_group_alliance_requests(group_name=group_name, token=token)
+
+@app.post("/Group/{group_name}/Event/{event}/AddPickList", tags=["groups"])
+def add_picklist_to_group(
+    group_name: str,
+    event: str,
+    pick_list: PickListItem,
+    token: str = Depends(check_token_active),
+):
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+
+    kc_groups = get_user_groups(token=token)
+    admin = any(kc_group["id"] == DB_group.admin_group_id for kc_group in kc_groups)
+    if not admin:
+        raise HTTPException(403, "You are not a admin of this group")
+
+    group_event = next((e for e in DB_group.events if e.event_code == event), None)
+    if group_event is None:
+        raise HTTPException(404, f"This group is not part of an event with the code '{event}'")
+
+    if group_event.pick_lists is None:
+        group_event.pick_lists = []
+
+    group_event.pick_lists.append(pick_list)
+
+    def _event_to_dict(e: GroupEvent) -> dict:
+        result = {
+            "event_code": e.event_code,
+            "up_to_date": e.up_to_date,
+            "settings": e.settings.dict(),
+            "alliance_groups": [ag.dict() for ag in e.alliance_groups],
+        }
+        if e.pick_lists:
+            result["picklists"] = [pl.dict(by_alias=True) for pl in e.pick_lists]
+        return result
+
+    GroupCollection.find_one_and_update(
+        {"name": group_name},
+        {"$set": {"events": [_event_to_dict(ev) for ev in DB_group.events]}},
+    )
+
+    return get_group(group_name=group_name, token=token)
+    
+
+   
 
     
     
@@ -2255,7 +2301,7 @@ def get_team_global_rank(team: str) -> dict:
         raise HTTPException(404, "Team Not Found In Global Rankings")
     return returnData
 
-
+# 1 non hardcoded function
 def convertData(calculatedData, year, event_code):
     keyStr = f"/year/{year}/event/{event_code}/teams/"
     keyList = [keyStr+"index"]
