@@ -696,7 +696,6 @@ class _OvertimeChartOnClick extends StatelessWidget {
         for (var x in teamScoutingData) {
           var entry = x.toJson();
           entry['data'].remove('miscellaneous');
-          entry['data'].remove('selectedPieces');
           var flattened = flatten(
             entry['data'],
             delimiter: '_',
@@ -1053,7 +1052,6 @@ class _ChartsTabState extends State<_ChartsTab> {
               for (var x in secondTeamScoutingData) {
                 var entry = x.toJson();
                 entry['data'].remove('miscellaneous');
-                entry['data'].remove('selectedPieces');
                 var flattened = flatten(
                   entry['data'],
                   delimiter: '_',
@@ -1376,7 +1374,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   late final ScrollController scrollController;
   int driverStationIndex = -1;
   String? token;
-  List<String> selectedPieces = [];
   MatchDetails2026? matchDetails = null;
   List<Group>? groups;
   bool loading = true, submitted = false;

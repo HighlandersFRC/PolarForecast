@@ -162,14 +162,19 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
             # print(row["station" + str(k + 1) + "_endgame_tower"])
             if not row["station" + str(k + 1) + "_endgame_tower"] == "None":
                 if row["station" + str(k + 1) + "_endgame_tower"] == "Level1":
+                    
                     endgameClimbL1[idx] += 1
+                    
                 elif row["station" + str(k + 1) + "_endgame_tower"] == "Level2":
                     endgameClimbL2[idx] += 1
+                    
                 elif row["station" + str(k + 1) + "_endgame_tower"] == "Level3":
                     endgameClimbL3[idx] += 1
+                    
             # print("found endgame climb data")
             if not row["station" + str(k + 1) + "_auto_tower"] == "None":
                 if row["station" + str(k + 1) + "_auto_tower"] == "Level1" or row["station" + str(k + 1) + "_auto_tower"] == "Level2" or row["station" + str(k + 1) + "_auto_tower"] == "Level3":
+                    
                     autoClimb[idx] += 1
     # print("found TBA only stats")
 
@@ -187,15 +192,21 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         
         idx = team_idx_map.get(team_str)
         
-
+        # print("Starting idx potential error")
         if idx is not None:
+            # print("started match")
             matchScoutingCount[idx] += 1
+            # print("started died")
             teamDeaths[idx] += 1 if entry.data.miscellaneous.died else 0
+            # print("started defense")
             teamDefenses[idx] += entry.data.miscellaneous.defense or 0
+            # print("started autoPass")
             autoPass[idx] += entry.data.auto_scoring.passing_cycles or 0
+            # print("started teleopPass")
             telePass[idx] += entry.data.teleop_scoring.passing_cycles or 0
         else:
             print(f"Skipping scouting entry for team {team_str} (not in TBA matches)")
+        # print("Finished the idx")
 
     # print("Match scouting counts:", matchScoutingCount)
     # print("Team deaths:", teamDeaths)
@@ -285,7 +296,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         Alist = []
     teamIdx = -1
     for team in teams:
+        
         teamIdx += 1
+        
         teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
@@ -294,7 +307,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
                     str(entry.team_number) == team
                     and entry.match_number == teamMatch
                 ):
+                    # print("numentries")
                     numEntries += 1
+                    # print("finished numentires")
             for entry in scoutingData:
                 if (
                     str(entry.team_number) == team
@@ -338,7 +353,6 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
             exceeding_min = solutionMatrix < min
             exceeding_max = solutionMatrix > max
             error += 1000 * (np.sum(exceeding_min) + np.sum(exceeding_max))
-
             return error
         return func
 
@@ -399,11 +413,15 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         # print(result)
         array = np.array(result).ravel()
         XMatrix[dataKeys[i]] = result
-        if i < 1:
-            autoPoints += array*OPRWeights[i]
-        elif i < 2:
-            teleopPoints += array*OPRWeights[i]
         
+        if i < 1:
+            # print("auto points")
+            autoPoints += array*OPRWeights[i]
+            # print("finished auto points")
+        elif i < 2:
+            # print("teleop points")
+            teleopPoints += array*OPRWeights[i]
+            # print("finished teleop points")
         # except Exception as e:
         #     print(i, e)
     # print("looped through results")
@@ -429,7 +447,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         if math.isnan(teamDefenses[i]):
             teamDefenses[i] = 0
     endgamePoints = endgameClimbL1 * 10 + endgameClimbL2 * 20 + endgameClimbL3 * 30
+    # print("auto climb += auto points")
     autoPoints += autoClimb * 15
+    # print("finished auot climb += auto points")
     teamClimbingPoints = endgameClimbL1 * 10 + endgameClimbL2 * 20 + endgameClimbL3 * 30 + autoClimb * 15
     # teleopPoints += teamFeeding
     teamOPR = endgamePoints + autoPoints + teleopPoints

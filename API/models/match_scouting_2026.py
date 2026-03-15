@@ -23,8 +23,6 @@ class Data2026(BaseModel):
     auto_scoring: Scoring2026 = Field(default_factory=Scoring2026)
     teleop_scoring: Scoring2026 = Field(default_factory=Scoring2026)
     miscellaneous: Miscellaneous2026 = Field(default_factory=Miscellaneous2026)
-    # Add selectedPieces if your code references it
-    selectedPieces: Optional[List] = []
 
 
 class MatchScouting2026(BaseModel):
