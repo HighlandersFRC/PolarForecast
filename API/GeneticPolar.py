@@ -242,7 +242,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     ]
 
     numEntries = len(scoutingBaseData)
-    j = numEntries  # set j to the max number of scout entries to analyze
+    j = numEntries  # set j to the max number of scouting entries to analyze
     # print("setup hardcoded stuff")
     # TBA Data
     YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
