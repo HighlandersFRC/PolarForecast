@@ -346,6 +346,7 @@ def get_Year_Events(year: int):
     return events
 
 
+
 @app.get("/search_keys", tags=["miscellaneous"])
 @cacheValue(seconds=60*60*24)  # Cache it for a day
 def get_Search_Keys():
@@ -1127,25 +1128,6 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
             400, "Failed to delete this request")
     return get_group_alliance_requests(group_name=group_name, token=token)
 
-@app.post("/Group/{group_name}/Event/{event}/AddPickList", tags=["groups"])
-def add_picklist_to_group(group_name: str, event: str, token: str = Depends(check_token_active)):
-    try:
-        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
-    except:
-        raise HTTPException(404, "This group does not exist")
-    kc_groups = get_user_groups(token=token)
-    admin = False
-    for kc_group in kc_groups:
-        if kc_group["id"] == DB_group.admin_group_id:
-            admin = True
-            break
-    if not admin:
-        raise HTTPException(
-            403, "You are not a admin of this group")
-    
-    GroupCollection.insert_one(
-
-    )
     
     
     
