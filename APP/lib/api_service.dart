@@ -15,9 +15,10 @@ import 'models/match_scouting_2026.dart';
 import 'models/pit_scouting_2026.dart';
 import 'models/tournament.dart';
 import 'models/scouting_report.dart';
+import 'package:image/image.dart';
 
 class ApiService {
-  final String APIURL, AUTHURL, APPURL, REALM, CLIENT;
+  final String APIURL, AUTHURL, APPURL, REALM, TBA_KEY, CLIENT;
   final Duration cacheDuration;
   final AuthService authService;
   Future<String?> get token async => await authService.getToken();
@@ -30,6 +31,7 @@ class ApiService {
       required this.AUTHURL,
       required this.APPURL,
       required this.REALM,
+      required this.TBA_KEY,
       required this.CLIENT,
       required this.authService,
       required this.cacheDuration});
@@ -82,6 +84,14 @@ class ApiService {
     };
     if (useCache ?? true) return _getFromCache(cacheKey, getFromAPI);
     return getFromAPI();
+  }
+
+  Future<String> fetchTeamNicknames(String team_number) async {
+    Map<String, String> extraHeaders = {'X-TBA-Auth-Key': TBA_KEY};
+    final url = 'https://www.thebluealliance.com/api/v3/team/$team_number';
+
+    final data = await http.get(Uri.parse(url), headers: extraHeaders);
+    return jsonDecode(data.body)['nickname'];
   }
 
   Future<List<Tournament>> fetchTournaments() async {
@@ -220,6 +230,19 @@ class ApiService {
       int year, String event, String team) async {
     final cacheKey = '${year}_${event}_${team}_pictures';
     final url = '${APIURL}/${year}/${event}/${team}/getPictures';
+    var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
+    List<PictureData> returnImages = [];
+    for (Map<String, dynamic> imageMap in data) {
+      PictureData imageData = PictureData.fromJson(imageMap);
+      returnImages.add(imageData);
+    }
+    return returnImages;
+  }
+
+  Future<List<PictureData>> fetchEventImages(
+      int year, String event, String team) async {
+    final cacheKey = '${year}_${event}_pictures';
+    final url = '${APIURL}/${year}/${event}/getPictures';
     var data = (await _fetchFromAPI(url, cacheKey, useCache: false));
     List<PictureData> returnImages = [];
     for (Map<String, dynamic> imageMap in data) {
@@ -735,11 +758,20 @@ class ApiService {
     }
     String preSignedURL = json.decode(putURLResponse.body)['presigned_url'];
     String image_id = json.decode(putURLResponse.body)['image_id'];
+    // Resize image to 480p (854x480 maintaining aspect ratio)
+    var decodedImage = decodeImage(image);
+    if (decodedImage != null) {
+      var resized = copyResize(
+        decodedImage,
+        height: 360,
+      );
+      image = Uint8List.fromList(encodeJpg(resized, quality: 85));
+    }
     final response = await http.put(
       Uri.parse(preSignedURL),
       headers: {
         'x-ms-blob-type': 'BlockBlob',
-        'Content-Type': 'application/jpeg',
+        'Content-Type': 'image/jpeg',
       },
       body: image,
     );

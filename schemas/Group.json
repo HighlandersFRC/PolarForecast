@@ -20,6 +20,26 @@
                     "name": "9998 other Cool Team",
                     "affiliation": "frc9998"
                 }
+            ],
+            "picklists": [
+                {
+                    "id": "loltspmo",
+                    "name": "First Picks",
+                    "ordered list": [
+                        "frcGoated",
+                        "frcMid",
+                        "frcBad"
+                    ]
+                },
+                {
+                    "id": "loltspmo2",
+                    "name": "Second Picks",
+                    "ordered list": [
+                        "frcGoated",
+                        "frcMid",
+                        "frcBad"
+                    ]
+                }
             ]
         }
     ],

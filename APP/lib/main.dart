@@ -37,7 +37,9 @@ class MyApp extends StatelessWidget {
         AUTHURL = String.fromEnvironment('PF_KEYCLOAK_LOGIN_IP'),
         APPURL = String.fromEnvironment('APP_DOMAIN'),
         REALM = String.fromEnvironment('KEYCLOAK_REALM'),
+        TBA_KEY = String.fromEnvironment('APP_TBA_KEY'),
         CLIENT = String.fromEnvironment('KEYCLOAK_APP_CLIENT_ID');
+
     return MultiProvider(
       providers: [
         Provider<ApiService>(
@@ -45,6 +47,7 @@ class MyApp extends StatelessWidget {
             APIURL: APIURL,
             AUTHURL: AUTHURL,
             APPURL: APPURL,
+            TBA_KEY: TBA_KEY,
             REALM: REALM,
             CLIENT: CLIENT,
             authService:

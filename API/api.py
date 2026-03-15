@@ -346,6 +346,7 @@ def get_Year_Events(year: int):
     return events
 
 
+
 @app.get("/search_keys", tags=["miscellaneous"])
 @cacheValue(seconds=60*60*24)  # Cache it for a day
 def get_Search_Keys():
@@ -1127,6 +1128,9 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
             400, "Failed to delete this request")
     return get_group_alliance_requests(group_name=group_name, token=token)
 
+    
+    
+    
 
 @app.post("/Group/{group_name}/Event/{event}/Add", tags=["groups"])
 def add_event_to_group(group_name: str, event: str, token: str = Depends(check_token_active)):
@@ -1800,7 +1804,7 @@ def get_picture_post_url(token: str = Depends(check_token_active)):
         blob_name=image_id_string,
         account_key=RobotPicturesClient.credential.account_key,
         permission=BlobSasPermissions(write=True),
-        expiry=int(datetime.utcnow()+timedelta(minutes=5)),
+        expiry=(datetime.utcnow()+timedelta(minutes=5)),
     )
     blob_url = f"{RobotPicturesClient.primary_endpoint}/{image_id_string}"
     presigned_url = f"{blob_url}?{sas}&Cache-Control=max-age=86400"
@@ -2439,13 +2443,22 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                         alliance_members.extend(
                             fetch_group_members(alliance.group_id))
             alliance_member_ids = [member['id'] for member in alliance_members]
-            member_entries = [MatchScouting2026(
-                **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
-            alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
-                {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+            # member_entries = [MatchScouting2026(
+            #     **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
+            # alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
+            #     {'event_code': event_code, 'scout_info.user_id': {'$in': alliance_member_ids}})]
+
+
+            all_entires = [MatchScouting2026(
+                **entry) for entry in MatchScoutingCollection.find({'event_code': event_code})
+            ]
             try:
+                # calculatedData, ratings = analyzeData(
+                #     TBAData, member_entries+alliance_entries)
+
                 calculatedData, ratings = analyzeData(
-                    TBAData, member_entries+alliance_entries)
+                    TBAData, all_entires
+                )
                 print("analyzed")
                 data = calculatedData.to_dict("list")
                 data = convertData(data, YEAR, event_code)
@@ -2502,24 +2515,24 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                 pass
             metadata = {"last_modified": datetime.utcnow().timestamp(),
                         "etag": None, "tba": False}
-            try:
+
                 # print("manufacturing scout rankings")
-                ratings = {
+            ratings = {
                     "scouts": [scout_info_from_id(scout_id).dict() for scout_id in ratings["scouts"]], "trustRatings": ratings["trustRatings"], "entries": [], "contribution": []}
                 # print(ratings)
-                ratings["entries"] = list(
+            ratings["entries"] = list(
                     numpy.zeros(len(ratings["scouts"])))
-                ratings["contribution"] = list(
+            ratings["contribution"] = list(
                     numpy.zeros(len(ratings["scouts"])))
-                for idx, scout in enumerate(ratings["scouts"]):
-                    for entry in member_entries+alliance_entries:
-                        if entry.scout_info.user_id == scout['user_id']:
-                            ratings["entries"][idx] += 1
-                    ratings["contribution"][idx] = (
-                        ratings["trustRatings"][idx] ** 2)*ratings["entries"][idx]
+            for idx, scout in enumerate(ratings["scouts"]):
+                    # for entry in member_entries+alliance_entries:
+                for entry in all_entires:
+                    if entry.scout_info.user_id == scout['user_id']:
+                        ratings["entries"][idx] += 1
+                ratings["contribution"][idx] = (
+                    ratings["trustRatings"][idx] ** 2)*ratings["entries"][idx]
                 # print("Made Ratings")
-            except Exception as e:
-                logging.error(e)
+
             try:
                 # print("Inserting data")
                 GroupDataCollection.insert_one(
@@ -2746,6 +2759,7 @@ def update_database():
     headers = {"accept": "application/json", "X-TBA-Auth-Key": TBA_API_KEY}
     events = json.loads(requests.get(
         TBA_API_URL+"events/"+YEAR, headers=headers).text)
+
     for i in range(len(events)):
         event = events[i]
         eventCode = YEAR+event["event_code"]
