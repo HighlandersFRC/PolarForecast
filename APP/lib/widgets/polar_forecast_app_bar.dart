@@ -514,9 +514,16 @@ void _showCreateGroupDialog(BuildContext context) {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: () {
-            // Your API logic here
-            Navigator.pop(context);
+          onPressed: () async {
+            final apiService = Provider.of<ApiService>(context, listen: false);
+            apiService.make_group(controller.text, null, null).then((value) {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed('/group/${value.name}');
+            }).onError((e, _) {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(e.toString())));
+            });
           },
           child: const Text('Create'),
         ),
