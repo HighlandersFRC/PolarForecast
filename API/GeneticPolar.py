@@ -127,7 +127,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
             if not exists: 
                 teams.append(matchTeam)
     teams.sort()
-    # print("made list of teams")
+    # print("made list of team")
     # Initializing sets of Data
     teamMatchCount = np.zeros(len(teams))
     autoClimb = np.zeros(len(teams))
