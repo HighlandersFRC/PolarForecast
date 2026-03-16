@@ -7,16 +7,7 @@ class AllianceGroup(BaseModel):
     name: str
     affiliation: str
 
-<<<<<<< Updated upstream
-class PickListItem(BaseModel):
-    id: str
-    name: str
-    ordered_list: List[str] = Field(..., alias="ordered list")
 
-    class Config:
-        allow_population_by_field_name = True
-        allow_population_by_alias = True
-=======
 
 class Picks(BaseModel):
     number: str
@@ -30,7 +21,6 @@ class PickList2026(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
->>>>>>> Stashed changes
 
 
 class GroupEventSettings(BaseModel):
@@ -43,15 +33,9 @@ class GroupEvent(BaseModel):
     up_to_date: bool
     settings: GroupEventSettings
     alliance_groups: List[AllianceGroup]
-<<<<<<< Updated upstream
-    pick_lists: Optional[List[PickListItem]] = Field(None, alias="picklists")
 
-    class Config:
-        allow_population_by_field_name = True
-        allow_population_by_alias = True
-=======
     picklists: Optional[List[PickList2026]] = []
->>>>>>> Stashed changes
+
 
 
 class GroupSettings(BaseModel):
