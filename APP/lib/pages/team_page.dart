@@ -12,6 +12,7 @@ import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/pit_scouting_form.dart';
 import '../models/match_scouting_2026.dart';
+import '../models/pit_scouting_2026.dart';
 import '../widgets/deaths_form.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../widgets/login_widget.dart';
@@ -69,6 +70,7 @@ class _TeamPageState extends State<TeamPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final List<Widget> tabs = [
+      _OverviewTab(widget),
       _StatsTab(widget),
       _ScheduleTab(widget),
       _PicturesTab(widget),
@@ -85,6 +87,10 @@ class _TeamPageState extends State<TeamPage> {
         currentIndex: _currentTab,
         onTap: (newTabIdx) => setState(() => _currentTab = newTabIdx),
         items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.group_outlined, color: theme.primaryColor),
+              activeIcon: Icon(Icons.group, color: theme.primaryColor),
+              label: 'Overview'),
           BottomNavigationBarItem(
               icon: Icon(Icons.storage_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.storage, color: theme.primaryColor),
@@ -129,6 +135,329 @@ class _TeamPageState extends State<TeamPage> {
   }
 }
 
+class _OverviewTab extends StatefulWidget {
+  final TeamPage widget;
+
+  const _OverviewTab(this.widget);
+
+  @override
+  _OverviewTabState createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<_OverviewTab> {
+  Map<String, dynamic> stats = {};
+  String nickname = '';
+  List<PictureData> pictures = [];
+  PitScouting2026? pitScouting;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  void fetchData() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    // Fetch stats
+    try {
+      final fetchedStats = await apiService.fetchTeamStats(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+      stats = fetchedStats;
+    } catch (e) {
+      print('Error fetching stats: $e');
+    }
+
+    // Fetch nickname
+    try {
+      nickname =
+          await apiService.fetchTeamNicknames('frc${widget.widget.teamNumber}');
+    } catch (e) {
+      print('Error fetching nickname: $e');
+    }
+
+    // Fetch pictures
+    try {
+      pictures = await apiService.fetchTeamImages(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+    } catch (e) {
+      print('Error fetching pictures: $e');
+    }
+
+    // Fetch pit scouting
+    try {
+      pitScouting = await apiService.fetchTeamPitScouting(
+        widget.widget.tournament.page.split('/')[3],
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+    } catch (e) {
+      print('Error fetching pit scouting: $e');
+      pitScouting = null;
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final fullRobotPics =
+        pictures.where((pic) => pic.image_type == 'full_robot');
+    final fullRobotPic = fullRobotPics.isNotEmpty
+        ? fullRobotPics.first
+        : (pictures.isNotEmpty ? pictures[0] : null);
+
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 30),
+
+            /// ---------------- TEAM NAME ----------------
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "Team ${widget.widget.teamNumber} | ${nickname}",
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (fullRobotPic != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                child: Image.network(
+                  fullRobotPic.link, // better for phones
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            const SizedBox(height: 16),
+
+            /// ---------------- STATS ----------------
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _buildQuickStat(
+                    "Rank",
+                    stats['rank']?.toString() ?? "-",
+                    Colors.blue,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildQuickStat(
+                    "OPR",
+                    stats['OPR']?.toString() ?? "-",
+                    Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            /// ---------------- PIT SCOUTING ----------------
+            if (pitScouting != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Pit Scouting Info",
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildLargeDataCard(
+                  title: "Physical Capabilities",
+                  context: context,
+                  children: [
+                    _buildLargeDetailRow(
+                      "Can Go Under Trench",
+                      pitScouting!.data.go_under_trench ? "YES" : "NO",
+                      pitScouting!.data.go_under_trench
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    _buildLargeDetailRow(
+                      "Can Climb",
+                      pitScouting!.data.can_climb ? "YES" : "NO",
+                      pitScouting!.data.can_climb ? Colors.green : Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildLargeDataCard(
+                  title: "Mechanism Specs",
+                  context: context,
+                  children: [
+                    _buildLargeDetailRow(
+                      "Hopper Capacity",
+                      "${pitScouting!.data.hopper_capacity}",
+                      Colors.blueGrey,
+                    ),
+                    _buildLargeDetailRow(
+                      "Balls Per Second",
+                      "${pitScouting!.data.bps}",
+                      Colors.blueGrey,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+// --- NEW SCALED HELPERS ---
+  Widget _buildQuickStat(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLargeDataCard({
+    required String title,
+    required List<Widget> children,
+    required BuildContext context,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
+          const Divider(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeDetailRow(String label, String value, Color valueColor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: valueColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: valueColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StatsTab extends StatefulWidget {
   final TeamPage widget;
 
@@ -140,7 +469,7 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
-  String nickname = '';
+
   bool isLoading = true;
 
   // Only show these fields in the UI
@@ -215,18 +544,6 @@ class _StatsTabState extends State<_StatsTab> {
     } catch (e) {
       print('Error fetching data: $e');
     }
-    try {
-      final fetchTeamNicknames =
-          await apiService.fetchTeamNicknames('frc${widget.widget.teamNumber}');
-      if (mounted) {
-        setState(() {
-          nickname = fetchTeamNicknames;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print(e);
-    }
   }
 
   String formatValue(dynamic value) {
@@ -249,7 +566,7 @@ class _StatsTabState extends State<_StatsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${widget.widget.tournament.display} - Team ${widget.widget.teamNumber} Stats ${nickname != null ? " ($nickname)" : ""}',
+                      '${widget.widget.tournament.display} - Team ${widget.widget.teamNumber} Stats',
                       style: TextStyle(
                           color: theme.primaryColor,
                           fontSize: 24,
@@ -813,6 +1130,61 @@ class _PicturesTabState extends State<_PicturesTab> {
   List<PictureData> images = [];
   bool isLoading = true;
   String? token;
+
+  String selectedType = 'full_robot';
+
+  List<String> imageTypes = [
+    'full_robot',
+    'wires',
+    'shooter',
+    'intake',
+    'feeder',
+  ];
+
+  String formatType(String type) {
+    switch (type) {
+      case 'full_robot':
+        return 'Full Robot';
+      case 'wires':
+        return 'Wiring';
+      case 'shooter':
+        return 'Shooter';
+      case 'intake':
+        return 'Intake';
+      case 'feeder':
+        return 'Feeder';
+      default:
+        return type;
+    }
+  }
+
+  List<PictureData> get filteredImages {
+    return images.where((img) => img.image_type == selectedType).toList();
+  }
+
+  Map<String, List<PictureData>> groupByType(List<PictureData> images) {
+    const allowedTypes = {
+      'full_robot',
+      'wires',
+      'shooter',
+      'intake',
+      'feeder',
+    };
+
+    final Map<String, List<PictureData>> grouped = {};
+
+    for (var img in images) {
+      final type = img.image_type;
+
+      if (!allowedTypes.contains(type)) continue;
+
+      grouped.putIfAbsent(type, () => []);
+      grouped[type]!.add(img);
+    }
+
+    return grouped;
+  }
+
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
     this.token = await apiService.token;
@@ -862,119 +1234,136 @@ class _PicturesTabState extends State<_PicturesTab> {
                       '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
               : images.isEmpty
                   ? Text('No Images', style: TextStyle(fontFamily: 'Font'))
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        return GridView.builder(
-                          padding: EdgeInsets.all(8),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                          itemCount: images.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return Padding(
-                                        padding: EdgeInsets.all(20.0),
-                                        child: AlertDialog(
-                                          content: Padding(
-                                            padding: EdgeInsets.all(20.0),
-                                            child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Image.network(
-                                                    images[index].link)),
-                                          ),
-                                          actions: [
-                                            Text(
-                                                'Uploaded by: ${images[index].scout_info.first_name ?? 'scout on ${images[index].scout_info.team_number}'}',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            if (images[index]
-                                                .permissions
-                                                .contains('delete'))
-                                              ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Colors.red,
-                                                          foregroundColor:
-                                                              Colors.white),
-                                                  onPressed: () {
-                                                    final api =
-                                                        Provider.of<ApiService>(
-                                                            context,
-                                                            listen: false);
-                                                    Navigator.of(context).pop();
-                                                    api
-                                                        .delete_image(
-                                                            images[index])
-                                                        .then((_) {
-                                                      setState(() {
-                                                        images.removeAt(index);
-                                                      });
-                                                    });
-                                                  },
-                                                  child: Text('Delete',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text('Close',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font')))
-                                          ],
-                                        ));
-                                  },
-                                );
-                              },
-                              child: AnimatedContainer(
-                                duration: Duration(milliseconds: 300),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 5),
-                                    ),
-                                  ],
+                  : Column(
+                      children: [
+                        /// DROPDOWN
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: DropdownButtonFormField<String>(
+                            value: selectedType,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            items: imageTypes.map((type) {
+                              return DropdownMenuItem(
+                                value: type,
+                                child: Text(
+                                  formatType(type),
+                                  style: const TextStyle(fontFamily: 'Font'),
                                 ),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      images[index].link,
-                                      fit: BoxFit.fill,
-                                      loadingBuilder: (context, child, event) {
-                                        if (event == null) {
-                                          return child;
-                                        } else {
-                                          return Center(
-                                            child: CircularProgressIndicator
-                                                .adaptive(
-                                              value:
-                                                  event.cumulativeBytesLoaded /
-                                                      event.expectedTotalBytes!,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                      Colors.blue),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedType = value!;
+                              });
+                            },
+                          ),
+                        ),
+
+                        /// GRID
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return GridView.builder(
+                                padding: const EdgeInsets.all(8),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount:
+                                      constraints.maxWidth > 600 ? 4 : 2,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                ),
+                                itemCount: filteredImages.length,
+                                itemBuilder: (context, index) {
+                                  final image = filteredImages[index];
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return Padding(
+                                            padding: const EdgeInsets.all(20),
+                                            child: AlertDialog(
+                                              content: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child:
+                                                      Image.network(image.link),
+                                                ),
+                                              ),
+                                              actions: [
+                                                Text(
+                                                  'Uploaded by: ${image.scout_info.first_name ?? 'scout on ${image.scout_info.team_number}'}',
+                                                  style: const TextStyle(
+                                                      fontFamily: 'Font'),
+                                                ),
+                                                if (image.permissions
+                                                    .contains('delete'))
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                    ),
+                                                    onPressed: () {
+                                                      final api = Provider.of<
+                                                              ApiService>(
+                                                          context,
+                                                          listen: false);
+
+                                                      Navigator.of(context)
+                                                          .pop();
+
+                                                      api
+                                                          .delete_image(image)
+                                                          .then((_) {
+                                                        setState(() {
+                                                          images.remove(image);
+                                                        });
+                                                      });
+                                                    },
+                                                    child: const Text('Delete',
+                                                        style: TextStyle(
+                                                            fontFamily:
+                                                                'Font')),
+                                                  ),
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(),
+                                                  child: const Text('Close',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font')),
+                                                )
+                                              ],
                                             ),
                                           );
-                                        }
-                                      },
-                                    )),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                                        },
+                                      );
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        image.link,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
     );
   }
