@@ -10,7 +10,7 @@ class PitScouting2026 with _$PitScouting2026 {
     required ScoutInfo scout_info,
     required int team_number,
     required String event_code,
-    required int time,
+    required double time,
     required PitData2026 data,
     Auto2026? auto,
   }) = _PitScouting2026;
@@ -39,6 +39,7 @@ class PitData2026 with _$PitData2026 {
       Auto2026? auto,
       required int hopper_capacity,
       required double mag_unload_speed,
+      required double bps,
       // keep autos dynamic to avoid type-mismatch with other code/widgets
       List<Auto2026>? autos,
       required double robot_height,

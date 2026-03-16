@@ -14,7 +14,7 @@ _$PitScouting2026Impl _$$PitScouting2026ImplFromJson(
           ScoutInfo.fromJson(json['scout_info'] as Map<String, dynamic>),
       team_number: (json['team_number'] as num).toInt(),
       event_code: json['event_code'] as String,
-      time: (json['time'] as num).toInt(),
+      time: (json['time'] as num).toDouble(),
       data: PitData2026.fromJson(json['data'] as Map<String, dynamic>),
       auto: json['auto'] == null
           ? null
@@ -58,6 +58,7 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
           : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       hopper_capacity: (json['hopper_capacity'] as num).toInt(),
       mag_unload_speed: (json['mag_unload_speed'] as num).toDouble(),
+      bps: (json['bps'] as num).toDouble(),
       autos: (json['autos'] as List<dynamic>?)
           ?.map((e) => Auto2026.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -89,6 +90,7 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'auto': instance.auto?.toJson(),
       'hopper_capacity': instance.hopper_capacity,
       'mag_unload_speed': instance.mag_unload_speed,
+      'bps': instance.bps,
       'autos': instance.autos?.map((e) => e.toJson()).toList(),
       'robot_height': instance.robot_height,
       'straddling_pole_climb_right': instance.straddling_pole_climb_right,
