@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from functools import wraps
 import io
@@ -7,12 +8,12 @@ import math
 import random
 import string
 from types import TracebackType
-from typing import Annotated
+from typing import Annotated, Dict, Set
 import uuid
 import zipfile
 from better_profanity import profanity
 from bson import ObjectId
-from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Header, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, StreamingResponse
 import numpy
 from pydantic import BaseModel
@@ -1133,28 +1134,80 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
 
 
 
+
+
+# ==== Websocket Connector =====
+
+class ConnectionManager:
+    def __init__(self):
+        # map "group_name:event" -> set of WebSocket
+        self.active_connections: Dict[str, Set[WebSocket]] = {}
+        self.lock = asyncio.Lock()
+
+    async def connect(self, key: str, websocket: WebSocket):
+        await websocket.accept()
+        async with self.lock:
+            conns = self.active_connections.setdefault(key, set())
+            conns.add(websocket)
+
+    async def disconnect(self, key: str, websocket: WebSocket):
+        async with self.lock:
+            conns = self.active_connections.get(key)
+            if not conns:
+                return
+            conns.discard(websocket)
+            if len(conns) == 0:
+                # keep dict tidy
+                del self.active_connections[key]
+
+    async def broadcast(self, key: str, message: dict):
+        text = json.dumps(message)
+        # copy the list of connections under lock, send outside lock
+        async with self.lock:
+            conns = list(self.active_connections.get(key, set()))
+        for ws in conns:
+            try:
+                await ws.send_text(text)
+            except Exception:
+                # if sending fails, remove it
+                await self.disconnect(key, ws)
+
+    # convenience helper
+    async def broadcast_picklists(self, group_name: str, event: str, picklists: list):
+        key = f"{group_name}:{event}"
+        
+        print(key)
+        payload = {
+            "type": "picklists_update",
+            "group": group_name,
+            "event": event,
+            "picklists": picklists,
+        }
+        await self.broadcast(key, payload)
+
+manager = ConnectionManager()   
+
+
 # ---------------- Add Picklist ----------------
 @app.post("/Group/{group_name}/Event/{event}/AddPickList", tags=["picklists"])
-def add_picklist_to_group(
+async def add_picklist_to_group(
     group_name: str,
     event: str,
     pick_list: PickList2026,
     token: str = Depends(check_token_active),
 ):
+    # --- Fetch group ---
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
-    except:
+    except Exception:
         raise HTTPException(404, "This group does not exist")
-    kc_groups = get_user_groups(token=token)
-    admin = False
-    for kc_group in kc_groups:
-        if kc_group["id"] == DB_group.admin_group_id:
-            admin = True
-            break
-    if not admin:
-        raise HTTPException(
-            403, "You are not a member of this group")
 
+    # --- Check admin membership ---
+    kc_groups = get_user_groups(token=token)
+    if not any(kc_group["id"] == DB_group.admin_group_id for kc_group in kc_groups):
+        raise HTTPException(403, "You are not an admin of this group")
+
+    # --- Get the event ---
     group_event = next((e for e in DB_group.events if e.event_code == event), None)
     if group_event is None:
         raise HTTPException(404, "Event not found")
@@ -1162,58 +1215,67 @@ def add_picklist_to_group(
     if group_event.picklists is None:
         group_event.picklists = []
 
+    # --- Assign unique ID and append picklist ---
     pick_list.picklist_id = str(uuid.uuid4())
-
     group_event.picklists.append(pick_list)
 
+    # --- Update database ---
     GroupCollection.update_one(
         {"name": group_name},
         {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
     )
+
+    # --- Broadcast new picklists to all connected websockets ---
+    picklists_payload = [pl.dict(by_alias=True) for pl in group_event.picklists]
+    await manager.broadcast_picklists(group_name, event, picklists_payload)
 
     return pick_list
 
 
 # ---------------- Delete Picklist ----------------
 @app.post("/Group/{group_name}/Event/{event}/DeletePicklist", tags=["picklists"])
-def delete_picklist_from_group(
+async def delete_picklist_from_group(
     group_name: str,
     event: str,
     picklist_id: str,
     token: str = Depends(check_token_active),
 ):
-
+    # --- Fetch group ---
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
-    except:
+    except Exception:
         raise HTTPException(404, "This group does not exist")
+
+    # --- Check admin membership ---
     kc_groups = get_user_groups(token=token)
-    admin = False
-    for kc_group in kc_groups:
-        if kc_group["id"] == DB_group.admin_group_id:
-            admin = True
-            break
-    if not admin:
-        raise HTTPException(
-            403, "You are not a member of this group")
+    if not any(kc_group["id"] == DB_group.admin_group_id for kc_group in kc_groups):
+        raise HTTPException(403, "You are not an admin of this group")
 
+    # --- Get the event ---
     group_event = next((e for e in DB_group.events if e.event_code == event), None)
+    if group_event is None:
+        raise HTTPException(404, "Event not found")
 
+    # --- Remove the picklist ---
     group_event.picklists = [
-        pl for pl in group_event.picklists
-        if pl.picklist_id != picklist_id
+        pl for pl in group_event.picklists if pl.picklist_id != picklist_id
     ]
 
+    # --- Update the database ---
     GroupCollection.update_one(
         {"name": group_name},
         {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
     )
 
+    # --- Broadcast updated picklists to all connected websockets ---
+    picklists_payload = [pl.dict(by_alias=True) for pl in group_event.picklists]
+    await manager.broadcast_picklists(group_name, event, picklists_payload)
+
     return {"deleted": picklist_id}
 
 # ---------------- Update Picklist ----------------
 @app.post("/Group/{group_name}/Event/{event}/UpdatePicklist", tags=["picklists"])
-def update_picklist_in_group(
+async def update_picklist_in_group(
     group_name: str,
     event: str,
     picklist_id: str,
@@ -1247,7 +1309,14 @@ def update_picklist_in_group(
         {"name": group_name},
         {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
     )
+    updated_group = Group(**GroupCollection.find_one({"name": group_name}))
+    updated_event = next((e for e in updated_group.events if e.event_code == event), None)
 
+    await manager.broadcast_picklists(
+        group_name=group_name,
+        event=event,
+        picklists=[picklist.dict() for picklist in updated_event.picklists],
+    )
     return new_picklist
 
 # ---------------- Get Picklist ----------------
@@ -1278,10 +1347,42 @@ def get_picklists_for_group(
         "picklists": [pl.dict(by_alias=True) for pl in group_event.picklists]
     }
 
-    
 
    
+@app.websocket("/Group/{group_name}/Event/{event}/ws/picklists")
+async def picklists_ws(websocket: WebSocket, group_name: str, event: str):
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=1008)
+        return
 
+    try:
+        check_token_active(token)
+    except HTTPException:
+        await websocket.close(code=1008)
+        return
+
+    # membership check...
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except Exception:
+        await websocket.close(code=1008)
+        return
+
+    kc_groups = get_user_groups(token=token)
+    member = any(kc_group["id"] == DB_group.member_group_id for kc_group in kc_groups)
+    if not member:
+        await websocket.close(code=1008)
+        return
+
+    key = f"{group_name}:{event}"
+    await manager.connect(key, websocket)
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await manager.disconnect(key, websocket)
     
     
     
