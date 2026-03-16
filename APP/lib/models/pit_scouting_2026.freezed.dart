@@ -360,7 +360,11 @@ mixin _$PitData2026 {
   String get favorite_color => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
   int get hopper_capacity => throw _privateConstructorUsedError;
+<<<<<<< Updated upstream
   double get mag_unload_speed =>
+=======
+  double get bps =>
+>>>>>>> Stashed changes
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<Auto2026>? get autos => throw _privateConstructorUsedError;
   double get robot_height => throw _privateConstructorUsedError;
@@ -404,7 +408,11 @@ abstract class $PitData2026CopyWith<$Res> {
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
+<<<<<<< Updated upstream
       double mag_unload_speed,
+=======
+      double bps,
+>>>>>>> Stashed changes
       List<Auto2026>? autos,
       double robot_height,
       bool straddling_pole_climb_right,
@@ -448,7 +456,11 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? favorite_color = null,
     Object? auto = freezed,
     Object? hopper_capacity = null,
+<<<<<<< Updated upstream
     Object? mag_unload_speed = null,
+=======
+    Object? bps = null,
+>>>>>>> Stashed changes
     Object? autos = freezed,
     Object? robot_height = null,
     Object? straddling_pole_climb_right = null,
@@ -526,9 +538,15 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
+<<<<<<< Updated upstream
       mag_unload_speed: null == mag_unload_speed
           ? _value.mag_unload_speed
           : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+=======
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
+>>>>>>> Stashed changes
               as double,
       autos: freezed == autos
           ? _value.autos
@@ -602,7 +620,11 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
+<<<<<<< Updated upstream
       double mag_unload_speed,
+=======
+      double bps,
+>>>>>>> Stashed changes
       List<Auto2026>? autos,
       double robot_height,
       bool straddling_pole_climb_right,
@@ -645,7 +667,11 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? favorite_color = null,
     Object? auto = freezed,
     Object? hopper_capacity = null,
+<<<<<<< Updated upstream
     Object? mag_unload_speed = null,
+=======
+    Object? bps = null,
+>>>>>>> Stashed changes
     Object? autos = freezed,
     Object? robot_height = null,
     Object? straddling_pole_climb_right = null,
@@ -723,9 +749,15 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
+<<<<<<< Updated upstream
       mag_unload_speed: null == mag_unload_speed
           ? _value.mag_unload_speed
           : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+=======
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
+>>>>>>> Stashed changes
               as double,
       autos: freezed == autos
           ? _value._autos
@@ -780,7 +812,11 @@ class _$PitData2026Impl implements _PitData2026 {
       required this.favorite_color,
       this.auto,
       required this.hopper_capacity,
+<<<<<<< Updated upstream
       required this.mag_unload_speed,
+=======
+      required this.bps,
+>>>>>>> Stashed changes
       final List<Auto2026>? autos,
       required this.robot_height,
       required this.straddling_pole_climb_right,
@@ -835,7 +871,11 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final int hopper_capacity;
   @override
+<<<<<<< Updated upstream
   final double mag_unload_speed;
+=======
+  final double bps;
+>>>>>>> Stashed changes
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<Auto2026>? _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
@@ -863,7 +903,11 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
+<<<<<<< Updated upstream
     return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, mag_unload_speed: $mag_unload_speed, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
+=======
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
+>>>>>>> Stashed changes
   }
 
   @override
@@ -871,7 +915,8 @@ class _$PitData2026Impl implements _PitData2026 {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PitData2026Impl &&
-            (identical(other.driver_experience_events, driver_experience_events) ||
+            (identical(
+                    other.driver_experience_events, driver_experience_events) ||
                 other.driver_experience_events == driver_experience_events) &&
             (identical(other.drive_train, drive_train) ||
                 other.drive_train == drive_train) &&
@@ -903,8 +948,12 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.auto, auto) || other.auto == auto) &&
             (identical(other.hopper_capacity, hopper_capacity) ||
                 other.hopper_capacity == hopper_capacity) &&
+<<<<<<< Updated upstream
             (identical(other.mag_unload_speed, mag_unload_speed) ||
                 other.mag_unload_speed == mag_unload_speed) &&
+=======
+            (identical(other.bps, bps) || other.bps == bps) &&
+>>>>>>> Stashed changes
             const DeepCollectionEquality().equals(other._autos, _autos) &&
             (identical(other.robot_height, robot_height) ||
                 other.robot_height == robot_height) &&
@@ -943,7 +992,11 @@ class _$PitData2026Impl implements _PitData2026 {
         favorite_color,
         auto,
         hopper_capacity,
+<<<<<<< Updated upstream
         mag_unload_speed,
+=======
+        bps,
+>>>>>>> Stashed changes
         const DeepCollectionEquality().hash(_autos),
         robot_height,
         straddling_pole_climb_right,
@@ -988,7 +1041,11 @@ abstract class _PitData2026 implements PitData2026 {
       required final String favorite_color,
       final Auto2026? auto,
       required final int hopper_capacity,
+<<<<<<< Updated upstream
       required final double mag_unload_speed,
+=======
+      required final double bps,
+>>>>>>> Stashed changes
       final List<Auto2026>? autos,
       required final double robot_height,
       required final bool straddling_pole_climb_right,

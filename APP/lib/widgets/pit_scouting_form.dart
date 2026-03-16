@@ -64,7 +64,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               contacts_robot: false),
           main_strategy: '',
           hopper_capacity: 0,
+<<<<<<< Updated upstream
           mag_unload_speed: 0,
+=======
+          bps: 0,
+>>>>>>> Stashed changes
           robot_height: 0,
           straddling_pole_climb_right: false,
           straddling_pole_climb_left: false,
@@ -176,9 +180,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(hopper_capacity: value),
           );
           break;
-        case 'mag_unload_speed':
+        case 'bps':
           pitScoutingData = pitScoutingData.copyWith(
-              data: pitScoutingData.data.copyWith(mag_unload_speed: value));
+              data: pitScoutingData.data.copyWith(bps: value));
           break;
         case 'go_over_bump':
           pitScoutingData = pitScoutingData.copyWith(
@@ -960,7 +964,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   ),
                                 ),
 
+<<<<<<< Updated upstream
                                 // Mag Unload Speed
+=======
+>>>>>>> Stashed changes
                                 Card(
                                   color: Color.fromARGB(24, 68, 137, 255),
                                   elevation: 2,
@@ -972,24 +979,37 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     padding: const EdgeInsets.all(16),
                                     child: FloatyCounter(
                                       locked: widget.locked,
+<<<<<<< Updated upstream
                                       label: 'Mag Unload Speed (seconds)',
                                       value:
                                           pitScoutingData.data.mag_unload_speed,
                                       max: 10,
+=======
+                                      label: 'Fuel Per Second',
+                                      value: pitScoutingData.data.bps,
+                                      max: 30,
+>>>>>>> Stashed changes
                                       onChanged: (speed) {
                                         setState(() {
                                           pitScoutingData =
                                               pitScoutingData.copyWith(
                                                   data: pitScoutingData.data
+<<<<<<< Updated upstream
                                                       .copyWith(
                                                           mag_unload_speed:
                                                               speed));
+=======
+                                                      .copyWith(bps: speed));
+>>>>>>> Stashed changes
                                         });
                                       },
                                     ),
                                   ),
                                 ),
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
                                 // Hopper Capacity
                                 Card(
                                   color: Color.fromARGB(24, 68, 137, 255),

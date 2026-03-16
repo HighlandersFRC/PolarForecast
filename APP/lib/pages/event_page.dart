@@ -16,6 +16,7 @@ import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
+import 'package:scouting_app/widgets/deaths_form.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import '../models/match_details_2026.dart';
@@ -457,10 +458,27 @@ class _TeamDataSource extends DataGridSource {
                 ? Theme.of(context).primaryColor.withOpacity(0.3)
                 : Colors.black.withOpacity(0);
         if (e.columnName == 'defense_rate') {
-          return _DefenseMatchesOnClick(
-            teamNumber: int.parse(row.getCells()[0].value.toString()),
+          double numericValue = e.value as double;
+          return Container(
             color: color,
-            scouting: scouting,
+            child: _DefenseMatchesOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              scouting: scouting,
+            ),
+          );
+        }
+
+        if (e.columnName == 'death_rate') {
+          double numericValue = e.value as double;
+          return Container(
+            color: color,
+            child: _DeathsMatchesOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              scouting: scouting,
+              tournament: tournament,
+            ),
           );
         }
         if (e.columnName == 'team_number') {
@@ -637,6 +655,71 @@ class _TeamDataSource extends DataGridSource {
   }
 }
 
+class _DeathsMatchesOnClick extends StatelessWidget {
+  final int teamNumber;
+  final Color color;
+  final List<MatchScouting2026> scouting;
+  final Tournament tournament; // tournament reference
+
+  const _DeathsMatchesOnClick({
+    required this.teamNumber,
+    required this.color,
+    required this.scouting,
+    required this.tournament,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            content: SizedBox(
+              width: 400,
+              child: DeathsForm(
+                tournament,
+                teamNumber,
+                true,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(color: Colors.blueAccent),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.center,
+        color: color,
+        child: Text(
+          '${_formatValueForDisplay(teamNumber)}',
+          style: const TextStyle(color: Colors.white, fontFamily: 'Font'),
+        ),
+      ),
+    );
+  }
+
+  String _formatValueForDisplay(int team) {
+    final teamMatches = scouting.where((m) => m.team_number == team).length;
+    final deathMatches = scouting
+        .where((m) => m.team_number == team && m.data.miscellaneous.died)
+        .length;
+
+    if (teamMatches == 0) return '0.0';
+
+    final rate = deathMatches / teamMatches;
+    return rate.toStringAsFixed(1);
+  }
+}
+
 class _DefenseMatchesOnClick extends StatelessWidget {
   final int teamNumber;
   final Color color;
@@ -783,12 +866,8 @@ class _OvertimeChartOnClick extends StatelessWidget {
         List<String> seriesLabels = [
           'auto_scoring_fuel_cycles',
           'auto_scoring_passing_cycles',
-          'auto_scoring_scoring_cycles',
-          'auto_scoring_cycles_completed',
           'teleop_scoring_fuel_cycles',
           'teleop_scoring_passing_cycles',
-          'teleop_scoring_scoring_cycles',
-          'teleop_scoring_cycles_completed',
         ];
         for (var series in seriesLabels) {
           seriesData[series] = [];

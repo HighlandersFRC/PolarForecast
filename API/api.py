@@ -27,7 +27,11 @@ from models.pit_scouting_status import PitScoutingStatus
 from models.picture_data import PictureData
 from models.pit_scouting_2026 import PitScouting2026
 from models.alliance_request import AllianceRequest
+<<<<<<< Updated upstream
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickListItem
+=======
+from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickList2026
+>>>>>>> Stashed changes
 from models.group_join_request import GroupJoinRequest
 from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
@@ -65,6 +69,10 @@ tags_metadata = [
         "name": "miscellaneous",
         "description": "Other endpoints.",
     },
+    {
+        "name": "picklists",
+        "description": "All endpoints related to picklists"
+    }
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
@@ -1127,17 +1135,29 @@ def delete_alliance_request(group_name: str, event: str, token: str = Depends(ch
             400, "Failed to delete this request")
     return get_group_alliance_requests(group_name=group_name, token=token)
 
+<<<<<<< Updated upstream
 @app.post("/Group/{group_name}/Event/{event}/AddPickList", tags=["groups"])
 def add_picklist_to_group(
     group_name: str,
     event: str,
     pick_list: PickListItem,
+=======
+
+
+# ---------------- Add Picklist ----------------
+@app.post("/Group/{group_name}/Event/{event}/AddPickList", tags=["picklists"])
+def add_picklist_to_group(
+    group_name: str,
+    event: str,
+    pick_list: PickList2026,
+>>>>>>> Stashed changes
     token: str = Depends(check_token_active),
 ):
     try:
         DB_group = Group(**GroupCollection.find_one({"name": group_name}))
     except:
         raise HTTPException(404, "This group does not exist")
+<<<<<<< Updated upstream
 
     kc_groups = get_user_groups(token=token)
     admin = any(kc_group["id"] == DB_group.admin_group_id for kc_group in kc_groups)
@@ -1170,6 +1190,140 @@ def add_picklist_to_group(
     )
 
     return get_group(group_name=group_name, token=token)
+=======
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            403, "You are not a member of this group")
+
+    group_event = next((e for e in DB_group.events if e.event_code == event), None)
+    if group_event is None:
+        raise HTTPException(404, "Event not found")
+
+    if group_event.picklists is None:
+        group_event.picklists = []
+
+    pick_list.picklist_id = str(uuid.uuid4())
+
+    group_event.picklists.append(pick_list)
+
+    GroupCollection.update_one(
+        {"name": group_name},
+        {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
+    )
+
+    return pick_list
+
+
+# ---------------- Delete Picklist ----------------
+@app.post("/Group/{group_name}/Event/{event}/DeletePicklist", tags=["picklists"])
+def delete_picklist_from_group(
+    group_name: str,
+    event: str,
+    picklist_id: str,
+    token: str = Depends(check_token_active),
+):
+
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            403, "You are not a member of this group")
+
+    group_event = next((e for e in DB_group.events if e.event_code == event), None)
+
+    group_event.picklists = [
+        pl for pl in group_event.picklists
+        if pl.picklist_id != picklist_id
+    ]
+
+    GroupCollection.update_one(
+        {"name": group_name},
+        {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
+    )
+
+    return {"deleted": picklist_id}
+
+# ---------------- Update Picklist ----------------
+@app.post("/Group/{group_name}/Event/{event}/UpdatePicklist", tags=["picklists"])
+def update_picklist_in_group(
+    group_name: str,
+    event: str,
+    picklist_id: str,
+    new_picklist: PickList2026,
+    token: str = Depends(check_token_active),
+):
+
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token=token)
+    admin = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.admin_group_id:
+            admin = True
+            break
+    if not admin:
+        raise HTTPException(
+            403, "You are not a member of this group")
+
+    group_event = next((e for e in DB_group.events if e.event_code == event), None)
+
+    for i, pl in enumerate(group_event.picklists):
+        if pl.picklist_id == picklist_id:
+            new_picklist.picklist_id = picklist_id
+            group_event.picklists[i] = new_picklist
+            break
+
+    GroupCollection.update_one(
+        {"name": group_name},
+        {"$set": {"events": [e.dict(by_alias=True) for e in DB_group.events]}},
+    )
+
+    return new_picklist
+
+# ---------------- Get Picklist ----------------
+@app.get("/Group/{group_name}/Event/{event}/GetPicklists", tags=["picklists"])
+def get_picklists_for_group(
+    group_name: str,
+    event: str,
+    token: str = Depends(check_token_active),
+):
+
+    try:
+        DB_group = Group(**GroupCollection.find_one({"name": group_name}))
+    except:
+        raise HTTPException(404, "This group does not exist")
+    kc_groups = get_user_groups(token=token)
+    member = False
+    for kc_group in kc_groups:
+        if kc_group["id"] == DB_group.member_group_id:
+            member = True
+            break
+    if not member:
+        raise HTTPException(
+            403, "You are not a member of this group")
+
+    group_event = next((e for e in DB_group.events if e.event_code == event), None)
+
+    return {
+        "picklists": [pl.dict(by_alias=True) for pl in group_event.picklists]
+    }
+>>>>>>> Stashed changes
     
 
    

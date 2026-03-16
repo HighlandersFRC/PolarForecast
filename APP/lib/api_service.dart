@@ -187,7 +187,11 @@ class ApiService {
           shooting_while_moving: false,
           main_strategy: '',
           hopper_capacity: 0,
+<<<<<<< Updated upstream
           mag_unload_speed: 0,
+=======
+          bps: 0,
+>>>>>>> Stashed changes
           robot_height: 0,
           straddling_pole_climb_right: false,
           straddling_pole_climb_left: false,
@@ -555,6 +559,82 @@ class ApiService {
   Future<List> get_event_groups(String event, int year) async {
     final endpoint = '$APIURL/$year/$event/Groups';
     return await _fetchFromAPI(endpoint, '', useCache: false);
+  }
+
+  Future<List<Picklist2026>> getPicklists(
+      String groupName, String event) async {
+    final response = await http.get(
+      Uri.parse('$APIURL/Group/$groupName/Event/$event/GetPicklists'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+
+    final data = json.decode(response.body);
+
+    return (data['picklists'] as List)
+        .map((p) => Picklist2026.fromJson(p))
+        .toList();
+  }
+
+  Future<void> addPicklist(
+      String group, String event, Picklist2026 picklist) async {
+    final body =
+        picklist.toJson(); // Produces JSON with "id" and "ordered list"
+    final response = await http.post(
+      Uri.parse('$APIURL/Group/$group/Event/$event/AddPickList'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to submit picklist: ${response.body}');
+    }
+  }
+
+  Future<Group> updatePicklist(String groupName, String event,
+      String picklistId, Picklist2026 picklist) async {
+    final response = await http.post(
+      Uri.parse(
+          '$APIURL/Group/$groupName/Event/$event/UpdatePicklist?picklist_id=$picklistId'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(picklist.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+
+    return Group.fromJson(json.decode(response.body));
+  }
+
+  Future<Group> deletePicklist(
+      String groupName, String event, String picklistId) async {
+    final response = await http.post(
+      Uri.parse(
+          '$APIURL/Group/$groupName/Event/$event/DeletePicklist?picklist_id=$picklistId'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+
+    return Group.fromJson(json.decode(response.body));
   }
 
   Future<List<AllianceRequest>> request_alliance(
