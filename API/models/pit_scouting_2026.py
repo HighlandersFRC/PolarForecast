@@ -65,6 +65,7 @@ class PitData2026(BaseModel):
     autos: list
     hopper_capacity: int
     mag_unload_speed: float
+    bps: float
     robot_height: float
 
 
@@ -81,6 +82,6 @@ class PitScouting2026(BaseModel):
     user_id: Optional[str] = None
     scout_info: Optional[ScoutInfo] = None
     team_number: Optional[int] = None
-    time: Optional[int] = None
+    time: Optional[Union[int, float]] = None
     event_code: Optional[str] = None
     data: Optional[PitData2026] = None

@@ -188,6 +188,7 @@ class ApiService {
           main_strategy: '',
           hopper_capacity: 0,
           mag_unload_speed: 0,
+          bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,
           straddling_pole_climb_left: false,

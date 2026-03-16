@@ -65,13 +65,14 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           main_strategy: '',
           hopper_capacity: 0,
           mag_unload_speed: 0,
+          bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,
           straddling_pole_climb_left: false,
           left_pole_climb: false,
           right_pole_climb: false,
           center_pole_climb: false),
-      time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      time: (DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000).toDouble(),
       user_id: '',
       auto: Auto2026(
           starting_position_meters_from_hub_center: 0,
@@ -972,10 +973,10 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     padding: const EdgeInsets.all(16),
                                     child: FloatyCounter(
                                       locked: widget.locked,
-                                      label: 'Mag Unload Speed (seconds)',
+                                      label: 'Hopper Unload Speed (seconds)',
                                       value:
                                           pitScoutingData.data.mag_unload_speed,
-                                      max: 10,
+                                      max: 30,
                                       onChanged: (speed) {
                                         setState(() {
                                           pitScoutingData =
@@ -989,7 +990,31 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     ),
                                   ),
                                 ),
-
+                                Card(
+                                  color: Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: FloatyCounter(
+                                      locked: widget.locked,
+                                      label: 'Fuel Per Second',
+                                      value: pitScoutingData.data.bps,
+                                      max: 30,
+                                      onChanged: (speed) {
+                                        setState(() {
+                                          pitScoutingData =
+                                              pitScoutingData.copyWith(
+                                                  data: pitScoutingData.data
+                                                      .copyWith(bps: speed));
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
                                 // Hopper Capacity
                                 Card(
                                   color: Color.fromARGB(24, 68, 137, 255),
