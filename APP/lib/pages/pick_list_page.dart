@@ -801,7 +801,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                       },
                                       child: Text(
                                         // SHOW team nickname next to team number separated by " | "
-                                        "Team ${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
+                                        "${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
                                         style: TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.w700,
