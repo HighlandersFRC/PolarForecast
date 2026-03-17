@@ -82,6 +82,54 @@ class _PicklistPageState extends State<PicklistPage> {
     html.Url.revokeObjectUrl(url);
   }
 
+  /// Renames a picklist with the given ID inside a GroupEvent
+  /// Renames a picklist using the API service
+  Future<void> renamePicklist({
+    required String picklistId,
+    required String newName,
+  }) async {
+    if (selectedPicklist == null) return;
+
+    // Show loading state if desired
+    setState(() {
+      _saving = true;
+    });
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+
+      // Create updated picklist with new name
+      final updatedPicklist = Picklist2026(
+        picklist_id: picklistId,
+        name: newName,
+        picks: selectedPicklist!.picks,
+      );
+
+      // Call API to update
+      await apiService.updatePicklist(
+          widget.groupName, widget.eventCode, picklistId, updatedPicklist);
+
+      // No need to manually update state here because your WebSocket
+      // listener will update the picklists automatically
+    } catch (e) {
+      // Handle error (you might want to show a snackbar)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to rename picklist: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+        });
+      }
+    }
+  }
+
   final Map<String, double Function(TeamStats2026)> statFields = {
     "OPR": (t) => t.OPR,
     "Auto Points": (t) => t.auto_points,
@@ -989,11 +1037,80 @@ class _PicklistPageState extends State<PicklistPage> {
                                   ),
                                 ),
                                 trailing: isSelected
-                                    ? IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            color: Colors.redAccent, size: 20),
-                                        onPressed: () =>
-                                            _confirmDeletePicklist(pl),
+                                    ? PopupMenuButton<String>(
+                                        icon: const Icon(Icons.more_vert,
+                                            size: 20),
+                                        onSelected: (value) async {
+                                          // In the PopupMenuButton onSelected section, replace the rename part:
+                                          if (value == 'rename') {
+                                            final newName =
+                                                await showDialog<String>(
+                                              context: context,
+                                              builder: (context) {
+                                                String tempName = pl.name;
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Rename Picklist'),
+                                                  content: TextField(
+                                                    autofocus: true,
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: pl.name),
+                                                    onChanged: (val) =>
+                                                        tempName = val,
+                                                    decoration:
+                                                        const InputDecoration(
+                                                      hintText: 'Picklist Name',
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(tempName),
+                                                      child:
+                                                          const Text('Rename'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (newName != null &&
+                                                newName.trim().isNotEmpty) {
+                                              await renamePicklist(
+                                                picklistId: pl.picklist_id,
+                                                newName: newName.trim(),
+                                              );
+                                            }
+                                          } else if (value == 'delete') {
+                                            _confirmDeletePicklist(pl);
+                                          }
+                                        },
+                                        itemBuilder: (BuildContext context) =>
+                                            <PopupMenuEntry<String>>[
+                                          const PopupMenuItem<String>(
+                                            value: 'rename',
+                                            child: Text('Rename'),
+                                          ),
+                                          const PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                  color: Colors.redAccent),
+                                            ),
+                                          ),
+                                        ],
                                       )
                                     : null,
                               ),
