@@ -24,6 +24,12 @@ class PicklistPage extends StatefulWidget {
 }
 
 class _PicklistPageState extends State<PicklistPage> {
+  int _getTeamRank(String teamNumber) {
+    final index = rankings.indexWhere((t) => t.team_number == teamNumber);
+    if (index == -1) return 0;
+    return index + 1;
+  }
+
   final Map<String, double Function(TeamStats2026)> statFields = {
     "OPR": (t) => t.OPR,
     "Auto Points": (t) => t.auto_points,
@@ -299,6 +305,7 @@ class _PicklistPageState extends State<PicklistPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final commentsContoller = TextEditingController();
 
     return Scaffold(
       // full page background color (you had Colors.black previously; keep it or change as needed)
@@ -416,7 +423,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                           width: 42,
                                           alignment: Alignment.center,
                                           child: Text(
-                                            '${index + 1}',
+                                            '${_getTeamRank(pick.number)}',
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w900,
@@ -488,17 +495,62 @@ class _PicklistPageState extends State<PicklistPage> {
                                             ],
                                           ),
 
-                                        // Comments
+                                        const SizedBox(height: 6),
+
+                                        // Comments TextField
+                                        // Comments TextField
+                                        Builder(
+                                          builder: (context) {
+                                            final controller =
+                                                TextEditingController(
+                                                    text: pick.comments);
+                                            final focusNode = FocusNode();
+
+                                            focusNode.addListener(() {
+                                              if (!focusNode.hasFocus) {
+                                                final value = controller.text;
+
+                                                setState(() {
+                                                  picks[index] = Picks(
+                                                    number: pick.number,
+                                                    comments: value,
+                                                  );
+                                                });
+
+                                                _autoSave();
+                                              }
+                                            });
+
+                                            return TextField(
+                                              controller: controller,
+                                              focusNode: focusNode,
+                                              decoration: InputDecoration(
+                                                labelText: "Comments",
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                filled: true,
+                                              ),
+                                            );
+                                          },
+                                        ),
+
+                                        // Finalized Comment display
                                         if (pick.comments.isNotEmpty)
                                           Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 8.0),
+                                            padding: const EdgeInsets.fromLTRB(
+                                                8,
+                                                8,
+                                                0,
+                                                0), // Aligns with TextField
                                             child: Text(
                                               pick.comments,
                                               style: TextStyle(
-                                                  color: cs.onSurface
-                                                      .withOpacity(0.7),
-                                                  fontStyle: FontStyle.italic),
+                                                color: cs.onSurface
+                                                    .withOpacity(0.7),
+                                                fontStyle: FontStyle.italic,
+                                              ),
                                             ),
                                           ),
                                       ],
