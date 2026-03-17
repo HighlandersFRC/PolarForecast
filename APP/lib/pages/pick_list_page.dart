@@ -114,6 +114,9 @@ class _PicklistPageState extends State<PicklistPage> {
   Picklist2026? selectedPicklist;
   List<Picks> picks = [];
 
+  // NEW: cache for team nicknames (keyed by plain team number string)
+  final Map<String, String> teamNames = {};
+
   String get _eventYear {
     if (widget.eventCode.length >= 4 &&
         int.tryParse(widget.eventCode.substring(0, 4)) != null) {
@@ -122,7 +125,7 @@ class _PicklistPageState extends State<PicklistPage> {
     return "2026";
   }
 
-  int snowCount = 40;
+  int snowCount = 99999;
   Map<String, Color> teamColors = {};
 
   @override
@@ -154,6 +157,11 @@ class _PicklistPageState extends State<PicklistPage> {
         picks = List.from(selectedPicklist!.picks);
       }
     });
+
+    // fetch team names for initial picks
+    for (final p in picks) {
+      _ensureTeamName(p.number);
+    }
   }
 
   Future<void> _fetchRankings() async {
@@ -189,6 +197,11 @@ class _PicklistPageState extends State<PicklistPage> {
             picks = List.from(selectedPicklist!.picks);
           }
         });
+
+        // fetch nicknames for new picks
+        for (final p in picks) {
+          _ensureTeamName(p.number);
+        }
       },
     );
 
@@ -200,6 +213,11 @@ class _PicklistPageState extends State<PicklistPage> {
       selectedPicklist = picklist;
       picks = List.from(picklist.picks);
     });
+
+    // fetch nicknames for selected picklist
+    for (final p in picks) {
+      _ensureTeamName(p.number);
+    }
   }
 
   void createPicklist(String name, String field) {
@@ -326,6 +344,9 @@ class _PicklistPageState extends State<PicklistPage> {
         picks.add(Picks(number: team.team_number, comments: ""));
       }
     });
+
+    // fetch nickname for the added team
+    _ensureTeamName(team.team_number);
   }
 
   TeamStats2026? _getTeamStats(String teamNumber) {
@@ -333,6 +354,23 @@ class _PicklistPageState extends State<PicklistPage> {
       return rankings.firstWhere((t) => t.team_number == teamNumber);
     } catch (e) {
       return null;
+    }
+  }
+
+  // NEW: ensure we have the team's nickname (calls ApiService.fetchTeamNicknames)
+  Future<void> _ensureTeamName(String teamNumber) async {
+    if (teamNames.containsKey(teamNumber)) return;
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      // TBA expects team key like 'frcXXXX'
+      final nickname = await apiService.fetchTeamNicknames('frc$teamNumber');
+      if (mounted) {
+        setState(() {
+          teamNames[teamNumber] = nickname ?? "";
+        });
+      }
+    } catch (e) {
+      // ignore failures silently — nickname will remain missing
     }
   }
 
@@ -554,7 +592,8 @@ class _PicklistPageState extends State<PicklistPage> {
               ),
             )
           : ReorderableListView.builder(
-              buildDefaultDragHandles: true,
+              // DISABLE default handles so we can place our handle under the rank number
+              buildDefaultDragHandles: false,
               itemCount: picks.length,
               onReorder: (oldIndex, newIndex) {
                 setState(() {
@@ -642,17 +681,32 @@ class _PicklistPageState extends State<PicklistPage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Rank
+                              // Rank + Drag Handle (handle placed under rank)
                               Container(
                                 width: 42,
                                 alignment: Alignment.center,
-                                child: Text(
-                                  '${_getTeamRank(pick.number)}',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    color: cs.onSurface,
-                                  ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${_getTeamRank(pick.number)}',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    // custom drag handle placed under the rank number
+                                    ReorderableDragStartListener(
+                                      index: index,
+                                      child: Icon(
+                                        Icons.drag_handle,
+                                        size: 20,
+                                        color: cs.onSurface.withOpacity(0.35),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -698,7 +752,8 @@ class _PicklistPageState extends State<PicklistPage> {
                                         );
                                       },
                                       child: Text(
-                                        "Team ${pick.number}",
+                                        // SHOW team nickname next to team number separated by " | "
+                                        "Team ${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
                                         style: TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.w700,
@@ -818,7 +873,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                           const Duration(milliseconds: 200),
                                       opacity: isLast ? 0.3 : 1.0,
                                       child: GlassIconButton(
-                                        icon: Icons.vertical_align_bottom,
+                                        icon: Icons.arrow_drop_down,
                                         color: Colors.orange,
                                         tooltip: 'Move to bottom',
                                         onPressed: isLast
@@ -859,7 +914,7 @@ class _PicklistPageState extends State<PicklistPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.filter_list, color: Colors.blue),
+              Icon(Icons.list, color: Colors.blue),
               const SizedBox(width: 8),
               Text(
                 "Your Picklists",
