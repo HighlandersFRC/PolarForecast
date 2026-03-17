@@ -125,7 +125,7 @@ class _PicklistPageState extends State<PicklistPage> {
     return "2026";
   }
 
-  int snowCount = 99999;
+  int snowCount = 100;
   Map<String, Color> teamColors = {};
 
   @override
