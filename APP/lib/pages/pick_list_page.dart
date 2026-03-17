@@ -37,7 +37,6 @@ class _PicklistPageState extends State<PicklistPage> {
 
     List<List<String>> rows = [];
 
-    // Header row
     rows.add([
       "Rank",
       "Team",
@@ -55,7 +54,7 @@ class _PicklistPageState extends State<PicklistPage> {
       rows.add([
         (i + 1).toString(),
         pick.number,
-        pick.comments,
+        pick.comments ?? "",
         stats?.OPR.toStringAsFixed(2) ?? "",
         stats?.auto_points.toStringAsFixed(2) ?? "",
         stats?.teleop_points.toStringAsFixed(2) ?? "",
@@ -68,6 +67,15 @@ class _PicklistPageState extends State<PicklistPage> {
     final bytes = utf8.encode(csv);
     final blob = html.Blob([bytes]);
     final url = html.Url.createObjectUrlFromBlob(blob);
+
+    // THIS IS THE PART YOU WERE MISSING
+
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute(
+        "download",
+        "${widget.eventCode}_${selectedPicklist!.name}.csv",
+      )
+      ..click();
 
     html.Url.revokeObjectUrl(url);
   }
