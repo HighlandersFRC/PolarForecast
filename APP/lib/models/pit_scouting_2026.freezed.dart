@@ -24,7 +24,7 @@ mixin _$PitScouting2026 {
   ScoutInfo get scout_info => throw _privateConstructorUsedError;
   int get team_number => throw _privateConstructorUsedError;
   String get event_code => throw _privateConstructorUsedError;
-  int get time => throw _privateConstructorUsedError;
+  double get time => throw _privateConstructorUsedError;
   PitData2026 get data => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
 
@@ -49,7 +49,7 @@ abstract class $PitScouting2026CopyWith<$Res> {
       ScoutInfo scout_info,
       int team_number,
       String event_code,
-      int time,
+      double time,
       PitData2026 data,
       Auto2026? auto});
 
@@ -101,7 +101,7 @@ class _$PitScouting2026CopyWithImpl<$Res, $Val extends PitScouting2026>
       time: null == time
           ? _value.time
           : time // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -161,7 +161,7 @@ abstract class _$$PitScouting2026ImplCopyWith<$Res>
       ScoutInfo scout_info,
       int team_number,
       String event_code,
-      int time,
+      double time,
       PitData2026 data,
       Auto2026? auto});
 
@@ -214,7 +214,7 @@ class __$$PitScouting2026ImplCopyWithImpl<$Res>
       time: null == time
           ? _value.time
           : time // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       data: null == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -251,7 +251,7 @@ class _$PitScouting2026Impl implements _PitScouting2026 {
   @override
   final String event_code;
   @override
-  final int time;
+  final double time;
   @override
   final PitData2026 data;
   @override
@@ -307,7 +307,7 @@ abstract class _PitScouting2026 implements PitScouting2026 {
       required final ScoutInfo scout_info,
       required final int team_number,
       required final String event_code,
-      required final int time,
+      required final double time,
       required final PitData2026 data,
       final Auto2026? auto}) = _$PitScouting2026Impl;
 
@@ -323,7 +323,7 @@ abstract class _PitScouting2026 implements PitScouting2026 {
   @override
   String get event_code;
   @override
-  int get time;
+  double get time;
   @override
   PitData2026 get data;
   @override
@@ -530,6 +530,10 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
               as double,
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
+              as double,
       autos: freezed == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -723,6 +727,10 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
+              as double,
       bps: null == bps
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
@@ -1034,6 +1042,8 @@ abstract class _PitData2026 implements PitData2026 {
   Auto2026? get auto;
   @override
   int get hopper_capacity;
+  @override
+  double get mag_unload_speed;
   @override
   double
       get bps; // keep autos dynamic to avoid type-mismatch with other code/widgets

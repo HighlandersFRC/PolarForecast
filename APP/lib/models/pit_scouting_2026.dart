@@ -10,7 +10,7 @@ class PitScouting2026 with _$PitScouting2026 {
     required ScoutInfo scout_info,
     required int team_number,
     required String event_code,
-    required int time,
+    required double time,
     required PitData2026 data,
     Auto2026? auto,
   }) = _PitScouting2026;
