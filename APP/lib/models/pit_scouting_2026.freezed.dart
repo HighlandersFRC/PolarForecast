@@ -530,10 +530,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
               as double,
-      bps: null == bps
-          ? _value.bps
-          : bps // ignore: cast_nullable_to_non_nullable
-              as double,
       autos: freezed == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -727,10 +723,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
-      bps: null == bps
-          ? _value.bps
-          : bps // ignore: cast_nullable_to_non_nullable
-              as double,
       bps: null == bps
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
@@ -1042,8 +1034,6 @@ abstract class _PitData2026 implements PitData2026 {
   Auto2026? get auto;
   @override
   int get hopper_capacity;
-  @override
-  double get mag_unload_speed;
   @override
   double
       get bps; // keep autos dynamic to avoid type-mismatch with other code/widgets
