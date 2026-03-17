@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
-
+import 'dart:html' as html;
 import '../models/group.dart';
 import '../models/team_stats_2026.dart';
 
@@ -28,6 +30,46 @@ class _PicklistPageState extends State<PicklistPage> {
     final index = rankings.indexWhere((t) => t.team_number == teamNumber);
     if (index == -1) return 0;
     return index + 1;
+  }
+
+  void exportCSV() {
+    if (selectedPicklist == null) return;
+
+    List<List<String>> rows = [];
+
+    // Header row
+    rows.add([
+      "Rank",
+      "Team",
+      "Comments",
+      "OPR",
+      "Auto Points",
+      "Teleop Points",
+      "Endgame Points"
+    ]);
+
+    for (int i = 0; i < picks.length; i++) {
+      final pick = picks[i];
+      final stats = _getTeamStats(pick.number);
+
+      rows.add([
+        (i + 1).toString(),
+        pick.number,
+        pick.comments,
+        stats?.OPR.toStringAsFixed(2) ?? "",
+        stats?.auto_points.toStringAsFixed(2) ?? "",
+        stats?.teleop_points.toStringAsFixed(2) ?? "",
+        stats?.endgame_points.toStringAsFixed(2) ?? "",
+      ]);
+    }
+
+    final csv = const ListToCsvConverter().convert(rows);
+
+    final bytes = utf8.encode(csv);
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+
+    html.Url.revokeObjectUrl(url);
   }
 
   final Map<String, double Function(TeamStats2026)> statFields = {
@@ -269,6 +311,10 @@ class _PicklistPageState extends State<PicklistPage> {
                   child: const Text("Cancel"),
                 ),
                 FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.blue, // button background
+                    foregroundColor: Colors.white, // text color
+                  ),
                   onPressed: () {
                     createPicklist(nameController.text, selectedField);
                     Navigator.pop(context);
@@ -305,7 +351,6 @@ class _PicklistPageState extends State<PicklistPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final commentsContoller = TextEditingController();
 
     return Scaffold(
       // full page background color (you had Colors.black previously; keep it or change as needed)
@@ -723,6 +768,23 @@ class _PicklistPageState extends State<PicklistPage> {
                           icon: const Icon(Icons.add),
                           label: const Text(
                             "New Picklist",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: exportCSV,
+                          icon: const Icon(Icons.download),
+                          label: const Text(
+                            "Export CSV",
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
