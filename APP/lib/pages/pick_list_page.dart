@@ -834,14 +834,19 @@ class _PicklistPageState extends State<PicklistPage> {
 
   Future<void> _openTeamImages(String teamNumber) async {
     final eventYear = int.parse(_eventYear);
-    setState(() {});
+    String eventCode = widget.eventCode;
+    // Extract just the event code without the year
+    if (eventCode.length > 4) {
+      eventCode = eventCode.substring(4);
+    }
+
     showDialog(
       context: context,
       builder: (context) {
         return TeamImagesDialog(
           teamNumber: teamNumber,
           eventYear: eventYear,
-          eventCode: widget.eventCode,
+          eventCode: eventCode, // Use the cleaned event code
           rankings: rankings,
           picklistIndex: picks.indexWhere((p) => p.number == teamNumber) + 1,
         );
@@ -1370,9 +1375,16 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
 
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
+
+      // Extract the event code without the year
+      String eventCode = widget.eventCode;
+      if (eventCode.length > 4) {
+        eventCode = eventCode.substring(4);
+      }
+
       final futures = await Future.wait([
-        apiService.fetchTeamImages(widget.eventYear, widget.eventCode, a),
-        apiService.fetchTeamImages(widget.eventYear, widget.eventCode, b),
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$a'),
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$b'),
         apiService.fetchTeamNicknames('frc$a'),
         apiService.fetchTeamNicknames('frc$b'),
       ]);
@@ -1478,8 +1490,9 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
   }
 
   Future<void> _selectTeam({required bool leftSide}) async {
-    final currentTeam =
-        leftSide ? widget.picks[leftIndex].number : widget.picks[rightIndex].number;
+    final currentTeam = leftSide
+        ? widget.picks[leftIndex].number
+        : widget.picks[rightIndex].number;
     String search = '';
 
     final selected = await showModalBottomSheet<String>(
@@ -1534,7 +1547,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                               _teamLabel(team),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: isSelected ? const Icon(Icons.check) : null,
+                            trailing:
+                                isSelected ? const Icon(Icons.check) : null,
                             onTap: () => Navigator.pop(context, team),
                           );
                         },
@@ -1562,7 +1576,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       } else {
         rightIndex = newIndex;
         if (leftIndex == rightIndex) {
-          leftIndex = (rightIndex - 1 + widget.picks.length) % widget.picks.length;
+          leftIndex =
+              (rightIndex - 1 + widget.picks.length) % widget.picks.length;
         }
       }
     });
@@ -1607,14 +1622,12 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
 
   List<_CompareMetric> _buildMetrics(TeamStats2026? a, TeamStats2026? b) {
     return [
-      _CompareMetric('Comp Rank', (a?.rank ?? 0).toDouble(),
-          (b?.rank ?? 0).toDouble(), lowerIsBetter: true, integerLike: true),
       _CompareMetric(
-          'Sim Rank',
-          (a?.simulated_rank ?? 0).toDouble(),
+          'Comp Rank', (a?.rank ?? 0).toDouble(), (b?.rank ?? 0).toDouble(),
+          lowerIsBetter: true, integerLike: true),
+      _CompareMetric('Sim Rank', (a?.simulated_rank ?? 0).toDouble(),
           (b?.simulated_rank ?? 0).toDouble(),
-          lowerIsBetter: true,
-          integerLike: true),
+          lowerIsBetter: true, integerLike: true),
       _CompareMetric('OPR Rank', (a?.OPRRank ?? 0).toDouble(),
           (b?.OPRRank ?? 0).toDouble(),
           lowerIsBetter: true, integerLike: true),
@@ -1631,8 +1644,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       _CompareMetric('Teleop Pass', a?.teleop_pass ?? 0, b?.teleop_pass ?? 0),
       _CompareMetric(
           'Auto Fuel', a?.auto_fuel_cycles ?? 0, b?.auto_fuel_cycles ?? 0),
-      _CompareMetric(
-          'Teleop Fuel', a?.teleop_fuel_cycles ?? 0, b?.teleop_fuel_cycles ?? 0),
+      _CompareMetric('Teleop Fuel', a?.teleop_fuel_cycles ?? 0,
+          b?.teleop_fuel_cycles ?? 0),
       _CompareMetric(
           'Total Fuel', a?.total_fuel_cycles ?? 0, b?.total_fuel_cycles ?? 0),
       _CompareMetric('Foul Points', a?.foul_points ?? 0, b?.foul_points ?? 0,
@@ -2114,13 +2127,14 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
       final fetched = await apiService.fetchTeamImages(
-          widget.eventYear, widget.eventCode, widget.teamNumber);
+          widget.eventYear, widget.eventCode, 'frc${widget.teamNumber}');
       if (mounted) {
         setState(() {
           images = fetched;
         });
       }
     } catch (e) {
+      print(e);
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -2214,7 +2228,8 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
                                           top: 8,
                                           right: 8,
                                           child: IconButton(
-                                            onPressed: () => Navigator.pop(context),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
                                             icon: const Icon(Icons.close,
                                                 color: Colors.white),
                                           ),
