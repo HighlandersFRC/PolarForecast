@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
@@ -37,7 +39,6 @@ class _PicklistPageState extends State<PicklistPage> {
 
     List<List<String>> rows = [];
 
-    // Header row
     rows.add([
       "Rank",
       "Team",
@@ -90,6 +91,7 @@ class _PicklistPageState extends State<PicklistPage> {
   };
 
   bool _saving = false;
+  String? _highlightedTeam;
 
   Future<void> _autoSave() async {
     if (_saving) return;
@@ -103,14 +105,16 @@ class _PicklistPageState extends State<PicklistPage> {
   Picklist2026? selectedPicklist;
   List<Picks> picks = [];
 
-  // Helper to extract the year for TBA avatars
   String get _eventYear {
     if (widget.eventCode.length >= 4 &&
         int.tryParse(widget.eventCode.substring(0, 4)) != null) {
       return widget.eventCode.substring(0, 4);
     }
-    return "2026"; // Fallback
+    return "2026";
   }
+
+  int snowCount = 40;
+  Map<String, Color> teamColors = {};
 
   @override
   void initState() {
@@ -244,6 +248,69 @@ class _PicklistPageState extends State<PicklistPage> {
         widget.groupName, widget.eventCode, picklist.picklist_id);
   }
 
+  Future<void> _confirmDeletePicklist(Picklist2026 picklist) async {
+    final controller = TextEditingController();
+    bool isMatch = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              title: const Text("Delete Picklist",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.redAccent)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Type '${picklist.name}' to confirm deletion."),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      hintText: picklist.name,
+                    ),
+                    onChanged: (val) {
+                      setStateDialog(() {
+                        isMatch = val == picklist.name;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: isMatch ? Colors.redAccent : Colors.grey,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: isMatch
+                      ? () {
+                          Navigator.pop(context);
+                          deletePicklist(picklist);
+                        }
+                      : null,
+                  child: const Text("Delete"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void addTeam(TeamStats2026 team) {
     setState(() {
       if (!picks.any((p) => p.number == team.team_number)) {
@@ -252,12 +319,11 @@ class _PicklistPageState extends State<PicklistPage> {
     });
   }
 
-  // Helper function to find a team's stats from the rankings list
   TeamStats2026? _getTeamStats(String teamNumber) {
     try {
       return rankings.firstWhere((t) => t.team_number == teamNumber);
     } catch (e) {
-      return null; // Return null if stats aren't loaded or team isn't found
+      return null;
     }
   }
 
@@ -270,6 +336,7 @@ class _PicklistPageState extends State<PicklistPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            final isValid = nameController.text.trim().isNotEmpty;
             return AlertDialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
@@ -286,6 +353,10 @@ class _PicklistPageState extends State<PicklistPage> {
                           borderRadius: BorderRadius.circular(8)),
                       filled: true,
                     ),
+                    onChanged: (val) {
+                      setStateDialog(
+                          () {}); // Trigger rebuild to update validation
+                    },
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
@@ -312,13 +383,16 @@ class _PicklistPageState extends State<PicklistPage> {
                 ),
                 FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.blue, // button background
-                    foregroundColor: Colors.white, // text color
+                    backgroundColor: isValid ? Colors.blue : Colors.grey,
+                    foregroundColor: Colors.white,
                   ),
-                  onPressed: () {
-                    createPicklist(nameController.text, selectedField);
-                    Navigator.pop(context);
-                  },
+                  onPressed: isValid
+                      ? () {
+                          createPicklist(
+                              nameController.text.trim(), selectedField);
+                          Navigator.pop(context);
+                        }
+                      : null,
                   child: const Text("Create"),
                 ),
               ],
@@ -329,7 +403,6 @@ class _PicklistPageState extends State<PicklistPage> {
     );
   }
 
-  // A visually appealing badge for team stats
   Widget _buildStatBadge(String label, double value, Color color) {
     return Container(
       margin: const EdgeInsets.only(right: 6, top: 4),
@@ -347,163 +420,269 @@ class _PicklistPageState extends State<PicklistPage> {
     );
   }
 
+  void _triggerHighlight(String teamNumber) {
+    setState(() {
+      _highlightedTeam = teamNumber;
+    });
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        setState(() {
+          _highlightedTeam = null;
+        });
+      }
+    });
+  }
+
+  void _moveUp(int index) {
+    if (index <= 0) return;
+    setState(() {
+      final item = picks.removeAt(index);
+      picks.insert(index - 1, item);
+      _triggerHighlight(item.number);
+    });
+    _autoSave();
+  }
+
+  void _moveDown(int index) {
+    if (index >= picks.length - 1) return;
+    setState(() {
+      final item = picks.removeAt(index);
+      picks.insert(index + 1, item);
+      _triggerHighlight(item.number);
+    });
+    _autoSave();
+  }
+
+  void _moveToBottom(int index) {
+    if (index >= picks.length - 1) return;
+    setState(() {
+      final item = picks.removeAt(index);
+      picks.add(item);
+      _triggerHighlight(item.number);
+    });
+    _autoSave();
+  }
+
+  Future<void> _editCommentsDialog(int index) async {
+    final pick = picks[index];
+    final controller = TextEditingController(text: pick.comments);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text("Edit Comments for Team ${pick.number}"),
+          content: TextField(
+            controller: controller,
+            minLines: 1,
+            maxLines: 6,
+            decoration: InputDecoration(
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              hintText: "Enter comments",
+              filled: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: Text("Save")),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        picks[index] = Picks(number: pick.number, comments: result);
+      });
+      _autoSave();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isMobile = MediaQuery.of(context).size.width < 800;
 
-    return Scaffold(
-      // full page background color (you had Colors.black previously; keep it or change as needed)
-      backgroundColor: Colors.black,
-      appBar:
-          PolarForecastAppBar(extraText: 'Picklist for ${widget.eventCode}'),
-      // Use a Stack so we can paint an animated snow background behind the page content.
-      body: Stack(
-        children: [
-          // Snow field is behind everything. It ignores pointer events.
-          Positioned.fill(
-            child: IgnorePointer(
-              ignoring: true,
-              child: SnowField(
-                // small number of particles by default for performance
-                particleCount: 40,
-                // pass theme color so snow adapts (light on dark or dark on light)
-                color: cs.onBackground,
+    final Widget teamsListPane = Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 3))
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: picks.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.list_alt,
+                      size: 72, color: cs.onSurface.withOpacity(0.14)),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No teams in this picklist yet.",
+                    style: TextStyle(
+                        fontSize: 18, color: cs.onSurface.withOpacity(0.6)),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Create a new picklist or add teams from rankings.",
+                    style: TextStyle(
+                        fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+                  )
+                ],
               ),
-            ),
-          ),
+            )
+          : ReorderableListView.builder(
+              buildDefaultDragHandles: true,
+              itemCount: picks.length,
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) newIndex--;
+                  final item = picks.removeAt(oldIndex);
+                  picks.insert(newIndex, item);
+                  _triggerHighlight(item.number);
+                });
+                _autoSave();
+              },
+              itemBuilder: (context, index) {
+                final pick = picks[index];
 
-          // Main content (same as before) sits on top of the snowfield.
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// Main Picklist Area (Flex 5)
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.scaffoldBackgroundColor,
+                final tbaProxyAvatar =
+                    'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/$_eventYear/frc${pick.number}.png&w=96&h=96&fit=contain';
+                final dicebearAvatar =
+                    'https://api.dicebear.com/9.x/identicon/png?seed=frc${pick.number}&size=64';
+
+                final teamStats = _getTeamStats(pick.number);
+
+                final tint = teamColors[pick.number];
+                final cardTint =
+                    tint != null ? tint.withOpacity(0.08) : cs.surfaceVariant;
+
+                bool isFirst = index == 0;
+                bool isLast = index == picks.length - 1;
+                bool isHighlighted = _highlightedTeam == pick.number;
+
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut,
+                  key: ValueKey(pick.number),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: isHighlighted
+                        ? [
+                            BoxShadow(
+                                color: cs.primary.withOpacity(0.4),
+                                blurRadius: 16,
+                                spreadRadius: 2)
+                          ]
+                        : [],
+                  ),
+                  child: Card(
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3))
-                      ],
+                      side: BorderSide(
+                        color: isHighlighted
+                            ? cs.primary.withOpacity(0.6)
+                            : cs.outline.withOpacity(0.12),
+                        width: isHighlighted ? 1.5 : 1.0,
+                      ),
                     ),
-                    padding: const EdgeInsets.all(12),
-                    child: picks.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.list_alt,
-                                    size: 72,
-                                    color: cs.onSurface.withOpacity(0.14)),
-                                const SizedBox(height: 16),
-                                Text(
-                                  "No teams in this picklist yet.",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      color: cs.onSurface.withOpacity(0.6)),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  "Create a new picklist or add teams from rankings.",
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: cs.onSurface.withOpacity(0.5)),
-                                )
-                              ],
-                            ),
-                          )
-                        : ReorderableListView.builder(
-                            buildDefaultDragHandles: true,
-                            itemCount: picks.length,
-                            onReorder: (oldIndex, newIndex) {
-                              setState(() {
-                                if (newIndex > oldIndex) newIndex--;
-                                final item = picks.removeAt(oldIndex);
-                                picks.insert(newIndex, item);
-                              });
-                              _autoSave();
-                            },
-                            itemBuilder: (context, index) {
-                              final pick = picks[index];
-
-                              // Proxied The Blue Alliance avatar URL (uses images.weserv.nl to avoid CORS)
-                              final tbaProxyAvatar =
-                                  'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/$_eventYear/frc${pick.number}.png&w=96&h=96&fit=contain';
-
-                              // DiceBear fallback (deterministic identicon)
-                              final dicebearAvatar =
-                                  'https://api.dicebear.com/9.x/identicon/png?seed=frc${pick.number}&size=64';
-
-                              final teamStats = _getTeamStats(pick.number);
-
-                              return Card(
-                                key: ValueKey(pick.number),
-                                elevation: 0,
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 4),
-                                shape: RoundedRectangleBorder(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      cardTint,
+                                      cardTint.withOpacity(0.02)
+                                    ],
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                      color: cs.outline.withOpacity(0.12)),
                                 ),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: ListTile(
-                                    dense: false,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
-                                    leading: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Bold Rank Number
-                                        Container(
-                                          width: 42,
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            '${_getTeamRank(pick.number)}',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        // Avatar (robust to CORS errors)
-                                        InkWell(
-                                          onTap: () {
-                                            final eventCode = widget
-                                                .eventCode; // your event code
-                                            final teamNumber = pick
-                                                .number; // the team's number
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Replaced ListTile with a Custom Row to remove trailing height constraints
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Rank
+                              Container(
+                                width: 42,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${_getTeamRank(pick.number)}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
 
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/event/$eventCode/team/frc$teamNumber',
-                                            );
-                                          },
-                                          child: TeamAvatar(
-                                            primaryUrl: tbaProxyAvatar,
-                                            fallbackUrl: dicebearAvatar,
-                                            teamNumber: pick.number,
-                                            size: 48,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    title: InkWell(
+                              // Avatar
+                              InkWell(
+                                onTap: () {
+                                  final eventCode = widget.eventCode;
+                                  final teamNumber = pick.number;
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/event/$eventCode/team/frc$teamNumber',
+                                  );
+                                },
+                                child: TeamAvatar(
+                                  primaryUrl: tbaProxyAvatar,
+                                  fallbackUrl: dicebearAvatar,
+                                  teamNumber: pick.number,
+                                  size: 48,
+                                  onColor: (color) {
+                                    if (color != null) {
+                                      setState(() {
+                                        teamColors[pick.number] = color;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+
+                              // Main Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
                                       onTap: () {
-                                        // Replace with your actual eventCode variable
                                         final eventCode = widget.eventCode;
-
                                         Navigator.pushNamed(
                                           context,
                                           '/event/$eventCode/team/frc${pick.number}',
@@ -518,282 +697,300 @@ class _PicklistPageState extends State<PicklistPage> {
                                         ),
                                       ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    const SizedBox(height: 6),
+                                    if (teamStats != null)
+                                      Wrap(
+                                        children: [
+                                          _buildStatBadge("OPR", teamStats.OPR,
+                                              Colors.purple),
+                                          _buildStatBadge(
+                                              "Auto",
+                                              teamStats.auto_points,
+                                              Colors.green),
+                                          _buildStatBadge(
+                                              "Teleop",
+                                              teamStats.teleop_points,
+                                              Colors.orange),
+                                        ],
+                                      ),
+                                    const SizedBox(height: 8),
+                                    Row(
                                       children: [
-                                        const SizedBox(height: 6),
-                                        // Stat Badges Row
-                                        if (teamStats != null)
-                                          Wrap(
-                                            children: [
-                                              _buildStatBadge("OPR",
-                                                  teamStats.OPR, Colors.purple),
-                                              _buildStatBadge(
-                                                  "Auto",
-                                                  teamStats.auto_points,
-                                                  Colors.green),
-                                              _buildStatBadge(
-                                                  "Teleop",
-                                                  teamStats.teleop_points,
-                                                  Colors.orange),
-                                            ],
-                                          ),
-
-                                        const SizedBox(height: 6),
-
-                                        // Comments TextField
-                                        // Comments TextField
-                                        Builder(
-                                          builder: (context) {
-                                            final controller =
-                                                TextEditingController(
-                                                    text: pick.comments);
-                                            final focusNode = FocusNode();
-
-                                            focusNode.addListener(() {
-                                              if (!focusNode.hasFocus) {
-                                                final value = controller.text;
-
-                                                setState(() {
-                                                  picks[index] = Picks(
-                                                    number: pick.number,
-                                                    comments: value,
-                                                  );
-                                                });
-
-                                                _autoSave();
-                                              }
-                                            });
-
-                                            return TextField(
-                                              controller: controller,
-                                              focusNode: focusNode,
-                                              decoration: InputDecoration(
-                                                labelText: "Comments",
-                                                border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                filled: true,
-                                              ),
-                                            );
-                                          },
-                                        ),
-
-                                        // Finalized Comment display
-                                        if (pick.comments.isNotEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                8,
-                                                8,
-                                                0,
-                                                0), // Aligns with TextField
+                                        Expanded(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: cs.surfaceVariant,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                  color: cs.outline
+                                                      .withOpacity(0.06)),
+                                            ),
                                             child: Text(
-                                              pick.comments,
+                                              pick.comments.isEmpty
+                                                  ? "No comments. Tap edit to add."
+                                                  : pick.comments,
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 color: cs.onSurface
-                                                    .withOpacity(0.7),
-                                                fontStyle: FontStyle.italic,
+                                                    .withOpacity(0.85),
+                                                fontStyle: pick.comments.isEmpty
+                                                    ? FontStyle.normal
+                                                    : FontStyle.italic,
+                                                fontSize: 13,
                                               ),
                                             ),
                                           ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Remove button
+                                        ),
+                                        const SizedBox(width: 8),
                                         IconButton(
-                                          icon: Icon(Icons.close,
+                                          icon: Icon(Icons.edit,
+                                              size: 20,
                                               color: cs.onSurface
-                                                  .withOpacity(0.6)),
-                                          tooltip: 'Remove from picklist',
-                                          onPressed: () => setState(
-                                              () => picks.removeAt(index)),
-                                        ),
-                                        // Reorder handle (makes drag affordance clearer)
-                                        ReorderableDragStartListener(
-                                          index: index,
-                                          child: Icon(Icons.drag_handle,
-                                              color: cs.onSurface
-                                                  .withOpacity(0.6)),
+                                                  .withOpacity(0.7)),
+                                          onPressed: () =>
+                                              _editCommentsDialog(index),
+                                          tooltip: "Edit comments",
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ),
-
-                const SizedBox(width: 20),
-
-                /// Sidebar: Picklist Selector (Flex 2)
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                      border: Border.all(color: cs.outline.withOpacity(0.12)),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.filter_list, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Your Picklists",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: cs.onSurface),
-                            ),
-                            const Spacer(),
-                            // subtle saving indicator (UI-only)
-                            if (_saving)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 6.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 12,
-                                      height: 12,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: Colors.blue),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text("Saving...",
-                                        style: TextStyle(
-                                            fontSize: 12, color: Colors.blue)),
                                   ],
                                 ),
                               ),
-                          ],
-                        ),
-                        const Divider(height: 24),
-                        Expanded(
-                          child: picklists.isEmpty
-                              ? Center(
-                                  child: Text("No picklists found",
-                                      style: TextStyle(
-                                          color:
-                                              cs.onSurface.withOpacity(0.6))),
-                                )
-                              : ListView.builder(
-                                  itemCount: picklists.length,
-                                  itemBuilder: (context, i) {
-                                    final pl = picklists[i];
-                                    final isSelected = pl == selectedPicklist;
+                              const SizedBox(width: 12),
 
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 8.0),
-                                      child: Material(
-                                        color: isSelected
-                                            ? cs.primary.withOpacity(0.06)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: InkWell(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          onTap: () => selectPicklist(pl),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: isSelected
-                                                    ? Colors.blue
-                                                    : Colors.grey.shade100,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: ListTile(
-                                              dense: true,
-                                              title: Text(
-                                                pl.name,
-                                                style: TextStyle(
-                                                  fontWeight: isSelected
-                                                      ? FontWeight.bold
-                                                      : FontWeight.normal,
-                                                  color: isSelected
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade100,
-                                                ),
-                                              ),
-                                              trailing: isSelected
-                                                  ? IconButton(
-                                                      icon: const Icon(
-                                                          Icons.delete_outline,
-                                                          color:
-                                                              Colors.redAccent,
-                                                          size: 20),
-                                                      onPressed: () =>
-                                                          deletePicklist(pl),
-                                                    )
-                                                  : null,
+                              // Trailing Controls (Now free to expand vertically)
+                              SizedBox(
+                                width: 86,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            opacity: isFirst ? 0.3 : 1.0,
+                                            child: GlassIconButton(
+                                              icon: Icons.keyboard_arrow_up,
+                                              color: cs.onSurface,
+                                              tooltip: 'Move up 1',
+                                              onPressed: isFirst
+                                                  ? null
+                                                  : () => _moveUp(index),
                                             ),
                                           ),
                                         ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            opacity: isLast ? 0.3 : 1.0,
+                                            child: GlassIconButton(
+                                              icon: Icons.keyboard_arrow_down,
+                                              color: cs.onSurface,
+                                              tooltip: 'Move down 1',
+                                              onPressed: isLast
+                                                  ? null
+                                                  : () => _moveDown(index),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    AnimatedOpacity(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      opacity: isLast ? 0.3 : 1.0,
+                                      child: GlassIconButton(
+                                        icon: Icons.vertical_align_bottom,
+                                        color: Colors.orange,
+                                        tooltip: 'Move to bottom',
+                                        onPressed: isLast
+                                            ? null
+                                            : () => _moveToBottom(index),
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ],
                                 ),
-                        ),
-                        const SizedBox(height: 12),
-                        FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.blue, // Button background
-                            foregroundColor:
-                                Colors.white, // Text and icon color
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: openCreateDialog,
-                          icon: const Icon(Icons.add),
-                          label: const Text(
-                            "New Picklist",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: exportCSV,
-                          icon: const Icon(Icons.download),
-                          label: const Text(
-                            "Export CSV",
-                            style: TextStyle(fontSize: 16),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
+    );
+
+    final Widget controlsPane = Container(
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+        border: Border.all(color: cs.outline.withOpacity(0.12)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.filter_list, color: Colors.blue),
+              const SizedBox(width: 8),
+              Text(
+                "Your Picklists",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface),
+              ),
+              const Spacer(),
+              if (_saving)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6.0),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.blue),
+                      ),
+                      const SizedBox(width: 6),
+                      Text("Saving...",
+                          style: TextStyle(fontSize: 12, color: Colors.blue)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const Divider(height: 24),
+          Expanded(
+            child: picklists.isEmpty
+                ? Center(
+                    child: Text("No picklists found",
+                        style: TextStyle(color: cs.onSurface.withOpacity(0.6))),
+                  )
+                : ListView.builder(
+                    itemCount: picklists.length,
+                    itemBuilder: (context, i) {
+                      final pl = picklists[i];
+                      final isSelected = pl == selectedPicklist;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Material(
+                          color: isSelected
+                              ? cs.primary.withOpacity(0.06)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () => selectPicklist(pl),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.blue
+                                      : Colors.transparent,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ListTile(
+                                dense: true,
+                                title: Text(
+                                  pl.name,
+                                  style: TextStyle(
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? Colors.blue
+                                        : cs.onSurface.withOpacity(0.9),
+                                  ),
+                                ),
+                                trailing: isSelected
+                                    ? IconButton(
+                                        icon: const Icon(Icons.delete_outline,
+                                            color: Colors.redAccent, size: 20),
+                                        onPressed: () =>
+                                            _confirmDeletePicklist(pl),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: 12),
+          GlassButton(
+            color: Colors.blue,
+            onPressed: openCreateDialog,
+            icon: Icons.add,
+            label: "New Picklist",
+          ),
+          const SizedBox(height: 10),
+          GlassButton(
+            color: Colors.green,
+            onPressed: exportCSV,
+            icon: Icons.download,
+            label: "Export CSV",
+          ),
+        ],
+      ),
+    );
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar:
+          PolarForecastAppBar(extraText: 'Picklist for ${widget.eventCode}'),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: SnowField(
+                particleCount: snowCount,
+                color: cs.onBackground,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: isMobile
+                ? Column(
+                    children: [
+                      Flexible(flex: 3, child: controlsPane),
+                      const SizedBox(height: 16),
+                      Expanded(flex: 5, child: teamsListPane),
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 5, child: teamsListPane),
+                      const SizedBox(width: 20),
+                      Expanded(flex: 2, child: controlsPane),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -801,13 +998,12 @@ class _PicklistPageState extends State<PicklistPage> {
   }
 }
 
-/// TeamAvatar: tries `primaryUrl` first, then `fallbackUrl`, then shows robot icon if both fail.
-/// Uses theme colors for loaders and borders.
 class TeamAvatar extends StatefulWidget {
   final String primaryUrl;
   final String fallbackUrl;
   final String teamNumber;
   final double size;
+  final ValueChanged<Color?>? onColor;
 
   const TeamAvatar({
     super.key,
@@ -815,6 +1011,7 @@ class TeamAvatar extends StatefulWidget {
     required this.fallbackUrl,
     required this.teamNumber,
     this.size = 48,
+    this.onColor,
   });
 
   @override
@@ -829,25 +1026,35 @@ class _TeamAvatarState extends State<TeamAvatar> {
   @override
   void initState() {
     super.initState();
-    // Start with the proxied TBA avatar (or whatever primaryUrl the parent provided).
     _currentUrl = widget.primaryUrl;
     _showIcon = false;
     _triedFallback = false;
+    _generatePalette();
+  }
+
+  Future<void> _generatePalette() async {
+    try {
+      final provider = NetworkImage(_currentUrl);
+      final palette = await PaletteGenerator.fromImageProvider(provider,
+          maximumColorCount: 6);
+      final color = palette.dominantColor?.color ?? palette.vibrantColor?.color;
+      if (color != null) widget.onColor?.call(color);
+    } catch (e) {}
   }
 
   void _onImageError(Object _, StackTrace? __) {
     if (!_triedFallback && widget.fallbackUrl.isNotEmpty) {
-      // Try the fallback (DiceBear) once
       setState(() {
         _currentUrl = widget.fallbackUrl;
         _triedFallback = true;
       });
+      _generatePalette();
       return;
     }
 
-    // final fallback failed — show robot icon
     setState(() {
       _showIcon = true;
+      widget.onColor?.call(null);
     });
   }
 
@@ -878,7 +1085,6 @@ class _TeamAvatarState extends State<TeamAvatar> {
                 fit: BoxFit.cover,
                 width: widget.size,
                 height: widget.size,
-                // loader that uses theme primary color
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Center(
@@ -897,11 +1103,9 @@ class _TeamAvatarState extends State<TeamAvatar> {
                   );
                 },
                 errorBuilder: (context, error, stackTrace) {
-                  // call error handler to progress the fallback/show icon
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _onImageError(error, stackTrace);
                   });
-                  // show an empty container while we switch to fallback or icon
                   return const SizedBox.shrink();
                 },
               ),
@@ -910,9 +1114,6 @@ class _TeamAvatarState extends State<TeamAvatar> {
   }
 }
 
-/// SnowField: lightweight animated dot/snowfield drawn behind the UI.
-/// It uses a CustomPainter and an AnimationController. The parent places it behind the content,
-/// so it will never cover interactive cards.
 class SnowField extends StatefulWidget {
   final int particleCount;
   final Color color;
@@ -946,13 +1147,12 @@ class _SnowFieldState extends State<SnowField>
   }
 
   _SnowParticle _createParticle() {
-    // We initialize with normalized positions; real canvas size will be applied on the paint step.
     return _SnowParticle(
-      x: _rnd.nextDouble(), // 0..1
-      y: _rnd.nextDouble(), // 0..1
-      radius: 1.5 + _rnd.nextDouble() * 3, // 1.5..5.0
-      speed: 20 + _rnd.nextDouble() * 60, // pixels per second (approx)
-      drift: -20 + _rnd.nextDouble() * 40, // horizontal drift in px/sec
+      x: _rnd.nextDouble(),
+      y: _rnd.nextDouble(),
+      radius: 1.5 + _rnd.nextDouble() * 3,
+      speed: 20 + _rnd.nextDouble() * 60,
+      drift: -20 + _rnd.nextDouble() * 40,
       opacity: 0.25 + _rnd.nextDouble() * 0.75,
     );
   }
@@ -962,15 +1162,9 @@ class _SnowFieldState extends State<SnowField>
     final dt = now.difference(_lastTick).inMilliseconds / 1000.0;
     _lastTick = now;
 
-    // update logical positions (normalized)
     for (final p in _particles) {
-      // We'll update y/x as normalized values using canvas size later. To avoid coupling to size here,
-      // we'll store velocities as px/sec and update normalized positions when painting. But for simplicity,
-      // update using normalized approximation:
-      p._logicalY += (p.speed * dt) /
-          300.0; // heuristic divisor to keep motion pleasant regardless of canvas
+      p._logicalY += (p.speed * dt) / 300.0;
       p._logicalX += (p.drift * dt) / 300.0;
-      // wrap around
       if (p._logicalY > 1.25) {
         p._logicalY = -0.05 - _rnd.nextDouble() * 0.1;
         p._logicalX = _rnd.nextDouble();
@@ -979,7 +1173,6 @@ class _SnowFieldState extends State<SnowField>
       if (p._logicalX > 1.2) p._logicalX = -0.05;
     }
 
-    // repaint
     if (mounted) setState(() {});
   }
 
@@ -992,7 +1185,6 @@ class _SnowFieldState extends State<SnowField>
 
   @override
   Widget build(BuildContext context) {
-    // The painter respects the canvas size; snow remains behind content because parent placed this widget first inside a Stack.
     return CustomPaint(
       painter: _SnowPainter(
           _particles, widget.color, MediaQuery.of(context).devicePixelRatio),
@@ -1002,14 +1194,12 @@ class _SnowFieldState extends State<SnowField>
 }
 
 class _SnowParticle {
-  double x; // initial normalized x
-  double y; // initial normalized y
+  double x;
+  double y;
   final double radius;
-  final double speed; // px/sec (heuristic)
-  final double drift; // px/sec
+  final double speed;
+  final double drift;
   final double opacity;
-
-  // internal logical positions used by update loop
   double _logicalX;
   double _logicalY;
 
@@ -1034,20 +1224,113 @@ class _SnowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    // make color subtle and theme-aware
     final Color dotColor = baseColor.withOpacity(0.7);
 
     for (final p in particles) {
-      // convert normalized logical positions to pixel coordinates
       final dx = (p._logicalX.clamp(-0.5, 1.5)) * size.width;
       final dy = (p._logicalY.clamp(-0.5, 1.5)) * size.height;
 
       paint.color = dotColor.withOpacity(p.opacity * 0.9);
-      // Draw as a circle (snowflake dot)
       canvas.drawCircle(Offset(dx, dy), p.radius, paint);
     }
   }
 
   @override
   bool shouldRepaint(covariant _SnowPainter old) => true;
+}
+
+class GlassButton extends StatelessWidget {
+  final Color color;
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+
+  const GlassButton({
+    super.key,
+    required this.color,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Material(
+          color: color.withOpacity(0.12),
+          child: InkWell(
+            onTap: onPressed,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color),
+                  const SizedBox(width: 8),
+                  Text(label, style: TextStyle(color: cs.onPrimaryContainer)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GlassIconButton extends StatelessWidget {
+  final Color color;
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String tooltip;
+
+  const GlassIconButton({
+    super.key,
+    required this.color,
+    required this.onPressed,
+    required this.icon,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Material(
+          color: color.withOpacity(0.12),
+          child: Tooltip(
+            message: tooltip,
+            child: InkWell(
+              onTap: onPressed,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
+                  ),
+                ),
+                child: Center(
+                  child: Icon(icon,
+                      color: onPressed == null ? color.withOpacity(0.4) : color,
+                      size: 20),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
