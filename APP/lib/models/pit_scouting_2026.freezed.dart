@@ -360,7 +360,6 @@ mixin _$PitData2026 {
   String get favorite_color => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
   int get hopper_capacity => throw _privateConstructorUsedError;
-  double get mag_unload_speed => throw _privateConstructorUsedError;
   double get bps =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<Auto2026>? get autos => throw _privateConstructorUsedError;
@@ -405,7 +404,6 @@ abstract class $PitData2026CopyWith<$Res> {
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
-      double mag_unload_speed,
       double bps,
       List<Auto2026>? autos,
       double robot_height,
@@ -450,7 +448,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? favorite_color = null,
     Object? auto = freezed,
     Object? hopper_capacity = null,
-    Object? mag_unload_speed = null,
     Object? bps = null,
     Object? autos = freezed,
     Object? robot_height = null,
@@ -529,9 +526,9 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
-      mag_unload_speed: null == mag_unload_speed
-          ? _value.mag_unload_speed
-          : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
               as double,
       bps: null == bps
           ? _value.bps
@@ -609,7 +606,6 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       String favorite_color,
       Auto2026? auto,
       int hopper_capacity,
-      double mag_unload_speed,
       double bps,
       List<Auto2026>? autos,
       double robot_height,
@@ -653,7 +649,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? favorite_color = null,
     Object? auto = freezed,
     Object? hopper_capacity = null,
-    Object? mag_unload_speed = null,
     Object? bps = null,
     Object? autos = freezed,
     Object? robot_height = null,
@@ -732,9 +727,9 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.hopper_capacity
           : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
-      mag_unload_speed: null == mag_unload_speed
-          ? _value.mag_unload_speed
-          : mag_unload_speed // ignore: cast_nullable_to_non_nullable
+      bps: null == bps
+          ? _value.bps
+          : bps // ignore: cast_nullable_to_non_nullable
               as double,
       bps: null == bps
           ? _value.bps
@@ -793,7 +788,6 @@ class _$PitData2026Impl implements _PitData2026 {
       required this.favorite_color,
       this.auto,
       required this.hopper_capacity,
-      required this.mag_unload_speed,
       required this.bps,
       final List<Auto2026>? autos,
       required this.robot_height,
@@ -849,8 +843,6 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final int hopper_capacity;
   @override
-  final double mag_unload_speed;
-  @override
   final double bps;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<Auto2026>? _autos;
@@ -879,7 +871,7 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, mag_unload_speed: $mag_unload_speed, bps: $bps, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, distance_to_shoot: $distance_to_shoot, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
   }
 
   @override
@@ -887,7 +879,8 @@ class _$PitData2026Impl implements _PitData2026 {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PitData2026Impl &&
-            (identical(other.driver_experience_events, driver_experience_events) ||
+            (identical(
+                    other.driver_experience_events, driver_experience_events) ||
                 other.driver_experience_events == driver_experience_events) &&
             (identical(other.drive_train, drive_train) ||
                 other.drive_train == drive_train) &&
@@ -919,8 +912,6 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.auto, auto) || other.auto == auto) &&
             (identical(other.hopper_capacity, hopper_capacity) ||
                 other.hopper_capacity == hopper_capacity) &&
-            (identical(other.mag_unload_speed, mag_unload_speed) ||
-                other.mag_unload_speed == mag_unload_speed) &&
             (identical(other.bps, bps) || other.bps == bps) &&
             const DeepCollectionEquality().equals(other._autos, _autos) &&
             (identical(other.robot_height, robot_height) ||
@@ -960,7 +951,6 @@ class _$PitData2026Impl implements _PitData2026 {
         favorite_color,
         auto,
         hopper_capacity,
-        mag_unload_speed,
         bps,
         const DeepCollectionEquality().hash(_autos),
         robot_height,
@@ -1006,7 +996,6 @@ abstract class _PitData2026 implements PitData2026 {
       required final String favorite_color,
       final Auto2026? auto,
       required final int hopper_capacity,
-      required final double mag_unload_speed,
       required final double bps,
       final List<Auto2026>? autos,
       required final double robot_height,

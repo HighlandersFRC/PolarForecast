@@ -4,6 +4,26 @@ part 'group.freezed.dart';
 part 'group.g.dart';
 
 @freezed
+class Picks with _$Picks {
+  const factory Picks({required String number, required String comments}) =
+      _Picks;
+
+  factory Picks.fromJson(Map<String, dynamic> json) => _$PicksFromJson(json);
+}
+
+@freezed
+class Picklist2026 with _$Picklist2026 {
+  const factory Picklist2026({
+    required String picklist_id,
+    required String name,
+    required List<Picks> picks,
+  }) = _Picklist2026;
+
+  factory Picklist2026.fromJson(Map<String, dynamic> json) =>
+      _$Picklist2026FromJson(json);
+}
+
+@freezed
 class Group with _$Group {
   const factory Group({
     required String group_id,
@@ -23,12 +43,12 @@ class Group with _$Group {
 
 @freezed
 class GroupEvent with _$GroupEvent {
-  const factory GroupEvent({
-    required String event_code,
-    required bool up_to_date,
-    required GroupEventSettings settings,
-    required List<AllianceGroup> alliance_groups,
-  }) = _GroupEvent;
+  const factory GroupEvent(
+      {required String event_code,
+      required bool up_to_date,
+      required GroupEventSettings settings,
+      required List<AllianceGroup> alliance_groups,
+      required List<Picklist2026> picklists}) = _GroupEvent;
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) =>
       _$GroupEventFromJson(json);

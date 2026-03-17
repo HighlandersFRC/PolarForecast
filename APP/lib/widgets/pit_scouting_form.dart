@@ -64,7 +64,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
               contacts_robot: false),
           main_strategy: '',
           hopper_capacity: 0,
-          mag_unload_speed: 0,
           bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,
@@ -177,9 +176,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(hopper_capacity: value),
           );
           break;
-        case 'mag_unload_speed':
+        case 'bps':
           pitScoutingData = pitScoutingData.copyWith(
-              data: pitScoutingData.data.copyWith(mag_unload_speed: value));
+              data: pitScoutingData.data.copyWith(bps: value));
           break;
         case 'go_over_bump':
           pitScoutingData = pitScoutingData.copyWith(
@@ -961,7 +960,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                   ),
                                 ),
 
-                                // Mag Unload Speed
                                 Card(
                                   color: Color.fromARGB(24, 68, 137, 255),
                                   elevation: 2,
@@ -973,18 +971,15 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     padding: const EdgeInsets.all(16),
                                     child: FloatyCounter(
                                       locked: widget.locked,
-                                      label: 'Hopper Unload Speed (seconds)',
-                                      value:
-                                          pitScoutingData.data.mag_unload_speed,
+                                      label: 'Fuel Per Second',
+                                      value: pitScoutingData.data.bps,
                                       max: 30,
                                       onChanged: (speed) {
                                         setState(() {
                                           pitScoutingData =
                                               pitScoutingData.copyWith(
                                                   data: pitScoutingData.data
-                                                      .copyWith(
-                                                          mag_unload_speed:
-                                                              speed));
+                                                      .copyWith(bps: speed));
                                         });
                                       },
                                     ),

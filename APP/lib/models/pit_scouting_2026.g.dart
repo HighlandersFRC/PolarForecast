@@ -57,7 +57,6 @@ _$PitData2026Impl _$$PitData2026ImplFromJson(Map<String, dynamic> json) =>
           ? null
           : Auto2026.fromJson(json['auto'] as Map<String, dynamic>),
       hopper_capacity: (json['hopper_capacity'] as num).toInt(),
-      mag_unload_speed: (json['mag_unload_speed'] as num).toDouble(),
       bps: (json['bps'] as num).toDouble(),
       autos: (json['autos'] as List<dynamic>?)
           ?.map((e) => Auto2026.fromJson(e as Map<String, dynamic>))
@@ -89,7 +88,6 @@ Map<String, dynamic> _$$PitData2026ImplToJson(_$PitData2026Impl instance) =>
       'favorite_color': instance.favorite_color,
       'auto': instance.auto?.toJson(),
       'hopper_capacity': instance.hopper_capacity,
-      'mag_unload_speed': instance.mag_unload_speed,
       'bps': instance.bps,
       'autos': instance.autos?.map((e) => e.toJson()).toList(),
       'robot_height': instance.robot_height,

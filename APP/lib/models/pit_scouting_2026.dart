@@ -38,7 +38,6 @@ class PitData2026 with _$PitData2026 {
       required String favorite_color,
       Auto2026? auto,
       required int hopper_capacity,
-      required double mag_unload_speed,
       required double bps,
       // keep autos dynamic to avoid type-mismatch with other code/widgets
       List<Auto2026>? autos,

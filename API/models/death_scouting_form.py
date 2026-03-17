@@ -15,5 +15,5 @@ class DeathScoutingForm (BaseModel):
     team_key: str
     deaths: list[Death] = []
     total: int
-    average: int
-    time: int
+    average: float
+    time: float

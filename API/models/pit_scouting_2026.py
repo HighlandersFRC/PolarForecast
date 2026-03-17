@@ -64,8 +64,9 @@ class PitData2026(BaseModel):
     favorite_color: str
     autos: list
     hopper_capacity: int
-    mag_unload_speed: float
-    bps: float
+
+    bps: Optional[float] = None
+
     robot_height: float
 
 

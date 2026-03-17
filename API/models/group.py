@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
@@ -7,10 +7,20 @@ class AllianceGroup(BaseModel):
     name: str
     affiliation: str
 
-class PickList2026(BaseModel):
-    picks: List[int]
-    dnp: List[int]
 
+
+class Picks(BaseModel):
+    number: str
+    comments: str
+
+
+class PickList2026(BaseModel):
+    picklist_id: str 
+    name: str
+    picks: List[Picks]
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class GroupEventSettings(BaseModel):
@@ -23,7 +33,9 @@ class GroupEvent(BaseModel):
     up_to_date: bool
     settings: GroupEventSettings
     alliance_groups: List[AllianceGroup]
-    pick_list: Optional[PickList2026] = None
+
+    picklists: Optional[List[PickList2026]] = []
+
 
 
 class GroupSettings(BaseModel):

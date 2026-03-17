@@ -30,6 +30,8 @@ class _HomePageState extends State<HomePage> {
   String _sortOrder = 'desc';
   List<GlobalRank> rankings = [];
   List<SortColumnDetails> sortColumns = [];
+  int snowCount = 100;
+
   final columns = [
     GridColumn(
       allowFiltering: false,
@@ -183,73 +185,89 @@ class _HomePageState extends State<HomePage> {
     const columnMinWidth = 95.0;
     bool isWide =
         MediaQuery.of(context).size.width >= columns.length * columnMinWidth;
+
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: PolarForecastAppBar(backButton: false),
-      body: Column(
+      body: Stack(
         children: [
-          Text(
-            'Global Rankings',
-            style:
-                TextStyle(color: Colors.blue, fontSize: 24, fontFamily: 'Font'),
-          ),
-          GestureDetector(
-            onTap: () {
-              launchUrl(Uri.parse('https://www.thebluealliance.com'));
-            },
-            child: Text(
-              'Powered by The Blue Alliance',
-              style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontSize: 18,
-                  decoration: TextDecoration.underline,
-                  fontFamily: 'Font'),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: SnowField(
+                particleCount: snowCount,
+                color: cs.onBackground,
+              ),
             ),
           ),
-          Expanded(
-              child: rankings.isEmpty
-                  ? Center(
-                      child: CircularProgressIndicator(
-                      color: Colors.blue,
-                    ))
-                  : Expanded(
-                      child: SfDataGrid(
-                        source: GlobalRankDataSource(
-                          rankings,
-                          rankings
-                              .map((rank) => rank.data.OPR)
-                              .reduce((a, b) => a > b ? a : b),
-                          rankings
-                              .map((rank) => rank.data.OPR)
-                              .reduce((a, b) => a < b ? a : b),
-                          _sort,
-                          sortColumns,
-                          (team) =>
-                              _showTeamEventsDialog(team), // Pass callback
-                        ),
-                        showSortNumbers: true,
-                        allowFiltering: true,
-                        columnWidthMode: isWide
-                            ? ColumnWidthMode.fill
-                            : ColumnWidthMode.none,
-                        columns: columns,
-                        allowSorting: true,
-                      ),
-                    )),
-          if ((numTeams / _limit).ceil() != 0)
-            NumberPaginator(
-              numberPages: (numTeams / _limit).ceil(),
-              initialPage: min((numTeams / _limit).ceil() - 1, pageNum),
-              onPageChange: (newPage) {
-                setState(
-                  () {
-                    pageNum = newPage;
-                    _fetchRankings();
+          Column(
+            children: [
+              Text(
+                'Global Rankings',
+                style: TextStyle(
+                    color: Colors.blue, fontSize: 24, fontFamily: 'Font'),
+              ),
+              GestureDetector(
+                onTap: () {
+                  launchUrl(Uri.parse('https://www.thebluealliance.com'));
+                },
+                child: Text(
+                  'Powered by The Blue Alliance',
+                  style: TextStyle(
+                      color: Colors.blueAccent,
+                      fontSize: 18,
+                      decoration: TextDecoration.underline,
+                      fontFamily: 'Font'),
+                ),
+              ),
+              Expanded(
+                  child: rankings.isEmpty
+                      ? Center(
+                          child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ))
+                      : Expanded(
+                          child: SfDataGrid(
+                            source: GlobalRankDataSource(
+                              rankings,
+                              rankings
+                                  .map((rank) => rank.data.OPR)
+                                  .reduce((a, b) => a > b ? a : b),
+                              rankings
+                                  .map((rank) => rank.data.OPR)
+                                  .reduce((a, b) => a < b ? a : b),
+                              _sort,
+                              sortColumns,
+                              (team) =>
+                                  _showTeamEventsDialog(team),
+                            ),
+                            showSortNumbers: true,
+                            allowFiltering: true,
+                            columnWidthMode: isWide
+                                ? ColumnWidthMode.fill
+                                : ColumnWidthMode.none,
+                            columns: columns,
+                            allowSorting: true,
+                          ),
+                        )),
+              if ((numTeams / _limit).ceil() != 0)
+                NumberPaginator(
+                  numberPages: (numTeams / _limit).ceil(),
+                  initialPage: min((numTeams / _limit).ceil() - 1, pageNum),
+                  onPageChange: (newPage) {
+                    setState(
+                      () {
+                        pageNum = newPage;
+                        _fetchRankings();
+                      },
+                    );
                   },
-                );
-              },
-              config: NumberPaginatorUIConfig(
-                  buttonSelectedBackgroundColor: Colors.blue),
-            )
+                  config: NumberPaginatorUIConfig(
+                      buttonSelectedBackgroundColor: Colors.blue),
+                )
+            ],
+          ),
         ],
       ),
     );
@@ -406,4 +424,129 @@ class GlobalRankDataSource extends DataGridSource {
 
   @override
   List<DataGridRow> get rows => dataGridRows;
+}
+
+class SnowField extends StatefulWidget {
+  final int particleCount;
+  final Color color;
+
+  const SnowField({
+    super.key,
+    this.particleCount = 40,
+    this.color = Colors.white,
+  });
+
+  @override
+  State<SnowField> createState() => _SnowFieldState();
+}
+
+class _SnowFieldState extends State<SnowField>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<_SnowParticle> _particles;
+  late DateTime _lastTick;
+  final Random _rnd = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _particles = List.generate(widget.particleCount, (i) => _createParticle());
+    _controller = AnimationController.unbounded(vsync: this);
+    _controller.addListener(_tick);
+    _controller.repeat(
+        min: 0, max: 1, period: const Duration(milliseconds: 16));
+    _lastTick = DateTime.now();
+  }
+
+  _SnowParticle _createParticle() {
+    return _SnowParticle(
+      x: _rnd.nextDouble(),
+      y: _rnd.nextDouble(),
+      radius: 1.5 + _rnd.nextDouble() * 3,
+      speed: 20 + _rnd.nextDouble() * 60,
+      drift: -20 + _rnd.nextDouble() * 40,
+      opacity: 0.25 + _rnd.nextDouble() * 0.75,
+    );
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final dt = now.difference(_lastTick).inMilliseconds / 1000.0;
+    _lastTick = now;
+
+    for (final p in _particles) {
+      p._logicalY += (p.speed * dt) / 300.0;
+      p._logicalX += (p.drift * dt) / 300.0;
+      if (p._logicalY > 1.25) {
+        p._logicalY = -0.05 - _rnd.nextDouble() * 0.1;
+        p._logicalX = _rnd.nextDouble();
+      }
+      if (p._logicalX < -0.2) p._logicalX = 1.05;
+      if (p._logicalX > 1.2) p._logicalX = -0.05;
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_tick);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SnowPainter(
+          _particles, widget.color, MediaQuery.of(context).devicePixelRatio),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _SnowParticle {
+  double x;
+  double y;
+  final double radius;
+  final double speed;
+  final double drift;
+  final double opacity;
+  double _logicalX;
+  double _logicalY;
+
+  _SnowParticle({
+    required this.x,
+    required this.y,
+    required this.radius,
+    required this.speed,
+    required this.drift,
+    required this.opacity,
+  })  : _logicalX = x,
+        _logicalY = y;
+}
+
+class _SnowPainter extends CustomPainter {
+  final List<_SnowParticle> particles;
+  final Color baseColor;
+  final double devicePixelRatio;
+
+  _SnowPainter(this.particles, this.baseColor, this.devicePixelRatio);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final Color dotColor = baseColor.withOpacity(0.7);
+
+    for (final p in particles) {
+      final dx = (p._logicalX.clamp(-0.5, 1.5)) * size.width;
+      final dy = (p._logicalY.clamp(-0.5, 1.5)) * size.height;
+
+      paint.color = dotColor.withOpacity(p.opacity * 0.9);
+      canvas.drawCircle(Offset(dx, dy), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnowPainter old) => true;
 }

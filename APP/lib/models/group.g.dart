@@ -6,6 +6,33 @@ part of 'group.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+_$PicksImpl _$$PicksImplFromJson(Map<String, dynamic> json) => _$PicksImpl(
+      number: json['number'] as String,
+      comments: json['comments'] as String,
+    );
+
+Map<String, dynamic> _$$PicksImplToJson(_$PicksImpl instance) =>
+    <String, dynamic>{
+      'number': instance.number,
+      'comments': instance.comments,
+    };
+
+_$Picklist2026Impl _$$Picklist2026ImplFromJson(Map<String, dynamic> json) =>
+    _$Picklist2026Impl(
+      picklist_id: json['picklist_id'] as String,
+      name: json['name'] as String,
+      picks: (json['picks'] as List<dynamic>)
+          .map((e) => Picks.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$$Picklist2026ImplToJson(_$Picklist2026Impl instance) =>
+    <String, dynamic>{
+      'picklist_id': instance.picklist_id,
+      'name': instance.name,
+      'picks': instance.picks.map((e) => e.toJson()).toList(),
+    };
+
 _$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
       group_id: json['group_id'] as String,
       owner_group_id: json['owner_group_id'] as String,
@@ -45,6 +72,9 @@ _$GroupEventImpl _$$GroupEventImplFromJson(Map<String, dynamic> json) =>
       alliance_groups: (json['alliance_groups'] as List<dynamic>)
           .map((e) => AllianceGroup.fromJson(e as Map<String, dynamic>))
           .toList(),
+      picklists: (json['picklists'] as List<dynamic>)
+          .map((e) => Picklist2026.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$GroupEventImplToJson(_$GroupEventImpl instance) =>
@@ -54,6 +84,7 @@ Map<String, dynamic> _$$GroupEventImplToJson(_$GroupEventImpl instance) =>
       'settings': instance.settings.toJson(),
       'alliance_groups':
           instance.alliance_groups.map((e) => e.toJson()).toList(),
+      'picklists': instance.picklists.map((e) => e.toJson()).toList(),
     };
 
 _$GroupEventSettingsImpl _$$GroupEventSettingsImplFromJson(

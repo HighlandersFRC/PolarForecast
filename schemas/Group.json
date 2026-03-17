@@ -26,18 +26,36 @@
                     "id": "loltspmo",
                     "name": "First Picks",
                     "ordered list": [
-                        "frcGoated",
-                        "frcMid",
-                        "frcBad"
+                        {
+                            "number": "frcGoated",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcMid",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcGarbo",
+                            "comments": "skibidi sigma"
+                        }
                     ]
                 },
                 {
-                    "id": "loltspmo2",
+                    "picklist_id": "loltspmo2",
                     "name": "Second Picks",
                     "ordered list": [
-                        "frcGoated",
-                        "frcMid",
-                        "frcBad"
+                        {
+                            "number": "frcGoated",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcMid",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcGarbo",
+                            "comments": "skibidi sigma"
+                        }
                     ]
                 }
             ]

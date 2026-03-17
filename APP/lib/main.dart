@@ -6,6 +6,7 @@ import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/group_page.dart';
 import 'package:scouting_app/pages/match_page.dart';
+import 'package:scouting_app/pages/pick_list_page.dart';
 import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/scouter_documentation.dart';
 import 'package:scouting_app/pages/group_documentation.dart';
@@ -160,7 +161,24 @@ class MainApp extends StatelessWidget {
                       ),
                       settings: settings,
                     );
-                    //ScoutingReport
+                  } else if (pathSegments.length > 5 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'picklist') {
+                    final eventKey = pathSegments[4];
+
+                    String picklistID = '';
+                    if (pathSegments.length > 6) {
+                      picklistID = pathSegments[6];
+                    }
+
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupKey,
+                        eventCode: eventKey,
+                        picklistID: picklistID,
+                      ),
+                      settings: settings,
+                    );
                   } else
                     return MaterialPageRoute(
                       builder: (context) => GroupPage(groupKey, code),

@@ -16,6 +16,7 @@ import 'models/pit_scouting_2026.dart';
 import 'models/tournament.dart';
 import 'models/scouting_report.dart';
 import 'package:image/image.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, TBA_KEY, CLIENT;
@@ -23,6 +24,7 @@ class ApiService {
   final AuthService authService;
   Future<String?> get token async => await authService.getToken();
 
+  WebSocketChannel? picklistChannel;
   List<Tournament>? tournaments;
   // set token(dynamic token) => _token = token;
 
@@ -187,7 +189,6 @@ class ApiService {
           shooting_while_moving: false,
           main_strategy: '',
           hopper_capacity: 0,
-          mag_unload_speed: 0,
           bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,
@@ -556,6 +557,141 @@ class ApiService {
   Future<List> get_event_groups(String event, int year) async {
     final endpoint = '$APIURL/$year/$event/Groups';
     return await _fetchFromAPI(endpoint, '', useCache: false);
+  }
+
+  Future<void> getPicklists(String groupName, String event,
+      void Function(List<Picklist2026>) onUpdate) async {
+    final t = await token;
+    if (t == null) throw Exception("No token available");
+
+    // Close previous connection if exists
+    picklistChannel?.sink.close();
+
+    final wsUrl = APIURL.replaceFirst('http', 'ws') +
+        '/Group/$groupName/Event/$event/ws/picklists?token=$t';
+
+    picklistChannel = WebSocketChannel.connect(Uri.parse(wsUrl));
+
+    picklistChannel!.stream.listen((message) {
+      final data = json.decode(message);
+
+      if (data['type'] == 'picklists_update') {
+        final picklists = (data['picklists'] as List)
+            .map((p) => Picklist2026.fromJson(p))
+            .toList();
+        onUpdate(picklists);
+      }
+    }, onDone: () {
+      print("Picklist websocket closed");
+    }, onError: (error) {
+      print("Picklist websocket error: $error");
+    });
+  }
+
+  /// Optional: close websocket when leaving the page
+  void closePicklistConnection() {
+    picklistChannel?.sink.close();
+    picklistChannel = null;
+  }
+
+  Future<void> addPicklist(
+      String group, String event, Picklist2026 picklist) async {
+    final t = await this.token;
+    if (t == null) throw Exception("No token available");
+
+    final body = picklist.toJson();
+
+    final response = await http.post(
+      Uri.parse('$APIURL/Group/$group/Event/$event/AddPickList'),
+      headers: {
+        'token': t,
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to submit picklist: ${response.body}');
+    }
+
+    // --- No need to manually fetch picklists ---
+    // The websocket connection established via `getPicklists` will automatically
+    // receive the updated picklists broadcasted by the backend.
+    // So your UI callback in getPicklists will be triggered with the new list.
+  }
+
+  Future<void> updatePicklist(String groupName, String event, String picklistId,
+      Picklist2026 picklist) async {
+    final t = await this.token;
+    if (t == null) throw Exception("No token available");
+
+    final url =
+        '$APIURL/Group/$groupName/Event/$event/UpdatePicklist?picklist_id=$picklistId';
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'token': t,
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(picklist.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      final error = json.decode(response.body);
+      throw Exception(error['detail'] ?? 'Failed to update picklist');
+    }
+
+    // --- No need to return the Group ---
+    // Websocket listener will automatically trigger the onUpdate callback
+    // with the latest picklists.
+  }
+
+  Future<List<Picklist2026>> fetchPicklists(
+      String groupName, String event) async {
+    final response = await http.get(
+      Uri.parse('$APIURL/Group/$groupName/Event/$event/GetPicklists'),
+      headers: {
+        'token': (await token) ?? '',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(json.decode(response.body)['detail']);
+    }
+
+    final data = json.decode(response.body);
+
+    return (data['picklists'] as List)
+        .map((p) => Picklist2026.fromJson(p))
+        .toList();
+  }
+
+  Future<void> deletePicklist(
+      String groupName, String event, String picklistId) async {
+    final t = await this.token;
+    if (t == null) throw Exception("No token available");
+
+    final url =
+        '$APIURL/Group/$groupName/Event/$event/DeletePicklist?picklist_id=$picklistId';
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'token': t,
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final error = json.decode(response.body);
+      throw Exception(error['detail'] ?? 'Failed to delete picklist');
+    }
+
+    // --- No need to return Group ---
+    // The websocket listener will automatically trigger the onUpdate callback
+    // with the updated picklists.
   }
 
   Future<List<AllianceRequest>> request_alliance(
