@@ -486,53 +486,102 @@ class _PicklistPageState extends State<PicklistPage> {
             final isValid = nameController.text.trim().isNotEmpty;
             final theme = Theme.of(context);
             final cs = theme.colorScheme;
+
             return AlertDialog(
+              // 1. Softer, modern Material 3 rounded corners
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              title: Text("Create Picklist",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+
+              // 2. Upgraded title with an icon and better typography
+              title: Row(
+                children: [
+                  Icon(Icons.add_chart_rounded, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Create Picklist",
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ],
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // 3. Helpful subtitle
+                  Text(
+                    "Set up the details for your new picklist.",
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 4. Polished TextField with autofocus and icons
                   TextField(
                     controller: nameController,
+                    autofocus: true,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: "Picklist Name",
+                      hintText: "e.g., Defense Picks",
+                      prefixIcon: const Icon(Icons.edit_note),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: cs.outlineVariant),
+                      ),
                       filled: true,
                     ),
-                    onChanged: (val) {
-                      setStateDialog(() {});
-                    },
+                    onChanged: (val) => setStateDialog(() {}),
                   ),
                   const SizedBox(height: 16),
+
+                  // 5. Polished Dropdown matching the TextField
                   DropdownButtonFormField<String>(
                     value: selectedField,
+                    icon: const Icon(Icons.arrow_drop_down),
                     decoration: InputDecoration(
                       labelText: "Initial Sort Metric",
+                      prefixIcon: const Icon(Icons.sort_rounded),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: cs.outlineVariant),
+                      ),
                       filled: true,
                     ),
                     items: statFields.keys
                         .map((f) => DropdownMenuItem(value: f, child: Text(f)))
                         .toList(),
                     onChanged: (value) {
-                      setStateDialog(() => selectedField = value!);
+                      if (value != null) {
+                        setStateDialog(() => selectedField = value);
+                      }
                     },
                   ),
                 ],
               ),
+
+              // 6. Nicer padding around the action buttons
+              actionsPadding:
+                  const EdgeInsets.only(right: 24, bottom: 24, left: 24),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text("Cancel"),
                 ),
                 FilledButton(
+                  // 7. Flutter automatically makes the button disabled/grey if onPressed is null!
                   style: FilledButton.styleFrom(
-                    backgroundColor: isValid ? cs.primary : Colors.grey,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue,
+                    disabledBackgroundColor:
+                        Colors.blue.withOpacity(0.4), // optional
                   ),
                   onPressed: isValid
                       ? () {
@@ -563,22 +612,22 @@ class _PicklistPageState extends State<PicklistPage> {
       MaterialPageRoute(
         builder: (context) {
           return QuickCompareDialog(
-            picks: picks,
-            rankings: rankings,
-            eventYear: int.parse(_eventYear),
-            eventCode: widget.eventCode,
-            onSwap: (idx1, idx2) {
-              setState(() {
-                final temp = picks[idx1];
-                picks[idx1] = picks[idx2];
-                picks[idx2] = temp;
-                _triggerHighlight(picks[idx1].number);
-                _triggerHighlight(picks[idx2].number);
-              });
-              _autoSave();
-            },
-            teamNames: teamNames,
-          );
+              picks: picks,
+              rankings: rankings,
+              eventYear: int.parse(_eventYear),
+              eventCode: widget.eventCode,
+              onSwap: (idx1, idx2) {
+                setState(() {
+                  final temp = picks[idx1];
+                  picks[idx1] = picks[idx2];
+                  picks[idx2] = temp;
+                  _triggerHighlight(picks[idx1].number);
+                  _triggerHighlight(picks[idx2].number);
+                });
+                _autoSave();
+              },
+              teamNames: teamNames,
+              name: selectedPicklist?.name);
         },
         fullscreenDialog: false,
       ),
@@ -660,33 +709,86 @@ class _PicklistPageState extends State<PicklistPage> {
   Future<void> _editCommentsDialog(int index) async {
     final pick = picks[index];
     final controller = TextEditingController(text: pick.comments);
+
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("Edit Comments for Team ${pick.number}"),
-          content: TextField(
-            controller: controller,
-            minLines: 1,
-            maxLines: 6,
-            decoration: InputDecoration(
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              hintText: "Enter comments",
-              filled: true,
+        final theme = Theme.of(context);
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title
+                Text(
+                  "Edit Comments",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // Subtitle
+                Text(
+                  "For Team ${pick.number}",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Text field
+                TextField(
+                  controller: controller,
+                  minLines: 3,
+                  maxLines: 6,
+                  decoration: InputDecoration(
+                    hintText: "Add notes, strategy, or observations...",
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                    contentPadding: const EdgeInsets.all(14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () =>
+                            Navigator.pop(context, controller.text.trim()),
+                        child: const Text("Save"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel")),
-            FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: Colors.blue),
-                onPressed: () => Navigator.pop(context, controller.text),
-                child: const Text("Save")),
-          ],
         );
       },
     );
@@ -710,7 +812,7 @@ class _PicklistPageState extends State<PicklistPage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.list, color: cs.primary),
+                  Icon(Icons.list, color: Colors.blue),
                   const SizedBox(width: 8),
                   Text(
                     "Picklists",
@@ -763,7 +865,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: isSelected
-                                          ? cs.primary
+                                          ? Colors.blue
                                           : Colors.transparent,
                                     ),
                                     borderRadius: BorderRadius.circular(10),
@@ -777,8 +879,8 @@ class _PicklistPageState extends State<PicklistPage> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                         color: isSelected
-                                            ? cs.primary
-                                            : cs.onSurface.withOpacity(0.9),
+                                            ? Colors.blue
+                                            : Colors.blueGrey,
                                       ),
                                     ),
                                     trailing: isSelected
@@ -808,6 +910,8 @@ class _PicklistPageState extends State<PicklistPage> {
                                                               'Picklist Name',
                                                           border:
                                                               OutlineInputBorder(),
+                                                          prefixIcon: Icon(Icons
+                                                              .edit_note), // Added icon to field
                                                         ),
                                                       ),
                                                       actions: [
@@ -842,6 +946,9 @@ class _PicklistPageState extends State<PicklistPage> {
                                                 }
                                               } else if (value == 'delete') {
                                                 _confirmDeletePicklist(pl);
+                                              } else if (value ==
+                                                  'AutoGenerate') {
+                                                _openQuickCompare();
                                               }
                                             },
                                             itemBuilder:
@@ -849,19 +956,51 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     <PopupMenuEntry<String>>[
                                               const PopupMenuItem<String>(
                                                 value: 'rename',
-                                                child: Text('Rename'),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.edit_outlined,
+                                                        size: 20),
+                                                    SizedBox(width: 12),
+                                                    Text('Rename'),
+                                                  ],
+                                                ),
                                               ),
                                               const PopupMenuItem<String>(
+                                                value: 'AutoGenerate',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                        Icons
+                                                            .auto_awesome_outlined,
+                                                        size: 20),
+                                                    SizedBox(width: 12),
+                                                    Text(
+                                                        'Auto Generate Picklist'),
+                                                  ],
+                                                ),
+                                              ),
+                                              const PopupMenuDivider(), // Added a divider for better visual separation
+                                              const PopupMenuItem<String>(
                                                 value: 'delete',
-                                                child: Text(
-                                                  'Delete',
-                                                  style: TextStyle(
-                                                      color: Colors.redAccent),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.delete_outline,
+                                                        size: 20,
+                                                        color:
+                                                            Colors.redAccent),
+                                                    SizedBox(width: 12),
+                                                    Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.redAccent),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
                                           )
-                                        : null,
+                                        : null, // Logic remains: only shows if isSelected is true
                                   ),
                                 ),
                               ),
@@ -872,7 +1011,7 @@ class _PicklistPageState extends State<PicklistPage> {
               ),
               const SizedBox(height: 12),
               GlassButton(
-                color: cs.primary,
+                color: Colors.blue,
                 onPressed: () {
                   Navigator.pop(context);
                   openCreateDialog();
@@ -882,20 +1021,10 @@ class _PicklistPageState extends State<PicklistPage> {
               ),
               const SizedBox(height: 10),
               GlassButton(
-                color: cs.secondary,
-                onPressed: () {
-                  Navigator.pop(context);
-                  _openQuickCompare();
-                },
-                icon: Icons.compare_arrows,
-                label: "Quick Compare",
-              ),
-              const SizedBox(height: 10),
-              GlassButton(
                 color: Colors.green,
                 onPressed: exportCSV,
                 icon: Icons.download,
-                label: "Export CSV",
+                label: "Export as CSV",
               ),
             ],
           ),
@@ -935,8 +1064,9 @@ class _PicklistPageState extends State<PicklistPage> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.black,
-      appBar:
-          PolarForecastAppBar(extraText: 'Picklist for ${widget.eventCode}'),
+      appBar: PolarForecastAppBar(
+          extraText:
+              'Picklist for ${widget.eventCode} | Picklist: ${selectedPicklist?.name}'),
       endDrawer: _buildDrawerMenu(theme, cs),
       floatingActionButton: Builder(
         builder: (context) {
@@ -1749,16 +1879,17 @@ class QuickCompareDialog extends StatefulWidget {
   final String eventCode;
   final void Function(int index1, int index2) onSwap;
   final Map<String, String> teamNames;
+  final String? name;
 
-  const QuickCompareDialog({
-    super.key,
-    required this.picks,
-    required this.rankings,
-    required this.eventYear,
-    required this.eventCode,
-    required this.onSwap,
-    required this.teamNames,
-  });
+  const QuickCompareDialog(
+      {super.key,
+      required this.picks,
+      required this.rankings,
+      required this.eventYear,
+      required this.eventCode,
+      required this.onSwap,
+      required this.teamNames,
+      this.name});
 
   @override
   State<QuickCompareDialog> createState() => _QuickCompareDialogState();
@@ -1783,6 +1914,55 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       rightIndex = 1;
     }
     _loadPair();
+  }
+
+  Future<void> _editCommentDialog(int index) async {
+    final pick = widget.picks[index];
+    final controller = TextEditingController(text: pick.comments);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text('Comments for Team ${pick.number}'),
+          content: TextField(
+            controller: controller,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              hintText: 'Enter notes, strategy, etc...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context, controller.text.trim());
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      _updateComment(index, result);
+    }
+  }
+
+  void _updateComment(int index, String newComment) {
+    setState(() {
+      final updatedPick = widget.picks[index].copyWith(comments: newComment);
+
+      widget.picks[index] = updatedPick;
+    });
   }
 
   Future<void> _loadPair() async {
@@ -1863,6 +2043,17 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       });
       _loadPair();
       return;
+    }
+
+    // Check if we've reached the end
+    if (originalLowerIndex + 1 >= widget.picks.length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🎉 You have finished all comparisons!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return; // optionally, you could pop the dialog here
     }
 
     final updatedAIndex = widget.picks.indexWhere((p) => p.number == teamA);
@@ -2059,9 +2250,6 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       _CompareMetric('Sim Rank', (a?.simulated_rank ?? 0).toDouble(),
           (b?.simulated_rank ?? 0).toDouble(),
           lowerIsBetter: true, integerLike: true),
-      _CompareMetric('OPR Rank', (a?.OPRRank ?? 0).toDouble(),
-          (b?.OPRRank ?? 0).toDouble(),
-          lowerIsBetter: true, integerLike: true),
       _CompareMetric('OPR', a?.OPR ?? 0, b?.OPR ?? 0),
       _CompareMetric('Auto Points', a?.auto_points ?? 0, b?.auto_points ?? 0),
       _CompareMetric(
@@ -2218,10 +2406,10 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                         children: [
                           _pill('Pick #$pickIndex', Colors.blue),
                           _pill(
-                              stats != null ? 'Comp #${stats.rank}' : 'Comp #-',
+                              stats != null ? 'Rank #${stats.rank}' : 'Rank #-',
                               rankColor),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 )
@@ -2321,7 +2509,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
   Widget build(BuildContext context) {
     if (widget.picks.length < 2) {
       return Scaffold(
-        appBar: PolarForecastAppBar(extraText: 'Quick Compare'),
+        appBar: PolarForecastAppBar(extraText: 'Auto Generate Picklist'),
         body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Text('Not enough teams to compare'),
@@ -2349,8 +2537,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     final bAvatar = teamImageUrl(widget.eventYear, widget.eventCode, bNum);
 
     return Scaffold(
-      appBar:
-          PolarForecastAppBar(extraText: 'Quick Compare ${widget.eventCode}'),
+      appBar: PolarForecastAppBar(
+          extraText: 'Auto Generate Picklist ${widget.eventCode}'),
       body: Stack(
         children: [
           Positioned.fill(
@@ -2381,27 +2569,19 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Icon(Icons.compare_arrows_rounded,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
+                                      color: Colors.blue),
                                   const SizedBox(width: 8),
-                                  const Expanded(
+                                  Expanded(
                                     child: Text(
-                                      'Quick Compare',
-                                      style: TextStyle(
+                                      'Auto Generate Picklist | ${widget.name}',
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w800,
                                           fontFamily: 'Font'),
                                     ),
                                   ),
-                                  IconButton.filledTonal(
-                                    tooltip: 'Back',
-                                    onPressed: () => Navigator.pop(context),
-                                    icon: const Icon(Icons.arrow_back),
-                                  ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
                               const SizedBox(height: 8),
                               if (phone)
                                 Column(
@@ -2411,11 +2591,13 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                       child: OutlinedButton.icon(
                                         onPressed: () =>
                                             _selectTeam(leftSide: true),
-                                        icon:
-                                            const Icon(Icons.groups_2_outlined),
+                                        icon: const Icon(
+                                            Icons.groups_2_outlined,
+                                            color: Colors.blue),
                                         label: Text(
                                           'Team A: ${_teamLabel(aNum)}',
                                           overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.blue),
                                         ),
                                         style: OutlinedButton.styleFrom(
                                           alignment: Alignment.centerLeft,
@@ -2433,12 +2615,14 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                       child: OutlinedButton.icon(
                                         onPressed: () =>
                                             _selectTeam(leftSide: false),
-                                        icon:
-                                            const Icon(Icons.groups_2_outlined),
+                                        icon: const Icon(
+                                            Icons.groups_2_outlined,
+                                            color: Colors.blue),
                                         label: Text(
-                                          'Team B: ${_teamLabel(bNum)}',
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                            'Team B: ${_teamLabel(bNum)}',
+                                            overflow: TextOverflow.ellipsis,
+                                            style:
+                                                TextStyle(color: Colors.blue)),
                                         style: OutlinedButton.styleFrom(
                                           alignment: Alignment.centerLeft,
                                           padding: const EdgeInsets.symmetric(
@@ -2458,11 +2642,13 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                       child: OutlinedButton.icon(
                                         onPressed: () =>
                                             _selectTeam(leftSide: true),
-                                        icon:
-                                            const Icon(Icons.groups_2_outlined),
+                                        icon: const Icon(
+                                            Icons.groups_2_outlined,
+                                            color: Colors.blue),
                                         label: Text(
                                           'Team A: ${_teamLabel(aNum)}',
                                           overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.white),
                                         ),
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
@@ -2478,11 +2664,13 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                       child: OutlinedButton.icon(
                                         onPressed: () =>
                                             _selectTeam(leftSide: false),
-                                        icon:
-                                            const Icon(Icons.groups_2_outlined),
+                                        icon: const Icon(
+                                            Icons.groups_2_outlined,
+                                            color: Colors.blue),
                                         label: Text(
                                           'Team B: ${_teamLabel(bNum)}',
                                           overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.white),
                                         ),
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
@@ -2628,7 +2816,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                               child: GlassActionButton(
                                                 icon:
                                                     const Icon(Icons.thumb_up),
-                                                label: Text('I Like $aNum'),
+                                                label: Text('I Prefer $aNum'),
                                                 color: Colors.green,
                                                 onPressed: () =>
                                                     _handleLike(aNum),
@@ -2640,7 +2828,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                               child: GlassActionButton(
                                                 icon:
                                                     const Icon(Icons.thumb_up),
-                                                label: Text('I Like $bNum'),
+                                                label: Text('I Prefer $bNum'),
                                                 color: Colors.green,
                                                 onPressed: () =>
                                                     _handleLike(bNum),
@@ -2656,14 +2844,14 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                           children: [
                                             GlassActionButton(
                                               icon: const Icon(Icons.thumb_up),
-                                              label: Text('I like $aNum'),
+                                              label: Text('I Prefer $aNum'),
                                               color: Colors.green,
                                               onPressed: () =>
                                                   _handleLike(aNum),
                                             ),
                                             GlassActionButton(
                                               icon: const Icon(Icons.thumb_up),
-                                              label: Text('I like $bNum'),
+                                              label: Text('I Prefer $bNum'),
                                               color: Colors.green,
                                               onPressed: () =>
                                                   _handleLike(bNum),
