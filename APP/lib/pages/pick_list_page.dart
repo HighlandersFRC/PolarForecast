@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
+import 'dart:async';
 import 'package:csv/csv.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
@@ -11,6 +14,14 @@ import 'dart:html' as html;
 import '../models/group.dart';
 import '../models/team_stats_2026.dart';
 import '../models/picture_data.dart';
+
+final CacheManager picklistAvatarCacheManager = CacheManager(
+  Config(
+    'picklistAvatarCache',
+    stalePeriod: const Duration(days: 14),
+    maxNrOfCacheObjects: 600,
+  ),
+);
 
 class PicklistPage extends StatefulWidget {
   final String groupName;
@@ -30,6 +41,7 @@ class PicklistPage extends StatefulWidget {
 
 class _PicklistPageState extends State<PicklistPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Set<String> _warmedAvatarUrls = {};
 
   int _getTeamRank(String teamNumber) {
     final index = rankings.indexWhere((t) => t.team_number == teamNumber);
@@ -178,6 +190,61 @@ class _PicklistPageState extends State<PicklistPage> {
   int snowCount = 100;
   Map<String, Color> teamColors = {};
 
+  String _avatarPrimaryUrl(String teamNumber) {
+    return 'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/$_eventYear/frc$teamNumber.png&w=96&h=96&fit=contain';
+  }
+
+  String _avatarFallbackUrl(String teamNumber) {
+    return 'https://api.dicebear.com/9.x/identicon/png?seed=frc$teamNumber&size=64';
+  }
+
+  Future<void> _warmAvatarCacheForPicks() async {
+    if (picks.isEmpty || !mounted) return;
+
+    final urlsToWarm = <String>[];
+    for (final pick in picks.take(80)) {
+      final primary = _avatarPrimaryUrl(pick.number);
+      final fallback = _avatarFallbackUrl(pick.number);
+
+      if (_warmedAvatarUrls.add(primary)) {
+        urlsToWarm.add(primary);
+      }
+      if (_warmedAvatarUrls.add(fallback)) {
+        urlsToWarm.add(fallback);
+      }
+    }
+
+    if (urlsToWarm.isEmpty) return;
+
+    final immediate = urlsToWarm.take(24).toList();
+    final deferred = urlsToWarm.skip(24).toList();
+
+    Future<void> cacheAndPrecache(String url) async {
+      try {
+        await picklistAvatarCacheManager.getSingleFile(url, key: url);
+        if (!mounted) return;
+        await precacheImage(
+          CachedNetworkImageProvider(
+            url,
+            cacheManager: picklistAvatarCacheManager,
+          ),
+          context,
+        );
+      } catch (_) {}
+    }
+
+    await Future.wait(immediate.map(cacheAndPrecache));
+
+    if (deferred.isNotEmpty) {
+      unawaited(Future(() async {
+        for (final url in deferred) {
+          await cacheAndPrecache(url);
+          await Future.delayed(const Duration(milliseconds: 30));
+        }
+      }));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -209,6 +276,7 @@ class _PicklistPageState extends State<PicklistPage> {
     for (final p in picks) {
       _ensureTeamName(p.number);
     }
+    unawaited(_warmAvatarCacheForPicks());
   }
 
   Future<void> _fetchRankings() async {
@@ -248,6 +316,7 @@ class _PicklistPageState extends State<PicklistPage> {
         for (final p in picks) {
           _ensureTeamName(p.number);
         }
+        unawaited(_warmAvatarCacheForPicks());
       },
     );
 
@@ -263,6 +332,7 @@ class _PicklistPageState extends State<PicklistPage> {
     for (final p in picks) {
       _ensureTeamName(p.number);
     }
+    unawaited(_warmAvatarCacheForPicks());
   }
 
   void createPicklist(String name, String field) {
@@ -489,27 +559,29 @@ class _PicklistPageState extends State<PicklistPage> {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return QuickCompareDialog(
-          picks: picks,
-          rankings: rankings,
-          eventYear: int.parse(_eventYear),
-          eventCode: widget.eventCode,
-          onSwap: (idx1, idx2) {
-            setState(() {
-              final temp = picks[idx1];
-              picks[idx1] = picks[idx2];
-              picks[idx2] = temp;
-              _triggerHighlight(picks[idx1].number);
-              _triggerHighlight(picks[idx2].number);
-            });
-            _autoSave();
-          },
-          teamNames: teamNames,
-        );
-      },
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return QuickCompareDialog(
+            picks: picks,
+            rankings: rankings,
+            eventYear: int.parse(_eventYear),
+            eventCode: widget.eventCode,
+            onSwap: (idx1, idx2) {
+              setState(() {
+                final temp = picks[idx1];
+                picks[idx1] = picks[idx2];
+                picks[idx2] = temp;
+                _triggerHighlight(picks[idx1].number);
+                _triggerHighlight(picks[idx2].number);
+              });
+              _autoSave();
+            },
+            teamNames: teamNames,
+          );
+        },
+        fullscreenDialog: false,
+      ),
     );
   }
 
@@ -858,6 +930,7 @@ class _PicklistPageState extends State<PicklistPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -893,7 +966,7 @@ class _PicklistPageState extends State<PicklistPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: EdgeInsets.all(isMobile ? 8.0 : 12.0),
             child: Container(
               decoration: BoxDecoration(
                 color: theme.scaffoldBackgroundColor,
@@ -905,7 +978,7 @@ class _PicklistPageState extends State<PicklistPage> {
                       offset: const Offset(0, 3))
                 ],
               ),
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(isMobile ? 6 : 8),
               child: picks.isEmpty
                   ? Center(
                       child: Column(
@@ -931,6 +1004,7 @@ class _PicklistPageState extends State<PicklistPage> {
                       ),
                     )
                   : ReorderableListView.builder(
+                      padding: EdgeInsets.only(bottom: isMobile ? 96 : 80),
                       buildDefaultDragHandles: false,
                       itemCount: picks.length,
                       onReorder: (oldIndex, newIndex) {
@@ -945,10 +1019,8 @@ class _PicklistPageState extends State<PicklistPage> {
                       itemBuilder: (context, index) {
                         final pick = picks[index];
 
-                        final tbaProxyAvatar =
-                            'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/$_eventYear/frc${pick.number}.png&w=96&h=96&fit=contain';
-                        final dicebearAvatar =
-                            'https://api.dicebear.com/9.x/identicon/png?seed=frc${pick.number}&size=64';
+                        final tbaProxyAvatar = _avatarPrimaryUrl(pick.number);
+                        final dicebearAvatar = _avatarFallbackUrl(pick.number);
 
                         final teamStats = _getTeamStats(pick.number);
 
@@ -1023,145 +1095,169 @@ class _PicklistPageState extends State<PicklistPage> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12.0, vertical: 10.0),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 48,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              '#${index + 1}',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: cs.onSurface,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Icon(
-                                              Icons.emoji_events,
-                                              size: 20,
-                                              color: trophyColorForRank(
-                                                  teamStats?.rank ?? 0),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              teamStats != null
-                                                  ? '#${teamStats.rank}'
-                                                  : '-',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                color: trophyColorForRank(
-                                                    teamStats?.rank ?? 0),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            ReorderableDragStartListener(
-                                              index: index,
-                                              child: Icon(
-                                                Icons.drag_handle,
-                                                size: 22,
-                                                color: cs.onSurface
-                                                    .withOpacity(0.4),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      InkWell(
-                                        onTap: () {
-                                          _openTeamImages(pick.number);
-                                        },
-                                        child: TeamAvatar(
-                                          primaryUrl: tbaProxyAvatar,
-                                          fallbackUrl: dicebearAvatar,
-                                          teamNumber: pick.number,
-                                          size: 40,
-                                          onColor: (color) {
-                                            if (color != null) {
-                                              setState(() {
-                                                teamColors[pick.number] = color;
-                                              });
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: isMobile ? 10.0 : 12.0,
+                                      vertical: isMobile ? 8.0 : 10.0),
+                                  child: isMobile
+                                      ? Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Wrap(
+                                            Row(
                                               crossAxisAlignment:
-                                                  WrapCrossAlignment.center,
-                                              spacing: 6,
-                                              runSpacing: 4,
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    Navigator.pushNamed(
-                                                      context,
-                                                      '/event/${widget.eventCode}/team/frc${pick.number}',
-                                                    );
-                                                  },
-                                                  child: Text(
-                                                    "${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      color: cs.onSurface,
-                                                    ),
+                                                Container(
+                                                  width: 44,
+                                                  alignment: Alignment.center,
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        '#${index + 1}',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: cs.onSurface,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Icon(
+                                                        Icons.emoji_events,
+                                                        size: 18,
+                                                        color:
+                                                            trophyColorForRank(
+                                                                teamStats
+                                                                        ?.rank ??
+                                                                    0),
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        teamStats != null
+                                                            ? '#${teamStats.rank}'
+                                                            : '-',
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: trophyColorForRank(
+                                                              teamStats?.rank ??
+                                                                  0),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      ReorderableDragStartListener(
+                                                        index: index,
+                                                        child: Icon(
+                                                          Icons.drag_handle,
+                                                          size: 20,
+                                                          color: cs.onSurface
+                                                              .withOpacity(0.4),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                                if (teamStats != null) ...[
-                                                  _buildStatBadge(
-                                                      "OPR",
-                                                      teamStats.OPR
-                                                          .toStringAsFixed(1),
-                                                      Colors.purple),
-                                                  _buildStatBadge(
-                                                      "Auto",
-                                                      teamStats.auto_points
-                                                          .toStringAsFixed(1),
-                                                      Colors.green),
-                                                  _buildStatBadge(
-                                                      "Teleop",
-                                                      teamStats.teleop_points
-                                                          .toStringAsFixed(1),
-                                                      Colors.orange),
-                                                  _buildStatBadge(
-                                                      "Pass",
-                                                      teamStats.teleop_pass
-                                                          .toStringAsFixed(1),
-                                                      Colors.blue),
-                                                  _buildStatBadge(
-                                                      "Death",
-                                                      '${(teamStats.death_rate * 100).toStringAsFixed(0)}%',
-                                                      Colors.red),
-                                                  _buildStatBadge(
-                                                      "Def",
-                                                      '${(teamStats.defense_rate * 100).toStringAsFixed(0)}%',
-                                                      Colors.brown),
-                                                  _buildStatBadge(
-                                                      "Sim RP",
-                                                      teamStats.simulated_rp
-                                                          .toString(),
-                                                      Colors.teal),
-                                                ],
+                                                const SizedBox(width: 8),
+                                                InkWell(
+                                                  onTap: () {
+                                                    _openTeamImages(
+                                                        pick.number);
+                                                  },
+                                                  child: TeamAvatar(
+                                                    primaryUrl: tbaProxyAvatar,
+                                                    fallbackUrl: dicebearAvatar,
+                                                    teamNumber: pick.number,
+                                                    size: 38,
+                                                    onColor: (color) {
+                                                      if (color != null) {
+                                                        final currentColor =
+                                                            teamColors[
+                                                                pick.number];
+                                                        if (currentColor !=
+                                                            color) {
+                                                          setState(() {
+                                                            teamColors[pick
+                                                                    .number] =
+                                                                color;
+                                                          });
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      InkWell(
+                                                        onTap: () {
+                                                          Navigator.pushNamed(
+                                                            context,
+                                                            '/event/${widget.eventCode}/team/frc${pick.number}',
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                          "${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                            color: cs.onSurface,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Wrap(
+                                                        spacing: 6,
+                                                        runSpacing: 4,
+                                                        children: [
+                                                          if (teamStats !=
+                                                              null) ...[
+                                                            _buildStatBadge(
+                                                                'OPR',
+                                                                teamStats.OPR
+                                                                    .toStringAsFixed(
+                                                                        1),
+                                                                Colors.purple),
+                                                            _buildStatBadge(
+                                                                'Auto',
+                                                                teamStats
+                                                                    .auto_points
+                                                                    .toStringAsFixed(
+                                                                        1),
+                                                                Colors.green),
+                                                            _buildStatBadge(
+                                                                'Teleop',
+                                                                teamStats
+                                                                    .teleop_points
+                                                                    .toStringAsFixed(
+                                                                        1),
+                                                                Colors.orange),
+                                                            _buildStatBadge(
+                                                                'Pass',
+                                                                teamStats
+                                                                    .teleop_pass
+                                                                    .toStringAsFixed(
+                                                                        1),
+                                                                Colors.blue),
+                                                          ],
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                            const SizedBox(height: 6),
+                                            const SizedBox(height: 8),
                                             Row(
                                               children: [
                                                 Expanded(
@@ -1169,20 +1265,20 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     padding: const EdgeInsets
                                                         .symmetric(
                                                         horizontal: 8,
-                                                        vertical: 4),
+                                                        vertical: 6),
                                                     decoration: BoxDecoration(
                                                       color: cs.surfaceVariant,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               8),
                                                       border: Border.all(
-                                                          color: cs.outline
-                                                              .withOpacity(
-                                                                  0.06)),
+                                                        color: cs.outline
+                                                            .withOpacity(0.06),
+                                                      ),
                                                     ),
                                                     child: Text(
                                                       pick.comments.isEmpty
-                                                          ? "No comments."
+                                                          ? 'No comments.'
                                                           : pick.comments,
                                                       maxLines: 2,
                                                       overflow:
@@ -1200,26 +1296,20 @@ class _PicklistPageState extends State<PicklistPage> {
                                                   ),
                                                 ),
                                                 IconButton(
-                                                  icon: Icon(Icons.edit,
-                                                      size: 18,
-                                                      color: cs.onSurface
-                                                          .withOpacity(0.7)),
+                                                  icon: Icon(
+                                                    Icons.edit,
+                                                    size: 18,
+                                                    color: cs.onSurface
+                                                        .withOpacity(0.7),
+                                                  ),
                                                   onPressed: () =>
                                                       _editCommentsDialog(
                                                           index),
-                                                  tooltip: "Edit comments",
+                                                  tooltip: 'Edit comments',
                                                 ),
                                               ],
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      SizedBox(
-                                        width: 72,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
+                                            const SizedBox(height: 6),
                                             Row(
                                               children: [
                                                 Expanded(
@@ -1240,7 +1330,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 4),
+                                                const SizedBox(width: 6),
                                                 Expanded(
                                                   child: AnimatedOpacity(
                                                     duration: const Duration(
@@ -1258,11 +1348,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     ),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
+                                                const SizedBox(width: 6),
                                                 Expanded(
                                                   child: AnimatedOpacity(
                                                     duration: const Duration(
@@ -1281,7 +1367,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 4),
+                                                const SizedBox(width: 6),
                                                 Expanded(
                                                   child: AnimatedOpacity(
                                                     duration: const Duration(
@@ -1302,10 +1388,345 @@ class _PicklistPageState extends State<PicklistPage> {
                                               ],
                                             ),
                                           ],
+                                        )
+                                      : Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 48,
+                                              alignment: Alignment.center,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    '#${index + 1}',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: cs.onSurface,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Icon(
+                                                    Icons.emoji_events,
+                                                    size: 20,
+                                                    color: trophyColorForRank(
+                                                        teamStats?.rank ?? 0),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    teamStats != null
+                                                        ? '#${teamStats.rank}'
+                                                        : '-',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: trophyColorForRank(
+                                                          teamStats?.rank ?? 0),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  ReorderableDragStartListener(
+                                                    index: index,
+                                                    child: Icon(
+                                                      Icons.drag_handle,
+                                                      size: 22,
+                                                      color: cs.onSurface
+                                                          .withOpacity(0.4),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            InkWell(
+                                              onTap: () {
+                                                _openTeamImages(pick.number);
+                                              },
+                                              child: TeamAvatar(
+                                                primaryUrl: tbaProxyAvatar,
+                                                fallbackUrl: dicebearAvatar,
+                                                teamNumber: pick.number,
+                                                size: 40,
+                                                onColor: (color) {
+                                                  if (color != null) {
+                                                    final currentColor =
+                                                        teamColors[pick.number];
+                                                    if (currentColor != color) {
+                                                      setState(() {
+                                                        teamColors[pick
+                                                            .number] = color;
+                                                      });
+                                                    }
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Wrap(
+                                                    crossAxisAlignment:
+                                                        WrapCrossAlignment
+                                                            .center,
+                                                    spacing: 6,
+                                                    runSpacing: 4,
+                                                    children: [
+                                                      InkWell(
+                                                        onTap: () {
+                                                          Navigator.pushNamed(
+                                                            context,
+                                                            '/event/${widget.eventCode}/team/frc${pick.number}',
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                          "${pick.number}${teamNames[pick.number] != null && teamNames[pick.number]!.isNotEmpty ? ' | ${teamNames[pick.number]}' : ''}",
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                            color: cs.onSurface,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (teamStats !=
+                                                          null) ...[
+                                                        _buildStatBadge(
+                                                            'OPR',
+                                                            teamStats.OPR
+                                                                .toStringAsFixed(
+                                                                    1),
+                                                            Colors.purple),
+                                                        _buildStatBadge(
+                                                            'Auto',
+                                                            teamStats
+                                                                .auto_points
+                                                                .toStringAsFixed(
+                                                                    1),
+                                                            Colors.green),
+                                                        _buildStatBadge(
+                                                            'Teleop',
+                                                            teamStats
+                                                                .teleop_points
+                                                                .toStringAsFixed(
+                                                                    1),
+                                                            Colors.orange),
+                                                        _buildStatBadge(
+                                                            'Pass',
+                                                            teamStats
+                                                                .teleop_pass
+                                                                .toStringAsFixed(
+                                                                    1),
+                                                            Colors.blue),
+                                                        _buildStatBadge(
+                                                            'Death',
+                                                            '${(teamStats.death_rate * 100).toStringAsFixed(0)}%',
+                                                            Colors.red),
+                                                        _buildStatBadge(
+                                                            'Def',
+                                                            '${(teamStats.defense_rate * 100).toStringAsFixed(0)}%',
+                                                            Colors.brown),
+                                                        _buildStatBadge(
+                                                            'Sim RP',
+                                                            teamStats
+                                                                .simulated_rp
+                                                                .toString(),
+                                                            Colors.teal),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 4),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: cs
+                                                                .surfaceVariant,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                            border: Border.all(
+                                                                color: cs
+                                                                    .outline
+                                                                    .withOpacity(
+                                                                        0.06)),
+                                                          ),
+                                                          child: Text(
+                                                            pick.comments
+                                                                    .isEmpty
+                                                                ? 'No comments.'
+                                                                : pick.comments,
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style: TextStyle(
+                                                              color: cs
+                                                                  .onSurface
+                                                                  .withOpacity(
+                                                                      0.85),
+                                                              fontStyle: pick
+                                                                      .comments
+                                                                      .isEmpty
+                                                                  ? FontStyle
+                                                                      .normal
+                                                                  : FontStyle
+                                                                      .italic,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: Icon(Icons.edit,
+                                                            size: 18,
+                                                            color: cs.onSurface
+                                                                .withOpacity(
+                                                                    0.7)),
+                                                        onPressed: () =>
+                                                            _editCommentsDialog(
+                                                                index),
+                                                        tooltip:
+                                                            'Edit comments',
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            SizedBox(
+                                              width: 72,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: AnimatedOpacity(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      200),
+                                                          opacity: isFirst
+                                                              ? 0.3
+                                                              : 1.0,
+                                                          child:
+                                                              GlassIconButton(
+                                                            icon: Icons
+                                                                .keyboard_arrow_up,
+                                                            color: cs.onSurface,
+                                                            tooltip:
+                                                                'Move up 1',
+                                                            onPressed: isFirst
+                                                                ? null
+                                                                : () => _moveUp(
+                                                                    index),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: AnimatedOpacity(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      200),
+                                                          opacity: isLast
+                                                              ? 0.3
+                                                              : 1.0,
+                                                          child:
+                                                              GlassIconButton(
+                                                            icon: Icons
+                                                                .keyboard_arrow_down,
+                                                            color: cs.onSurface,
+                                                            tooltip:
+                                                                'Move down 1',
+                                                            onPressed: isLast
+                                                                ? null
+                                                                : () =>
+                                                                    _moveDown(
+                                                                        index),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: AnimatedOpacity(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      200),
+                                                          opacity: isFirst
+                                                              ? 0.3
+                                                              : 1.0,
+                                                          child:
+                                                              GlassIconButton(
+                                                            icon: Icons
+                                                                .vertical_align_top,
+                                                            color: Colors.green,
+                                                            tooltip:
+                                                                'Move to top',
+                                                            onPressed: isFirst
+                                                                ? null
+                                                                : () =>
+                                                                    _moveTop(
+                                                                        index),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: AnimatedOpacity(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      200),
+                                                          opacity: isLast
+                                                              ? 0.3
+                                                              : 1.0,
+                                                          child:
+                                                              GlassIconButton(
+                                                            icon: Icons
+                                                                .vertical_align_bottom,
+                                                            color:
+                                                                Colors.orange,
+                                                            tooltip:
+                                                                'Move to bottom',
+                                                            onPressed: isLast
+                                                                ? null
+                                                                : () =>
+                                                                    _moveToBottom(
+                                                                        index),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
@@ -1346,6 +1767,7 @@ class QuickCompareDialog extends StatefulWidget {
 class _QuickCompareDialogState extends State<QuickCompareDialog> {
   int leftIndex = 0;
   int rightIndex = 1;
+  bool _showPhoneImages = false;
 
   List<PictureData> teamAImages = [];
   List<PictureData> teamBImages = [];
@@ -1470,7 +1892,16 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                   minScale: 0.8,
                   maxScale: 5,
                   child: Center(
-                    child: Image.network(imageUrl, fit: BoxFit.contain),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white70,
+                          size: 36),
+                    ),
                   ),
                 ),
               ),
@@ -1750,6 +2181,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     required String avatar,
     required String fallback,
     required List<PictureData> images,
+    bool showImages = true,
+    bool compactImages = false,
   }) {
     final rankColor = trophyColorForRank(stats?.rank ?? 0);
     return _glassContainer(
@@ -1795,33 +2228,70 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
               ],
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 112,
-              width: double.infinity,
-              child: images.isEmpty
-                  ? const Center(child: Text('No images'))
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: images.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final image = images[index];
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () => _showImagePreview(image.link),
-                          child: ClipRRect(
+            if (showImages)
+              SizedBox(
+                height: compactImages ? 84 : 112,
+                width: double.infinity,
+                child: images.isEmpty
+                    ? const Center(child: Text('No images'))
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: images.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final image = images[index];
+                          return InkWell(
                             borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              image.link,
-                              width: 128,
-                              height: 112,
-                              fit: BoxFit.cover,
+                            onTap: () => _showImagePreview(image.link),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: image.link,
+                                width: compactImages ? 96 : 128,
+                                height: compactImages ? 84 : 112,
+                                fit: BoxFit.cover,
+                                fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
+                                placeholder: (context, url) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child: const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child:
+                                      const Icon(Icons.broken_image_outlined),
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            )
+                          );
+                        },
+                      ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant
+                      .withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Tap show images to show images.'),
+              )
           ],
         ),
       ),
@@ -1850,16 +2320,15 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
   @override
   Widget build(BuildContext context) {
     if (widget.picks.length < 2) {
-      return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          padding: const EdgeInsets.all(16),
+      return Scaffold(
+        appBar: PolarForecastAppBar(extraText: 'Quick Compare'),
+        body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Text('Not enough teams to compare'),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: const Text('Back'),
             )
           ]),
         ),
@@ -1879,176 +2348,340 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     final aAvatar = teamImageUrl(widget.eventYear, widget.eventCode, aNum);
     final bAvatar = teamImageUrl(widget.eventYear, widget.eventCode, bNum);
 
-    final screen = MediaQuery.of(context).size;
-    final dialogWidth = min(1100.0, screen.width * 0.96);
-    final dialogHeight = min(860.0, screen.height * 0.9);
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      insetPadding: const EdgeInsets.all(12),
-      child: _glassContainer(
-        radius: 16,
-        child: SizedBox(
-          width: dialogWidth,
-          height: dialogHeight,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 900;
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
+    return Scaffold(
+      appBar:
+          PolarForecastAppBar(extraText: 'Quick Compare ${widget.eventCode}'),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: SnowField(
+                particleCount: 50,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: _glassContainer(
+                radius: 16,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 900;
+                    final phone = constraints.maxWidth < 700;
+                    return Column(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _selectTeam(leftSide: true),
-                                icon: const Icon(Icons.groups_2_outlined),
-                                label: Text(
-                                  'Team A: ${_teamLabel(aNum)}',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _selectTeam(leftSide: false),
-                                icon: const Icon(Icons.groups_2_outlined),
-                                label: Text(
-                                  'Team B: ${_teamLabel(bNum)}',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton.filledTonal(
-                              tooltip: 'Close',
-                              onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              children: [
-                                if (compact)
-                                  Column(
-                                    children: [
-                                      _teamPanel(
-                                        teamNumber: aNum,
-                                        pickIndex: leftIndex + 1,
-                                        stats: aStats,
-                                        avatar: aAvatar,
-                                        fallback: avatarFallback(aNum),
-                                        images: teamAImages,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      _teamPanel(
-                                        teamNumber: bNum,
-                                        pickIndex: rightIndex + 1,
-                                        stats: bStats,
-                                        avatar: bAvatar,
-                                        fallback: avatarFallback(bNum),
-                                        images: teamBImages,
-                                      ),
-                                    ],
-                                  )
-                                else
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _teamPanel(
-                                          teamNumber: aNum,
-                                          pickIndex: leftIndex + 1,
-                                          stats: aStats,
-                                          avatar: aAvatar,
-                                          fallback: avatarFallback(aNum),
-                                          images: teamAImages,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: _teamPanel(
-                                          teamNumber: bNum,
-                                          pickIndex: rightIndex + 1,
-                                          stats: bStats,
-                                          avatar: bAvatar,
-                                          fallback: avatarFallback(bNum),
-                                          images: teamBImages,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                const SizedBox(height: 10),
-                                Expanded(
-                                  child: _glassContainer(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: ListView.builder(
-                                        itemCount: metrics.length,
-                                        itemBuilder: (context, index) =>
-                                            _metricRow(metrics[index], compact),
-                                      ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.compare_arrows_rounded,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                  const SizedBox(width: 8),
+                                  const Expanded(
+                                    child: Text(
+                                      'Quick Compare',
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          fontFamily: 'Font'),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 12,
-                                  runSpacing: 8,
-                                  alignment: WrapAlignment.center,
+                                  IconButton.filledTonal(
+                                    tooltip: 'Back',
+                                    onPressed: () => Navigator.pop(context),
+                                    icon: const Icon(Icons.arrow_back),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              const SizedBox(height: 8),
+                              if (phone)
+                                Column(
                                   children: [
-                                    GlassActionButton(
-                                      icon: const Icon(Icons.thumb_up),
-                                      label: Text('I like $aNum'),
-                                      color: Colors.green,
-                                      onPressed: () => _handleLike(aNum),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _selectTeam(leftSide: true),
+                                        icon:
+                                            const Icon(Icons.groups_2_outlined),
+                                        label: Text(
+                                          'Team A: ${_teamLabel(aNum)}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      ),
                                     ),
-                                    GlassActionButton(
-                                      icon: const Icon(Icons.thumb_up),
-                                      label: Text('I like $bNum'),
-                                      color: Colors.green,
-                                      onPressed: () => _handleLike(bNum),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _selectTeam(leftSide: false),
+                                        icon:
+                                            const Icon(Icons.groups_2_outlined),
+                                        label: Text(
+                                          'Team B: ${_teamLabel(bNum)}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 )
-                              ],
-                            ),
+                              else
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _selectTeam(leftSide: true),
+                                        icon:
+                                            const Icon(Icons.groups_2_outlined),
+                                        label: Text(
+                                          'Team A: ${_teamLabel(aNum)}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _selectTeam(leftSide: false),
+                                        icon:
+                                            const Icon(Icons.groups_2_outlined),
+                                        label: Text(
+                                          'Team B: ${_teamLabel(bNum)}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
                           ),
-                  ),
-                ],
-              );
-            },
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    children: [
+                                      if (compact)
+                                        Column(
+                                          children: [
+                                            if (phone)
+                                              Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: TextButton.icon(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _showPhoneImages =
+                                                          !_showPhoneImages;
+                                                    });
+                                                  },
+                                                  icon: Icon(_showPhoneImages
+                                                      ? Icons
+                                                          .image_not_supported_outlined
+                                                      : Icons.image_outlined),
+                                                  label: Text(_showPhoneImages
+                                                      ? 'Hide images'
+                                                      : 'Show images'),
+                                                ),
+                                              ),
+                                            _teamPanel(
+                                              teamNumber: aNum,
+                                              pickIndex: leftIndex + 1,
+                                              stats: aStats,
+                                              avatar: aAvatar,
+                                              fallback: avatarFallback(aNum),
+                                              images: teamAImages,
+                                              showImages:
+                                                  !phone || _showPhoneImages,
+                                              compactImages: phone,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            _teamPanel(
+                                              teamNumber: bNum,
+                                              pickIndex: rightIndex + 1,
+                                              stats: bStats,
+                                              avatar: bAvatar,
+                                              fallback: avatarFallback(bNum),
+                                              images: teamBImages,
+                                              showImages:
+                                                  !phone || _showPhoneImages,
+                                              compactImages: phone,
+                                            ),
+                                          ],
+                                        )
+                                      else
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _teamPanel(
+                                                teamNumber: aNum,
+                                                pickIndex: leftIndex + 1,
+                                                stats: aStats,
+                                                avatar: aAvatar,
+                                                fallback: avatarFallback(aNum),
+                                                images: teamAImages,
+                                                showImages: true,
+                                                compactImages: false,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: _teamPanel(
+                                                teamNumber: bNum,
+                                                pickIndex: rightIndex + 1,
+                                                stats: bStats,
+                                                avatar: bAvatar,
+                                                fallback: avatarFallback(bNum),
+                                                images: teamBImages,
+                                                showImages: true,
+                                                compactImages: false,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      const SizedBox(height: 10),
+                                      Expanded(
+                                        child: _glassContainer(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: [
+                                                Text(
+                                                  'Stat Comparison',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Expanded(
+                                                  child: ListView.builder(
+                                                    itemCount: metrics.length,
+                                                    itemBuilder: (context,
+                                                            index) =>
+                                                        _metricRow(
+                                                            metrics[index],
+                                                            compact),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      if (phone)
+                                        Column(
+                                          children: [
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: GlassActionButton(
+                                                icon:
+                                                    const Icon(Icons.thumb_up),
+                                                label: Text('I Like $aNum'),
+                                                color: Colors.green,
+                                                onPressed: () =>
+                                                    _handleLike(aNum),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: GlassActionButton(
+                                                icon:
+                                                    const Icon(Icons.thumb_up),
+                                                label: Text('I Like $bNum'),
+                                                color: Colors.green,
+                                                onPressed: () =>
+                                                    _handleLike(bNum),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      else
+                                        Wrap(
+                                          spacing: 12,
+                                          runSpacing: 8,
+                                          alignment: WrapAlignment.center,
+                                          children: [
+                                            GlassActionButton(
+                                              icon: const Icon(Icons.thumb_up),
+                                              label: Text('I like $aNum'),
+                                              color: Colors.green,
+                                              onPressed: () =>
+                                                  _handleLike(aNum),
+                                            ),
+                                            GlassActionButton(
+                                              icon: const Icon(Icons.thumb_up),
+                                              label: Text('I like $bNum'),
+                                              color: Colors.green,
+                                              onPressed: () =>
+                                                  _handleLike(bNum),
+                                            ),
+                                          ],
+                                        )
+                                    ],
+                                  ),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -2219,8 +2852,23 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
                                             minScale: 0.8,
                                             maxScale: 4.5,
                                             child: Center(
-                                              child: Image.network(image.link,
-                                                  fit: BoxFit.contain),
+                                              child: CachedNetworkImage(
+                                                imageUrl: image.link,
+                                                fit: BoxFit.contain,
+                                                placeholder: (context, url) =>
+                                                    const Center(
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                                strokeWidth:
+                                                                    2)),
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    const Icon(
+                                                        Icons
+                                                            .broken_image_outlined,
+                                                        color: Colors.white70,
+                                                        size: 36),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -2244,7 +2892,22 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.network(image.link, fit: BoxFit.cover),
+                                CachedNetworkImage(
+                                  imageUrl: image.link,
+                                  fit: BoxFit.cover,
+                                  fadeInDuration: Duration.zero,
+                                  fadeOutDuration: Duration.zero,
+                                  placeholder: (context, url) => Container(
+                                    color: cs.surfaceVariant,
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    color: cs.surfaceVariant,
+                                    alignment: Alignment.center,
+                                    child:
+                                        const Icon(Icons.broken_image_outlined),
+                                  ),
+                                ),
                                 Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
@@ -2344,6 +3007,7 @@ class TeamAvatar extends StatefulWidget {
 }
 
 class _TeamAvatarState extends State<TeamAvatar> {
+  static final Map<String, Color?> _paletteCache = {};
   late String _currentUrl;
   bool _showIcon = false;
   bool _triedFallback = false;
@@ -2358,13 +3022,25 @@ class _TeamAvatarState extends State<TeamAvatar> {
   }
 
   Future<void> _generatePalette() async {
+    if (_paletteCache.containsKey(_currentUrl)) {
+      widget.onColor?.call(_paletteCache[_currentUrl]);
+      return;
+    }
+
     try {
-      final provider = NetworkImage(_currentUrl);
+      final provider = CachedNetworkImageProvider(
+        _currentUrl,
+        cacheManager: picklistAvatarCacheManager,
+      );
       final palette = await PaletteGenerator.fromImageProvider(provider,
-          maximumColorCount: 6);
+          size: const Size(40, 40), maximumColorCount: 4);
       final color = palette.dominantColor?.color ?? palette.vibrantColor?.color;
-      if (color != null) widget.onColor?.call(color);
-    } catch (e) {}
+      _paletteCache[_currentUrl] = color;
+      widget.onColor?.call(color);
+    } catch (e) {
+      _paletteCache[_currentUrl] = null;
+      widget.onColor?.call(null);
+    }
   }
 
   void _onImageError(Object _, StackTrace? __) {
@@ -2405,31 +3081,22 @@ class _TeamAvatarState extends State<TeamAvatar> {
                   color: cs.onSurfaceVariant.withOpacity(0.7),
                 ),
               )
-            : Image.network(
-                _currentUrl,
+            : CachedNetworkImage(
+                imageUrl: _currentUrl,
+                cacheManager: picklistAvatarCacheManager,
                 fit: BoxFit.cover,
                 width: widget.size,
                 height: widget.size,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: SizedBox(
-                      width: widget.size * 0.36,
-                      height: widget.size * 0.36,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                (loadingProgress.expectedTotalBytes ?? 1)
-                            : null,
-                        color: cs.primary,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+                memCacheWidth: (widget.size * 3).toInt(),
+                maxWidthDiskCache: (widget.size * 3).toInt(),
+                placeholder: (context, url) => Container(
+                  color: cs.surfaceVariant,
+                ),
+                errorWidget: (context, url, error) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _onImageError(error, stackTrace);
+                    _onImageError(error, null);
                   });
                   return const SizedBox.shrink();
                 },
