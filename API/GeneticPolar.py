@@ -488,5 +488,5 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
 # )
 
     
-    print(XMatrix)
+    # print(XMatrix)
     return XMatrix, ratings
