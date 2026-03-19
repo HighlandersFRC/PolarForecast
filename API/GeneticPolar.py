@@ -50,9 +50,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         "total_points": 0,
         "total_tower_points": 0,
         
-        "auto_fuel_cycles": 0,
-        "teleop_fuel_cycles": 0,
-        "total_fuel_cycles": 0,
+        # "auto_fuel_cycles": 0,
+        # "teleop_fuel_cycles": 0,
+        # "total_fuel_cycles": 0,
 
         "foul_points": 0,
 
@@ -215,44 +215,54 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         
 
     # All of the keys, maxs, and mins
-    ScoutingDataKeys = [
+
+    # ScoutingDataKeys = [
+    #     "auto_fuel_cycles",
+    #     "teleop_fuel_cycles",
+    # ]
+    # ScoutingDataMins = [
+    #     0,
+    #     0,
+    # ]
+    # ScoutingDataMaxs = [
+    #     10000,
+    #     10000,
+    # ]
+
+    TBAOnlyKeys = [
         "auto_fuel_cycles",
         "teleop_fuel_cycles",
-    ]
-    ScoutingDataMins = [
-        0,
-        0,
-    ]
-    ScoutingDataMaxs = [
-        10000,
-        10000,
-    ]
-    TBAOnlyKeys = [
         "foul_points",
     ]
+
     TBAOnlyMins = [
+        0,
+        0,
         0,
     ]
     TBAOnlyMaxs = [
-        1000000000000,
+        10000,
+        10000,
+        10000,
     ]
     OPRWeights = [
         1,
         1,
+        -1,
     ]
 
     numEntries = len(scoutingBaseData)
     j = numEntries  # set j to the max number of scouting entries to analyze
     # print("setup hardcoded stuff")
     # TBA Data
-    YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
+    # YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
     TBAOnlyYMatrix = pd.DataFrame(None, columns=TBAOnlyKeys)
     # print(ScoutingDataKeys)
-    YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
+    # YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
     # print("ymatrix set up")
     # print(YMatrix)
     TBAOnlyYMatrix = pd.DataFrame(oprMatchDataFrame[TBAOnlyKeys])
-    # print("tba only ymatrix set up")
+    print("tba only ymatrix set up")
     matchTeamMatrix = oprMatchDataFrame[["station1", "station2", "station3"]]
     blankAEntry = {}
     for team in teams:
@@ -291,15 +301,15 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         if len(teamMatchesList[team].keys()) < 5:
             hasEnoughEntriesPerTeam = False
     if hasEnoughEntriesPerTeam:
-        YMatrix = pd.DataFrame(
-            None, columns=unpack_nested_list(ScoutingDataKeys))
+        # YMatrix = pd.DataFrame(
+        #     None, columns=unpack_nested_list(ScoutingDataKeys))
         Alist = []
     teamIdx = -1
     for team in teams:
         
         teamIdx += 1
         
-        teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
+        # teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
             for entry in scoutingData:
@@ -324,7 +334,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
                         + (newY[i] / len(teamMatchesList[team]) / numEntries)
                         for i in range(len(teamYEntry))
                     ]
-        YMatrix.loc[len(YMatrix)] = teamYEntry
+        # YMatrix.loc[len(YMatrix)] = teamYEntry
         teamAEntry = copy.deepcopy(blankAEntry)
         teamAEntry[team] = 1
         Alist.append(teamAEntry)
@@ -335,7 +345,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     TBAOnlyAPseudoInverse = np.linalg.pinv(pd.DataFrame(TBAOnlyAList)[teams])
     # print("ready for regression")
     # Multivariate Regression
-    XMatrix = pd.DataFrame(APseudoInverse @ YMatrix)
+    XMatrix = pd.DataFrame()
     TBAOnlyXMatrix = pd.DataFrame(TBAOnlyAPseudoInverse @ TBAOnlyYMatrix)
     # Run Genetic Algorithm
 
@@ -362,27 +372,27 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     # print("doing genetic algorithm")
     results = []
 
-    def perform_genetic_algorithm(i):
-        ga = geneticAlg(
-            errorFunction=create_fitness_func(
-                ScoutingDataMins[i], ScoutingDataMaxs[i]),
-            functionInputs=[pd.DataFrame(AMatrix[teams]), pd.DataFrame(
-                YMatrix[ScoutingDataKeys[i]])],
-            maxs={ScoutingDataKeys[j]: ScoutingDataMaxs[j]
-                  for j in range(len(ScoutingDataKeys))},
-            mins={ScoutingDataKeys[j]: ScoutingDataMins[j]
-                  for j in range(len(ScoutingDataKeys))},
-            startingValue=pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
-            mutationPercent=mutation_percent_genes,
-        )
-        result = ga.run()
-        for key in result[0].columns:
-            if type(result[0][key].tolist()) is not None:
-                results.append(result[0][key].tolist())
+    # def perform_genetic_algorithm(i):
+    #     ga = geneticAlg(
+    #         errorFunction=create_fitness_func(
+    #             ScoutingDataMins[i], ScoutingDataMaxs[i]),
+    #         functionInputs=[pd.DataFrame(AMatrix[teams]), pd.DataFrame(
+    #             YMatrix[ScoutingDataKeys[i]])],
+    #         maxs={ScoutingDataKeys[j]: ScoutingDataMaxs[j]
+    #               for j in range(len(ScoutingDataKeys))},
+    #         mins={ScoutingDataKeys[j]: ScoutingDataMins[j]
+    #               for j in range(len(ScoutingDataKeys))},
+    #         startingValue=pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
+    #         mutationPercent=mutation_percent_genes,
+    #     )
+    #     result = ga.run()
+    #     for key in result[0].columns:
+    #         if type(result[0][key].tolist()) is not None:
+    #             results.append(result[0][key].tolist())
     # Number of processes to run simultaneously
-    num_processes = 10  # Adjust this value based on your system's capabilities
-    for i in range(len(ScoutingDataKeys)):
-        perform_genetic_algorithm(i)
+    # num_processes = 10  # Adjust this value based on your system's capabilities
+    # for i in range(len(ScoutingDataKeys)):
+    #     perform_genetic_algorithm(i)
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
     # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
@@ -402,9 +412,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         for key in result[0].columns:
             if result[0][key] is not None:
                 results.append(result[0][key].tolist())
-        # results.append((result[0], len(ScoutingDataKeys)+i))
-    dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
-    dataKeys.extend(unpack_nested_list(TBAOnlyKeys))
+    #     # results.append((result[0], len(ScoutingDataKeys)+i))
+    # dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
+    dataKeys = copy.deepcopy(unpack_nested_list(TBAOnlyKeys))
     # print("compiling data to json")
     # print(results)
     for i, result in enumerate(results):
@@ -471,12 +481,12 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     XMatrix.insert(0, 'scouting_data_count', pd.Series(matchScoutingCount))
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
-    XMatrix.insert(
-    0,
-    'total_fuel_cycles',
-    XMatrix['auto_fuel_cycles'] + XMatrix['teleop_fuel_cycles']
-)
+#     XMatrix.insert(
+#     0,
+#     'total_fuel_cycles',
+#     XMatrix['auto_fuel_cycles'] + XMatrix['teleop_fuel_cycles']
+# )
 
     
-    # print(XMatrix)
+    print(XMatrix)
     return XMatrix, ratings

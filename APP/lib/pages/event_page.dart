@@ -1946,14 +1946,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       matchScouting: true,
                     ),
                     const SizedBox(height: 12),
-                    _buildCounterRow(
-                        'Fuel Amount', data.data.auto_scoring.fuel_cycles,
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              auto_scoring: data.data.auto_scoring
-                                  .copyWith(fuel_cycles: val))));
-                    }),
+                    // _buildCounterRow(
+                    //     'Fuel Amount', data.data.auto_scoring.fuel_cycles,
+                    //     (val) {
+                    //   setState(() => data = data.copyWith(
+                    //       data: data.data.copyWith(
+                    //           auto_scoring: data.data.auto_scoring
+                    //               .copyWith(fuel_cycles: val))));
+                    // }),
                     _buildCounterRow(
                         'Passing Cycles', data.data.auto_scoring.passing_cycles,
                         (val) {
