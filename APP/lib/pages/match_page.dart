@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/models/match_details_2026.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils.dart';
 import '../widgets/auto_display_2026.dart';
 import '../widgets/field_whiteboard.dart';
@@ -90,6 +91,7 @@ class _MatchPageState extends State<MatchPage> {
       _StatsTab(widget),
       _RedTab(widget),
       _BlueTab(widget),
+      _TBATab(widget)
     ];
     return Scaffold(
       appBar: PolarForecastAppBar(
@@ -127,6 +129,10 @@ class _MatchPageState extends State<MatchPage> {
               activeIcon: Icon(Icons.precision_manufacturing,
                   color: Colors.blue.shade900),
               label: 'Blue Autos'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shield_outlined, color: Colors.blue),
+              activeIcon: Icon(Icons.shield, color: Colors.blue),
+              label: 'TBAVideo')
         ],
         type: BottomNavigationBarType.shifting,
         selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
@@ -135,6 +141,136 @@ class _MatchPageState extends State<MatchPage> {
         showUnselectedLabels: true,
       ),
       body: tabs[_currentTab],
+    );
+  }
+}
+
+class _TBATab extends StatefulWidget {
+  final MatchPage widget;
+  const _TBATab(this.widget);
+
+  @override
+  _TBATabState createState() => _TBATabState();
+}
+
+class _TBATabState extends State<_TBATab> {
+  late final String tbaUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    tbaUrl = 'https://www.thebluealliance.com/match/${widget.widget.match_key}';
+  }
+
+  Future<void> _openTBA() async {
+    final uri = Uri.parse(tbaUrl);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $tbaUrl';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 48,
+                  color: Colors.blue,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  "View Match on The Blue Alliance",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  widget.widget.match_key,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontFamily: 'Font',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 🔥 Clean CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openTBA,
+                    icon: const Icon(Icons.link),
+                    label: const Text("Open Match"),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Font',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // subtle link text
+                TextButton(
+                  onPressed: _openTBA,
+                  child: Text(
+                    tbaUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Font',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
