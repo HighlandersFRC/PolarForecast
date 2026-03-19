@@ -1946,14 +1946,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       matchScouting: true,
                     ),
                     const SizedBox(height: 12),
-                    _buildCounterRow(
-                        'Fuel Amount', data.data.auto_scoring.fuel_cycles,
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              auto_scoring: data.data.auto_scoring
-                                  .copyWith(fuel_cycles: val))));
-                    }),
+                    // _buildCounterRow(
+                    //     'Fuel Amount', data.data.auto_scoring.fuel_cycles,
+                    //     (val) {
+                    //   setState(() => data = data.copyWith(
+                    //       data: data.data.copyWith(
+                    //           auto_scoring: data.data.auto_scoring
+                    //               .copyWith(fuel_cycles: val))));
+                    // }),
                     _buildCounterRow(
                         'Passing Cycles', data.data.auto_scoring.passing_cycles,
                         (val) {
@@ -1972,15 +1972,15 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   cardColor: const Color.fromARGB(30, 155, 39, 176),
                   accentColor: Colors.purple,
                   children: [
-                    _buildCounterRow(
-                        'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              teleop_scoring: data.data.teleop_scoring
-                                  .copyWith(fuel_cycles: val))));
-                    }),
-                    _buildCounterRow('Passing Cycles',
+                    // _buildCounterRow(
+                    //     'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
+                    //     (val) {
+                    //   setState(() => data = data.copyWith(
+                    //       data: data.data.copyWith(
+                    //           teleop_scoring: data.data.teleop_scoring
+                    //               .copyWith(fuel_cycles: val))));
+                    // }),
+                    _buildCounterRow('Passed Balls',
                         data.data.teleop_scoring.passing_cycles, (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
