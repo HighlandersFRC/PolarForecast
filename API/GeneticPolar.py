@@ -262,7 +262,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     # print("ymatrix set up")
     # print(YMatrix)
     TBAOnlyYMatrix = pd.DataFrame(oprMatchDataFrame[TBAOnlyKeys])
-    print("tba only ymatrix set up")
+    # print("tba only ymatrix set up")
     matchTeamMatrix = oprMatchDataFrame[["station1", "station2", "station3"]]
     blankAEntry = {}
     for team in teams:
