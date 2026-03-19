@@ -14,6 +14,8 @@ import 'dart:html' as html;
 import '../models/group.dart';
 import '../models/team_stats_2026.dart';
 import '../models/picture_data.dart';
+import '../models/tournament.dart';
+import '../widgets/deaths_form.dart';
 
 final CacheManager picklistAvatarCacheManager = CacheManager(
   Config(
@@ -2279,7 +2281,22 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     ];
   }
 
-  Widget _metricRow(_CompareMetric metric, bool compactMode) {
+  Future<void> _openDeathsComparison(
+      String leftTeamNumber, String rightTeamNumber) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DeathsComparisonPage(
+          eventCode: widget.eventCode,
+          leftTeamNumber: leftTeamNumber,
+          rightTeamNumber: rightTeamNumber,
+          teamNames: names,
+        ),
+      ),
+    );
+  }
+
+  Widget _metricRow(_CompareMetric metric, bool compactMode,
+      {VoidCallback? onTap}) {
     final cs = Theme.of(context).colorScheme;
     final tied = (metric.left - metric.right).abs() < 1e-9;
     final leftBetter = metric.lowerIsBetter
@@ -2310,55 +2327,63 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
 
     final labelWidth = compactMode ? 120.0 : 160.0;
 
+    final row = Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: leftBg,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: leftBorder),
+            ),
+            child: Text(
+              _formatMetric(metric, metric.left),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: labelWidth,
+          child: Text(
+            metric.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface.withOpacity(0.85)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: rightBg,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: rightBorder),
+            ),
+            child: Text(
+              _formatMetric(metric, metric.right),
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: leftBg,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: leftBorder),
-              ),
-              child: Text(
-                _formatMetric(metric, metric.left),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+      child: onTap == null
+          ? row
+          : InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: onTap,
+              child: row,
             ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: labelWidth,
-            child: Text(
-              metric.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.85)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: rightBg,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: rightBorder),
-              ),
-              child: Text(
-                _formatMetric(metric, metric.right),
-                textAlign: TextAlign.right,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -2795,11 +2820,22 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                                 Expanded(
                                                   child: ListView.builder(
                                                     itemCount: metrics.length,
-                                                    itemBuilder: (context,
-                                                            index) =>
-                                                        _metricRow(
-                                                            metrics[index],
-                                                            compact),
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      final metric =
+                                                          metrics[index];
+                                                      return _metricRow(
+                                                        metric,
+                                                        compact,
+                                                        onTap: metric.label ==
+                                                                'Death Rate'
+                                                            ? () =>
+                                                                _openDeathsComparison(
+                                                                    aNum,
+                                                                    bNum)
+                                                            : null,
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               ],
@@ -2911,6 +2947,153 @@ class _CompareMetric {
     this.asPercent = false,
     this.integerLike = false,
   });
+}
+
+class DeathsComparisonPage extends StatelessWidget {
+  final String eventCode;
+  final String leftTeamNumber;
+  final String rightTeamNumber;
+  final Map<String, String> teamNames;
+
+  const DeathsComparisonPage({
+    super.key,
+    required this.eventCode,
+    required this.leftTeamNumber,
+    required this.rightTeamNumber,
+    required this.teamNames,
+  });
+
+  String _teamLabel(String teamNumber) {
+    final nickname = teamNames[teamNumber];
+    if (nickname != null && nickname.isNotEmpty) {
+      return '$teamNumber | $nickname';
+    }
+    return teamNumber;
+  }
+
+  int _teamNumberAsInt(String teamNumber) {
+    return int.tryParse(teamNumber) ?? 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    final cs = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: PolarForecastAppBar(extraText: 'Deaths Comparison - $eventCode'),
+      body: FutureBuilder<List<Tournament>>(
+        future: apiService.fetchTournaments(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Unable to load tournament data.'));
+          }
+
+          final tournament =
+              snapshot.data!.where((t) => t.key == eventCode).firstOrNull;
+
+          if (tournament == null) {
+            return Center(
+              child: Text(
+                'Could not find event $eventCode.',
+                style: TextStyle(color: cs.onSurface.withOpacity(0.8)),
+              ),
+            );
+          }
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final sideBySide = constraints.maxWidth >= 900;
+              final leftPane = _DeathsTeamPanel(
+                title: _teamLabel(leftTeamNumber),
+                tournament: tournament,
+                teamNumber: _teamNumberAsInt(leftTeamNumber),
+              );
+              final rightPane = _DeathsTeamPanel(
+                title: _teamLabel(rightTeamNumber),
+                tournament: tournament,
+                teamNumber: _teamNumberAsInt(rightTeamNumber),
+              );
+
+              if (sideBySide) {
+                return Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      Expanded(child: leftPane),
+                      const SizedBox(width: 10),
+                      Expanded(child: rightPane),
+                    ],
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    Expanded(child: leftPane),
+                    const SizedBox(height: 10),
+                    Expanded(child: rightPane),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DeathsTeamPanel extends StatelessWidget {
+  final String title;
+  final Tournament tournament;
+  final int teamNumber;
+
+  const _DeathsTeamPanel({
+    required this.title,
+    required this.tournament,
+    required this.teamNumber,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceVariant.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outline.withOpacity(0.18)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            color: cs.surfaceVariant.withOpacity(0.35),
+            child: Text(
+              'Team $title',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
+            ),
+          ),
+          Expanded(
+            child: DeathsForm(tournament, teamNumber, true),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class TeamImagesDialog extends StatefulWidget {
