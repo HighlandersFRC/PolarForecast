@@ -527,7 +527,6 @@ class _PicklistPageState extends State<PicklistPage> {
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: "Picklist Name",
-                      hintText: "e.g., Defense Picks",
                       prefixIcon: const Icon(Icons.edit_note),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -836,7 +835,7 @@ class _PicklistPageState extends State<PicklistPage> {
                   )
                 ],
               ),
-              const Divider(height: 24),
+              const Divider(height: 24, color: Colors.blue),
               Expanded(
                 child: picklists.isEmpty
                     ? Center(
@@ -951,6 +950,8 @@ class _PicklistPageState extends State<PicklistPage> {
                                               } else if (value ==
                                                   'AutoGenerate') {
                                                 _openQuickCompare();
+                                              } else if (value == 'Export') {
+                                                exportCSV();
                                               }
                                             },
                                             itemBuilder:
@@ -981,7 +982,20 @@ class _PicklistPageState extends State<PicklistPage> {
                                                   ],
                                                 ),
                                               ),
-                                              const PopupMenuDivider(), // Added a divider for better visual separation
+                                              const PopupMenuItem<String>(
+                                                value: 'Export',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.download,
+                                                        size: 20),
+                                                    SizedBox(width: 12),
+                                                    Text('Export as CSV'),
+                                                  ],
+                                                ),
+                                              ),
+                                              const PopupMenuDivider(
+                                                color: Colors.blueAccent,
+                                              ), // Added a divider for better visual separation
                                               const PopupMenuItem<String>(
                                                 value: 'delete',
                                                 child: Row(
@@ -1022,12 +1036,6 @@ class _PicklistPageState extends State<PicklistPage> {
                 label: "New Picklist",
               ),
               const SizedBox(height: 10),
-              GlassButton(
-                color: Colors.green,
-                onPressed: exportCSV,
-                icon: Icons.download,
-                label: "Export as CSV",
-              ),
             ],
           ),
         ),
@@ -2831,8 +2839,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                                                 'Death Rate'
                                                             ? () =>
                                                                 _openDeathsComparison(
-                                                                    aNum,
-                                                                    bNum)
+                                                                    aNum, bNum)
                                                             : null,
                                                       );
                                                     },
