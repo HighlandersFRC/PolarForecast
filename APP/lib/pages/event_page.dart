@@ -1955,7 +1955,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     //               .copyWith(fuel_cycles: val))));
                     // }),
                     _buildCounterRow(
-                        'Passing Cycles', data.data.auto_scoring.passing_cycles,
+                        'Passed Balls', data.data.auto_scoring.passing_cycles,
                         (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
