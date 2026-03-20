@@ -481,11 +481,11 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     XMatrix.insert(0, 'scouting_data_count', pd.Series(matchScoutingCount))
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
-#     XMatrix.insert(
-#     0,
-#     'total_fuel_cycles',
-#     XMatrix['auto_fuel_cycles'] + XMatrix['teleop_fuel_cycles']
-# )
+    XMatrix.insert(
+    0,
+    'total_fuel_cycles',
+    XMatrix['auto_fuel_cycles'] + XMatrix['teleop_fuel_cycles']
+)
 
     
     # print(XMatrix)
