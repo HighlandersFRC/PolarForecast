@@ -1613,9 +1613,9 @@ class _ScoutingCard extends StatelessWidget {
               title: 'Auto',
               icon: Icons.smart_toy_outlined,
               chips: [
-                _StatChip(
-                    label: 'Fuel',
-                    value: data.data.auto_scoring.fuel_cycles.toString()),
+                // _StatChip(
+                //     label: 'Fuel',
+                //     value: data.data.auto_scoring.fuel_cycles.toString()),
                 _StatChip(
                     label: 'Pass',
                     value: data.data.auto_scoring.passing_cycles.toString()),
@@ -1626,9 +1626,9 @@ class _ScoutingCard extends StatelessWidget {
               title: 'Teleop',
               icon: Icons.videogame_asset_outlined,
               chips: [
-                _StatChip(
-                    label: 'Fuel',
-                    value: data.data.teleop_scoring.fuel_cycles.toString()),
+                // _StatChip(
+                //     label: 'Fuel',
+                //     value: data.data.teleop_scoring.fuel_cycles.toString()),
                 _StatChip(
                     label: 'Pass',
                     value: data.data.teleop_scoring.passing_cycles.toString()),

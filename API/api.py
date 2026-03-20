@@ -2955,6 +2955,15 @@ def primeGroupForAnalysis(group: Group, event_code: str):
                 {"$set": {"events.$.up_to_date": False}}
             )
 
+def primeGrouorAnalysis(group: Group, event_code: str):
+    for event in group.events:
+        if event.event_code == event_code and event.up_to_date:
+            event.up_to_date = False
+            GroupCollection.update_one(
+                {"group_id": group.group_id, "events.event_code": event_code},
+                {"$set": {"events.$.up_to_date": False}}
+            )
+
 
 @app.delete("/MatchScouting/Delete", tags=["scouting"])
 def delete_match_scouting(data: MatchScouting2026, token: str = Depends(check_token_active)):

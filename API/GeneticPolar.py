@@ -310,6 +310,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
         teamIdx += 1
         
         # teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
+        teamYEntry = np.zeros(len(unpack_nested_list(TBAOnlyKeys)))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
             for entry in scoutingData:
@@ -328,6 +329,7 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
                     newY = [
                         entry.data.auto_scoring.fuel_cycles,
                         entry.data.teleop_scoring.fuel_cycles,
+                        0,
                     ]
                     teamYEntry = [
                         teamYEntry[i]
