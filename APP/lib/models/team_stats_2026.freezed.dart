@@ -36,9 +36,9 @@ mixin _$TeamStats2026 {
   double get climbing_points => throw _privateConstructorUsedError;
   double get death_rate => throw _privateConstructorUsedError;
   double get defense_rate => throw _privateConstructorUsedError;
-  double get auto_fuel_cycles => throw _privateConstructorUsedError;
-  double get teleop_fuel_cycles => throw _privateConstructorUsedError;
-  double get total_fuel_cycles => throw _privateConstructorUsedError;
+  double get auto_fuel_scored => throw _privateConstructorUsedError;
+  double get teleop_fuel_scored => throw _privateConstructorUsedError;
+  double get total_fuel_scored => throw _privateConstructorUsedError;
   double get foul_points => throw _privateConstructorUsedError;
   int get simulated_rp => throw _privateConstructorUsedError;
   int get simulated_rank => throw _privateConstructorUsedError;
@@ -76,9 +76,9 @@ abstract class $TeamStats2026CopyWith<$Res> {
       double climbing_points,
       double death_rate,
       double defense_rate,
-      double auto_fuel_cycles,
-      double teleop_fuel_cycles,
-      double total_fuel_cycles,
+      double auto_fuel_scored,
+      double teleop_fuel_scored,
+      double total_fuel_scored,
       double foul_points,
       int simulated_rp,
       int simulated_rank});
@@ -115,9 +115,9 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
     Object? climbing_points = null,
     Object? death_rate = null,
     Object? defense_rate = null,
-    Object? auto_fuel_cycles = null,
-    Object? teleop_fuel_cycles = null,
-    Object? total_fuel_cycles = null,
+    Object? auto_fuel_scored = null,
+    Object? teleop_fuel_scored = null,
+    Object? total_fuel_scored = null,
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
@@ -187,17 +187,17 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.defense_rate
           : defense_rate // ignore: cast_nullable_to_non_nullable
               as double,
-      auto_fuel_cycles: null == auto_fuel_cycles
-          ? _value.auto_fuel_cycles
-          : auto_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      auto_fuel_scored: null == auto_fuel_scored
+          ? _value.auto_fuel_scored
+          : auto_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
-      teleop_fuel_cycles: null == teleop_fuel_cycles
-          ? _value.teleop_fuel_cycles
-          : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      teleop_fuel_scored: null == teleop_fuel_scored
+          ? _value.teleop_fuel_scored
+          : teleop_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
-      total_fuel_cycles: null == total_fuel_cycles
-          ? _value.total_fuel_cycles
-          : total_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      total_fuel_scored: null == total_fuel_scored
+          ? _value.total_fuel_scored
+          : total_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
       foul_points: null == foul_points
           ? _value.foul_points
@@ -240,9 +240,9 @@ abstract class _$$TeamStats2026ImplCopyWith<$Res>
       double climbing_points,
       double death_rate,
       double defense_rate,
-      double auto_fuel_cycles,
-      double teleop_fuel_cycles,
-      double total_fuel_cycles,
+      double auto_fuel_scored,
+      double teleop_fuel_scored,
+      double total_fuel_scored,
       double foul_points,
       int simulated_rp,
       int simulated_rank});
@@ -277,9 +277,9 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
     Object? climbing_points = null,
     Object? death_rate = null,
     Object? defense_rate = null,
-    Object? auto_fuel_cycles = null,
-    Object? teleop_fuel_cycles = null,
-    Object? total_fuel_cycles = null,
+    Object? auto_fuel_scored = null,
+    Object? teleop_fuel_scored = null,
+    Object? total_fuel_scored = null,
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
@@ -349,17 +349,17 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.defense_rate
           : defense_rate // ignore: cast_nullable_to_non_nullable
               as double,
-      auto_fuel_cycles: null == auto_fuel_cycles
-          ? _value.auto_fuel_cycles
-          : auto_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      auto_fuel_scored: null == auto_fuel_scored
+          ? _value.auto_fuel_scored
+          : auto_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
-      teleop_fuel_cycles: null == teleop_fuel_cycles
-          ? _value.teleop_fuel_cycles
-          : teleop_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      teleop_fuel_scored: null == teleop_fuel_scored
+          ? _value.teleop_fuel_scored
+          : teleop_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
-      total_fuel_cycles: null == total_fuel_cycles
-          ? _value.total_fuel_cycles
-          : total_fuel_cycles // ignore: cast_nullable_to_non_nullable
+      total_fuel_scored: null == total_fuel_scored
+          ? _value.total_fuel_scored
+          : total_fuel_scored // ignore: cast_nullable_to_non_nullable
               as double,
       foul_points: null == foul_points
           ? _value.foul_points
@@ -397,9 +397,9 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
       this.climbing_points = 0.0,
       this.death_rate = 0.0,
       this.defense_rate = 0.0,
-      this.auto_fuel_cycles = 0.0,
-      this.teleop_fuel_cycles = 0.0,
-      this.total_fuel_cycles = 0.0,
+      this.auto_fuel_scored = 0.0,
+      this.teleop_fuel_scored = 0.0,
+      this.total_fuel_scored = 0.0,
       this.foul_points = 0.0,
       this.simulated_rp = 0,
       this.simulated_rank = 0});
@@ -452,13 +452,13 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
   final double defense_rate;
   @override
   @JsonKey()
-  final double auto_fuel_cycles;
+  final double auto_fuel_scored;
   @override
   @JsonKey()
-  final double teleop_fuel_cycles;
+  final double teleop_fuel_scored;
   @override
   @JsonKey()
-  final double total_fuel_cycles;
+  final double total_fuel_scored;
   @override
   @JsonKey()
   final double foul_points;
@@ -471,7 +471,7 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
 
   @override
   String toString() {
-    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_cycles: $auto_fuel_cycles, teleop_fuel_cycles: $teleop_fuel_cycles, total_fuel_cycles: $total_fuel_cycles, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
+    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_scored: $auto_fuel_scored, teleop_fuel_scored: $teleop_fuel_scored, total_fuel_scored: $total_fuel_scored, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
   }
 
   @override
@@ -507,12 +507,12 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
                 other.death_rate == death_rate) &&
             (identical(other.defense_rate, defense_rate) ||
                 other.defense_rate == defense_rate) &&
-            (identical(other.auto_fuel_cycles, auto_fuel_cycles) ||
-                other.auto_fuel_cycles == auto_fuel_cycles) &&
-            (identical(other.teleop_fuel_cycles, teleop_fuel_cycles) ||
-                other.teleop_fuel_cycles == teleop_fuel_cycles) &&
-            (identical(other.total_fuel_cycles, total_fuel_cycles) ||
-                other.total_fuel_cycles == total_fuel_cycles) &&
+            (identical(other.auto_fuel_scored, auto_fuel_scored) ||
+                other.auto_fuel_scored == auto_fuel_scored) &&
+            (identical(other.teleop_fuel_scored, teleop_fuel_scored) ||
+                other.teleop_fuel_scored == teleop_fuel_scored) &&
+            (identical(other.total_fuel_scored, total_fuel_scored) ||
+                other.total_fuel_scored == total_fuel_scored) &&
             (identical(other.foul_points, foul_points) ||
                 other.foul_points == foul_points) &&
             (identical(other.simulated_rp, simulated_rp) ||
@@ -541,9 +541,9 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
         climbing_points,
         death_rate,
         defense_rate,
-        auto_fuel_cycles,
-        teleop_fuel_cycles,
-        total_fuel_cycles,
+        auto_fuel_scored,
+        teleop_fuel_scored,
+        total_fuel_scored,
         foul_points,
         simulated_rp,
         simulated_rank
@@ -583,9 +583,9 @@ abstract class _TeamStats2026 implements TeamStats2026 {
       final double climbing_points,
       final double death_rate,
       final double defense_rate,
-      final double auto_fuel_cycles,
-      final double teleop_fuel_cycles,
-      final double total_fuel_cycles,
+      final double auto_fuel_scored,
+      final double teleop_fuel_scored,
+      final double total_fuel_scored,
       final double foul_points,
       final int simulated_rp,
       final int simulated_rank}) = _$TeamStats2026Impl;
@@ -626,11 +626,11 @@ abstract class _TeamStats2026 implements TeamStats2026 {
   @override
   double get defense_rate;
   @override
-  double get auto_fuel_cycles;
+  double get auto_fuel_scored;
   @override
-  double get teleop_fuel_cycles;
+  double get teleop_fuel_scored;
   @override
-  double get total_fuel_cycles;
+  double get total_fuel_scored;
   @override
   double get foul_points;
   @override
