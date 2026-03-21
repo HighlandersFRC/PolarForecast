@@ -420,10 +420,10 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     endgameClimbingPoints = endgameClimbL1 * L1Points + endgameClimbL2 * L2Points + endgameClimbL3 * L3Points   
     autoClimbingPoints = autoClimb * autoClimbPoints   
     endgamePoints = endgameClimbingPoints       
-    autoPoints = autoClimbingPoints
+    autoPoints += autoClimbingPoints 
     teamClimbingPoints = autoClimbingPoints + endgameClimbingPoints
     teamOPR = endgamePoints + autoPoints + teleopPoints
-    
+
     XMatrix['auto_fuel_scored'] = autoPoints
     XMatrix['teleop_fuel_scored'] = teleopPoints
     XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))

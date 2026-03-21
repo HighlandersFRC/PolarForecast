@@ -155,9 +155,9 @@ class _PicklistPageState extends State<PicklistPage> {
     "Auto Pass": (t) => t.auto_pass,
     "Teleop Pass": (t) => t.teleop_pass,
     "Climbing Points": (t) => t.climbing_points,
-    "Auto Fuel Scored": (t) => t.auto_fuel_cycles,
-    "Teleop Fuel Scored": (t) => t.teleop_fuel_cycles,
-    "Total Fuel Scored": (t) => t.total_fuel_cycles,
+    "Auto Fuel Scored": (t) => t.auto_fuel_scored,
+    "Teleop Fuel Scored": (t) => t.teleop_fuel_scored,
+    "Total Fuel Scored": (t) => t.total_fuel_scored,
     "Foul Points": (t) => t.foul_points,
     "Defense Rate": (t) => t.defense_rate,
     "Death Rate": (t) => t.death_rate,
@@ -2272,11 +2272,11 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       _CompareMetric('Auto Pass', a?.auto_pass ?? 0, b?.auto_pass ?? 0),
       _CompareMetric('Teleop Pass', a?.teleop_pass ?? 0, b?.teleop_pass ?? 0),
       _CompareMetric(
-          'Auto Fuel', a?.auto_fuel_cycles ?? 0, b?.auto_fuel_cycles ?? 0),
-      _CompareMetric('Teleop Fuel', a?.teleop_fuel_cycles ?? 0,
-          b?.teleop_fuel_cycles ?? 0),
+          'Auto Fuel', a?.auto_fuel_scored ?? 0, b?.auto_fuel_scored ?? 0),
       _CompareMetric(
-          'Total Fuel', a?.total_fuel_cycles ?? 0, b?.total_fuel_cycles ?? 0),
+          'Teleop Fuel', a?.teleop_fuel_scored ?? 0, b?.teleop_fuel_scored ?? 0),
+      _CompareMetric(
+          'Total Fuel', a?.total_fuel_scored ?? 0, b?.total_fuel_scored ?? 0),
       _CompareMetric('Foul Points', a?.foul_points ?? 0, b?.foul_points ?? 0,
           lowerIsBetter: true),
       _CompareMetric('Death Rate', a?.death_rate ?? 0, b?.death_rate ?? 0,

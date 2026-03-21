@@ -324,7 +324,7 @@ class _StatsTabState extends State<_StatsTab> {
       ),
     ),
     GridColumn(
-      columnName: 'tele_pass',
+      columnName: 'teleop_pass',
       label: Text(
         'Teleop Passing',
         style: TextStyle(fontFamily: 'Font'),
@@ -364,8 +364,8 @@ class _StatsTabState extends State<_StatsTab> {
         double blueTelePass = 0;
         for (var blueTeam in stats?.blue_teams ?? []) {
           blueOPR += blueTeam.OPR;
-          blueAutoFuel += blueTeam.auto_fuel_cycles;
-          blueTeleFuel += blueTeam.teleop_fuel_cycles;
+          blueAutoFuel += blueTeam.auto_fuel_scored;
+          blueTeleFuel += blueTeam.teleop_fuel_scored;
           blueAutoPass += blueTeam.auto_pass;
           blueTelePass += blueTeam.teleop_pass;
           blueRows.add(DataGridRow(cells: [
@@ -373,9 +373,9 @@ class _StatsTabState extends State<_StatsTab> {
                 columnName: 'team_number', value: blueTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: blueTeam.OPR),
             DataGridCell(
-                columnName: 'auto_fuel', value: blueTeam.auto_fuel_cycles),
+                columnName: 'auto_fuel', value: blueTeam.auto_fuel_scored),
             DataGridCell(
-                columnName: 'tele_fuel', value: blueTeam.teleop_fuel_cycles),
+                columnName: 'tele_fuel', value: blueTeam.teleop_fuel_scored),
             DataGridCell(columnName: 'auto_pass', value: blueTeam.auto_pass),
             DataGridCell(columnName: 'tele_pass', value: blueTeam.teleop_pass),
           ]));
@@ -396,8 +396,8 @@ class _StatsTabState extends State<_StatsTab> {
         double redTelePass = 0;
         for (var redTeam in stats?.red_teams ?? []) {
           redOPR += redTeam.OPR;
-          redAutoFuel += redTeam.auto_fuel_cycles;
-          redTeleFuel += redTeam.teleop_fuel_cycles;
+          redAutoFuel += redTeam.auto_fuel_scored;
+          redTeleFuel += redTeam.teleop_fuel_scored;
           redAutoPass += redTeam.auto_pass;
           redTelePass += redTeam.teleop_pass;
           redRows.add(DataGridRow(cells: [
@@ -405,11 +405,11 @@ class _StatsTabState extends State<_StatsTab> {
                 columnName: 'team_number', value: redTeam.key.substring(3)),
             DataGridCell(columnName: 'opr', value: redTeam.OPR),
             DataGridCell(
-                columnName: 'auto_fuel', value: redTeam.auto_fuel_cycles),
+                columnName: 'auto_fuel', value: redTeam.auto_fuel_scored),
             DataGridCell(
-                columnName: 'tele_fuel', value: redTeam.teleop_fuel_cycles),
+                columnName: 'tele_fuel', value: redTeam.teleop_fuel_scored),
             DataGridCell(columnName: 'auto_pass', value: redTeam.auto_pass),
-            DataGridCell(columnName: 'tele_pass', value: redTeam.teleop_pass),
+            DataGridCell(columnName: 'teleop_pass', value: redTeam.teleop_pass),
           ]));
         }
         redRows.add(DataGridRow(cells: [

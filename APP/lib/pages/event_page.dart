@@ -186,13 +186,13 @@ class _RankingsTabState extends State<_RankingsTab> {
     GridColumn(
       allowSorting: true,
       label: Text('Auto Fuel Points', style: TextStyle(fontFamily: 'Font')),
-      columnName: 'auto_fuel_cycles',
+      columnName: 'auto_fuel_scored',
       allowFiltering: false,
     ),
     GridColumn(
       allowSorting: true,
       label: Text('Teleop Fuel Points', style: TextStyle(fontFamily: 'Font')),
-      columnName: 'teleop_fuel_cycles',
+      columnName: 'teleop_fuel_scored',
       allowFiltering: false,
     ),
     GridColumn(
@@ -224,8 +224,8 @@ class _RankingsTabState extends State<_RankingsTab> {
     'OPR': true,
     'rank': true,
     'simulated_rp': true,
-    'auto_fuel_cycles': true,
-    'teleop_fuel_cycles': true,
+    'auto_fuel_scored': true,
+    'teleop_fuel_scored': true,
     'climbing_points': true,
     'defense_rate': true,
     'death_rate': true,
@@ -675,14 +675,10 @@ class _OvertimeChartOnClick extends StatelessWidget {
           'entries': [],
         };
         List<String> seriesLabels = [
-          'auto_scoring_fuel_cycles',
+          'auto_scoring_fuel_scored',
           'auto_scoring_passing_cycles',
-          'auto_scoring_scoring_cycles',
-          'auto_scoring_cycles_completed',
-          'teleop_scoring_fuel_cycles',
+          'teleop_scoring_fuel_scored',
           'teleop_scoring_passing_cycles',
-          'teleop_scoring_scoring_cycles',
-          'teleop_scoring_cycles_completed',
         ];
         for (var series in seriesLabels) {
           seriesData[series] = [];
@@ -1067,9 +1063,9 @@ class _ChartsTabState extends State<_ChartsTab> {
                 'entries': [],
               };
               List<String> seriesLabels = [
-                'auto_scoring_fuel_cycles',
+                'auto_scoring_fuel_scored',
                 'auto_scoring_passing_cycles',
-                'teleop_scoring_fuel_cycles',
+                'teleop_scoring_fuel_scored',
                 'teleop_scoring_passing_cycles',
               ];
               for (var series in seriesLabels) {
@@ -1457,12 +1453,12 @@ class _ChartsTabState extends State<_ChartsTab> {
                   startingFields: [
                     Field(
                         name: 'Teleop Fuel',
-                        key: 'teleop_fuel_cycles',
+                        key: 'teleop_fuel_scored',
                         enabled: true,
                         weight: 1),
                     Field(
                         name: 'Auto Fuel',
-                        key: 'auto_fuel_cycles',
+                        key: 'auto_fuel_scored',
                         enabled: true,
                         weight: 1),
                   ])),
@@ -1476,12 +1472,12 @@ class _ChartsTabState extends State<_ChartsTab> {
                   startingFields: [
                     Field(
                         name: 'Teleop Fuel',
-                        key: 'teleop_fuel_cycles',
+                        key: 'teleop_fuel_scored',
                         enabled: true,
                         weight: 1),
                     Field(
                         name: 'Auto Fuel',
-                        key: 'auto_fuel_cycles',
+                        key: 'auto_fuel_scored',
                         enabled: true,
                         weight: 1),
                     Field(
@@ -1980,8 +1976,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     //           teleop_scoring: data.data.teleop_scoring
                     //               .copyWith(fuel_cycles: val))));
                     // }),
-                    _buildCounterRow('Passed Balls',
-                        data.data.teleop_scoring.passing_cycles, (val) {
+                    _buildCounterRow(
+                        'Passed Balls', data.data.teleop_scoring.passing_cycles,
+                        (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
                               teleop_scoring: data.data.teleop_scoring
