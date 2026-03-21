@@ -2868,7 +2868,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_auto_passing_cycles": 0,
                     "blue_teleop_passing_cycles": 0,
 
-                    "blue_actual_score": match.score_breakdown["blue"].totalPoints,
+                    "blue_actual_score": None,
 
                     "red_teams": match.alliances['red'].team_keys,
                     "red_dq_team_keys": match.alliances['red'].dq_team_keys,
@@ -2884,9 +2884,9 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_auto_passing_cycles": 0,
                     "red_teleop_passing_cycles": 0,
 
-                    "red_actual_score": match.score_breakdown["red"].totalPoints,
+                    "red_actual_score": None,
 
-                    "predicted": False,
+                    "predicted": True,
             }
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
@@ -2900,8 +2900,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                         matchPrediction[f"{alliance}_auto_points"] += teamData["auto_points"]
                         matchPrediction[f"{alliance}_teleop_points"] += teamData["teleop_points"]
                         matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
-                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_cycles"]
-                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_cycles"]
+                        matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_scored"]
+                        matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_scored"]
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
@@ -3113,12 +3113,17 @@ def update_database():
             # print("977")
             if r.status_code == 200 or not event["up_to_date"]:
                 try:
-                    headers.pop("If-None-Match")
-                    rankings = json.loads(requests.get(
-                        TBA_API_URL+"event/" + event["key"] + "/rankings", headers=headers).text)["rankings"]
-                    event["rankings"] = rankings
+                    headers.pop("If-None-Match", None)  # use None default to avoid KeyError if already missing
+                    response = requests.get(
+                        TBA_API_URL + "event/" + event["key"] + "/rankings", headers=headers)
+                    data = json.loads(response.text)
+                    if data and "rankings" in data and data["rankings"] is not None:
+                        rankings = data["rankings"]
+                        event["rankings"] = rankings
+                    else:
+                        event["rankings"] = []
                 except Exception as e:
-                    logging.error(str(e)+" "+event["key"])
+                    logging.error(str(e) + " " + event["key"])
                     event["rankings"] = []
                 ETagCollection.find_one_and_replace(
                     {"key": event["key"]}, event)

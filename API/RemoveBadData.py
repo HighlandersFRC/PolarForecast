@@ -95,8 +95,8 @@ def getError(combination: dict[str, MatchScouting2026], TBAMatch: pd.Series) -> 
     for i in range(3):
         # print("auto_fuel_cycles", data[i]['auto_fuel_cycles'])
         # print("teleop_fuel_cycles", data[i]['teleop_fuel_cycles'])
-        fuel_cycles += data[i]['auto_fuel_cycles']
-        fuel_cycles += data[i]['teleop_fuel_cycles']
+        fuel_cycles += data[i].get('auto_fuel_scored', 0)
+        fuel_cycles += data[i].get('teleop_fuel_scored', 0)
         # print("First += in getError")
     error += abs((TBAMatch['autoCount'] + (TBAMatch['teleopCount'] + TBAMatch['endGameCount']))-fuel_cycles)
     total += abs(TBAMatch['autoCount'] + (TBAMatch['teleopCount'] + TBAMatch['endGameCount']))
@@ -104,7 +104,7 @@ def getError(combination: dict[str, MatchScouting2026], TBAMatch: pd.Series) -> 
     # print(type(TBAMatch['teleopCount']), TBAMatch['teleopCount'])
     # print(type(TBAMatch['endGameCount']), TBAMatch['endGameCount'])
     for field in addedData:
-        if not field == "auto_fuel_cycles" and not field == "teleop_fuel_cycles":
+        if field not in ["auto_fuel_scored", "teleop_fuel_scored"]:
             addedData[field] = data[0][field] + \
                 data[1][field] + data[2][field]
             total += abs(TBAMatch[field])
