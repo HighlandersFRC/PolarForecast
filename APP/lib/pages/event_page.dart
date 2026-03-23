@@ -366,9 +366,45 @@ class _RankingsTabState extends State<_RankingsTab> {
         ),
       );
     }
+
+    // Check if rankings are empty or if Rank is 0
+    bool noData = rankings.isEmpty || rankings.any((r) => r.rank == 0);
+    if (noData) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons
+                  .folder_off_outlined, // Or Icons.search_off, Icons.folder_off
+              size: 48,
+              color: Theme.of(context)
+                  .colorScheme
+                  .outline, // Subtle gray/themed color
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No data available',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check back later or try refreshing.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+            ),
+          ],
+        ),
+      );
+    }
     const columnMinWidth = 95.0;
     bool isWide = MediaQuery.of(context).size.width >=
         dataColumns.length * columnMinWidth;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -397,29 +433,27 @@ class _RankingsTabState extends State<_RankingsTab> {
           child: Text('Export as CSV', style: TextStyle(fontFamily: 'Font')),
         ),
         Expanded(
-          child: Center(
-            child: LayoutBuilder(
-              builder: (context, constraints) => Container(
-                height: constraints.maxHeight,
-                width: constraints.maxWidth,
-                child: SfDataGrid(
-                  allowFiltering: true,
-                  defaultColumnWidth: columnMinWidth,
-                  columnWidthMode:
-                      isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-                  allowSorting: true,
-                  columns: dataColumns,
-                  frozenColumnsCount: 2,
-                  source: _TeamDataSource(
-                      dataRows,
-                      minValues,
-                      maxValues,
-                      heatMapFromKey,
-                      context,
-                      widget.tournament,
-                      scouting,
-                      rankings),
-                ),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Container(
+              height: constraints.maxHeight,
+              width: constraints.maxWidth,
+              child: SfDataGrid(
+                allowFiltering: true,
+                defaultColumnWidth: columnMinWidth,
+                columnWidthMode:
+                    isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+                allowSorting: true,
+                columns: dataColumns,
+                frozenColumnsCount: 2,
+                source: _TeamDataSource(
+                    dataRows,
+                    minValues,
+                    maxValues,
+                    heatMapFromKey,
+                    context,
+                    widget.tournament,
+                    scouting,
+                    rankings),
               ),
             ),
           ),

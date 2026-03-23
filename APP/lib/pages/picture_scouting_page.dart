@@ -71,6 +71,7 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
   late Map<String, List<bool>> _sectionUploading;
   late Map<String, bool> _capturing;
   List<PictureData> _takenPictures = [];
+  final Map<String, String> teamNames = {};
 
   @override
   void initState() {
@@ -78,6 +79,7 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
     _sectionEncodedImages = {for (var section in _sections) section: []};
     _sectionUploading = {for (var section in _sections) section: []};
     _capturing = {for (var section in _sections) section: false};
+    _fetchTeamNumber(widget.team.toString());
     final apiService = Provider.of<ApiService>(context, listen: false);
     apiService
         .fetchTeamImages(
@@ -92,6 +94,19 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
         });
       _takenPictures = _pictures;
     });
+  }
+
+  Future<void> _fetchTeamNumber(String teamNumber) async {
+    if (teamNames.containsKey(teamNumber)) return;
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+      final nickname = await apiService.fetchTeamNicknames('frc$teamNumber');
+      if (mounted) {
+        setState(() {
+          teamNames[teamNumber] = nickname;
+        });
+      }
+    } catch (e) {}
   }
 
   Future<void> _showImageSourceActionSheet(String section) async {
@@ -207,64 +222,51 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
   }
 
   Widget _buildImageCard(String section, int index) {
-    final encodedBytes = _sectionEncodedImages[section]![index];
-    final isUploading = _sectionUploading[section]![index];
+    final bytes = _sectionEncodedImages[section]![index];
+    final uploading = _sectionUploading[section]![index];
 
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 220,
-        height: 270,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      width: 200,
+      margin: EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+          )
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+            Positioned.fill(
+              child: Image.memory(
+                bytes!,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // 🔥 Delete button
+            Positioned(
+              top: 8,
+              right: 8,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 18),
+                  onPressed: () => _removeImage(section, index),
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text('${section.toUpperCase()} Image ${index + 1}',
-                        style: TextStyle(
-                            fontFamily: 'Font',
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                  IconButton(
-                    onPressed: () => _removeImage(section, index),
-                    icon: Icon(Icons.delete, color: Colors.white),
-                  )
-                ],
-              ),
             ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: encodedBytes != null
-                        ? Image.memory(encodedBytes, fit: BoxFit.cover)
-                        : Center(child: CircularProgressIndicator()),
-                  ),
-                  if (isUploading)
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withAlpha(128),
-                        child: Center(
-                            child:
-                                CircularProgressIndicator(color: Colors.white)),
-                      ),
-                    ),
-                ],
+
+            // 🔥 Upload overlay
+            if (uploading)
+              Container(
+                color: Colors.black45,
+                child: Center(child: CircularProgressIndicator()),
               ),
-            ),
           ],
         ),
       ),
@@ -272,57 +274,65 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
   }
 
   Widget _buildNetworkImageCard(PictureData picture) {
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 220,
-        height: 270,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      width: 200,
+      margin: EdgeInsets.only(right: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'By ${picture.scout_info.first_name ?? 'scout on ${picture.scout_info.team_number}'}',
-                      style: TextStyle(
-                          fontFamily: 'Font',
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+            Positioned.fill(
+              child: Image.network(
+                picture.link,
+                fit: BoxFit.cover,
               ),
             ),
-            Expanded(
-                child: Image.network(
-              picture.link,
-              loadingBuilder: (context, child, event) {
-                if (event == null) {
-                  return child;
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator.adaptive(
-                      value: event.cumulativeBytesLoaded /
-                          event.expectedTotalBytes!,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                    ),
-                  );
-                }
-              },
-            )),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                color: Colors.black54,
+                child: Text(
+                  picture.scout_info.first_name ??
+                      "Scout ${picture.scout_info.team_number}",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddCard(String section) {
+    return GestureDetector(
+      onTap: !_capturing[section]!
+          ? () => _showImageSourceActionSheet(section)
+          : null,
+      child: Container(
+        width: 200,
+        margin: EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300, width: 2),
+        ),
+        child: Center(
+          child: _capturing[section]!
+              ? CircularProgressIndicator()
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_a_photo, size: 32, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text(
+                      "Add Image",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
@@ -330,58 +340,49 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
 
   Widget _buildSection(String section) {
     List<Widget> cards = [];
+
     for (final picture in _takenPictures) {
-      if (picture.image_type == section)
+      if (picture.image_type == section) {
         cards.add(_buildNetworkImageCard(picture));
+      }
     }
-    for (int index = 0;
-        index < _sectionEncodedImages[section]!.length;
-        index++) {
-      cards.add(_buildImageCard(section, index));
+
+    for (int i = 0; i < _sectionEncodedImages[section]!.length; i++) {
+      cards.add(_buildImageCard(section, i));
     }
-    cards.add(
-      GestureDetector(
-        onTap: !_capturing[section]!
-            ? () => _showImageSourceActionSheet(section)
-            : () {},
-        child: Card(
-          elevation: 4,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Container(
-            width: 220,
-            height: 270,
-            child: Center(
-              child: _capturing[section]!
-                  ? CircularProgressIndicator(color: Colors.blue)
-                  : Icon(Icons.add_a_photo, size: 60, color: Colors.grey[600]),
-            ),
-          ),
-        ),
-      ),
-    );
+
+    // ➕ Add card
+    cards.add(_buildAddCard(section));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.only(bottom: 28),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(section.toUpperCase(),
-                style:
-                    TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(height: 12),
+          // 🔥 Section Chip Title
           Container(
-            height: 280,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: cards,
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              section.replaceAll("_", " ").toUpperCase(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                fontSize: 12,
               ),
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          SizedBox(
+            height: 250,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: cards,
             ),
           ),
         ],
@@ -391,46 +392,48 @@ class _PictureScoutingPageState extends State<PictureScoutingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     bool anyUploading = _sections.any(
-      (section) => _sectionUploading[section]!.any((uploading) => uploading),
+      (section) => _sectionUploading[section]!.any((u) => u),
     );
+
     return Scaffold(
       appBar: PolarForecastAppBar(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: anyUploading ? null : _uploadAllImages,
+        icon: Icon(Icons.cloud_upload),
+        label: Text("Upload All"),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🔥 Header
             Text(
-              'Team ${widget.team} Pictures',
-              style: TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Capture, select, remove, and upload images for each section.',
-              style: TextStyle(fontFamily: 'Font', fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-            Divider(
-              color: Colors.blue,
-            ),
-            Expanded(
-              child: ListView(
-                children:
-                    _sections.map((section) => _buildSection(section)).toList(),
+              "Team ${widget.team} | ${teamNames[widget.team.toString()] ?? ""}",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: anyUploading ? null : _uploadAllImages,
-              icon: Icon(Icons.cloud_upload),
-              label: Text('Upload All', style: TextStyle(fontFamily: 'Font')),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                textStyle: TextStyle(fontSize: 18),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            SizedBox(height: 4),
+            Text(
+              "Robot Photos",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+
+            SizedBox(height: 20),
+
+            // 🔥 Sections
+            Expanded(
+              child: ListView.builder(
+                itemCount: _sections.length,
+                itemBuilder: (context, index) {
+                  return _buildSection(_sections[index]);
+                },
               ),
             ),
           ],

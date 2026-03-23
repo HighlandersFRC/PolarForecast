@@ -45,12 +45,6 @@ class _PicklistPageState extends State<PicklistPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Set<String> _warmedAvatarUrls = {};
 
-  int _getTeamRank(String teamNumber) {
-    final index = rankings.indexWhere((t) => t.team_number == teamNumber);
-    if (index == -1) return 0;
-    return rankings[index].rank;
-  }
-
   void exportCSV() {
     if (selectedPicklist == null) return;
 
@@ -79,7 +73,7 @@ class _PicklistPageState extends State<PicklistPage> {
         (i + 1).toString(),
         stats?.rank.toString() ?? "-",
         pick.number,
-        pick.comments ?? "",
+        pick.comments,
         stats?.OPR.toStringAsFixed(2) ?? "",
         stats?.auto_points.toStringAsFixed(2) ?? "",
         stats?.teleop_points.toStringAsFixed(2) ?? "",
@@ -97,6 +91,7 @@ class _PicklistPageState extends State<PicklistPage> {
     final blob = html.Blob([bytes]);
     final url = html.Url.createObjectUrlFromBlob(blob);
 
+    // ignore: unused_local_variable
     final anchor = html.AnchorElement(href: url)
       ..setAttribute(
         "download",
@@ -470,7 +465,7 @@ class _PicklistPageState extends State<PicklistPage> {
       final nickname = await apiService.fetchTeamNicknames('frc$teamNumber');
       if (mounted) {
         setState(() {
-          teamNames[teamNumber] = nickname ?? "";
+          teamNames[teamNumber] = nickname;
         });
       }
     } catch (e) {}
@@ -1926,55 +1921,6 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     _loadPair();
   }
 
-  Future<void> _editCommentDialog(int index) async {
-    final pick = widget.picks[index];
-    final controller = TextEditingController(text: pick.comments);
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: Text('Comments for Team ${pick.number}'),
-          content: TextField(
-            controller: controller,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              hintText: 'Enter notes, strategy, etc...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context, controller.text.trim());
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
-      _updateComment(index, result);
-    }
-  }
-
-  void _updateComment(int index, String newComment) {
-    setState(() {
-      final updatedPick = widget.picks[index].copyWith(comments: newComment);
-
-      widget.picks[index] = updatedPick;
-    });
-  }
-
   Future<void> _loadPair() async {
     if (widget.picks.length < 2) return;
     if (leftIndex < 0 || leftIndex >= widget.picks.length) return;
@@ -2273,8 +2219,8 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       _CompareMetric('Teleop Pass', a?.teleop_pass ?? 0, b?.teleop_pass ?? 0),
       _CompareMetric(
           'Auto Fuel', a?.auto_fuel_scored ?? 0, b?.auto_fuel_scored ?? 0),
-      _CompareMetric(
-          'Teleop Fuel', a?.teleop_fuel_scored ?? 0, b?.teleop_fuel_scored ?? 0),
+      _CompareMetric('Teleop Fuel', a?.teleop_fuel_scored ?? 0,
+          b?.teleop_fuel_scored ?? 0),
       _CompareMetric(
           'Total Fuel', a?.total_fuel_scored ?? 0, b?.total_fuel_scored ?? 0),
       _CompareMetric('Foul Points', a?.foul_points ?? 0, b?.foul_points ?? 0,
@@ -2930,11 +2876,6 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
 
   String avatarFallback(String teamNumber) {
     return 'https://api.dicebear.com/9.x/identicon/png?seed=frc$teamNumber&size=128';
-  }
-
-  Widget _statRowComparison(
-      String label, double aVal, double bVal, bool invertDeath) {
-    return const SizedBox.shrink();
   }
 }
 
