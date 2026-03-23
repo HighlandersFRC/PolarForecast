@@ -416,9 +416,9 @@ class _StatsTabState extends State<_StatsTab> {
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: redOPR),
           DataGridCell(columnName: 'auto_fuel', value: redAutoFuel),
-          DataGridCell(columnName: 'tele_fuel', value: redTeleFuel),
+          DataGridCell(columnName: 'teleop_fuel', value: redTeleFuel),
           DataGridCell(columnName: 'auto_pass', value: redAutoPass),
-          DataGridCell(columnName: 'tele_pass', value: redTelePass),
+          DataGridCell(columnName: 'teleop_pass', value: redTelePass),
         ]));
       });
     }

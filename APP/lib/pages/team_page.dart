@@ -214,7 +214,6 @@ class _OverviewTabState extends State<_OverviewTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -274,7 +273,9 @@ class _OverviewTabState extends State<_OverviewTab> {
                   const SizedBox(width: 12),
                   _buildQuickStat(
                     "OPR",
-                    stats['OPR']?.toString() ?? "-",
+                    (stats['OPR'] is num)
+                        ? (stats['OPR'] as num).round().toString()
+                        : "-",
                     Colors.orange,
                   ),
                 ],
@@ -336,8 +337,8 @@ class _OverviewTabState extends State<_OverviewTab> {
                       Colors.blueGrey,
                     ),
                     _buildLargeDetailRow(
-                      "Balls Per Second",
-                      "${pitScouting!.data.bps}",
+                      "Fuel Per Second",
+                      pitScouting!.data.bps.toStringAsFixed(2),
                       Colors.blueGrey,
                     ),
                   ],

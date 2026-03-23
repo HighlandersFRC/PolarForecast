@@ -476,8 +476,15 @@ class _TeamDataSource extends DataGridSource {
               opr: e.value,
               scouting: scouting);
         }
-        if (e.columnName == 'teleop_fuel_points' ||
-            e.columnName == 'teleop_fuel') {
+        if (e.columnName == 'teleop_pass') {
+          return _PassingMenuOnClick(
+              teamNumber: int.parse(row.getCells()[0].value.toString()),
+              color: color,
+              auto: false,
+              passingDPR: e.value,
+              rankings: rankings);
+        }
+        if (e.columnName == 'teleop_fuel_scored') {
           return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
               color: color,
@@ -485,7 +492,7 @@ class _TeamDataSource extends DataGridSource {
               fuelOPR: e.value,
               rankings: rankings);
         }
-        if (e.columnName == 'auto_fuel_points') {
+        if (e.columnName == 'auto_fuel_scored') {
           return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
               color: color,
@@ -785,71 +792,161 @@ class _OvertimeChartOnClick extends StatelessWidget {
   }
 }
 
+class _PassingMenuOnClick extends StatelessWidget {
+  final bool auto;
+  final int teamNumber;
+  final Color color;
+  final double passingDPR;
+  final List<TeamStats2026> rankings;
+
+  _PassingMenuOnClick({
+    required this.auto,
+    required this.teamNumber,
+    required this.color,
+    required this.passingDPR,
+    required this.rankings,
+  });
+
+  final GlobalKey containerKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      key: containerKey,
+      onTap: () {
+        final ctx = containerKey.currentContext;
+        if (ctx == null) return;
+
+        final renderBox = ctx.findRenderObject() as RenderBox;
+
+        final overlay = Overlay.of(context, rootOverlay: true)
+            .context
+            .findRenderObject() as RenderBox;
+
+        final items = <PopupMenuEntry<void>>[
+          PopupMenuItem<void>(
+            child: Text(
+              'Team $teamNumber',
+              style: TextStyle(fontFamily: 'Font'),
+            ),
+          ),
+          PopupMenuItem<void>(
+            child: Text(
+              'Passing DPR: ${passingDPR.toStringAsFixed(1)}',
+              style: TextStyle(fontFamily: 'Font'),
+            ),
+          ),
+          PopupMenuItem<void>(
+            child: Text(
+              auto ? 'Auto' : 'TeleOp',
+              style: TextStyle(fontFamily: 'Font'),
+            ),
+          ),
+        ];
+
+        showMenu<void>(
+          context: context,
+          position: RelativeRect.fromRect(
+            renderBox.localToGlobal(Offset.zero) & renderBox.size,
+            Offset.zero & overlay.size,
+          ),
+          items: items,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        alignment: Alignment.center,
+        color: color,
+        child: Text(
+          '${(passingDPR * 10).roundToDouble() / 10}',
+          style: const TextStyle(
+            fontFamily: 'Font',
+            color: Colors.white,
+            decoration: TextDecoration.underline,
+            decorationThickness: 2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FuelMenuOnClick extends StatelessWidget {
   final bool auto;
   final int teamNumber;
   final Color color;
   final double fuelOPR;
   final List<TeamStats2026> rankings;
-  _FuelMenuOnClick(
-      {required this.auto,
-      required this.teamNumber,
-      required this.color,
-      required this.fuelOPR,
-      required this.rankings});
+
+  _FuelMenuOnClick({
+    required this.auto,
+    required this.teamNumber,
+    required this.color,
+    required this.fuelOPR,
+    required this.rankings,
+  });
+
   final GlobalKey containerKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        child: Container(
-            key: containerKey,
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            alignment: Alignment.center,
-            color: color,
-            child: Text('${(fuelOPR * 10).roundToDouble() / 10}',
-                style: TextStyle(
-                  fontFamily: 'Font',
-                  color: Colors.white,
-                  decoration: TextDecoration.underline,
-                  decorationThickness: 2,
-                ))),
-        onTap: () {
-          final ctx = containerKey.currentContext;
-          if (ctx == null) return;
+      key: containerKey,
+      onTap: () {
+        final ctx = containerKey.currentContext;
+        if (ctx == null) return;
 
-          final renderBox = ctx.findRenderObject() as RenderBox;
-          final overlay =
-              Overlay.of(context).context.findRenderObject() as RenderBox;
-          List<PopupMenuEntry> buildMenuItems() {
-            return [
-              PopupMenuItem(
-                child: Text('Team $teamNumber',
-                    style: TextStyle(fontFamily: 'Font')),
-              ),
-              PopupMenuItem(
-                child: Text('Fuel OPR: ${fuelOPR.toStringAsFixed(1)}',
-                    style: TextStyle(fontFamily: 'Font')),
-              ),
-              PopupMenuItem(
-                child: Text(auto ? 'Auto' : 'TeleOp',
-                    style: TextStyle(fontFamily: 'Font')),
-              ),
-            ];
-          }
+        final renderBox = ctx.findRenderObject() as RenderBox;
 
-          final items = buildMenuItems(); // <-- move logic out
+        final overlay = Overlay.of(context, rootOverlay: true)
+            .context
+            .findRenderObject() as RenderBox;
 
-          if (items.isEmpty) return;
-
-          showMenu(
-            context: context,
-            position: RelativeRect.fromRect(
-              renderBox.localToGlobal(Offset.zero) & renderBox.size,
-              Offset.zero & overlay.size,
+        final items = <PopupMenuEntry<void>>[
+          PopupMenuItem<void>(
+            child: Text(
+              'Team $teamNumber',
+              style: TextStyle(fontFamily: 'Font'),
             ),
-            items: items,
-          );
-        });
+          ),
+          PopupMenuItem<void>(
+            child: Text(
+              'Fuel OPR: ${fuelOPR.toStringAsFixed(1)}',
+              style: TextStyle(fontFamily: 'Font'),
+            ),
+          ),
+          PopupMenuItem<void>(
+            child: Text(
+              auto ? 'Auto' : 'TeleOp',
+              style: TextStyle(fontFamily: 'Font'),
+            ),
+          ),
+        ];
+
+        showMenu<void>(
+          context: context,
+          position: RelativeRect.fromRect(
+            renderBox.localToGlobal(Offset.zero) & renderBox.size,
+            Offset.zero & overlay.size,
+          ),
+          items: items,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        alignment: Alignment.center,
+        color: color,
+        child: Text(
+          '${(fuelOPR * 10).roundToDouble() / 10}',
+          style: const TextStyle(
+            fontFamily: 'Font',
+            color: Colors.white,
+            decoration: TextDecoration.underline,
+            decorationThickness: 2,
+          ),
+        ),
+      ),
+    );
   }
 }
 
