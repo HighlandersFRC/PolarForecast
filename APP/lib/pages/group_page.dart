@@ -497,6 +497,7 @@ class _EventsTabState extends State<_EventsTab> {
       return !val.accepted;
     }).toList();
     requests = filtered;
+
     return Stack(children: [
       const Positioned.fill(
         child: SnowField(
@@ -735,68 +736,88 @@ class _EventsTabState extends State<_EventsTab> {
                       headerBuilder: (context, isExpanded) => Card(
                             margin: EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
-                            child: ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 4),
-                              title: ClipRect(
-                                child: Row(children: [
-                                  Tooltip(
-                                    message: widget.group!.events[event_index]
-                                            .up_to_date
-                                        ? 'Event Data Up To Date'
-                                        : 'Event Data Updating',
-                                    child: Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: widget.group!.events[event_index]
-                                                .up_to_date
-                                            ? Colors.green
-                                            : Colors.orange,
+                            child: Card(
+                              elevation:
+                                  0, // Modern floating cards often use borders instead of heavy shadows
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                    color: Colors.grey
+                                        .withOpacity(0.2)), // Subtle border
+                              ),
+                              clipBehavior: Clip
+                                  .antiAlias, // Ensures the InkWell ripple respects the border radius
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                      '/event/${widget.group!.events[event_index].event_code}');
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
+                                  child: Row(
+                                    children: [
+                                      // Improved Status Indicator (Uses Icon instead of just color for accessibility)
+                                      Tooltip(
+                                        message: widget.group!
+                                                .events[event_index].up_to_date
+                                            ? 'Event Data Up To Date'
+                                            : 'Event Data Updating',
+                                        triggerMode: TooltipTriggerMode.tap,
+                                        child: Icon(
+                                          widget.group!.events[event_index]
+                                                  .up_to_date
+                                              ? Icons.check_circle_rounded
+                                              : Icons.sync_rounded,
+                                          color: widget
+                                                  .group!
+                                                  .events[event_index]
+                                                  .up_to_date
+                                              ? Colors.green
+                                              : Colors.orange,
+                                          size: 20,
+                                        ),
                                       ),
-                                    ),
-                                    triggerMode: TooltipTriggerMode.tap,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                      child: TextButton(
-                                          style: TextButton.styleFrom(
-                                              alignment: Alignment.centerLeft,
-                                              padding: EdgeInsets.zero),
-                                          onPressed: () {
-                                            Navigator.of(context).pushNamed(
-                                                '/event/${widget.group!.events[event_index].event_code}');
-                                          },
-                                          child: Text(
-                                              tournaments.any((tournament) =>
-                                                      tournament.key ==
+                                      const SizedBox(width: 16),
+
+                                      // Modernized Text
+                                      Expanded(
+                                        child: Text(
+                                          tournaments
+                                                  .where((t) =>
+                                                      t.key ==
                                                       widget
                                                           .group!
                                                           .events[event_index]
                                                           .event_code)
-                                                  ? tournaments
-                                                      .firstWhere((tournament) =>
-                                                          tournament.key ==
-                                                          widget
-                                                              .group!
-                                                              .events[
-                                                                  event_index]
-                                                              .event_code)
-                                                      .display
-                                                  : widget
-                                                      .group!
-                                                      .events[event_index]
-                                                      .event_code,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  fontFamily: 'Font',
-                                                  fontSize: 19,
-                                                  color: Colors.blue,
-                                                  decorationColor: Colors.blue,
-                                                  decoration: TextDecoration
-                                                      .underline))))
-                                ]),
+                                                  .firstOrNull
+                                                  ?.display ??
+                                              widget.group!.events[event_index]
+                                                  .event_code,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontFamily:
+                                                'Font', // Keep your custom font if you have one
+                                            fontSize: 16,
+                                            fontWeight: FontWeight
+                                                .w600, // Semi-bold looks great for titles
+                                            color: Colors
+                                                .white70, // Standard dark text instead of blue hyperlink
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Slightly softer arrow icon
+                                      const Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 24,
+                                        color: Colors.white70,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),

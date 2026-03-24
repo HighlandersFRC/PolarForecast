@@ -809,7 +809,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
                     yValueMapper: (data, _) => data);
               })
             ]);
-        if (teamScoutingData.length > 0)
+        if (teamScoutingData.length > 0) {
           showDialog(
               context: context,
               builder: (context) => AlertDialog(
@@ -821,6 +821,14 @@ class _OvertimeChartOnClick extends StatelessWidget {
                       child: firstChart,
                     ),
                   ));
+        } else if (teamScoutingData.length == 0) {
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: Text('Team $teamNumber Has No Scouting Data Yet',
+                        style: TextStyle(fontFamily: 'Font')),
+                  ));
+        }
       },
     );
   }
@@ -2767,113 +2775,154 @@ class _MatchStatusSource extends DataGridSource {
   final Tournament tournament;
   final List<dynamic> statuses;
   final Color primaryColor;
+
   _MatchStatusSource(
       this.primaryColor, this.rows, this.tournament, this.statuses);
+
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
-    List<DataGridCell> cells = row.getCells();
-    List<Widget> returnCells = [];
-    Map<String, dynamic> matchStatus = {};
-    for (Map<String, dynamic> status in statuses) {
-      if (status['key'].contains('qm')) {
-        if (status['key'].split('qm')[1] == cells[0].value.split(' ')[1]) {
-          matchStatus = status;
-          break;
-        }
-      }
-    }
-    for (DataGridCell cell in cells) {
-      int rowNumber = rows.indexOf(row);
+    final cells = row.getCells();
+    final int rowIndex = rows.indexOf(row);
+    final bool isEven = rowIndex % 2 == 0;
 
-      bool even = rowNumber % 2 == 0;
-      final color =
-          even ? primaryColor.withOpacity(0.3) : Colors.black.withOpacity(0);
-      if (cell.columnName == 'key') {
-        String matchNumber = cell.value.toString().split(' ')[1];
-        String type = cell.value.toString().contains('Quals')
-            ? 'qm'
-            : cell.value.toString().contains('Semi')
-                ? 'sf'
-                : 'f1m';
-        String match_key = '${tournament.key}_$type$matchNumber';
-        if (type == 'sf') match_key = '${tournament.key}_$type${matchNumber}m1';
-        returnCells.add(Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            alignment: Alignment.center,
-            color: color,
-            child: MatchLink(cell.value, match_key, tournament)));
-      } else if (cell.columnName == 'blue_rp')
-        returnCells.add(Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          alignment: Alignment.center,
-          color: matchStatus['predicted'] && matchStatus['blue_win_rp'] == 3
-              ? const Color.fromARGB(255, 0, 100, 150)
-              : matchStatus['predicted'] && matchStatus['blue_win_rp'] == 0
-                  ? color
-                  : matchStatus['predicted'] && matchStatus['blue_win_rp'] == 1
-                      ? const Color.fromARGB(255, 125, 0, 150)
-                      : matchStatus['blue_actual_score'] >
-                              matchStatus['red_actual_score']
-                          ? const Color.fromARGB(255, 0, 100, 150)
-                          : matchStatus['blue_actual_score'] <
-                                  matchStatus['red_actual_score']
-                              ? color
-                              : const Color.fromARGB(255, 125, 0, 150),
-          child: Text(
-              textScaler: TextScaler.linear(1.25),
-              cell.value.toString(),
-              style: TextStyle(fontFamily: 'Font')),
-        ));
-      else if (cell.columnName == 'red_rp')
-        returnCells.add(Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          alignment: Alignment.center,
-          color: matchStatus['predicted'] && matchStatus['red_win_rp'] == 3
-              ? const Color.fromARGB(255, 140, 10, 0)
-              : matchStatus['predicted'] && matchStatus['red_win_rp'] == 0
-                  ? color
-                  : matchStatus['predicted'] && matchStatus['red_win_rp'] == 1
-                      ? const Color.fromARGB(255, 125, 0, 150)
-                      : matchStatus['red_actual_score'] >
-                              matchStatus['blue_actual_score']
-                          ? const Color.fromARGB(255, 140, 10, 0)
-                          : matchStatus['red_actual_score'] <
-                                  matchStatus['blue_actual_score']
-                              ? color
-                              : const Color.fromARGB(255, 125, 0, 150),
-          child: Text(
-              textScaler: TextScaler.linear(1.25),
-              cell.value.toString(),
-              style: TextStyle(fontFamily: 'Font')),
-        ));
-      else if (cell.columnName == 'winner')
-        returnCells.add(Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          alignment: Alignment.center,
-          color: cell.value == 'Red'
-              ? const Color.fromARGB(255, 140, 10, 0)
-              : cell.value == 'Blue'
-                  ? const Color.fromARGB(255, 0, 100, 150)
-                  : const Color.fromARGB(255, 125, 0, 150),
-          child: Text(
-              textScaler: TextScaler.linear(1.25),
-              cell.value.toString(),
-              style: TextStyle(fontFamily: 'Font')),
-        ));
-      else
-        returnCells.add(Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          alignment: Alignment.center,
-          color: color,
-          child: Text(
-              textScaler: TextScaler.linear(1.25),
-              cell.value.toString(),
-              style: TextStyle(fontFamily: 'Font')),
-        ));
-    }
-    return DataGridRowAdapter(
-      cells: returnCells,
+    // Use a subtle zebra stripe for the background
+    final baseColor =
+        isEven ? primaryColor.withOpacity(0.05) : Colors.transparent;
+
+    // 1. Extract match status once per row instead of inside the cell loop
+    final matchNumberStr = cells[0].value.toString().split(' ').last;
+    final matchStatus = statuses.firstWhere(
+      (s) => s['key'].toString().endsWith('qm$matchNumberStr'),
+      orElse: () => {},
     );
+
+    return DataGridRowAdapter(
+      cells: cells.map<Widget>((cell) {
+        return _buildCellWidget(cell, matchStatus, baseColor);
+      }).toList(),
+    );
+  }
+
+  Widget _buildCellWidget(
+      DataGridCell cell, Map<String, dynamic> status, Color baseColor) {
+    Color cellColor = baseColor;
+    TextStyle textStyle = const TextStyle(fontFamily: 'Font', fontSize: 14);
+    Widget? customChild;
+
+    final bool isPredicted = status['predicted'] ?? false;
+
+    switch (cell.columnName) {
+      case 'key':
+        customChild =
+            MatchLink(cell.value, _generateMatchKey(cell.value), tournament);
+        break;
+
+      // Added the winner case here
+      case 'winner':
+        // Reuse the color logic: if the cell value is 'Blue', use blueWin, etc.
+        if (cell.value == 'Blue') {
+          cellColor = const Color(0xFF006496);
+        } else if (cell.value == 'Red') {
+          cellColor = const Color(0xFF8C0A00);
+        } else if (cell.value == 'Tie') {
+          cellColor = const Color(0xFF7D0096);
+        }
+
+        // Apply Bold weight and White color for contrast
+        textStyle = textStyle.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        );
+        break;
+
+      case 'blue_rp':
+      case 'blue_score':
+        cellColor = _getAllianceColor('blue', status, baseColor);
+        textStyle = textStyle.copyWith(
+            color: Colors.white, fontWeight: FontWeight.bold);
+        break;
+
+      case 'red_rp':
+      case 'red_score':
+        cellColor = _getAllianceColor('red', status, baseColor);
+        textStyle = textStyle.copyWith(
+            color: Colors.white, fontWeight: FontWeight.bold);
+        break;
+
+      case 'result_type':
+        customChild = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isPredicted
+                ? Colors.orange.withOpacity(0.2)
+                : Colors.green.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            cell.value.toString().toUpperCase(),
+            style: textStyle.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color:
+                  isPredicted ? Colors.orange.shade900 : Colors.green.shade900,
+            ),
+          ),
+        );
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      alignment: Alignment.center,
+      color: cellColor,
+      child: customChild ??
+          Text(
+            cell.value.toString(),
+            style: textStyle,
+            textAlign: TextAlign.center,
+          ),
+    );
+  }
+
+  // Helper to handle the messy alliance color logic
+  Color _getAllianceColor(
+      String alliance, Map<String, dynamic> status, Color fallback) {
+    if (status.isEmpty) return fallback;
+
+    final bool isPredicted = status['predicted'] ?? false;
+    final int rp = status['${alliance}_win_rp'] ?? 0;
+
+    // Define your brand colors here
+    const blueWin = Color(0xFF006496);
+    const redWin = Color(0xFF8C0A00);
+    const tieColor = Color.fromARGB(255, 110, 0, 150);
+
+    if (isPredicted) {
+      if (rp == 3) return alliance == 'blue' ? blueWin : redWin;
+      if (rp == 1) return tieColor;
+      return fallback;
+    } else {
+      final blueScore = status['blue_actual_score'] ?? 0;
+      final redScore = status['red_actual_score'] ?? 0;
+
+      if (blueScore == redScore) return tieColor;
+      if (alliance == 'blue' && blueScore > redScore) return blueWin;
+      if (alliance == 'red' && redScore > blueScore) return redWin;
+      return fallback;
+    }
+  }
+
+  String _generateMatchKey(dynamic cellValue) {
+    String val = cellValue.toString();
+    String matchNumber = val.split(' ').last;
+    String type = val.contains('Qual')
+        ? 'qm'
+        : val.contains('Semi')
+            ? 'sf'
+            : 'f1m';
+    String key = '${tournament.key}_$type$matchNumber';
+    if (type == 'sf') key += 'm1';
+    return key;
   }
 }
 
@@ -2917,120 +2966,90 @@ class _QualsTabState extends State<_QualsTab> {
     }
   }
 
+  Widget _buildHeader(String label) {
+    return Container(
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   void updateGrid() {
     dataColumns = [
-      GridColumn(
-          columnName: 'key',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'result_type',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'blue_score',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Blue Score',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'red_score',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Red Score',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'blue_rp',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Blue RP',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
-      GridColumn(
-          columnName: 'red_rp',
-          label: Container(
-              alignment: Alignment.center,
-              child: Text(
-                'Red RP',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+      GridColumn(columnName: 'key', label: _buildHeader('Match')),
+      GridColumn(columnName: 'result_type', label: _buildHeader('Status')),
+      GridColumn(columnName: 'blue_score', label: _buildHeader('Blue Score')),
+      GridColumn(columnName: 'red_score', label: _buildHeader('Red Score')),
+      GridColumn(columnName: 'blue_rp', label: _buildHeader('Blue RP')),
+      GridColumn(columnName: 'red_rp', label: _buildHeader('Red RP')),
     ];
 
-    statuses.sort((a, b) {
-      return a['match_number'] - b['match_number'];
-    });
+    statuses.sort((a, b) => a['match_number'].compareTo(b['match_number']));
 
-    dataRows = [
-      for (Map<String, dynamic> status in statuses)
-        if (status['comp_level'] == 'qm')
-          DataGridRow(cells: [
-            DataGridCell(
-                columnName: 'key',
-                value: 'Quals ' + status['match_number'].toString()),
-            DataGridCell(
-                columnName: 'result_type',
-                value: status['predicted'] ? 'Predicted' : 'Result'),
-            DataGridCell(
-                columnName: 'blue_score',
-                value: status['predicted']
-                    ? status['blue_score'].toStringAsFixed(0)
-                    : status['blue_actual_score']),
-            DataGridCell(
-                columnName: 'red_score',
-                value: status['predicted']
-                    ? status['red_score'].toStringAsFixed(0)
-                    : status['red_actual_score']),
-            DataGridCell(
-                columnName: 'blue_rp', value: status['blue_display_rp']),
-            DataGridCell(columnName: 'red_rp', value: status['red_display_rp']),
-          ])
-    ];
+    dataRows = statuses.where((s) => s['comp_level'] == 'qm').map((status) {
+      final bool isPredicted = status['predicted'] ?? false;
+
+      return DataGridRow(cells: [
+        DataGridCell(
+            columnName: 'key', value: 'Qual ${status['match_number']}'),
+        // Store as boolean or string, logic happens in the DataGridSource
+        DataGridCell(
+            columnName: 'result_type',
+            value: isPredicted ? 'PREDICTED' : 'RESULT'),
+        DataGridCell(
+            columnName: 'blue_score',
+            value: isPredicted
+                ? status['blue_score'].toStringAsFixed(0)
+                : status['blue_actual_score']),
+        DataGridCell(
+            columnName: 'red_score',
+            value: isPredicted
+                ? status['red_score'].toStringAsFixed(0)
+                : status['red_actual_score']),
+        DataGridCell(columnName: 'blue_rp', value: status['blue_display_rp']),
+        DataGridCell(columnName: 'red_rp', value: status['red_display_rp']),
+      ]);
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    // final theme = Theme.of(context);
-    const columnMinWidth = 150.0;
-    bool isWide = MediaQuery.of(context).size.width >=
-        dataColumns.length * columnMinWidth;
-    return Center(
-        child: LayoutBuilder(
-            builder: (context, constraints) => Container(
-                alignment: Alignment.center,
-                height: constraints.maxHeight,
-                width: constraints.maxWidth,
-                child: InteractiveViewer(
-                  scaleEnabled: false,
-                  clipBehavior: Clip.hardEdge,
-                  child: SfDataGrid(
-                    columns: dataColumns,
-                    defaultColumnWidth: columnMinWidth,
-                    columnWidthMode:
-                        isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
-                    frozenColumnsCount: 0,
-                    source: _MatchStatusSource(Theme.of(context).primaryColor,
-                        dataRows, widget.widget.tournament, statuses),
-                  ),
-                ))));
+    final bool isWide = MediaQuery.of(context).size.width > 800;
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SfDataGrid(
+            source: _MatchStatusSource(Theme.of(context).primaryColor, dataRows,
+                widget.widget.tournament, statuses),
+            columns: dataColumns,
+            gridLinesVisibility: GridLinesVisibility.horizontal,
+            headerGridLinesVisibility: GridLinesVisibility.none,
+            columnWidthMode:
+                isWide ? ColumnWidthMode.fill : ColumnWidthMode.none,
+            selectionMode: SelectionMode.single,
+            navigationMode: GridNavigationMode.cell,
+            headerRowHeight: 45,
+          ),
+        ),
+      ),
+    );
   }
 }
 
