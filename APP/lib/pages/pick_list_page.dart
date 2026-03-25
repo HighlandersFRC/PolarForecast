@@ -596,36 +596,30 @@ class _PicklistPageState extends State<PicklistPage> {
     );
   }
 
-  void _openQuickCompare() {
-    if (picks.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not enough teams to compare!')),
-      );
-      return;
-    }
+  void _openBubbleCompare() {
+    if (picks.length < 2) return;
 
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) {
-          return QuickCompareDialog(
-              picks: picks,
-              rankings: rankings,
-              eventYear: int.parse(_eventYear),
-              eventCode: widget.eventCode,
-              onSwap: (idx1, idx2) {
-                setState(() {
-                  final temp = picks[idx1];
-                  picks[idx1] = picks[idx2];
-                  picks[idx2] = temp;
-                  _triggerHighlight(picks[idx1].number);
-                  _triggerHighlight(picks[idx2].number);
-                });
-                _autoSave();
-              },
-              teamNames: teamNames,
-              name: selectedPicklist?.name);
+          return BubbleCompareDialogFull(
+            picks: picks,
+            rankings: rankings, // ✅ REQUIRED
+            eventYear: int.parse(_eventYear), // ✅ REQUIRED
+            eventCode: widget.eventCode, // ✅ REQUIRED
+            teamNames: teamNames, // ✅ REQUIRED
+            name: selectedPicklist?.name, // optional
+
+            onSwap: (idx1, idx2) {
+              setState(() {
+                final temp = picks[idx1];
+                picks[idx1] = picks[idx2];
+                picks[idx2] = temp;
+              });
+              _autoSave(); // (optional but recommended)
+            },
+          );
         },
-        fullscreenDialog: false,
       ),
     );
   }
@@ -944,7 +938,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                 _confirmDeletePicklist(pl);
                                               } else if (value ==
                                                   'AutoGenerate') {
-                                                _openQuickCompare();
+                                                _openBubbleCompare();
                                               } else if (value == 'Export') {
                                                 exportCSV();
                                               }
@@ -3757,5 +3751,578 @@ extension FirstOrNullExtension<E> on Iterable<E> {
     } catch (e) {
       return null;
     }
+  }
+}
+
+class BubbleCompareDialogFull extends StatefulWidget {
+  final List<Picks> picks;
+  final List<TeamStats2026> rankings;
+  final int eventYear;
+  final String eventCode;
+  final void Function(int index1, int index2) onSwap;
+  final Map<String, String> teamNames;
+  final String? name;
+
+  const BubbleCompareDialogFull({
+    super.key,
+    required this.picks,
+    required this.rankings,
+    required this.eventYear,
+    required this.eventCode,
+    required this.onSwap,
+    required this.teamNames,
+    this.name,
+  });
+
+  @override
+  State<BubbleCompareDialogFull> createState() =>
+      _BubbleCompareDialogFullState();
+}
+
+class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
+  int i = 0;
+  int j = 0;
+
+  bool isDone = false;
+
+  List<PictureData> teamAImages = [];
+  List<PictureData> teamBImages = [];
+  bool isLoading = false;
+
+  final Map<String, String> names = {};
+
+  @override
+  void initState() {
+    super.initState();
+    names.addAll(widget.teamNames);
+    _loadPair();
+  }
+
+  int get leftIndex => j;
+  int get rightIndex => j + 1;
+
+  Future<void> _loadPair() async {
+    if (isDone) return;
+    if (rightIndex >= widget.picks.length) return;
+
+    setState(() => isLoading = true);
+
+    final a = widget.picks[leftIndex].number;
+    final b = widget.picks[rightIndex].number;
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+
+      String eventCode = widget.eventCode;
+      if (eventCode.length > 4) {
+        eventCode = eventCode.substring(4);
+      }
+
+      final futures = await Future.wait([
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$a'),
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$b'),
+        apiService.fetchTeamNicknames('frc$a'),
+        apiService.fetchTeamNicknames('frc$b'),
+      ]);
+
+      setState(() {
+        teamAImages = futures[0] as List<PictureData>;
+        teamBImages = futures[1] as List<PictureData>;
+
+        final nA = futures[2] as String?;
+        final nB = futures[3] as String?;
+        if (nA != null && nA.isNotEmpty) names[a] = nA;
+        if (nB != null && nB.isNotEmpty) names[b] = nB;
+      });
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  List<_CompareMetric> _buildMetrics(TeamStats2026? a, TeamStats2026? b) {
+    return [
+      _CompareMetric(
+          'Comp Rank', (a?.rank ?? 0).toDouble(), (b?.rank ?? 0).toDouble(),
+          lowerIsBetter: true, integerLike: true),
+      _CompareMetric('Sim Rank', (a?.simulated_rank ?? 0).toDouble(),
+          (b?.simulated_rank ?? 0).toDouble(),
+          lowerIsBetter: true, integerLike: true),
+      _CompareMetric('OPR', a?.OPR ?? 0, b?.OPR ?? 0),
+      _CompareMetric('Auto Points', a?.auto_points ?? 0, b?.auto_points ?? 0),
+      _CompareMetric(
+          'Teleop Points', a?.teleop_points ?? 0, b?.teleop_points ?? 0),
+      _CompareMetric(
+          'Endgame Points', a?.endgame_points ?? 0, b?.endgame_points ?? 0),
+      _CompareMetric(
+          'Climbing Points', a?.climbing_points ?? 0, b?.climbing_points ?? 0),
+      _CompareMetric('Total Pass', a?.total_pass ?? 0, b?.total_pass ?? 0),
+      _CompareMetric('Auto Pass', a?.auto_pass ?? 0, b?.auto_pass ?? 0),
+      _CompareMetric('Teleop Pass', a?.teleop_pass ?? 0, b?.teleop_pass ?? 0),
+      _CompareMetric(
+          'Auto Fuel', a?.auto_fuel_scored ?? 0, b?.auto_fuel_scored ?? 0),
+      _CompareMetric('Teleop Fuel', a?.teleop_fuel_scored ?? 0,
+          b?.teleop_fuel_scored ?? 0),
+      _CompareMetric(
+          'Total Fuel', a?.total_fuel_scored ?? 0, b?.total_fuel_scored ?? 0),
+      _CompareMetric('Foul Points', a?.foul_points ?? 0, b?.foul_points ?? 0,
+          lowerIsBetter: true),
+      _CompareMetric('Death Rate', a?.death_rate ?? 0, b?.death_rate ?? 0,
+          lowerIsBetter: true, asPercent: true),
+      _CompareMetric('Defense Rate', a?.defense_rate ?? 0, b?.defense_rate ?? 0,
+          asPercent: true),
+      _CompareMetric('Sim RP', (a?.simulated_rp ?? 0).toDouble(),
+          (b?.simulated_rp ?? 0).toDouble(),
+          integerLike: true),
+    ];
+  }
+
+  Color trophyColorForRank(int rank) {
+    if (rank == 1) return Colors.amber;
+    if (rank == 2) return Colors.grey;
+    if (rank == 3) return const Color(0xFFcd7f32);
+    return Colors.blue;
+  }
+
+  Widget _glassContainer({required Widget child, double radius = 12}) {
+    final cs = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceVariant.withOpacity(0.18),
+            border: Border.all(color: cs.outline.withOpacity(0.08)),
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _pill(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.34)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showImagePreview(String imageUrl) async {
+    if (imageUrl.isEmpty) return;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(24),
+          backgroundColor: Colors.black87,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 5,
+                  child: Center(
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white70,
+                          size: 36),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _teamPanel({
+    required String teamNumber,
+    required int pickIndex,
+    required TeamStats2026? stats,
+    required String avatar,
+    required String fallback,
+    required List<PictureData> images,
+    bool showImages = true,
+    bool compactImages = false,
+  }) {
+    final rankColor = trophyColorForRank(stats?.rank ?? 0);
+    return _glassContainer(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                TeamAvatar(
+                  primaryUrl: avatar,
+                  fallbackUrl: fallback,
+                  teamNumber: teamNumber,
+                  size: 52,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _teamLabel(teamNumber),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          _pill('Pick #$pickIndex', Colors.blue),
+                          _pill(
+                              stats != null ? 'Rank #${stats.rank}' : 'Rank #-',
+                              rankColor),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (showImages)
+              SizedBox(
+                height: compactImages ? 84 : 112,
+                width: double.infinity,
+                child: images.isEmpty
+                    ? const Center(child: Text('No images'))
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: images.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final image = images[index];
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () => _showImagePreview(image.link),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: image.link,
+                                width: compactImages ? 96 : 128,
+                                height: compactImages ? 84 : 112,
+                                fit: BoxFit.cover,
+                                fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
+                                placeholder: (context, url) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child: const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child:
+                                      const Icon(Icons.broken_image_outlined),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant
+                      .withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Tap show images to show images.'),
+              )
+          ],
+        ),
+      ),
+    );
+  }
+
+  TeamStats2026? _statsFor(String teamNumber) {
+    try {
+      return widget.rankings.firstWhere((t) => t.team_number == teamNumber);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _handleLike(String likedTeamNumber) {
+    if (isDone) return;
+
+    final b = widget.picks[rightIndex].number;
+
+    // Bubble sort swap condition
+    if (likedTeamNumber == b) {
+      widget.onSwap(leftIndex, rightIndex);
+    }
+
+    _nextStep();
+  }
+
+  void _nextStep() {
+    setState(() {
+      j++;
+
+      if (j >= widget.picks.length - i - 1) {
+        j = 0;
+        i++;
+      }
+
+      if (i >= widget.picks.length - 1) {
+        isDone = true;
+      }
+    });
+
+    if (isDone) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🎉 Sorting complete!')),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    _loadPair();
+  }
+
+  String _teamLabel(String teamNumber) {
+    final nickname = names[teamNumber];
+    return nickname != null && nickname.isNotEmpty
+        ? '$teamNumber | $nickname'
+        : teamNumber;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDone) {
+      return const Scaffold(
+        body: Center(child: Text("Done")),
+      );
+    }
+
+    final aNum = widget.picks[leftIndex].number;
+    final bNum = widget.picks[rightIndex].number;
+
+    final aStats = _statsFor(aNum);
+    final bStats = _statsFor(bNum);
+
+    final metrics = _buildMetrics(aStats, bStats);
+    String teamImageUrl(int year, String eventCode, String teamNumber) {
+      return 'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/$year/frc$teamNumber.png&w=256&h=256&fit=contain';
+    }
+
+    String avatarFallback(String teamNumber) {
+      return 'https://api.dicebear.com/9.x/identicon/png?seed=frc$teamNumber&size=128';
+    }
+
+    final aAvatar = teamImageUrl(widget.eventYear, widget.eventCode, aNum);
+    final bAvatar = teamImageUrl(widget.eventYear, widget.eventCode, bNum);
+
+    String _formatMetric(_CompareMetric metric, double value) {
+      if (metric.asPercent) {
+        return '${(value * 100).toStringAsFixed(1)}%';
+      }
+      if (metric.integerLike) {
+        return value.toStringAsFixed(0);
+      }
+      return value.toStringAsFixed(2);
+    }
+
+    Widget _metricRow(_CompareMetric metric, bool compactMode,
+        {VoidCallback? onTap}) {
+      final cs = Theme.of(context).colorScheme;
+      final tied = (metric.left - metric.right).abs() < 1e-9;
+      final leftBetter = metric.lowerIsBetter
+          ? metric.left < metric.right
+          : metric.left > metric.right;
+
+      final leftBg = tied
+          ? cs.surfaceVariant.withOpacity(0.08)
+          : leftBetter
+              ? Colors.green.withOpacity(0.14)
+              : Colors.red.withOpacity(0.08);
+      final rightBg = tied
+          ? cs.surfaceVariant.withOpacity(0.08)
+          : leftBetter
+              ? Colors.red.withOpacity(0.08)
+              : Colors.green.withOpacity(0.14);
+
+      final leftBorder = tied
+          ? cs.outline.withOpacity(0.18)
+          : leftBetter
+              ? Colors.green.withOpacity(0.5)
+              : Colors.red.withOpacity(0.38);
+      final rightBorder = tied
+          ? cs.outline.withOpacity(0.18)
+          : leftBetter
+              ? Colors.red.withOpacity(0.38)
+              : Colors.green.withOpacity(0.5);
+
+      final labelWidth = compactMode ? 120.0 : 160.0;
+
+      final row = Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: leftBg,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: leftBorder),
+              ),
+              child: Text(
+                _formatMetric(metric, metric.left),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: labelWidth,
+            child: Text(
+              metric.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.85)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: rightBg,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: rightBorder),
+              ),
+              child: Text(
+                _formatMetric(metric, metric.right),
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      );
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: onTap == null
+            ? row
+            : InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: onTap,
+                child: row,
+              ),
+      );
+    }
+
+    return Scaffold(
+      appBar: PolarForecastAppBar(
+        extraText: 'Bubble Sort Picklist ${widget.name}',
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _teamPanel(
+                        teamNumber: aNum,
+                        pickIndex: leftIndex + 1,
+                        stats: aStats,
+                        avatar: aAvatar,
+                        fallback: avatarFallback(aNum),
+                        images: teamAImages,
+                      ),
+                    ),
+                    Expanded(
+                      child: _teamPanel(
+                        teamNumber: bNum,
+                        pickIndex: rightIndex + 1,
+                        stats: bStats,
+                        avatar: bAvatar,
+                        fallback: avatarFallback(bNum),
+                        images: teamBImages,
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ListView(
+                    children: metrics.map((m) => _metricRow(m, false)).toList(),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GlassButton(
+                        onPressed: () => _handleLike(aNum),
+                        color: Colors.blue,
+                        icon: Icons.thumb_up_alt_outlined,
+                        label: 'Prefer $aNum'),
+                    GlassButton(
+                        onPressed: () => _handleLike(bNum),
+                        color: Colors.blue,
+                        icon: Icons.thumb_up_alt_outlined,
+                        label: 'Prefer $bNum'),
+                  ],
+                ),
+              ],
+            ),
+    );
   }
 }
