@@ -4480,10 +4480,8 @@ class _BubbleSortState extends State<BubbleSort> {
   List<List<String>> orderHistory = [];
   int i = 0;
   int j = 0;
-  int pass = 0;
   int get leftIndex => j;
   int get rightIndex => (j + 1 < widget.picks.length) ? j + 1 : j;
-  bool get confirmMode => pass >= 1;
 
   Map<String, List<int>> positionHistory = {};
   int stepCount = 0;
@@ -4511,26 +4509,41 @@ class _BubbleSortState extends State<BubbleSort> {
   void step(bool shouldSwap, List<Picks> arr, int n) {
     if (isDone) return;
 
-    // 1️⃣ swap first
     if (shouldSwap) {
       widget.onSwap(j, j + 1);
+
+      // 🔥 insertion behavior (walk backwards)
+      if (j > 0) {
+        j--;
+      } else {
+        j++;
+      }
+    } else {
+      j++;
     }
 
-    // 2️⃣ move bubble pointers
-    j++;
+    // ✅ DONE after ONE pass
+    if (j >= n - 1) {
+      setState(() => isDone = true);
 
-    if (j >= n - i - 1) {
-      i++;
-      j = 0;
-      pass++;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("✅ Picklist Finished"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      });
+
+      return;
     }
 
-    // 3️⃣ NOW record FINAL STATE (THIS IS THE KEY FIX)
+    // record state
     final currentOrder = widget.picks.map((e) => e.number).toList();
-
     orderHistory.add(currentOrder);
 
-    // 4️⃣ optional debug position map (if you still need it)
     positionHistory.clear();
     for (int idx = 0; idx < currentOrder.length; idx++) {
       positionHistory[currentOrder[idx]] = [
@@ -4540,12 +4553,6 @@ class _BubbleSortState extends State<BubbleSort> {
     }
 
     stepCount++;
-
-    // 5️⃣ done check
-    if (i >= n - 1 || n <= 1) {
-      setState(() => isDone = true);
-      return;
-    }
 
     setState(() {});
   }
@@ -5075,68 +5082,35 @@ class _BubbleSortState extends State<BubbleSort> {
 
                     // ACTION BUTTONS
 
-                    if (!confirmMode)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green),
-                              onPressed: () {
-                                step(false, widget.picks, widget.picks.length);
-                                _loadPair();
-                              },
-                              icon: const Icon(Icons.thumb_up),
-                              label: const Text("LEFT BETTER"),
-                            ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green),
+                            onPressed: () {
+                              step(false, widget.picks, widget.picks.length);
+                              _loadPair();
+                            },
+                            icon: const Icon(Icons.thumb_up),
+                            label: const Text("LEFT BETTER"),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red),
-                              onPressed: () {
-                                step(true, widget.picks, widget.picks.length);
-                                _loadPair();
-                              },
-                              icon: const Icon(Icons.thumb_up),
-                              label: const Text("RIGHT BETTER"),
-                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            onPressed: () {
+                              step(true, widget.picks, widget.picks.length);
+                              _loadPair();
+                            },
+                            icon: const Icon(Icons.thumb_up),
+                            label: const Text("RIGHT BETTER"),
                           ),
-                        ],
-                      )
-                    else
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue),
-                              onPressed: () {
-                                // CONFIRM keeps current ordering
-                                step(false, widget.picks, widget.picks.length);
-                                _loadPair();
-                              },
-                              icon: const Icon(Icons.check),
-                              label: const Text("CONFIRM"),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange),
-                              onPressed: () {
-                                // CHANGE triggers swap
-                                step(true, widget.picks, widget.picks.length);
-                                _loadPair();
-                              },
-                              icon: const Icon(Icons.swap_horiz),
-                              label: const Text("CHANGE"),
-                            ),
-                          ),
-                        ],
-                      )
+                        ),
+                      ],
+                    )
                   ]),
                 ),
               ),
