@@ -10,6 +10,7 @@ import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 // ignore: deprecated_member_use
 import 'dart:html' as html;
 import '../models/group.dart';
@@ -600,16 +601,13 @@ class _PicklistPageState extends State<PicklistPage> {
             teamNames: teamNames,
             name: selectedPicklist?.name,
             onSwap: (idx1, idx2) {
-              // Add this
               setState(() {
                 final temp = picks[idx1];
                 picks[idx1] = picks[idx2];
                 picks[idx2] = temp;
-                _triggerHighlight(picks[idx1].number);
-                _triggerHighlight(picks[idx2].number);
               });
-              _autoSave();
             },
+            onAutoSave: () => _autoSave(),
           );
         },
       ),
@@ -4459,6 +4457,7 @@ class BubbleSort extends StatefulWidget {
   final Map<String, String> teamNames;
   final String? name;
   final void Function(int index1, int index2) onSwap; // Add this
+  final void Function() onAutoSave; // Add this
 
   const BubbleSort({
     super.key,
@@ -4469,6 +4468,7 @@ class BubbleSort extends StatefulWidget {
     required this.teamNames,
     this.name,
     required this.onSwap, // Add this
+    required this.onAutoSave, // Add this
   });
 
   @override
@@ -4477,12 +4477,17 @@ class BubbleSort extends StatefulWidget {
 
 class _BubbleSortState extends State<BubbleSort> {
   final Map<String, String> names = {};
+  List<List<String>> orderHistory = [];
   int i = 0;
   int j = 0;
   int pass = 0;
   int get leftIndex => j;
   int get rightIndex => (j + 1 < widget.picks.length) ? j + 1 : j;
   bool get confirmMode => pass >= 1;
+
+  Map<String, List<int>> positionHistory = {};
+  int stepCount = 0;
+  bool isSorting = true;
 
   List<PictureData> teamAImages = [];
   List<PictureData> teamBImages = [];
@@ -4498,15 +4503,20 @@ class _BubbleSortState extends State<BubbleSort> {
       j = 0;
       _loadPair();
     }
+    for (int i = 0; i < widget.picks.length; i++) {
+      positionHistory[widget.picks[i].number] = [i];
+    }
   }
 
   void step(bool shouldSwap, List<Picks> arr, int n) {
     if (isDone) return;
 
+    // 1️⃣ swap first
     if (shouldSwap) {
       widget.onSwap(j, j + 1);
     }
 
+    // 2️⃣ move bubble pointers
     j++;
 
     if (j >= n - i - 1) {
@@ -4515,12 +4525,70 @@ class _BubbleSortState extends State<BubbleSort> {
       pass++;
     }
 
+    // 3️⃣ NOW record FINAL STATE (THIS IS THE KEY FIX)
+    final currentOrder = widget.picks.map((e) => e.number).toList();
+
+    orderHistory.add(currentOrder);
+
+    // 4️⃣ optional debug position map (if you still need it)
+    positionHistory.clear();
+    for (int idx = 0; idx < currentOrder.length; idx++) {
+      positionHistory[currentOrder[idx]] = [
+        ...(positionHistory[currentOrder[idx]] ?? []),
+        idx
+      ];
+    }
+
+    stepCount++;
+
+    // 5️⃣ done check
     if (i >= n - 1 || n <= 1) {
       setState(() => isDone = true);
       return;
     }
 
     setState(() {});
+  }
+
+  Widget _debugBarChart() {
+    final current = orderHistory.isEmpty
+        ? widget.picks.map((e) => e.number).toList()
+        : orderHistory.last;
+
+    return SizedBox(
+      height: 250,
+      child: SfCartesianChart(
+        primaryXAxis: CategoryAxis(),
+        primaryYAxis: NumericAxis(
+          isInversed: true,
+          minimum: 1,
+        ),
+        series: <ColumnSeries<_BarData, String>>[
+          ColumnSeries<_BarData, String>(
+            dataSource: current.asMap().entries.map((e) {
+              return _BarData(
+                team: e.value,
+                position: e.key + 1,
+              );
+            }).toList(),
+            xValueMapper: (d, _) => d.team,
+            yValueMapper: (d, _) => d.position,
+
+            // 🔥 KEY DEBUG FEATURE
+            pointColorMapper: (d, index) {
+              final isActive = index == j || index == j + 1;
+
+              if (isActive) return Colors.orange;
+              return Colors.blue;
+            },
+
+            dataLabelSettings: const DataLabelSettings(
+              isVisible: true,
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   Future<void> _loadPair() async {
@@ -4629,23 +4697,45 @@ class _BubbleSortState extends State<BubbleSort> {
     return 'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/${2026}/frc$teamNumber.png&w=96&h=96&fit=contain';
   }
 
+  Widget _positionHistoryChart() {
+    final teams = widget.picks.map((e) => e.number).toList();
+
+    return SizedBox(
+      height: 220,
+      child: SfCartesianChart(
+        primaryXAxis: NumericAxis(),
+        primaryYAxis: NumericAxis(
+          isInversed: true,
+          minimum: 1,
+        ),
+        legend: Legend(isVisible: true),
+        series: teams.map((team) {
+          final data = positionHistory[team] ?? [];
+
+          return LineSeries<_ChartPoint, int>(
+            name: team,
+            dataSource: List.generate(data.length, (i) {
+              return _ChartPoint(i, data[i]);
+            }),
+            xValueMapper: (p, _) => p.x,
+            yValueMapper: (p, _) => p.y + 1,
+            markerSettings: const MarkerSettings(isVisible: true),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _teamCard(
     BuildContext context, {
+    required TeamStats2026 teamStats,
+    required TeamStats2026 otherStats,
     required String side,
     required Picks pick,
     required List<PictureData> images,
     required String teamNumber,
   }) {
     final nickname = names[teamNumber] ?? "";
-
-    final teamStats = widget.rankings.firstWhere(
-      (t) => t.team_number.toString() == teamNumber,
-      orElse: () =>
-          TeamStats2026(historical: false, key: '', rank: 0, team_number: ''),
-    );
-
-    final stats =
-        _buildMetricsSingle(teamStats); // <-- IMPORTANT (see note below)
 
     return Container(
       decoration: BoxDecoration(
@@ -4751,7 +4841,44 @@ class _BubbleSortState extends State<BubbleSort> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...stats.map(_metricRow),
+                ...[
+                  _metricRow("OPR", teamStats.OPR, otherStats.OPR),
+                  _metricRow("Auto Points", teamStats.auto_points,
+                      otherStats.auto_points),
+                  _metricRow("Teleop Points", teamStats.teleop_points,
+                      otherStats.teleop_points),
+                  _metricRow("Endgame Points", teamStats.endgame_points,
+                      otherStats.endgame_points),
+                  _metricRow("Climbing Points", teamStats.climbing_points,
+                      otherStats.climbing_points),
+                  _metricRow("Total Pass", teamStats.total_pass,
+                      otherStats.total_pass),
+                  _metricRow(
+                      "Auto Pass", teamStats.auto_pass, otherStats.auto_pass),
+                  _metricRow("Teleop Pass", teamStats.teleop_pass,
+                      otherStats.teleop_pass),
+                  _metricRow("Total Fuel", teamStats.total_fuel_scored,
+                      otherStats.total_fuel_scored),
+                  _metricRow(
+                    "Foul Points",
+                    teamStats.foul_points,
+                    otherStats.foul_points,
+                    lowerIsBetter: true,
+                  ),
+                  _metricRow(
+                    "Death Rate",
+                    teamStats.death_rate,
+                    otherStats.death_rate,
+                    lowerIsBetter: true,
+                    asPercent: true,
+                  ),
+                  _metricRow(
+                    "Defense Rate",
+                    teamStats.defense_rate,
+                    otherStats.defense_rate,
+                    asPercent: true,
+                  ),
+                ],
               ],
             ),
           ),
@@ -4760,26 +4887,59 @@ class _BubbleSortState extends State<BubbleSort> {
     );
   }
 
-  Widget _metricRow(_CompareMetric m) {
+  Widget _metricRow(
+    String label,
+    double value,
+    double otherValue, {
+    bool lowerIsBetter = false,
+    bool asPercent = false,
+    bool integerLike = false,
+  }) {
+    bool isEqual = (value - otherValue).abs() < 0.0001;
+
+    bool isBetter = lowerIsBetter ? value < otherValue : value > otherValue;
+
+    Color borderColor = isEqual
+        ? Colors.grey.withOpacity(0.4)
+        : (isBetter ? Colors.green : Colors.red);
+
+    Color bgColor = isEqual
+        ? Colors.grey.withOpacity(0.08)
+        : (isBetter
+            ? Colors.green.withOpacity(0.12)
+            : Colors.red.withOpacity(0.12));
+
     String format(double v) {
-      if (m.asPercent) return "${(v * 100).toStringAsFixed(1)}%";
-      if (m.integerLike) return v.toStringAsFixed(0);
+      if (asPercent) return "${(v * 100).toStringAsFixed(1)}%";
+      if (integerLike) return v.toStringAsFixed(0);
       return v.toStringAsFixed(2);
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor.withOpacity(0.6)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            m.label,
-            style: const TextStyle(fontSize: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           Text(
-            format(m.left),
-            style: const TextStyle(
+            format(value),
+            style: TextStyle(
               fontWeight: FontWeight.bold,
+              color: borderColor,
             ),
           ),
         ],
@@ -4838,6 +4998,35 @@ class _BubbleSortState extends State<BubbleSort> {
 
     final aNum = left.number;
     final bNum = right.number;
+    TeamStats2026 getStats(String teamNumber) {
+      try {
+        return widget.rankings.firstWhere(
+          (t) => t.team_number == teamNumber,
+        );
+      } catch (e) {
+        print("Missing ranking for team: $teamNumber");
+        return TeamStats2026(
+          team_number: teamNumber,
+          OPR: 0,
+          auto_points: 0,
+          teleop_points: 0,
+          endgame_points: 0,
+          climbing_points: 0,
+          total_pass: 0,
+          auto_pass: 0,
+          teleop_pass: 0,
+          total_fuel_scored: 0,
+          foul_points: 0,
+          death_rate: 0,
+          defense_rate: 0,
+          simulated_rank: 0,
+          rank: 0,
+          simulated_rp: 0,
+          historical: false,
+          key: '',
+        );
+      }
+    }
 
     return Scaffold(
       appBar:
@@ -4850,7 +5039,8 @@ class _BubbleSortState extends State<BubbleSort> {
                   padding: const EdgeInsets.all(12),
                   child: Column(children: [
                     const SizedBox(height: 12),
-
+                    _debugBarChart(),
+                    const SizedBox(height: 12),
                     // TEAM CARDS
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -4858,6 +5048,8 @@ class _BubbleSortState extends State<BubbleSort> {
                         Expanded(
                           child: _teamCard(
                             context,
+                            teamStats: getStats(aNum),
+                            otherStats: getStats(bNum),
                             side: "LEFT",
                             pick: left,
                             images: teamAImages,
@@ -4868,6 +5060,8 @@ class _BubbleSortState extends State<BubbleSort> {
                         Expanded(
                           child: _teamCard(
                             context,
+                            teamStats: getStats(bNum),
+                            otherStats: getStats(aNum),
                             side: "RIGHT",
                             pick: right,
                             images: teamBImages,
@@ -4949,4 +5143,18 @@ class _BubbleSortState extends State<BubbleSort> {
             ),
     );
   }
+}
+
+class _ChartPoint {
+  final int x;
+  final int y;
+
+  _ChartPoint(this.x, this.y);
+}
+
+class _BarData {
+  final String team;
+  final int position;
+
+  _BarData({required this.team, required this.position});
 }
