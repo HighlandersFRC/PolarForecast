@@ -23,9 +23,12 @@ class PitData2026 with _$PitData2026 {
   const factory PitData2026(
       {required int driver_experience_events,
       required String drive_train,
+      required String type_of_shooter,
       required bool can_feed_human_player,
       required bool can_pick_up_from_ground,
-      required int distance_to_shoot,
+      required bool fixedShooting,
+      required bool nearTower,
+      required bool nearHub,
       required bool go_over_bump,
       required bool go_under_trench,
       required bool can_climb,

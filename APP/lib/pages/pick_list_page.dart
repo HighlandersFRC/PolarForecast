@@ -592,7 +592,7 @@ class _PicklistPageState extends State<PicklistPage> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) {
-          return BubbleCompareDialogFull(
+          return BubbleSort(
             picks: picks,
             rankings: rankings,
             eventYear: int.parse(_eventYear),
@@ -600,15 +600,52 @@ class _PicklistPageState extends State<PicklistPage> {
             teamNames: teamNames,
             name: selectedPicklist?.name,
             onSwap: (idx1, idx2) {
+              // Add this
               setState(() {
                 final temp = picks[idx1];
                 picks[idx1] = picks[idx2];
                 picks[idx2] = temp;
+                _triggerHighlight(picks[idx1].number);
+                _triggerHighlight(picks[idx2].number);
               });
               _autoSave();
             },
           );
         },
+      ),
+    );
+  }
+
+  void _openQuickCompare() {
+    if (picks.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not enough teams to compare!')),
+      );
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return QuickCompareDialog(
+              picks: picks,
+              rankings: rankings,
+              eventYear: int.parse(_eventYear),
+              eventCode: widget.eventCode,
+              onSwap: (idx1, idx2) {
+                setState(() {
+                  final temp = picks[idx1];
+                  picks[idx1] = picks[idx2];
+                  picks[idx2] = temp;
+                  _triggerHighlight(picks[idx1].number);
+                  _triggerHighlight(picks[idx2].number);
+                });
+                _autoSave();
+              },
+              teamNames: teamNames,
+              name: selectedPicklist?.name);
+        },
+        fullscreenDialog: false,
       ),
     );
   }
@@ -1895,6 +1932,44 @@ class QuickCompareDialog extends StatefulWidget {
   State<QuickCompareDialog> createState() => _QuickCompareDialogState();
 }
 
+class UserBubbleSort {
+  int i = 0;
+  int j = 0;
+  bool done = false;
+
+  List<dynamic> list;
+
+  UserBubbleSort(this.list);
+
+  /// Returns current pair to compare
+  (int, int)? getCurrentPair() {
+    if (done) return null;
+    return (j, j + 1);
+  }
+
+  /// Call this with TRUE (swap) or FALSE (no swap)
+  void nextStep(bool shouldSwap, Function(int, int) onSwap) {
+    if (done) return;
+
+    if (shouldSwap) {
+      onSwap(j, j + 1);
+    }
+
+    j++;
+
+    // End of one pass
+    if (j >= list.length - i - 1) {
+      j = 0;
+      i++;
+
+      // Fully sorted
+      if (i >= list.length - 1) {
+        done = true;
+      }
+    }
+  }
+}
+
 class _QuickCompareDialogState extends State<QuickCompareDialog> {
   int leftIndex = 0;
   int rightIndex = 1;
@@ -1904,10 +1979,12 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
   List<PictureData> teamBImages = [];
   bool isLoading = false;
   final Map<String, String> names = {};
+  late UserBubbleSort sorter;
 
   @override
   void initState() {
     super.initState();
+    sorter = UserBubbleSort(widget.picks);
     names.addAll(widget.teamNames);
     if (widget.picks.length > 1) {
       leftIndex = 0;
@@ -1929,6 +2006,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
+      // Extract the event code without the year
       String eventCode = widget.eventCode;
       if (eventCode.length > 4) {
         eventCode = eventCode.substring(4);
@@ -1998,7 +2076,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     if (originalLowerIndex + 1 >= widget.picks.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🎉 You have finished all comparisons!'),
+          content: Text('You have finished all comparisons!'),
           duration: Duration(seconds: 3),
         ),
       );
@@ -2013,6 +2091,18 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
         rightIndex = updatedBIndex;
       });
     }
+
+    _loadPair();
+  }
+
+  void _handleDecision(bool shouldSwap) {
+    sorter.nextStep(shouldSwap, (a, b) {
+      setState(() {
+        final temp = widget.picks[a];
+        widget.picks[a] = widget.picks[b];
+        widget.picks[b] = temp;
+      });
+    });
 
     _loadPair();
   }
@@ -2841,17 +2931,18 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
                                           children: [
                                             GlassActionButton(
                                               icon: const Icon(Icons.thumb_up),
-                                              label: Text('I Prefer $aNum'),
+                                              label: Text('Test'),
                                               color: Colors.green,
                                               onPressed: () =>
-                                                  _handleLike(aNum),
+                                                  _handleDecision(true),
                                             ),
                                             GlassActionButton(
-                                              icon: const Icon(Icons.thumb_up),
-                                              label: Text('I Prefer $bNum'),
-                                              color: Colors.green,
+                                              icon:
+                                                  const Icon(Icons.thumb_down),
+                                              label: Text('Test'),
+                                              color: Colors.red,
                                               onPressed: () =>
-                                                  _handleLike(bNum),
+                                                  _handleDecision(false),
                                             ),
                                           ],
                                         )
@@ -4308,7 +4399,7 @@ class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
 
     return Scaffold(
       appBar: PolarForecastAppBar(
-        extraText: 'Bubble Sort Picklist ${widget.name}',
+        extraText: 'Generate Picklist ${widget.name}',
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -4348,19 +4439,513 @@ class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
                   children: [
                     GlassButton(
                       onPressed: () => _handleLike(aNum),
-                      color: pass == 0 ? Colors.blue : Colors.orange,
+                      color: Colors.blue,
                       icon: Icons.thumb_up_alt_outlined,
-                      label: pass == 0 ? 'Prefer $aNum' : 'Keep $aNum',
-                    ),
-                    GlassButton(
-                      onPressed: () => _handleLike(bNum),
-                      color: pass == 0 ? Colors.blue : Colors.orange,
-                      icon: Icons.thumb_up_alt_outlined,
-                      label: pass == 0 ? 'Prefer $bNum' : 'Keep $bNum',
+                      label: 'Test',
                     ),
                   ],
                 ),
               ],
+            ),
+    );
+  }
+}
+
+class BubbleSort extends StatefulWidget {
+  final List<Picks> picks;
+  final List<TeamStats2026> rankings;
+  final int eventYear;
+  final String eventCode;
+  final Map<String, String> teamNames;
+  final String? name;
+  final void Function(int index1, int index2) onSwap; // Add this
+
+  const BubbleSort({
+    super.key,
+    required this.picks,
+    required this.rankings,
+    required this.eventYear,
+    required this.eventCode,
+    required this.teamNames,
+    this.name,
+    required this.onSwap, // Add this
+  });
+
+  @override
+  State<BubbleSort> createState() => _BubbleSortState();
+}
+
+class _BubbleSortState extends State<BubbleSort> {
+  final Map<String, String> names = {};
+  int i = 0;
+  int j = 0;
+  int pass = 0;
+  int get leftIndex => j;
+  int get rightIndex => (j + 1 < widget.picks.length) ? j + 1 : j;
+  bool get confirmMode => pass >= 1;
+
+  List<PictureData> teamAImages = [];
+  List<PictureData> teamBImages = [];
+  bool isLoading = false;
+  bool isDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    names.addAll(widget.teamNames);
+    if (widget.picks.length > 1) {
+      i = 0;
+      j = 0;
+      _loadPair();
+    }
+  }
+
+  void step(bool shouldSwap, List<Picks> arr, int n) {
+    if (isDone) return;
+
+    if (shouldSwap) {
+      widget.onSwap(j, j + 1);
+    }
+
+    j++;
+
+    if (j >= n - i - 1) {
+      i++;
+      j = 0;
+      pass++;
+    }
+
+    if (i >= n - 1 || n <= 1) {
+      setState(() => isDone = true);
+      return;
+    }
+
+    setState(() {});
+  }
+
+  Future<void> _loadPair() async {
+    if (isDone) return;
+    if (widget.picks.length < 2) return;
+
+    setState(() => isLoading = true);
+
+    final a = widget.picks[leftIndex].number;
+    final b = widget.picks[rightIndex].number;
+
+    try {
+      final apiService = Provider.of<ApiService>(context, listen: false);
+
+      String eventCode = widget.eventCode;
+      if (eventCode.length > 4) {
+        eventCode = eventCode.substring(4);
+      }
+
+      final futures = await Future.wait([
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$a'),
+        apiService.fetchTeamImages(widget.eventYear, eventCode, 'frc$b'),
+        apiService.fetchTeamNicknames('frc$a'),
+        apiService.fetchTeamNicknames('frc$b'),
+      ]);
+
+      setState(() {
+        teamAImages = futures[0] as List<PictureData>;
+        teamBImages = futures[1] as List<PictureData>;
+        final nA = futures[2] as String?;
+        final nB = futures[3] as String?;
+        if (nA != null && nA.isNotEmpty) names[a] = nA;
+        if (nB != null && nB.isNotEmpty) names[b] = nB;
+      });
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // UI HELPERS (NEW STYLE ONLY)
+  // ─────────────────────────────────────────────
+
+  Widget _glass(Widget child) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outline.withOpacity(0.1)),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _pickCard({
+    required String title,
+    required Picks pick,
+    required List<PictureData> images,
+  }) {
+    return _glass(
+      Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              pick.number.toString(),
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (images.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  images.first.link,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            const SizedBox(height: 10),
+            Text(
+              pick.comments.isEmpty ? "No notes" : pick.comments,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // BUILD (NEW UI ONLY)
+  // ─────────────────────────────────────────────
+
+  String _avatarPrimaryUrl(String teamNumber) {
+    return 'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/${2026}/frc$teamNumber.png&w=96&h=96&fit=contain';
+  }
+
+  Widget _teamCard(
+    BuildContext context, {
+    required String side,
+    required Picks pick,
+    required List<PictureData> images,
+    required String teamNumber,
+  }) {
+    final nickname = names[teamNumber] ?? "";
+
+    final teamStats = widget.rankings.firstWhere(
+      (t) => t.team_number.toString() == teamNumber,
+      orElse: () =>
+          TeamStats2026(historical: false, key: '', rank: 0, team_number: ''),
+    );
+
+    final stats =
+        _buildMetricsSingle(teamStats); // <-- IMPORTANT (see note below)
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // HEADER
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage(
+                  _avatarPrimaryUrl(teamNumber),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "$teamNumber ${nickname.isNotEmpty ? "| $nickname" : ""}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // SIDE LABEL
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(side),
+          ),
+
+          const SizedBox(height: 10),
+
+          // IMAGES
+          SizedBox(
+            height: 90,
+            child: images.isEmpty
+                ? const Center(child: Text("No images"))
+                : ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: images.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 6),
+                    itemBuilder: (context, index) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          images[index].link,
+                          width: 90,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // NOTES
+          Text(
+            pick.comments.isEmpty ? "No notes" : pick.comments,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // ✅ STATS (FIXED)
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Stats",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...stats.map(_metricRow),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricRow(_CompareMetric m) {
+    String format(double v) {
+      if (m.asPercent) return "${(v * 100).toStringAsFixed(1)}%";
+      if (m.integerLike) return v.toStringAsFixed(0);
+      return v.toStringAsFixed(2);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            m.label,
+            style: const TextStyle(fontSize: 12),
+          ),
+          Text(
+            format(m.left),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_CompareMetric> _buildMetricsSingle(TeamStats2026? t) {
+    return [
+      _CompareMetric('Comp Rank', (t?.rank ?? 0).toDouble(), 0,
+          integerLike: true),
+      _CompareMetric('Sim Rank', (t?.simulated_rank ?? 0).toDouble(), 0,
+          integerLike: true),
+      _CompareMetric('OPR', t?.OPR ?? 0, 0),
+      _CompareMetric('Auto Points', t?.auto_points ?? 0, 0),
+      _CompareMetric('Teleop Points', t?.teleop_points ?? 0, 0),
+      _CompareMetric('Endgame Points', t?.endgame_points ?? 0, 0),
+      _CompareMetric('Climbing Points', t?.climbing_points ?? 0, 0),
+      _CompareMetric('Total Pass', t?.total_pass ?? 0, 0),
+      _CompareMetric('Auto Pass', t?.auto_pass ?? 0, 0),
+      _CompareMetric('Teleop Pass', t?.teleop_pass ?? 0, 0),
+      _CompareMetric('Auto Fuel', t?.auto_fuel_scored ?? 0, 0),
+      _CompareMetric('Teleop Fuel', t?.teleop_fuel_scored ?? 0, 0),
+      _CompareMetric('Total Fuel', t?.total_fuel_scored ?? 0, 0),
+      _CompareMetric('Foul Points', t?.foul_points ?? 0, 0,
+          lowerIsBetter: true),
+      _CompareMetric('Death Rate', t?.death_rate ?? 0, 0,
+          lowerIsBetter: true, asPercent: true),
+      _CompareMetric('Defense Rate', t?.defense_rate ?? 0, 0, asPercent: true),
+      _CompareMetric('Sim RP', (t?.simulated_rp ?? 0).toDouble(), 0,
+          integerLike: true),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.picks.length < 2) {
+      return Scaffold(
+        appBar: PolarForecastAppBar(extraText: 'Generate Picklist'),
+        body: const Center(child: Text("Not enough picks")),
+      );
+    }
+
+    if (isDone) {
+      return Scaffold(
+        appBar: PolarForecastAppBar(extraText: 'Generate Picklist'),
+        body: const Center(
+          child: Text("DONE",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+
+    final left = widget.picks[leftIndex];
+    final right = widget.picks[rightIndex];
+
+    final aNum = left.number;
+    final bNum = right.number;
+
+    return Scaffold(
+      appBar:
+          PolarForecastAppBar(extraText: 'Generate Picklist ${widget.name}'),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(children: [
+                    const SizedBox(height: 12),
+
+                    // TEAM CARDS
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _teamCard(
+                            context,
+                            side: "LEFT",
+                            pick: left,
+                            images: teamAImages,
+                            teamNumber: aNum,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _teamCard(
+                            context,
+                            side: "RIGHT",
+                            pick: right,
+                            images: teamBImages,
+                            teamNumber: bNum,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ACTION BUTTONS
+
+                    if (!confirmMode)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green),
+                              onPressed: () {
+                                step(false, widget.picks, widget.picks.length);
+                                _loadPair();
+                              },
+                              icon: const Icon(Icons.thumb_up),
+                              label: const Text("LEFT BETTER"),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              onPressed: () {
+                                step(true, widget.picks, widget.picks.length);
+                                _loadPair();
+                              },
+                              icon: const Icon(Icons.thumb_up),
+                              label: const Text("RIGHT BETTER"),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue),
+                              onPressed: () {
+                                // CONFIRM keeps current ordering
+                                step(false, widget.picks, widget.picks.length);
+                                _loadPair();
+                              },
+                              icon: const Icon(Icons.check),
+                              label: const Text("CONFIRM"),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange),
+                              onPressed: () {
+                                // CHANGE triggers swap
+                                step(true, widget.picks, widget.picks.length);
+                                _loadPair();
+                              },
+                              icon: const Icon(Icons.swap_horiz),
+                              label: const Text("CHANGE"),
+                            ),
+                          ),
+                        ],
+                      )
+                  ]),
+                ),
+              ),
             ),
     );
   }
