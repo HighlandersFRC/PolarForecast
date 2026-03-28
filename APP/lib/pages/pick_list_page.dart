@@ -4476,6 +4476,8 @@ class BubbleSort extends StatefulWidget {
 }
 
 class _BubbleSortState extends State<BubbleSort> {
+  Set<String> knownSwaps = {};
+  Map<String, bool> decisionMemory = {};
   final Map<String, String> names = {};
   List<List<String>> orderHistory = [];
   int i = 0;
@@ -4506,19 +4508,41 @@ class _BubbleSortState extends State<BubbleSort> {
     }
   }
 
+  String _swapKey(String a, String b) {
+    final sorted = [a, b]..sort();
+    return "${sorted[0]}-${sorted[1]}";
+  }
+
+  String _pairKey(String a, String b) {
+    final sorted = [a, b]..sort();
+    return "${sorted[0]}-${sorted[1]}";
+  }
+
   void step(bool shouldSwap, List<Picks> arr, int n) {
     if (isDone) return;
 
-    if (shouldSwap) {
-      widget.onSwap(j, j + 1);
+    final a = widget.picks[j].number;
+    final b = widget.picks[j + 1].number;
+    final key = _swapKey(a, b);
 
-      // 🔥 insertion behavior (walk backwards)
-      if (j > 0) {
-        j--;
+// 🚫 Skip if we already KNOW this decision was made
+    if (!knownSwaps.contains(key)) {
+      knownSwaps.add(key);
+
+      if (shouldSwap) {
+        widget.onSwap(j, j + 1);
+
+        // insertion-style movement
+        if (j > 0) {
+          j--;
+        } else {
+          j++;
+        }
       } else {
         j++;
       }
     } else {
+      // already known → just continue forward safely
       j++;
     }
 
@@ -4607,6 +4631,24 @@ class _BubbleSortState extends State<BubbleSort> {
     final a = widget.picks[leftIndex].number;
     final b = widget.picks[rightIndex].number;
 
+    final key = _pairKey(a, b);
+
+    // 🚫 SKIP if we already KNOW this comparison result
+    if (decisionMemory.containsKey(key)) {
+      final shouldSwap = decisionMemory[key]!;
+
+      // auto-advance without re-asking user
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || isDone) return;
+
+        step(shouldSwap, widget.picks, widget.picks.length);
+        _loadPair();
+      });
+
+      setState(() => isLoading = false);
+      return;
+    }
+
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
@@ -4622,17 +4664,24 @@ class _BubbleSortState extends State<BubbleSort> {
         apiService.fetchTeamNicknames('frc$b'),
       ]);
 
+      if (!mounted) return;
+
       setState(() {
         teamAImages = futures[0] as List<PictureData>;
         teamBImages = futures[1] as List<PictureData>;
+
         final nA = futures[2] as String?;
         final nB = futures[3] as String?;
+
         if (nA != null && nA.isNotEmpty) names[a] = nA;
         if (nB != null && nB.isNotEmpty) names[b] = nB;
       });
     } catch (_) {
+      // optional: log error
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -5089,6 +5138,11 @@ class _BubbleSortState extends State<BubbleSort> {
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green),
                             onPressed: () {
+                              final a = widget.picks[leftIndex].number;
+                              final b = widget.picks[rightIndex].number;
+
+                              decisionMemory[_pairKey(a, b)] = false;
+
                               step(false, widget.picks, widget.picks.length);
                               _loadPair();
                             },
@@ -5102,6 +5156,11 @@ class _BubbleSortState extends State<BubbleSort> {
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red),
                             onPressed: () {
+                              final a = widget.picks[leftIndex].number;
+                              final b = widget.picks[rightIndex].number;
+
+                              decisionMemory[_pairKey(a, b)] = true;
+
                               step(true, widget.picks, widget.picks.length);
                               _loadPair();
                             },
