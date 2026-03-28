@@ -10,6 +10,7 @@ import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
+// ignore: deprecated_member_use
 import 'dart:html' as html;
 import '../models/group.dart';
 import '../models/team_stats_2026.dart';
@@ -51,18 +52,18 @@ class _PicklistPageState extends State<PicklistPage> {
     List<List<String>> rows = [];
 
     rows.add([
-      "Rank",
-      "Comp Rank",
-      "Team",
-      "Comments",
-      "OPR",
-      "Auto Points",
-      "Teleop Points",
-      "Endgame Points",
-      "Teleop Pass",
-      "Sim RP",
-      "Death Rate",
-      "Defense Rate"
+      'Rank',
+      'Comp Rank',
+      'Team',
+      'Comments',
+      'OPR',
+      'Auto Points',
+      'Teleop Points',
+      'Endgame Points',
+      'Teleop Pass',
+      'Sim RP',
+      'Death Rate',
+      'Defense Rate'
     ]);
 
     for (int i = 0; i < picks.length; i++) {
@@ -71,17 +72,17 @@ class _PicklistPageState extends State<PicklistPage> {
 
       rows.add([
         (i + 1).toString(),
-        stats?.rank.toString() ?? "-",
+        stats?.rank.toString() ?? '-',
         pick.number,
         pick.comments,
-        stats?.OPR.toStringAsFixed(2) ?? "",
-        stats?.auto_points.toStringAsFixed(2) ?? "",
-        stats?.teleop_points.toStringAsFixed(2) ?? "",
-        stats?.endgame_points.toStringAsFixed(2) ?? "",
-        stats?.teleop_pass.toStringAsFixed(2) ?? "",
-        stats?.simulated_rp.toString() ?? "",
-        stats?.death_rate.toStringAsFixed(2) ?? "",
-        stats?.defense_rate.toStringAsFixed(2) ?? "",
+        stats?.OPR.toStringAsFixed(2) ?? '',
+        stats?.auto_points.toStringAsFixed(2) ?? '',
+        stats?.teleop_points.toStringAsFixed(2) ?? '',
+        stats?.endgame_points.toStringAsFixed(2) ?? '',
+        stats?.teleop_pass.toStringAsFixed(2) ?? '',
+        stats?.simulated_rp.toString() ?? '',
+        stats?.death_rate.toStringAsFixed(2) ?? '',
+        stats?.defense_rate.toStringAsFixed(2) ?? '',
       ]);
     }
 
@@ -94,8 +95,8 @@ class _PicklistPageState extends State<PicklistPage> {
     // ignore: unused_local_variable
     final anchor = html.AnchorElement(href: url)
       ..setAttribute(
-        "download",
-        "${widget.eventCode}_${selectedPicklist!.name}.csv",
+        'download',
+        '${widget.eventCode}_${selectedPicklist!.name}.csv',
       )
       ..click();
 
@@ -142,21 +143,21 @@ class _PicklistPageState extends State<PicklistPage> {
   }
 
   final Map<String, double Function(TeamStats2026)> statFields = {
-    "OPR": (t) => t.OPR,
-    "Auto Points": (t) => t.auto_points,
-    "Teleop Points": (t) => t.teleop_points,
-    "Endgame Points": (t) => t.endgame_points,
-    "Total Pass": (t) => t.total_pass,
-    "Auto Pass": (t) => t.auto_pass,
-    "Teleop Pass": (t) => t.teleop_pass,
-    "Climbing Points": (t) => t.climbing_points,
-    "Auto Fuel Scored": (t) => t.auto_fuel_scored,
-    "Teleop Fuel Scored": (t) => t.teleop_fuel_scored,
-    "Total Fuel Scored": (t) => t.total_fuel_scored,
-    "Foul Points": (t) => t.foul_points,
-    "Defense Rate": (t) => t.defense_rate,
-    "Death Rate": (t) => t.death_rate,
-    "Simulated RP": (t) => t.simulated_rp.toDouble(),
+    'OPR': (t) => t.OPR,
+    'Auto Points': (t) => t.auto_points,
+    'Teleop Points': (t) => t.teleop_points,
+    'Endgame Points': (t) => t.endgame_points,
+    'Total Pass': (t) => t.total_pass,
+    'Auto Pass': (t) => t.auto_pass,
+    'Teleop Pass': (t) => t.teleop_pass,
+    'Climbing Points': (t) => t.climbing_points,
+    'Auto Fuel Scored': (t) => t.auto_fuel_scored,
+    'Teleop Fuel Scored': (t) => t.teleop_fuel_scored,
+    'Total Fuel Scored': (t) => t.total_fuel_scored,
+    'Foul Points': (t) => t.foul_points,
+    'Defense Rate': (t) => t.defense_rate,
+    'Death Rate': (t) => t.death_rate,
+    'Simulated RP': (t) => t.simulated_rp.toDouble(),
   };
 
   bool _saving = false;
@@ -181,7 +182,7 @@ class _PicklistPageState extends State<PicklistPage> {
         int.tryParse(widget.eventCode.substring(0, 4)) != null) {
       return widget.eventCode.substring(0, 4);
     }
-    return "2026";
+    return '2026';
   }
 
   int snowCount = 100;
@@ -339,10 +340,10 @@ class _PicklistPageState extends State<PicklistPage> {
     sortedTeams.sort((a, b) => getter(b).compareTo(getter(a)));
 
     final newPicklist = Picklist2026(
-      picklist_id: "",
+      picklist_id: '',
       name: name,
       picks: sortedTeams
-          .map((t) => Picks(number: t.team_number, comments: ""))
+          .map((t) => Picks(number: t.team_number, comments: ''))
           .toList(),
     );
 
@@ -399,7 +400,7 @@ class _PicklistPageState extends State<PicklistPage> {
             return AlertDialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
-              title: Text("Delete Picklist",
+              title: Text('Delete Picklist',
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.redAccent)),
               content: Column(
@@ -427,7 +428,7 @@ class _PicklistPageState extends State<PicklistPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  child: const Text('Cancel'),
                 ),
                 FilledButton(
                   style: FilledButton.styleFrom(
@@ -440,7 +441,7 @@ class _PicklistPageState extends State<PicklistPage> {
                           deletePicklist(picklist);
                         }
                       : null,
-                  child: const Text("Delete"),
+                  child: const Text('Delete'),
                 ),
               ],
             );
@@ -485,19 +486,16 @@ class _PicklistPageState extends State<PicklistPage> {
             final cs = theme.colorScheme;
 
             return AlertDialog(
-              // 1. Softer, modern Material 3 rounded corners
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
               contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-
-              // 2. Upgraded title with an icon and better typography
               title: Row(
                 children: [
                   Icon(Icons.add_chart_rounded, color: Colors.blue),
                   const SizedBox(width: 12),
                   Text(
-                    "Create Picklist",
+                    'Create Picklist',
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
                 ],
@@ -506,22 +504,19 @@ class _PicklistPageState extends State<PicklistPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 3. Helpful subtitle
                   Text(
-                    "Set up the details for your new picklist.",
+                    'Set up the details for your new picklist.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // 4. Polished TextField with autofocus and icons
                   TextField(
                     controller: nameController,
                     autofocus: true,
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
-                      labelText: "Picklist Name",
+                      labelText: 'Picklist Name',
                       prefixIcon: const Icon(Icons.edit_note),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -535,13 +530,11 @@ class _PicklistPageState extends State<PicklistPage> {
                     onChanged: (val) => setStateDialog(() {}),
                   ),
                   const SizedBox(height: 16),
-
-                  // 5. Polished Dropdown matching the TextField
                   DropdownButtonFormField<String>(
-                    value: selectedField,
+                    initialValue: selectedField,
                     icon: const Icon(Icons.arrow_drop_down),
                     decoration: InputDecoration(
-                      labelText: "Initial Sort Metric",
+                      labelText: 'Initial Sort Metric',
                       prefixIcon: const Icon(Icons.sort_rounded),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -563,21 +556,18 @@ class _PicklistPageState extends State<PicklistPage> {
                   ),
                 ],
               ),
-
-              // 6. Nicer padding around the action buttons
               actionsPadding:
                   const EdgeInsets.only(right: 24, bottom: 24, left: 24),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  child: const Text('Cancel'),
                 ),
                 FilledButton(
-                  // 7. Flutter automatically makes the button disabled/grey if onPressed is null!
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    disabledBackgroundColor:
-                        Colors.blue.withOpacity(0.4), // optional
+                    // ignore: deprecated_member_use
+                    disabledBackgroundColor: Colors.blue.withOpacity(0.4),
                   ),
                   onPressed: isValid
                       ? () {
@@ -586,7 +576,7 @@ class _PicklistPageState extends State<PicklistPage> {
                           Navigator.pop(context);
                         }
                       : null,
-                  child: const Text("Create"),
+                  child: const Text('Create'),
                 ),
               ],
             );
@@ -604,19 +594,18 @@ class _PicklistPageState extends State<PicklistPage> {
         builder: (context) {
           return BubbleCompareDialogFull(
             picks: picks,
-            rankings: rankings, // ✅ REQUIRED
-            eventYear: int.parse(_eventYear), // ✅ REQUIRED
-            eventCode: widget.eventCode, // ✅ REQUIRED
-            teamNames: teamNames, // ✅ REQUIRED
-            name: selectedPicklist?.name, // optional
-
+            rankings: rankings,
+            eventYear: int.parse(_eventYear),
+            eventCode: widget.eventCode,
+            teamNames: teamNames,
+            name: selectedPicklist?.name,
             onSwap: (idx1, idx2) {
               setState(() {
                 final temp = picks[idx1];
                 picks[idx1] = picks[idx2];
                 picks[idx2] = temp;
               });
-              _autoSave(); // (optional but recommended)
+              _autoSave();
             },
           );
         },
@@ -628,8 +617,10 @@ class _PicklistPageState extends State<PicklistPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(4),
+        // ignore: deprecated_member_use
         border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(
@@ -714,33 +705,26 @@ class _PicklistPageState extends State<PicklistPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Title
                 Text(
-                  "Edit Comments",
+                  'Edit Comments',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
-                // Subtitle
                 Text(
-                  "For Team ${pick.number}",
+                  'For Team ${pick.number}',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Text field
                 TextField(
                   controller: controller,
                   minLines: 3,
                   maxLines: 6,
                   decoration: InputDecoration(
-                    hintText: "Add notes, strategy, or observations...",
+                    hintText: 'Add notes, strategy, or observations...',
                     filled: true,
                     fillColor: theme.colorScheme.surfaceContainerHighest,
                     contentPadding: const EdgeInsets.all(14),
@@ -750,16 +734,13 @@ class _PicklistPageState extends State<PicklistPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Buttons
                 Row(
                   children: [
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel"),
+                        child: const Text('Cancel'),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -771,7 +752,7 @@ class _PicklistPageState extends State<PicklistPage> {
                         ),
                         onPressed: () =>
                             Navigator.pop(context, controller.text.trim()),
-                        child: const Text("Save"),
+                        child: const Text('Save'),
                       ),
                     ),
                   ],
@@ -805,7 +786,7 @@ class _PicklistPageState extends State<PicklistPage> {
                   Icon(Icons.list, color: Colors.blue),
                   const SizedBox(width: 8),
                   Text(
-                    "Picklists",
+                    'Picklists',
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -828,8 +809,9 @@ class _PicklistPageState extends State<PicklistPage> {
               Expanded(
                 child: picklists.isEmpty
                     ? Center(
-                        child: Text("No picklists found",
+                        child: Text('No picklists found',
                             style: TextStyle(
+                                // ignore: deprecated_member_use
                                 color: cs.onSurface.withOpacity(0.6))),
                       )
                     : ListView.builder(
@@ -842,6 +824,7 @@ class _PicklistPageState extends State<PicklistPage> {
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: Material(
                               color: isSelected
+                                  // ignore: deprecated_member_use
                                   ? cs.primary.withOpacity(0.06)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(10),
@@ -900,8 +883,8 @@ class _PicklistPageState extends State<PicklistPage> {
                                                               'Picklist Name',
                                                           border:
                                                               OutlineInputBorder(),
-                                                          prefixIcon: Icon(Icons
-                                                              .edit_note), // Added icon to field
+                                                          prefixIcon: Icon(
+                                                              Icons.edit_note),
                                                         ),
                                                       ),
                                                       actions: [
@@ -984,7 +967,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                               ),
                                               const PopupMenuDivider(
                                                 color: Colors.blueAccent,
-                                              ), // Added a divider for better visual separation
+                                              ),
                                               const PopupMenuItem<String>(
                                                 value: 'delete',
                                                 child: Row(
@@ -1005,7 +988,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                               ),
                                             ],
                                           )
-                                        : null, // Logic remains: only shows if isSelected is true
+                                        : null,
                                   ),
                                 ),
                               ),
@@ -1022,7 +1005,7 @@ class _PicklistPageState extends State<PicklistPage> {
                   openCreateDialog();
                 },
                 icon: Icons.add,
-                label: "New Picklist",
+                label: 'New Picklist',
               ),
               const SizedBox(height: 10),
             ],
@@ -1035,7 +1018,6 @@ class _PicklistPageState extends State<PicklistPage> {
   Future<void> _openTeamImages(String teamNumber) async {
     final eventYear = int.parse(_eventYear);
     String eventCode = widget.eventCode;
-    // Extract just the event code without the year
     if (eventCode.length > 4) {
       eventCode = eventCode.substring(4);
     }
@@ -1046,7 +1028,7 @@ class _PicklistPageState extends State<PicklistPage> {
         return TeamImagesDialog(
           teamNumber: teamNumber,
           eventYear: eventYear,
-          eventCode: eventCode, // Use the cleaned event code
+          eventCode: eventCode,
           rankings: rankings,
           picklistIndex: picks.indexWhere((p) => p.number == teamNumber) + 1,
         );
@@ -1090,7 +1072,7 @@ class _PicklistPageState extends State<PicklistPage> {
               ignoring: true,
               child: SnowField(
                 particleCount: snowCount,
-                color: cs.onBackground,
+                color: cs.onSurface,
               ),
             ),
           ),
@@ -1102,6 +1084,7 @@ class _PicklistPageState extends State<PicklistPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
+                      // ignore: deprecated_member_use
                       color: Colors.black.withOpacity(0.02),
                       blurRadius: 8,
                       offset: const Offset(0, 3))
@@ -1114,19 +1097,23 @@ class _PicklistPageState extends State<PicklistPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.list_alt,
-                              size: 72, color: cs.onSurface.withOpacity(0.14)),
+                              // ignore: deprecated_member_use
+                              size: 72,
+                              color: cs.onSurface.withOpacity(0.14)),
                           const SizedBox(height: 16),
                           Text(
-                            "No teams in this picklist yet.",
+                            'No teams in this picklist yet.',
                             style: TextStyle(
                                 fontSize: 18,
+                                // ignore: deprecated_member_use
                                 color: cs.onSurface.withOpacity(0.6)),
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            "Create a new picklist or add teams from rankings.",
+                            'Create a new picklist or add teams from rankings.',
                             style: TextStyle(
                                 fontSize: 13,
+                                // ignore: deprecated_member_use
                                 color: cs.onSurface.withOpacity(0.5)),
                           )
                         ],
@@ -1155,8 +1142,9 @@ class _PicklistPageState extends State<PicklistPage> {
 
                         final tint = teamColors[pick.number];
                         final cardTint = tint != null
+                            // ignore: deprecated_member_use
                             ? tint.withOpacity(0.08)
-                            : cs.surfaceVariant;
+                            : cs.surfaceContainerHighest;
 
                         bool isFirst = index == 0;
                         bool isLast = index == picks.length - 1;
@@ -1180,6 +1168,7 @@ class _PicklistPageState extends State<PicklistPage> {
                             boxShadow: isHighlighted
                                 ? [
                                     BoxShadow(
+                                        // ignore: deprecated_member_use
                                         color: cs.primary.withOpacity(0.4),
                                         blurRadius: 16,
                                         spreadRadius: 2)
@@ -1193,7 +1182,9 @@ class _PicklistPageState extends State<PicklistPage> {
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
                                 color: isHighlighted
+                                    // ignore: deprecated_member_use
                                     ? cs.primary.withOpacity(0.6)
+                                    // ignore: deprecated_member_use
                                     : cs.outline.withOpacity(0.12),
                                 width: isHighlighted ? 1.5 : 1.0,
                               ),
@@ -1213,6 +1204,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                             end: Alignment.bottomRight,
                                             colors: [
                                               cardTint,
+                                              // ignore: deprecated_member_use
                                               cardTint.withOpacity(0.02)
                                             ],
                                           ),
@@ -1283,6 +1275,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                           Icons.drag_handle,
                                                           size: 20,
                                                           color: cs.onSurface
+                                                              // ignore: deprecated_member_use
                                                               .withOpacity(0.4),
                                                         ),
                                                       ),
@@ -1396,12 +1389,14 @@ class _PicklistPageState extends State<PicklistPage> {
                                                         horizontal: 8,
                                                         vertical: 6),
                                                     decoration: BoxDecoration(
-                                                      color: cs.surfaceVariant,
+                                                      color: cs
+                                                          .surfaceContainerHighest,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               8),
                                                       border: Border.all(
                                                         color: cs.outline
+                                                            // ignore: deprecated_member_use
                                                             .withOpacity(0.06),
                                                       ),
                                                     ),
@@ -1414,6 +1409,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                           TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         color: cs.onSurface
+                                                            // ignore: deprecated_member_use
                                                             .withOpacity(0.85),
                                                         fontStyle: pick.comments
                                                                 .isEmpty
@@ -1429,6 +1425,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                     Icons.edit,
                                                     size: 18,
                                                     color: cs.onSurface
+                                                        // ignore: deprecated_member_use
                                                         .withOpacity(0.7),
                                                   ),
                                                   onPressed: () =>
@@ -1564,6 +1561,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                       Icons.drag_handle,
                                                       size: 22,
                                                       color: cs.onSurface
+                                                          // ignore: deprecated_member_use
                                                           .withOpacity(0.4),
                                                     ),
                                                   ),
@@ -1684,7 +1682,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                           decoration:
                                                               BoxDecoration(
                                                             color: cs
-                                                                .surfaceVariant,
+                                                                .surfaceContainerHighest,
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
@@ -1692,6 +1690,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                             border: Border.all(
                                                                 color: cs
                                                                     .outline
+                                                                    // ignore: deprecated_member_use
                                                                     .withOpacity(
                                                                         0.06)),
                                                           ),
@@ -1707,6 +1706,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                             style: TextStyle(
                                                               color: cs
                                                                   .onSurface
+                                                                  // ignore: deprecated_member_use
                                                                   .withOpacity(
                                                                       0.85),
                                                               fontStyle: pick
@@ -1725,6 +1725,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                         icon: Icon(Icons.edit,
                                                             size: 18,
                                                             color: cs.onSurface
+                                                                // ignore: deprecated_member_use
                                                                 .withOpacity(
                                                                     0.7)),
                                                         onPressed: () =>
@@ -1928,7 +1929,6 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
     try {
       final apiService = Provider.of<ApiService>(context, listen: false);
 
-      // Extract the event code without the year
       String eventCode = widget.eventCode;
       if (eventCode.length > 4) {
         eventCode = eventCode.substring(4);
@@ -1995,7 +1995,6 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
       return;
     }
 
-    // Check if we've reached the end
     if (originalLowerIndex + 1 >= widget.picks.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -2003,7 +2002,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
           duration: Duration(seconds: 3),
         ),
       );
-      return; // optionally, you could pop the dialog here
+      return;
     }
 
     final updatedAIndex = widget.picks.indexWhere((p) => p.number == teamA);
@@ -2164,7 +2163,9 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
         filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
         child: Container(
           decoration: BoxDecoration(
-            color: cs.surfaceVariant.withOpacity(0.18),
+            // ignore: deprecated_member_use
+            color: cs.surfaceContainerHighest.withOpacity(0.18),
+            // ignore: deprecated_member_use
             border: Border.all(color: cs.outline.withOpacity(0.08)),
             borderRadius: BorderRadius.circular(radius),
           ),
@@ -2252,25 +2253,37 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
         : metric.left > metric.right;
 
     final leftBg = tied
-        ? cs.surfaceVariant.withOpacity(0.08)
+        // ignore: deprecated_member_use
+        ? cs.surfaceContainerHighest.withOpacity(0.08)
         : leftBetter
+            // ignore: deprecated_member_use
             ? Colors.green.withOpacity(0.14)
+            // ignore: deprecated_member_use
             : Colors.red.withOpacity(0.08);
     final rightBg = tied
+        // ignore: deprecated_member_use
         ? cs.surfaceVariant.withOpacity(0.08)
         : leftBetter
+            // ignore: deprecated_member_use
             ? Colors.red.withOpacity(0.08)
+            // ignore: deprecated_member_use
             : Colors.green.withOpacity(0.14);
 
     final leftBorder = tied
+        // ignore: deprecated_member_use
         ? cs.outline.withOpacity(0.18)
         : leftBetter
+            // ignore: deprecated_member_use
             ? Colors.green.withOpacity(0.5)
+            // ignore: deprecated_member_use
             : Colors.red.withOpacity(0.38);
     final rightBorder = tied
+        // ignore: deprecated_member_use
         ? cs.outline.withOpacity(0.18)
         : leftBetter
+            // ignore: deprecated_member_use
             ? Colors.red.withOpacity(0.38)
+            // ignore: deprecated_member_use
             : Colors.green.withOpacity(0.5);
 
     final labelWidth = compactMode ? 120.0 : 160.0;
@@ -2301,6 +2314,7 @@ class _QuickCompareDialogState extends State<QuickCompareDialog> {
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontWeight: FontWeight.w700,
+                // ignore: deprecated_member_use
                 color: cs.onSurface.withOpacity(0.85)),
           ),
         ),
@@ -3782,7 +3796,7 @@ class BubbleCompareDialogFull extends StatefulWidget {
 class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
   int i = 0;
   int j = 0;
-
+  int pass = 0;
   bool isDone = false;
 
   List<PictureData> teamAImages = [];
@@ -4096,42 +4110,65 @@ class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
     }
   }
 
-  void _handleLike(String likedTeamNumber) {
+  void _handleLike(String chosenTeamNumber) {
     if (isDone) return;
 
     final b = widget.picks[rightIndex].number;
 
-    // Bubble sort swap condition
-    if (likedTeamNumber == b) {
-      widget.onSwap(leftIndex, rightIndex);
+    final pickedRight = (chosenTeamNumber == b);
+
+    if (pass == 0) {
+      // FIRST PASS → real sorting
+      if (pickedRight) {
+        widget.onSwap(leftIndex, rightIndex);
+      }
+    } else {
+      // SECOND PASS → confirm or change
+      if (pickedRight) {
+        // CONFIRM → do nothing
+      } else {
+        // CHANGE → swap now
+        widget.onSwap(leftIndex, rightIndex);
+      }
     }
 
     _nextStep();
+    print(pass);
   }
 
   void _nextStep() {
+    if (isDone) return;
+
     setState(() {
       j++;
 
       if (j >= widget.picks.length - i - 1) {
         j = 0;
         i++;
-      }
 
-      if (i >= widget.picks.length - 1) {
-        isDone = true;
+        if (i >= widget.picks.length - 1) {
+          if (pass == 0) {
+            // move to confirm pass
+            pass = 1;
+            i = 0;
+            j = 0;
+          } else {
+            isDone = true;
+          }
+        }
       }
     });
 
     if (isDone) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🎉 Sorting complete!')),
+        const SnackBar(content: Text('Sorting complete!')),
       );
       Navigator.pop(context);
       return;
     }
 
-    _loadPair();
+    // 🔥 IMPORTANT: delay to ensure UI updates BEFORE loading new data
+    Future.microtask(() => _loadPair());
   }
 
   String _teamLabel(String teamNumber) {
@@ -4310,15 +4347,17 @@ class _BubbleCompareDialogFullState extends State<BubbleCompareDialogFull> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     GlassButton(
-                        onPressed: () => _handleLike(aNum),
-                        color: Colors.blue,
-                        icon: Icons.thumb_up_alt_outlined,
-                        label: 'Prefer $aNum'),
+                      onPressed: () => _handleLike(aNum),
+                      color: pass == 0 ? Colors.blue : Colors.orange,
+                      icon: Icons.thumb_up_alt_outlined,
+                      label: pass == 0 ? 'Prefer $aNum' : 'Keep $aNum',
+                    ),
                     GlassButton(
-                        onPressed: () => _handleLike(bNum),
-                        color: Colors.blue,
-                        icon: Icons.thumb_up_alt_outlined,
-                        label: 'Prefer $bNum'),
+                      onPressed: () => _handleLike(bNum),
+                      color: pass == 0 ? Colors.blue : Colors.orange,
+                      icon: Icons.thumb_up_alt_outlined,
+                      label: pass == 0 ? 'Prefer $bNum' : 'Keep $bNum',
+                    ),
                   ],
                 ),
               ],
