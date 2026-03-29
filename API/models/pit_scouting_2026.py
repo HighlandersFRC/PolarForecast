@@ -48,9 +48,12 @@ class Auto2026(BaseModel):
 class PitData2026(BaseModel):
     driver_experience_events: int
     drive_train: str
+    type_of_shooter: str
     can_feed_human_player: bool
     can_pick_up_from_ground: bool
-    distance_to_shoot: int
+    fixedShooting: bool
+    nearTower: bool
+    nearHub: bool
     go_over_bump: bool
     go_under_trench: bool
     can_climb: bool

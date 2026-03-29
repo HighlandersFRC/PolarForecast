@@ -140,7 +140,7 @@ class TournamentSearchDelegate extends SearchDelegate {
     return [
       IconButton(
         icon: const Icon(Icons.clear),
-        onPressed: () => query = '',
+        onPressed: () => close(context, null),
       ),
     ];
   }

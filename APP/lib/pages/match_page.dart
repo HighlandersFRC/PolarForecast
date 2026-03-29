@@ -416,9 +416,9 @@ class _StatsTabState extends State<_StatsTab> {
           DataGridCell(columnName: 'team_number', value: 'Total'),
           DataGridCell(columnName: 'opr', value: redOPR),
           DataGridCell(columnName: 'auto_fuel', value: redAutoFuel),
-          DataGridCell(columnName: 'tele_fuel', value: redTeleFuel),
+          DataGridCell(columnName: 'teleop_fuel', value: redTeleFuel),
           DataGridCell(columnName: 'auto_pass', value: redAutoPass),
-          DataGridCell(columnName: 'tele_pass', value: redTelePass),
+          DataGridCell(columnName: 'teleop_pass', value: redTelePass),
         ]));
       });
     }
@@ -501,7 +501,7 @@ class _StatsTabState extends State<_StatsTab> {
               _statsBlock(
                 color,
                 [
-                  _animatedStat('Score', predictedScore, color),
+                  _animatedStat('Score', predictedScore.toString(), color),
                   _animatedStat('Ranking Points', predictedRP, color),
                 ],
               ),
@@ -681,7 +681,7 @@ class _StatsTabState extends State<_StatsTab> {
 
   @override
   Widget build(BuildContext context) {
-    String formatNum(num? value) => value?.toStringAsFixed(2) ?? 'N/A';
+    String formatNum(num? value) => value?.toString() ?? 'N/A';
 
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -700,7 +700,7 @@ class _StatsTabState extends State<_StatsTab> {
           _buildAllianceCard(
             title: 'Blue Alliance',
             color: Colors.blue,
-            predictedScore: formatNum(stats?.prediction?.blue_score),
+            predictedScore: formatNum(stats?.prediction?.blue_score?.round()),
             predictedRP: stats?.prediction?.blue_total_rp?.toString() ?? '-',
             actualScore: stats?.prediction?.blue_actual_score?.toString(),
             actualRP: stats?.prediction?.blue_display_rp?.toString(),
@@ -711,7 +711,7 @@ class _StatsTabState extends State<_StatsTab> {
           _buildAllianceCard(
             title: 'Red Alliance',
             color: Colors.red,
-            predictedScore: formatNum(stats?.prediction?.red_score),
+            predictedScore: formatNum(stats?.prediction?.red_score?.round()),
             predictedRP: stats?.prediction?.red_total_rp?.toString() ?? '-',
             actualScore: stats?.prediction?.red_actual_score?.toString(),
             actualRP: stats?.prediction?.red_display_rp?.toString(),

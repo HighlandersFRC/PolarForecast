@@ -28,10 +28,25 @@ class PitScoutingForm extends StatefulWidget {
 
 class _PitScoutingFormState extends State<PitScoutingForm> {
   final TextEditingController driveTrainController = TextEditingController();
+  final TextEditingController typeOfShooterController = TextEditingController();
   final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
+  final List<String> dropdownOptionsShooter = [
+    'Single',
+    'Single with Hood',
+    'Double',
+    'Double with Hood',
+    'Multi',
+    'Multi with Hood',
+    'Turret',
+    'Turret with Hood',
+    'Multi Turret',
+    'Multi Turret with Hood',
+    'Other'
+  ];
 
   final TextEditingController favoriteColorController = TextEditingController();
   final TextEditingController mainStrategyController = TextEditingController();
+
   bool formSubmitted = false;
   bool loading = true;
   late PitScouting2026 pitScoutingData = PitScouting2026(
@@ -41,6 +56,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       event_code: widget.tournament.key,
       data: PitData2026(
           driver_experience_events: 0,
+          type_of_shooter: '',
           drive_train: '',
           climbing: [],
           spare_parts: 0,
@@ -48,7 +64,9 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           autos: [],
           can_feed_human_player: false,
           can_pick_up_from_ground: false,
-          distance_to_shoot: 0,
+          fixedShooting: false,
+          nearTower: false,
+          nearHub: false,
           go_over_bump: false,
           go_under_trench: false,
           can_climb: false,
@@ -87,6 +105,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     driveTrainController.dispose();
     sparePartsController.dispose();
     favoriteColorController.dispose();
+    typeOfShooterController.dispose();
     super.dispose();
   }
 
@@ -109,6 +128,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 pitScoutingData = fetchedData;
                 loading = false;
                 driveTrainController.text = pitScoutingData.data.drive_train;
+                typeOfShooterController.text =
+                    pitScoutingData.data.type_of_shooter;
                 sparePartsController.text =
                     pitScoutingData.data.spare_parts.toString();
                 favoriteColorController.text =
@@ -141,6 +162,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(drive_train: value),
           );
           break;
+        case 'type_of_shooter':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(type_of_shooter: value),
+          );
+          break;
         case 'spare_parts':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(spare_parts: value),
@@ -161,9 +187,19 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(can_pick_up_from_ground: value),
           );
           break;
-        case 'distance_to_shoot':
+        case 'fixedShooting':
           pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(distance_to_shoot: value),
+            data: pitScoutingData.data.copyWith(fixedShooting: value),
+          );
+          break;
+        case 'nearTower':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(nearTower: value),
+          );
+          break;
+        case 'nearHub':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(nearHub: value),
           );
           break;
         case 'robot_height':
@@ -271,6 +307,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
     final missingFields = [
       if (pitScoutingData.data.favorite_color.isEmpty) 'Favorite Color',
       if (pitScoutingData.data.drive_train.isEmpty) 'Drive Train',
+      if (pitScoutingData.data.type_of_shooter.isEmpty) 'Type of Shooter',
       if (pitScoutingData.data.main_strategy.isEmpty) 'Main Strategy',
       if (pitScoutingData.data.autos?.isEmpty ?? true) 'Autos',
     ];
@@ -726,6 +763,98 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         SwitchListTile(
                                           activeThumbColor: Colors.blue,
                                           inactiveThumbColor: Colors.blue,
+                                          title: Text('Fixed Shooting Distance',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font')),
+                                          value: pitScoutingData
+                                              .data.fixedShooting,
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (value) => handleChange(
+                                                  'fixedShooting', value),
+                                        ),
+                                        AnimatedSwitcher(
+                                          key: ValueKey(pitScoutingData
+                                              .data.fixedShooting),
+                                          duration:
+                                              const Duration(milliseconds: 250),
+                                          child: !pitScoutingData
+                                                  .data.fixedShooting
+                                              ? SizedBox.shrink()
+                                              : Column(
+                                                  key: const ValueKey(
+                                                      'fixedShooting_options'),
+                                                  children: [
+                                                    Divider(
+                                                        color: Colors.blue,
+                                                        thickness: 4,
+                                                        radius: BorderRadius
+                                                            .circular(10)),
+                                                    SwitchListTile(
+                                                      activeThumbColor:
+                                                          Colors.blue,
+                                                      inactiveThumbColor:
+                                                          Colors.blue,
+                                                      title: Text(
+                                                          'Shoots near the Tower',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Font')),
+                                                      value: pitScoutingData
+                                                          .data.nearTower,
+                                                      onChanged: widget.locked
+                                                          ? null
+                                                          : (value) =>
+                                                              handleChange(
+                                                                  'nearTower',
+                                                                  value),
+                                                    ),
+                                                    SwitchListTile(
+                                                      activeThumbColor:
+                                                          Colors.blue,
+                                                      inactiveThumbColor:
+                                                          Colors.blue,
+                                                      title: Text(
+                                                          'Shoot near the Hub',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'Font')),
+                                                      value: pitScoutingData
+                                                          .data.nearHub,
+                                                      onChanged: widget.locked
+                                                          ? null
+                                                          : (value) =>
+                                                              handleChange(
+                                                                  'nearHub',
+                                                                  value),
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Divider(
+                                  color: Colors.blue,
+                                  thickness: 5,
+                                  radius: BorderRadius.circular(10),
+                                ),
+                                // Climbing Abilities
+                                Card(
+                                  color: Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      children: [
+                                        SwitchListTile(
+                                          activeThumbColor: Colors.blue,
+                                          inactiveThumbColor: Colors.blue,
                                           title: Text('Can Climb',
                                               style: TextStyle(
                                                   fontFamily: 'Font')),
@@ -909,26 +1038,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                       vertical: 6, horizontal: 12),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Counter(
-                                      label: 'Distance to Shoot (meters)',
-                                      value: pitScoutingData
-                                          .data.distance_to_shoot,
-                                      max: 500,
-                                      locked: widget.locked,
-                                      onChanged: (distance) {
-                                        setState(() {
-                                          pitScoutingData =
-                                              pitScoutingData.copyWith(
-                                                  data: pitScoutingData.data
-                                                      .copyWith(
-                                                          distance_to_shoot:
-                                                              distance));
-                                        });
-                                      },
-                                    ),
-                                  ),
                                 ),
 
                                 // Robot Height
@@ -1073,7 +1182,98 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     ),
                                   ),
                                 ),
-
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Type of Shooter',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        DropdownButton<String>(
+                                          isExpanded: true,
+                                          value: pitScoutingData
+                                              .data.type_of_shooter,
+                                          items: [
+                                            // ['Single', 'Single with Hood', 'Double', 'Double with Hood', 'Multi', 'Multi with Hood', 'Turret', 'Turret with Hood', 'Multi Turret', 'Multi Turret with Hood', 'Other']
+                                            DropdownMenuItem(
+                                                value: '',
+                                                child: Text('Choose...',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Single',
+                                                child: Text('Single',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Single with Hood',
+                                                child: Text('Single with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Double',
+                                                child: Text('Double',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Double with Hood',
+                                                child: Text('Double with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi',
+                                                child: Text('Multi',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi with Hood',
+                                                child: Text('Multi with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Turret',
+                                                child: Text('Turret',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Turret with Hood',
+                                                child: Text('Turret with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi Turret',
+                                                child: Text('Multi Turret',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi Turret with Hood',
+                                                child: Text(
+                                                    'Multi Turret with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                          ],
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (val) {
+                                                  if (val != null)
+                                                    handleChange(
+                                                        'type_of_shooter', val);
+                                                },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                                 // Drive Train
                                 Card(
                                   color: const Color.fromARGB(24, 68, 137, 255),
