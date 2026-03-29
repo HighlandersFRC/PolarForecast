@@ -3188,9 +3188,26 @@ class _BubbleSortState extends State<BubbleSort> {
                   _buildStatRow("Foul Points", stats.foul_points,
                       opsStats.foul_points, side,
                       lowerIsBetter: true),
-                  _buildStatRow(
-                      "Death Rate", stats.death_rate, opsStats.death_rate, side,
-                      lowerIsBetter: true, asPercent: true),
+                  GestureDetector(
+                    onTap: () {
+                      // Compare current team with the opposing team in the bubble sort
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DeathsComparisonPage(
+                            eventCode: widget.eventCode,
+                            leftTeamNumber: teamNumber,
+                            rightTeamNumber: opsStats
+                                .team_number, // Compare with the other team
+                            teamNames: names,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildStatRow("Death Rate", stats.death_rate,
+                        opsStats.death_rate, side,
+                        lowerIsBetter: true, asPercent: true),
+                  ),
                   _buildStatRow("Defense Rate", stats.defense_rate,
                       opsStats.defense_rate, side,
                       asPercent: true),

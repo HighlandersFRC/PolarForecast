@@ -30,7 +30,19 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
   final TextEditingController driveTrainController = TextEditingController();
   final TextEditingController typeOfShooterController = TextEditingController();
   final List<String> dropdownOptions = ['Blue Side', 'Red Side', 'Both'];
-  final List<String> dropdownOptionsShooter = ['Fixed', 'Turret', 'Barrel'];
+  final List<String> dropdownOptionsShooter = [
+    'Single',
+    'Single with Hood',
+    'Double',
+    'Double with Hood',
+    'Multi',
+    'Multi with Hood',
+    'Turret',
+    'Turret with Hood',
+    'Multi Turret',
+    'Multi Turret with Hood',
+    'Other'
+  ];
 
   final TextEditingController favoriteColorController = TextEditingController();
   final TextEditingController mainStrategyController = TextEditingController();
@@ -1192,15 +1204,40 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                           value: pitScoutingData
                                               .data.type_of_shooter,
                                           items: [
-                                            // ['Fixed', 'Turret', 'Barrel']
+                                            // ['Single', 'Single with Hood', 'Double', 'Double with Hood', 'Multi', 'Multi with Hood', 'Turret', 'Turret with Hood', 'Multi Turret', 'Multi Turret with Hood', 'Other']
                                             DropdownMenuItem(
                                                 value: '',
                                                 child: Text('Choose...',
                                                     style: TextStyle(
                                                         fontFamily: 'Font'))),
                                             DropdownMenuItem(
-                                                value: 'Fixed',
-                                                child: Text('Fixed',
+                                                value: 'Single',
+                                                child: Text('Single',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Single with Hood',
+                                                child: Text('Single with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Double',
+                                                child: Text('Double',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Double with Hood',
+                                                child: Text('Double with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi',
+                                                child: Text('Multi',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi with Hood',
+                                                child: Text('Multi with Hood',
                                                     style: TextStyle(
                                                         fontFamily: 'Font'))),
                                             DropdownMenuItem(
@@ -1209,8 +1246,19 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                                     style: TextStyle(
                                                         fontFamily: 'Font'))),
                                             DropdownMenuItem(
-                                                value: 'Barrel',
-                                                child: Text('Barrel',
+                                                value: 'Turret with Hood',
+                                                child: Text('Turret with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi Turret',
+                                                child: Text('Multi Turret',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font'))),
+                                            DropdownMenuItem(
+                                                value: 'Multi Turret with Hood',
+                                                child: Text(
+                                                    'Multi Turret with Hood',
                                                     style: TextStyle(
                                                         fontFamily: 'Font'))),
                                           ],
