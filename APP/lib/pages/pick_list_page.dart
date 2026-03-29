@@ -4,13 +4,16 @@ import 'dart:ui';
 import 'dart:async';
 import 'package:csv/csv.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
+import 'package:scouting_app/models/pit_scouting_2026.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
+import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -1876,13 +1879,13 @@ class _PicklistPageState extends State<PicklistPage> {
   }
 }
 
-class AutoFuelComparisonPage extends StatefulWidget {
+class AutoComparisonContainerPage extends StatefulWidget {
   final String eventCode;
   final String leftTeamNumber;
   final String rightTeamNumber;
   final Map<String, String> teamNames;
 
-  const AutoFuelComparisonPage({
+  const AutoComparisonContainerPage({
     super.key,
     required this.eventCode,
     required this.leftTeamNumber,
@@ -1891,10 +1894,198 @@ class AutoFuelComparisonPage extends StatefulWidget {
   });
 
   @override
-  State<AutoFuelComparisonPage> createState() => _AutoFuelComparisonPageState();
+  State<AutoComparisonContainerPage> createState() =>
+      _AutoComparisonContainerPageState();
 }
 
-class _AutoFuelComparisonPageState extends State<AutoFuelComparisonPage> {
+class _AutoComparisonContainerPageState
+    extends State<AutoComparisonContainerPage> {
+  int _currentTab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final tabs = [
+      AutoFuelComparisonPageMatchScouting(
+        eventCode: widget.eventCode,
+        leftTeamNumber: widget.leftTeamNumber,
+        rightTeamNumber: widget.rightTeamNumber,
+        teamNames: widget.teamNames,
+      ),
+      AutoFuelComparisonPagePitScouting(
+        eventCode: widget.eventCode,
+        leftTeamNumber: widget.leftTeamNumber,
+        rightTeamNumber: widget.rightTeamNumber,
+        teamNames: widget.teamNames,
+      ),
+    ];
+
+    return Scaffold(
+      body: tabs[_currentTab],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentTab,
+        onTap: (index) => setState(() => _currentTab = index),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.visibility_outlined, color: theme.primaryColor),
+            activeIcon: Icon(Icons.visibility, color: theme.primaryColor),
+            label: 'Match',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_outlined, color: theme.primaryColor),
+            activeIcon: Icon(Icons.assignment, color: theme.primaryColor),
+            label: 'Pit',
+          ),
+        ],
+        selectedItemColor: theme.primaryColor,
+        unselectedItemColor: theme.primaryColor,
+      ),
+    );
+  }
+}
+
+class AutoFuelComparisonPagePitScouting extends StatefulWidget {
+  final String eventCode;
+  final String leftTeamNumber;
+  final String rightTeamNumber;
+  final Map<String, String> teamNames;
+
+  const AutoFuelComparisonPagePitScouting({
+    super.key,
+    required this.eventCode,
+    required this.leftTeamNumber,
+    required this.rightTeamNumber,
+    required this.teamNames,
+  });
+
+  @override
+  State<AutoFuelComparisonPagePitScouting> createState() =>
+      _AutoFuelComparisonPageStatePitScouting();
+}
+
+class _AutoFuelComparisonPageStatePitScouting
+    extends State<AutoFuelComparisonPagePitScouting> {
+  bool isLoading = true;
+  String? token;
+
+  PitScouting2026? pitScouting;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  void fetchData() {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    apiService.token.then((_token) {
+      if (!mounted) return;
+
+      if (_token == null) {
+        setState(() {
+          token = null;
+          isLoading = false;
+        });
+        return;
+      }
+
+      setState(() => token = _token);
+
+      final year = widget.eventCode.substring(0, 4);
+      final event = widget.eventCode.substring(4);
+
+      apiService
+          .fetchTeamPitScouting(
+        year,
+        event,
+        "frc${widget.leftTeamNumber}",
+      )
+          .then((data) {
+        if (!mounted) return;
+
+        setState(() {
+          pitScouting = data;
+          isLoading = false;
+        });
+      }).catchError((e) {
+        print("Pit scouting error: $e");
+        setState(() => isLoading = false);
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PolarForecastAppBar(
+        extraText: 'Auto Pit Scouting - ${widget.eventCode}',
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : token == null
+              ? LoginWidget(
+                  redirect_path: '/event/${widget.eventCode}',
+                )
+              : pitScouting == null
+                  ? const Center(
+                      child: Text("No pit scouting data available"),
+                    )
+                  : _buildAutos(),
+    );
+  }
+
+  Widget _buildAutos() {
+    final autos = pitScouting!.data.autos;
+
+    if (autos!.isEmpty) {
+      return const Center(child: Text("No autos recorded"));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: autos.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: AutoPieces2026(
+                auto: autos[index],
+                locked: true,
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AutoFuelComparisonPageMatchScouting extends StatefulWidget {
+  final String eventCode;
+  final String leftTeamNumber;
+  final String rightTeamNumber;
+  final Map<String, String> teamNames;
+
+  const AutoFuelComparisonPageMatchScouting({
+    super.key,
+    required this.eventCode,
+    required this.leftTeamNumber,
+    required this.rightTeamNumber,
+    required this.teamNames,
+  });
+
+  @override
+  State<AutoFuelComparisonPageMatchScouting> createState() =>
+      _AutoFuelComparisonPageStateMatchScouting();
+}
+
+class _AutoFuelComparisonPageStateMatchScouting
+    extends State<AutoFuelComparisonPageMatchScouting> {
   List<MatchScouting2026> scouting = [];
   bool isLoading = true;
   String? token;
@@ -1938,7 +2129,7 @@ class _AutoFuelComparisonPageState extends State<AutoFuelComparisonPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PolarForecastAppBar(
-        extraText: 'Auto Fuel Comparison - ${widget.eventCode}',
+        extraText: 'Auto Match Scouting - ${widget.eventCode}',
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -3291,7 +3482,7 @@ class _BubbleSortState extends State<BubbleSort> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AutoFuelComparisonPage(
+                          builder: (context) => AutoComparisonContainerPage(
                             eventCode: widget.eventCode,
                             leftTeamNumber: teamNumber,
                             rightTeamNumber: opsStats.team_number,
@@ -3319,7 +3510,7 @@ class _BubbleSortState extends State<BubbleSort> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AutoFuelComparisonPage(
+                          builder: (context) => AutoComparisonContainerPage(
                             eventCode: widget.eventCode,
                             leftTeamNumber: teamNumber,
                             rightTeamNumber: opsStats.team_number,
@@ -3341,7 +3532,7 @@ class _BubbleSortState extends State<BubbleSort> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AutoFuelComparisonPage(
+                          builder: (context) => AutoComparisonContainerPage(
                             eventCode: widget.eventCode,
                             leftTeamNumber: teamNumber,
                             rightTeamNumber: opsStats.team_number,
