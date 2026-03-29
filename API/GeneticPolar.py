@@ -61,6 +61,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     oprMatchList = []
     # Isolating Data Related to OPR
     blankOprEntry = {
+        "auto_fuel_denied": 0,
+        "teleop_fuel_denied": 0,
+
         "auto_fuel_scored": 0,
         "teleop_fuel_scored": 0,
         "total_fuel_scored": 0,
@@ -98,7 +101,8 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
                 oprMatchEntry["auto_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.autoCount
                 oprMatchEntry["teleop_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.teleopCount
                 oprMatchEntry["total_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.teleopCount + row.score_breakdown[allianceStr].hubScore.autoCount
-                
+      
+
                 oprMatchEntry["foul_points"] = row.score_breakdown[allianceStr].foulPoints
 
                 oprMatchEntry["station1_auto_tower"] = row.score_breakdown[allianceStr].autoTowerRobot1
@@ -194,6 +198,11 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     # ScoutingDataMaxs = [
         
     # ]
+    DefenseOnlyKeys = [
+        "auto_fuel_denied",
+        "teleop_fuel_denied",
+    ]
+
     TBAOnlyKeys = [
         "auto_fuel_scored",
         "teleop_fuel_scored",
@@ -306,6 +315,10 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     # print("ready for regression")
     # Multivariate Regression
     XMatrix = pd.DataFrame()
+    
+    AMatrixDefense = pd.DataFrame(TBAOnlyAList, columns=teams)
+    APseudoInverseDefense = np.linalg.pinv(AMatrixDefense[teams])
+    YDefenseMatrix = pd.DataFrame(None, columns=DefenseOnlyKeys)
 
     TBAOnlyXMatrix = pd.DataFrame(TBAOnlyAPseudoInverse @ TBAOnlyYMatrix)
     # Run Genetic Algorithm
@@ -451,4 +464,61 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     'total_fuel_scored',
     XMatrix['auto_fuel_scored'] + XMatrix['teleop_fuel_scored']
 )
+    blankDefenseEntry = {
+        "auto_fuel_denied": 0,
+        "teleop_fuel_denied": 0,
+
+        "auto_fuel_scored": 0,
+        "teleop_fuel_scored": 0,
+        "total_fuel_scored": 0,
+        "foul_points": 0,
+
+        "station1": 0,
+        "station2": 0,
+        "station3": 0,
+
+        "station1_auto_tower": "",
+        "station2_auto_tower": "",
+        "station3_auto_tower": "",
+
+        "station1_endgame_tower": "",
+        "station2_endgame_tower": "",
+        "station3_endgame_tower": "",
+
+        "match_number": 0,
+        "allianceStr": "",
+    }
+    defenseMatchList = []
+    for row in data:
+        if not row.score_breakdown == None:
+            for allianceStr in row.alliances:
+                if allianceStr == 'red':
+                    opponentStr = 'blue'
+                else:
+                    opponentStr = 'red'
+                defenseMatchEntry = copy.deepcopy(blankDefenseEntry)
+                defenseMatchEntry["allianceStr"] = allianceStr
+                defenseMatchEntry["match_number"] = row.match_number
+                for k in range(3):
+                    defenseMatchEntry["station" +
+                                  str(k + 1)] = row.alliances[allianceStr].team_keys[k][3:]
+                opp1auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp2auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp3auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp1teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                opp2teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                opp3teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                predictedAutoPoints = opp1auto+opp2auto+opp3auto
+                predictedTeleopPoints = opp1teleop+opp2teleop+opp3teleop
+                defenseMatchEntry["auto_fuel_denied"] = predictedAutoPoints - row.score_breakdown[opponentStr].hubScore.autoCount
+                defenseMatchEntry["teleop_fuel_denied"] = predictedTeleopPoints - row.score_breakdown[opponentStr].hubScore.teleopCount
+
+            
+                defenseMatchList.append(copy.deepcopy(defenseMatchEntry))
+    defenseMatchDataFrame = pd.DataFrame(defenseMatchList)
+    
+    YDefenseMatrix = pd.DataFrame(defenseMatchDataFrame[DefenseOnlyKeys])
+    XMatrixDefense = pd.DataFrame(APseudoInverseDefense @ YDefenseMatrix)
+    for key in XMatrixDefense.columns:
+        XMatrix[key] = XMatrixDefense[key]
     return XMatrix, ratings

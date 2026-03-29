@@ -28,6 +28,8 @@ class TeamStats2026 with _$TeamStats2026 {
     @Default(0.0) double foul_points,
     @Default(0) int simulated_rp,
     @Default(0) int simulated_rank,
+    @Default(0.0) double auto_fuel_denied,
+    @Default(0.0) double teleop_fuel_denied,
   }) = _TeamStats2026;
 
   factory TeamStats2026.fromJson(Map<String, dynamic> json) =>
