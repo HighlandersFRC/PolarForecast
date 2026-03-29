@@ -400,6 +400,9 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     endgameClimbL3 = endgameClimbL3 / teamMatchCount
     autoPassing = autoPassing / matchScoutingCount
     teleopPassing = teleopPassing / matchScoutingCount
+
+    teamDeaths = teamDeaths / matchScoutingCount
+    teamDefenses = teamDefenses / matchScoutingCount
     
     for i in range(len(teamDeaths)):
         if math.isnan(teamDeaths[i]):

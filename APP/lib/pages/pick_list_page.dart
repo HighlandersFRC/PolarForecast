@@ -3573,9 +3573,123 @@ class _BubbleSortState extends State<BubbleSort> {
                         lowerIsBetter: true, asPercent: true),
                   ),
 
-                  _buildStatRow("Defense Rate", stats.defense_rate,
-                      opsStats.defense_rate, side,
-                      asPercent: true),
+                  GestureDetector(
+                    onTap: () async {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+
+                      try {
+                        final api =
+                            Provider.of<ApiService>(context, listen: false);
+
+                        final scouting = await api.fetchTeamMatchScouting(
+                          2026,
+                          widget.eventCode.substring(4),
+                          "frc${teamNumber}",
+                        );
+
+                        final defenseMatches = scouting
+                            .where((m) =>
+                                m.team_number.toString() ==
+                                    teamNumber.toString() &&
+                                m.data.miscellaneous.defense)
+                            .toList()
+                          ..sort((a, b) =>
+                              a.match_number.compareTo(b.match_number));
+                        Navigator.pop(context); // close loading
+
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            backgroundColor: Colors.grey[900],
+                            title: Text(
+                              'Defense Matches - $teamNumber',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Font',
+                              ),
+                            ),
+                            content: SizedBox(
+                              width: 350,
+                              child: defenseMatches.isEmpty
+                                  ? const Text(
+                                      'No matches where defense was played.',
+                                      style: TextStyle(color: Colors.white70),
+                                    )
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: defenseMatches.length,
+                                      itemBuilder: (_, index) {
+                                        final match = defenseMatches[index];
+
+                                        return ListTile(
+                                          onTap: () {
+                                            final matchKey =
+                                                '${match.event_code}_qm${match.match_number}';
+
+                                            html.window.open(
+                                              'https://www.thebluealliance.com/match/$matchKey',
+                                              '_blank',
+                                            );
+                                          },
+                                          title: Text(
+                                            '${match.event_code}_qm${match.match_number}',
+                                            style: const TextStyle(
+                                              color: Colors.blueAccent,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              fontFamily: 'Font',
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            match.data.miscellaneous.comments
+                                                    .isNotEmpty
+                                                ? match
+                                                    .data.miscellaneous.comments
+                                                : 'No comments',
+                                            style: const TextStyle(
+                                                color: Colors.white70),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text(
+                                  'Close',
+                                  style: TextStyle(color: Colors.blueAccent),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } catch (e) {
+                        Navigator.pop(context);
+
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Error"),
+                            content: Text(e.toString()),
+                          ),
+                        );
+                      }
+                    },
+                    child: _buildStatRow(
+                      "Defense Rate",
+                      stats.defense_rate,
+                      opsStats.defense_rate,
+                      side,
+                      asPercent: true,
+                    ),
+                  ),
                   _buildStatRow("Sim RP", stats.simulated_rp.toDouble(),
                       opsStats.simulated_rp.toDouble(), side,
                       integerLike: true),
