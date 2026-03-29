@@ -1907,13 +1907,13 @@ class _AutoComparisonContainerPageState
     final theme = Theme.of(context);
 
     final tabs = [
-      AutoFuelComparisonPageMatchScouting(
+      AutoFuelComparisonPagePitScouting(
         eventCode: widget.eventCode,
         leftTeamNumber: widget.leftTeamNumber,
         rightTeamNumber: widget.rightTeamNumber,
         teamNames: widget.teamNames,
       ),
-      AutoFuelComparisonPagePitScouting(
+      AutoFuelComparisonPageMatchScouting(
         eventCode: widget.eventCode,
         leftTeamNumber: widget.leftTeamNumber,
         rightTeamNumber: widget.rightTeamNumber,
@@ -1928,14 +1928,14 @@ class _AutoComparisonContainerPageState
         onTap: (index) => setState(() => _currentTab = index),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.visibility_outlined, color: theme.primaryColor),
-            activeIcon: Icon(Icons.visibility, color: theme.primaryColor),
-            label: 'Match',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.assignment_outlined, color: theme.primaryColor),
             activeIcon: Icon(Icons.assignment, color: theme.primaryColor),
-            label: 'Pit',
+            label: 'Auto from Pit Scouting',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.visibility_outlined, color: theme.primaryColor),
+            activeIcon: Icon(Icons.visibility, color: theme.primaryColor),
+            label: 'Auto from Match Scouting',
           ),
         ],
         selectedItemColor: theme.primaryColor,
