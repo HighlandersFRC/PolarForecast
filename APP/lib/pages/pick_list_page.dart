@@ -3741,10 +3741,49 @@ class _BubbleSortState extends State<BubbleSort> {
 
     if (isDone) {
       return Scaffold(
-        appBar: PolarForecastAppBar(extraText: 'Generate Picklist'),
-        body: const Center(
-          child: Text("DONE",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        appBar: PolarForecastAppBar(
+          extraText: 'Generate Picklist ${widget.name}',
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Picklist Complete",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "All comparisons are finished and your picklist is ready.",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.blue,
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+                  GlassActionButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text("Back"),
+                    color: Colors.blue,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -3766,6 +3805,7 @@ class _BubbleSortState extends State<BubbleSort> {
           PolarForecastAppBar(extraText: 'Generate Picklist ${widget.name}'),
       body: Stack(
         children: [
+          // 🌨 Background
           Positioned.fill(
             child: IgnorePointer(
               ignoring: true,
@@ -3775,6 +3815,7 @@ class _BubbleSortState extends State<BubbleSort> {
               ),
             ),
           ),
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(10),
@@ -3784,25 +3825,27 @@ class _BubbleSortState extends State<BubbleSort> {
                   builder: (context, constraints) {
                     final compact = constraints.maxWidth < 900;
                     final phone = constraints.maxWidth < 700;
+
                     return Column(
                       children: [
+                        // 📌 HEADER
                         Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
                             children: [
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.compare_arrows_rounded,
+                                  const Icon(Icons.compare_arrows_rounded,
                                       color: Colors.blue),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       'Auto Generate Picklist | ${widget.name}',
                                       style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w800,
-                                          fontFamily: 'Font'),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'Font',
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -3812,39 +3855,86 @@ class _BubbleSortState extends State<BubbleSort> {
                             ],
                           ),
                         ),
+
                         const Divider(height: 1),
+
+                        // 📊 SCROLLABLE STATS ONLY
                         Expanded(
                           child: isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : SingleChildScrollView(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      children: [
-                                        if (compact)
-                                          Column(
-                                            children: [
-                                              if (phone)
-                                                Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  child: TextButton.icon(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        _showPhoneImages =
-                                                            !_showPhoneImages;
-                                                      });
-                                                    },
-                                                    icon: Icon(_showPhoneImages
-                                                        ? Icons
-                                                            .image_not_supported_outlined
-                                                        : Icons.image_outlined),
-                                                    label: Text(_showPhoneImages
-                                                        ? 'Hide images'
-                                                        : 'Show images'),
-                                                  ),
-                                                ),
-                                              _teamPanel(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    children: [
+                                      // 📱 PHONE TOGGLE
+                                      if (compact && phone)
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: TextButton.icon(
+                                            onPressed: () {
+                                              setState(() {
+                                                _showPhoneImages =
+                                                    !_showPhoneImages;
+                                              });
+                                            },
+                                            icon: Icon(
+                                              _showPhoneImages
+                                                  ? Icons
+                                                      .image_not_supported_outlined
+                                                  : Icons.image_outlined,
+                                            ),
+                                            label: Text(
+                                              _showPhoneImages
+                                                  ? 'Hide images'
+                                                  : 'Show images',
+                                            ),
+                                          ),
+                                        ),
+
+                                      // 📱 COMPACT LAYOUT
+                                      if (compact)
+                                        Column(
+                                          children: [
+                                            _teamPanel(
+                                              teamNumber: aNum,
+                                              pickIndex: leftIndex + 1,
+                                              stats: aStats,
+                                              opsStats: bStats,
+                                              avatar: aAvatar,
+                                              fallback: '',
+                                              images: teamAImages,
+                                              side: "LEFT",
+                                              pick: left,
+                                              showImages:
+                                                  !phone || _showPhoneImages,
+                                              compactImages: phone,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            _teamPanel(
+                                              teamNumber: bNum,
+                                              pickIndex: rightIndex + 1,
+                                              stats: bStats,
+                                              opsStats: aStats,
+                                              avatar: bAvatar,
+                                              fallback: '',
+                                              images: teamBImages,
+                                              side: "RIGHT",
+                                              pick: right,
+                                              showImages:
+                                                  !phone || _showPhoneImages,
+                                              compactImages: phone,
+                                            ),
+                                          ],
+                                        )
+
+                                      // 🖥 DESKTOP LAYOUT
+                                      else
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: _teamPanel(
                                                 teamNumber: aNum,
                                                 pickIndex: leftIndex + 1,
                                                 stats: aStats,
@@ -3854,12 +3944,13 @@ class _BubbleSortState extends State<BubbleSort> {
                                                 images: teamAImages,
                                                 side: "LEFT",
                                                 pick: left,
-                                                showImages:
-                                                    !phone || _showPhoneImages,
-                                                compactImages: phone,
+                                                showImages: true,
+                                                compactImages: false,
                                               ),
-                                              const SizedBox(height: 10),
-                                              _teamPanel(
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: _teamPanel(
                                                 teamNumber: bNum,
                                                 pickIndex: rightIndex + 1,
                                                 stats: bStats,
@@ -3869,152 +3960,105 @@ class _BubbleSortState extends State<BubbleSort> {
                                                 images: teamBImages,
                                                 side: "RIGHT",
                                                 pick: right,
-                                                showImages:
-                                                    !phone || _showPhoneImages,
-                                                compactImages: phone,
+                                                showImages: true,
+                                                compactImages: false,
                                               ),
-                                            ],
-                                          )
-                                        else
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                child: _teamPanel(
-                                                  teamNumber: aNum,
-                                                  pickIndex: leftIndex + 1,
-                                                  stats: aStats,
-                                                  opsStats: bStats,
-                                                  avatar: aAvatar,
-                                                  fallback: '',
-                                                  images: teamAImages,
-                                                  side: "LEFT",
-                                                  pick: left,
-                                                  showImages: true,
-                                                  compactImages: false,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: _teamPanel(
-                                                  teamNumber: bNum,
-                                                  pickIndex: rightIndex + 1,
-                                                  stats: bStats,
-                                                  opsStats: aStats,
-                                                  avatar: bAvatar,
-                                                  fallback: '',
-                                                  images: teamBImages,
-                                                  side: "RIGHT",
-                                                  pick: right,
-                                                  showImages: true,
-                                                  compactImages: false,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        const SizedBox(height: 10),
-                                        if (phone)
-                                          Column(
-                                            children: [
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: GlassActionButton(
-                                                  icon: const Icon(
-                                                      Icons.thumb_up),
-                                                  label: Text(
-                                                      '${widget.picks[leftIndex].number} better'),
-                                                  color: Colors.blue,
-                                                  onPressed: () {
-                                                    final a = widget
-                                                        .picks[leftIndex]
-                                                        .number;
-                                                    final b = widget
-                                                        .picks[rightIndex]
-                                                        .number;
-                                                    decisionMemory[
-                                                        _pairKey(a, b)] = false;
-                                                    step(false, widget.picks,
-                                                        widget.picks.length);
-                                                    _loadPair();
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: GlassActionButton(
-                                                  icon: const Icon(
-                                                      Icons.thumb_up),
-                                                  label: Text(
-                                                      '${widget.picks[rightIndex].number} better'),
-                                                  color: Colors.blue,
-                                                  onPressed: () {
-                                                    final a = widget
-                                                        .picks[leftIndex]
-                                                        .number;
-                                                    final b = widget
-                                                        .picks[rightIndex]
-                                                        .number;
-                                                    decisionMemory[
-                                                        _pairKey(a, b)] = true;
-                                                    step(true, widget.picks,
-                                                        widget.picks.length);
-                                                    _loadPair();
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        else
-                                          Wrap(
-                                            spacing: 12,
-                                            runSpacing: 8,
-                                            alignment: WrapAlignment.center,
-                                            children: [
-                                              GlassActionButton(
-                                                icon:
-                                                    const Icon(Icons.thumb_up),
-                                                label: Text(
-                                                    '${widget.picks[leftIndex].number} better'),
-                                                color: Colors.blue,
-                                                onPressed: () {
-                                                  final a = widget
-                                                      .picks[leftIndex].number;
-                                                  final b = widget
-                                                      .picks[rightIndex].number;
-                                                  decisionMemory[
-                                                      _pairKey(a, b)] = false;
-                                                  step(false, widget.picks,
-                                                      widget.picks.length);
-                                                  _loadPair();
-                                                },
-                                              ),
-                                              GlassActionButton(
-                                                icon:
-                                                    const Icon(Icons.thumb_up),
-                                                label: Text(
-                                                    '${widget.picks[rightIndex].number} better'),
-                                                color: Colors.blue,
-                                                onPressed: () {
-                                                  final a = widget
-                                                      .picks[leftIndex].number;
-                                                  final b = widget
-                                                      .picks[rightIndex].number;
-                                                  decisionMemory[
-                                                      _pairKey(a, b)] = true;
-                                                  step(true, widget.picks,
-                                                      widget.picks.length);
-                                                  _loadPair();
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        const SizedBox(height: 20),
-                                      ],
-                                    ),
+                                            ),
+                                          ],
+                                        ),
+
+                                      const SizedBox(height: 100),
+                                    ],
                                   ),
                                 ),
+                        ),
+
+                        // 🔘 FIXED BOTTOM BUTTON CARD
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          child: _glassContainer(
+                            radius: 16,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: phone
+                                  ? Column(
+                                      children: [
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: GlassActionButton(
+                                            icon: const Icon(Icons.thumb_up),
+                                            label:
+                                                Text('${left.number} better'),
+                                            color: Colors.blue,
+                                            onPressed: () {
+                                              final a = left.number;
+                                              final b = right.number;
+                                              decisionMemory[_pairKey(a, b)] =
+                                                  false;
+                                              step(false, widget.picks,
+                                                  widget.picks.length);
+                                              _loadPair();
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: GlassActionButton(
+                                            icon: const Icon(Icons.thumb_up),
+                                            label:
+                                                Text('${right.number} better'),
+                                            color: Colors.blue,
+                                            onPressed: () {
+                                              final a = left.number;
+                                              final b = right.number;
+                                              decisionMemory[_pairKey(a, b)] =
+                                                  true;
+                                              step(true, widget.picks,
+                                                  widget.picks.length);
+                                              _loadPair();
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Wrap(
+                                      spacing: 12,
+                                      runSpacing: 8,
+                                      alignment: WrapAlignment.center,
+                                      children: [
+                                        GlassActionButton(
+                                          icon: const Icon(Icons.thumb_up),
+                                          label: Text('${left.number} better'),
+                                          color: Colors.blue,
+                                          onPressed: () {
+                                            final a = left.number;
+                                            final b = right.number;
+                                            decisionMemory[_pairKey(a, b)] =
+                                                false;
+                                            step(false, widget.picks,
+                                                widget.picks.length);
+                                            _loadPair();
+                                          },
+                                        ),
+                                        GlassActionButton(
+                                          icon: const Icon(Icons.thumb_up),
+                                          label: Text('${right.number} better'),
+                                          color: Colors.blue,
+                                          onPressed: () {
+                                            final a = left.number;
+                                            final b = right.number;
+                                            decisionMemory[_pairKey(a, b)] =
+                                                true;
+                                            step(true, widget.picks,
+                                                widget.picks.length);
+                                            _loadPair();
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
                         ),
                       ],
                     );
