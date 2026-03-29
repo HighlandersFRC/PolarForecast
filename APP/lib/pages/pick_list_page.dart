@@ -4488,6 +4488,7 @@ class _BubbleSortState extends State<BubbleSort> {
   Map<String, List<int>> positionHistory = {};
   int stepCount = 0;
   bool isSorting = true;
+  bool _showPhoneImages = false;
 
   List<PictureData> teamAImages = [];
   List<PictureData> teamBImages = [];
@@ -4525,14 +4526,12 @@ class _BubbleSortState extends State<BubbleSort> {
     final b = widget.picks[j + 1].number;
     final key = _swapKey(a, b);
 
-// 🚫 Skip if we already KNOW this decision was made
     if (!knownSwaps.contains(key)) {
       knownSwaps.add(key);
 
       if (shouldSwap) {
         widget.onSwap(j, j + 1);
 
-        // insertion-style movement
         if (j > 0) {
           j--;
         } else {
@@ -4542,11 +4541,9 @@ class _BubbleSortState extends State<BubbleSort> {
         j++;
       }
     } else {
-      // already known → just continue forward safely
       j++;
     }
 
-    // ✅ DONE after ONE pass
     if (j >= n - 1) {
       setState(() => isDone = true);
 
@@ -4564,7 +4561,6 @@ class _BubbleSortState extends State<BubbleSort> {
       return;
     }
 
-    // record state
     final currentOrder = widget.picks.map((e) => e.number).toList();
     orderHistory.add(currentOrder);
 
@@ -4604,15 +4600,11 @@ class _BubbleSortState extends State<BubbleSort> {
             }).toList(),
             xValueMapper: (d, _) => d.team,
             yValueMapper: (d, _) => d.position,
-
-            // 🔥 KEY DEBUG FEATURE
             pointColorMapper: (d, index) {
               final isActive = index == j || index == j + 1;
-
               if (isActive) return Colors.orange;
               return Colors.blue;
             },
-
             dataLabelSettings: const DataLabelSettings(
               isVisible: true,
             ),
@@ -4633,11 +4625,9 @@ class _BubbleSortState extends State<BubbleSort> {
 
     final key = _pairKey(a, b);
 
-    // 🚫 SKIP if we already KNOW this comparison result
     if (decisionMemory.containsKey(key)) {
       final shouldSwap = decisionMemory[key]!;
 
-      // auto-advance without re-asking user
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || isDone) return;
 
@@ -4677,7 +4667,6 @@ class _BubbleSortState extends State<BubbleSort> {
         if (nB != null && nB.isNotEmpty) names[b] = nB;
       });
     } catch (_) {
-      // optional: log error
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -4685,9 +4674,23 @@ class _BubbleSortState extends State<BubbleSort> {
     }
   }
 
-  // ─────────────────────────────────────────────
-  // UI HELPERS (NEW STYLE ONLY)
-  // ─────────────────────────────────────────────
+  Widget _glassContainer({required Widget child, double radius = 12}) {
+    final cs = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest.withOpacity(0.18),
+            border: Border.all(color: cs.outline.withOpacity(0.08)),
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
 
   Widget _glass(Widget child) {
     final cs = Theme.of(context).colorScheme;
@@ -4745,12 +4748,16 @@ class _BubbleSortState extends State<BubbleSort> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // BUILD (NEW UI ONLY)
-  // ─────────────────────────────────────────────
-
   String _avatarPrimaryUrl(String teamNumber) {
     return 'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/${2026}/frc$teamNumber.png&w=96&h=96&fit=contain';
+  }
+
+  String _teamLabel(String teamNumber) {
+    final nickname = names[teamNumber];
+    if (nickname != null && nickname.isNotEmpty) {
+      return '$teamNumber | $nickname';
+    }
+    return teamNumber;
   }
 
   Widget _positionHistoryChart() {
@@ -4782,220 +4789,243 @@ class _BubbleSortState extends State<BubbleSort> {
     );
   }
 
-  Widget _teamCard(
-    BuildContext context, {
-    required TeamStats2026 teamStats,
-    required TeamStats2026 otherStats,
-    required String side,
-    required Picks pick,
-    required List<PictureData> images,
-    required String teamNumber,
-  }) {
-    final nickname = names[teamNumber] ?? "";
-
+  Widget _pill(String text, Color color) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.34)),
       ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // HEADER
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(
-                  _avatarPrimaryUrl(teamNumber),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  "$teamNumber ${nickname.isNotEmpty ? "| $nickname" : ""}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // SIDE LABEL
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(side),
-          ),
-
-          const SizedBox(height: 10),
-
-          // IMAGES
-          SizedBox(
-            height: 90,
-            child: images.isEmpty
-                ? const Center(child: Text("No images"))
-                : ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: images.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
-                    itemBuilder: (context, index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          images[index].link,
-                          width: 90,
-                          fit: BoxFit.cover,
-                        ),
-                      );
-                    },
-                  ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // NOTES
-          Text(
-            pick.comments.isEmpty ? "No notes" : pick.comments,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // ✅ STATS (FIXED)
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Stats",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...[
-                  _metricRow("OPR", teamStats.OPR, otherStats.OPR),
-                  _metricRow("Auto Points", teamStats.auto_points,
-                      otherStats.auto_points),
-                  _metricRow("Teleop Points", teamStats.teleop_points,
-                      otherStats.teleop_points),
-                  _metricRow("Endgame Points", teamStats.endgame_points,
-                      otherStats.endgame_points),
-                  _metricRow("Climbing Points", teamStats.climbing_points,
-                      otherStats.climbing_points),
-                  _metricRow("Total Pass", teamStats.total_pass,
-                      otherStats.total_pass),
-                  _metricRow(
-                      "Auto Pass", teamStats.auto_pass, otherStats.auto_pass),
-                  _metricRow("Teleop Pass", teamStats.teleop_pass,
-                      otherStats.teleop_pass),
-                  _metricRow("Total Fuel", teamStats.total_fuel_scored,
-                      otherStats.total_fuel_scored),
-                  _metricRow(
-                    "Foul Points",
-                    teamStats.foul_points,
-                    otherStats.foul_points,
-                    lowerIsBetter: true,
-                  ),
-                  _metricRow(
-                    "Death Rate",
-                    teamStats.death_rate,
-                    otherStats.death_rate,
-                    lowerIsBetter: true,
-                    asPercent: true,
-                  ),
-                  _metricRow(
-                    "Defense Rate",
-                    teamStats.defense_rate,
-                    otherStats.defense_rate,
-                    asPercent: true,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontSize: 12,
+        ),
       ),
     );
   }
 
-  Widget _metricRow(
-    String label,
-    double value,
-    double otherValue, {
-    bool lowerIsBetter = false,
-    bool asPercent = false,
-    bool integerLike = false,
+  Color trophyColorForRank(int rank) {
+    if (rank == 1) return Colors.amber;
+    if (rank == 2) return Colors.grey;
+    if (rank == 3) return const Color(0xFFcd7f32);
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  Widget _teamPanel({
+    required String teamNumber,
+    required int pickIndex,
+    required TeamStats2026 stats,
+    required String avatar,
+    required String fallback,
+    required List<PictureData> images,
+    required String side,
+    required Picks pick,
+    bool showImages = true,
+    bool compactImages = false,
   }) {
-    bool isEqual = (value - otherValue).abs() < 0.0001;
+    final rankColor = trophyColorForRank(stats.rank);
+    return _glassContainer(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  backgroundImage: NetworkImage(avatar),
+                  child: avatar.isEmpty ? null : null,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _teamLabel(teamNumber),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          _pill('Pick #$pickIndex', Colors.blue),
+                          _pill(side, Colors.purple),
+                          _pill('Rank #${stats.rank}', rankColor),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (showImages)
+              SizedBox(
+                height: compactImages ? 84 : 112,
+                width: double.infinity,
+                child: images.isEmpty
+                    ? const Center(child: Text('No images'))
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: images.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final image = images[index];
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () => _showImagePreview(image.link),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: image.link,
+                                width: compactImages ? 96 : 128,
+                                height: compactImages ? 84 : 112,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child: const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant,
+                                  alignment: Alignment.center,
+                                  child:
+                                      const Icon(Icons.broken_image_outlined),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant
+                      .withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Tap show images to show images.'),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              pick.comments.isEmpty ? "No notes" : pick.comments,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Stats",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._buildOwnMetricsList(stats),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-    bool isBetter = lowerIsBetter ? value < otherValue : value > otherValue;
+  List<Widget> _buildOwnMetricsList(TeamStats2026 stats) {
+    final metrics = [
+      _OwnMetric('OPR', stats.OPR),
+      _OwnMetric('Auto Points', stats.auto_points),
+      _OwnMetric('Teleop Points', stats.teleop_points),
+      _OwnMetric('Endgame Points', stats.endgame_points),
+      _OwnMetric('Climbing Points', stats.climbing_points),
+      _OwnMetric('Total Pass', stats.total_pass),
+      _OwnMetric('Auto Pass', stats.auto_pass),
+      _OwnMetric('Teleop Pass', stats.teleop_pass),
+      _OwnMetric('Total Fuel', stats.total_fuel_scored),
+      _OwnMetric('Foul Points', stats.foul_points),
+      _OwnMetric('Death Rate', stats.death_rate, asPercent: true),
+      _OwnMetric('Defense Rate', stats.defense_rate, asPercent: true),
+    ];
 
-    Color borderColor = isEqual
-        ? Colors.grey.withOpacity(0.4)
-        : (isBetter ? Colors.green : Colors.red);
+    return metrics.map((metric) => _ownMetricRow(metric)).toList();
+  }
 
-    Color bgColor = isEqual
-        ? Colors.grey.withOpacity(0.08)
-        : (isBetter
-            ? Colors.green.withOpacity(0.12)
-            : Colors.red.withOpacity(0.12));
-
+  Widget _ownMetricRow(_OwnMetric metric) {
     String format(double v) {
-      if (asPercent) return "${(v * 100).toStringAsFixed(1)}%";
-      if (integerLike) return v.toStringAsFixed(0);
+      if (metric.asPercent) return "${(v * 100).toStringAsFixed(1)}%";
+      if (metric.integerLike) return v.toStringAsFixed(0);
       return v.toStringAsFixed(2);
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor.withOpacity(0.6)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
+            flex: 2,
             child: Text(
-              label,
+              metric.label,
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          Text(
-            format(value),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: borderColor,
+          Expanded(
+            flex: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                ),
+              ),
+              child: Text(
+                format(metric.value),
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -5003,31 +5033,76 @@ class _BubbleSortState extends State<BubbleSort> {
     );
   }
 
-  List<_CompareMetric> _buildMetricsSingle(TeamStats2026? t) {
-    return [
-      _CompareMetric('Comp Rank', (t?.rank ?? 0).toDouble(), 0,
-          integerLike: true),
-      _CompareMetric('Sim Rank', (t?.simulated_rank ?? 0).toDouble(), 0,
-          integerLike: true),
-      _CompareMetric('OPR', t?.OPR ?? 0, 0),
-      _CompareMetric('Auto Points', t?.auto_points ?? 0, 0),
-      _CompareMetric('Teleop Points', t?.teleop_points ?? 0, 0),
-      _CompareMetric('Endgame Points', t?.endgame_points ?? 0, 0),
-      _CompareMetric('Climbing Points', t?.climbing_points ?? 0, 0),
-      _CompareMetric('Total Pass', t?.total_pass ?? 0, 0),
-      _CompareMetric('Auto Pass', t?.auto_pass ?? 0, 0),
-      _CompareMetric('Teleop Pass', t?.teleop_pass ?? 0, 0),
-      _CompareMetric('Auto Fuel', t?.auto_fuel_scored ?? 0, 0),
-      _CompareMetric('Teleop Fuel', t?.teleop_fuel_scored ?? 0, 0),
-      _CompareMetric('Total Fuel', t?.total_fuel_scored ?? 0, 0),
-      _CompareMetric('Foul Points', t?.foul_points ?? 0, 0,
-          lowerIsBetter: true),
-      _CompareMetric('Death Rate', t?.death_rate ?? 0, 0,
-          lowerIsBetter: true, asPercent: true),
-      _CompareMetric('Defense Rate', t?.defense_rate ?? 0, 0, asPercent: true),
-      _CompareMetric('Sim RP', (t?.simulated_rp ?? 0).toDouble(), 0,
-          integerLike: true),
-    ];
+  Future<void> _showImagePreview(String imageUrl) async {
+    if (imageUrl.isEmpty) return;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(24),
+          backgroundColor: Colors.black87,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 5,
+                  child: Center(
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white70,
+                          size: 36),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  TeamStats2026 _getStats(String teamNumber) {
+    try {
+      return widget.rankings.firstWhere(
+        (t) => t.team_number == teamNumber,
+      );
+    } catch (e) {
+      return TeamStats2026(
+        team_number: teamNumber,
+        OPR: 0,
+        auto_points: 0,
+        teleop_points: 0,
+        endgame_points: 0,
+        climbing_points: 0,
+        total_pass: 0,
+        auto_pass: 0,
+        teleop_pass: 0,
+        total_fuel_scored: 0,
+        foul_points: 0,
+        death_rate: 0,
+        defense_rate: 0,
+        simulated_rank: 0,
+        rank: 0,
+        simulated_rp: 0,
+        historical: false,
+        key: '',
+      );
+    }
   }
 
   @override
@@ -5051,129 +5126,276 @@ class _BubbleSortState extends State<BubbleSort> {
 
     final left = widget.picks[leftIndex];
     final right = widget.picks[rightIndex];
-
     final aNum = left.number;
     final bNum = right.number;
-    TeamStats2026 getStats(String teamNumber) {
-      try {
-        return widget.rankings.firstWhere(
-          (t) => t.team_number == teamNumber,
-        );
-      } catch (e) {
-        print("Missing ranking for team: $teamNumber");
-        return TeamStats2026(
-          team_number: teamNumber,
-          OPR: 0,
-          auto_points: 0,
-          teleop_points: 0,
-          endgame_points: 0,
-          climbing_points: 0,
-          total_pass: 0,
-          auto_pass: 0,
-          teleop_pass: 0,
-          total_fuel_scored: 0,
-          foul_points: 0,
-          death_rate: 0,
-          defense_rate: 0,
-          simulated_rank: 0,
-          rank: 0,
-          simulated_rp: 0,
-          historical: false,
-          key: '',
-        );
-      }
-    }
+    final aStats = _getStats(aNum);
+    final bStats = _getStats(bNum);
+
+    final aAvatar =
+        'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/${widget.eventYear}/frc$aNum.png&w=256&h=256&fit=contain';
+    final bAvatar =
+        'https://images.weserv.nl/?url=www.thebluealliance.com/avatar/${widget.eventYear}/frc$bNum.png&w=256&h=256&fit=contain';
 
     return Scaffold(
       appBar:
           PolarForecastAppBar(extraText: 'Generate Picklist ${widget.name}'),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(children: [
-                    const SizedBox(height: 12),
-                    _debugBarChart(),
-                    const SizedBox(height: 12),
-                    // TEAM CARDS
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: SnowField(
+                particleCount: 50,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: _glassContainer(
+                radius: 16,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 900;
+                    final phone = constraints.maxWidth < 700;
+                    return Column(
                       children: [
-                        Expanded(
-                          child: _teamCard(
-                            context,
-                            teamStats: getStats(aNum),
-                            otherStats: getStats(bNum),
-                            side: "LEFT",
-                            pick: left,
-                            images: teamAImages,
-                            teamNumber: aNum,
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.compare_arrows_rounded,
+                                      color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Auto Generate Picklist | ${widget.name}',
+                                      style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          fontFamily: 'Font'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              _debugBarChart(),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const Divider(height: 1),
                         Expanded(
-                          child: _teamCard(
-                            context,
-                            teamStats: getStats(bNum),
-                            otherStats: getStats(aNum),
-                            side: "RIGHT",
-                            pick: right,
-                            images: teamBImages,
-                            teamNumber: bNum,
-                          ),
+                          child: isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : SingleChildScrollView(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      children: [
+                                        if (compact)
+                                          Column(
+                                            children: [
+                                              if (phone)
+                                                Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: TextButton.icon(
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        _showPhoneImages =
+                                                            !_showPhoneImages;
+                                                      });
+                                                    },
+                                                    icon: Icon(_showPhoneImages
+                                                        ? Icons
+                                                            .image_not_supported_outlined
+                                                        : Icons.image_outlined),
+                                                    label: Text(_showPhoneImages
+                                                        ? 'Hide images'
+                                                        : 'Show images'),
+                                                  ),
+                                                ),
+                                              _teamPanel(
+                                                teamNumber: aNum,
+                                                pickIndex: leftIndex + 1,
+                                                stats: aStats,
+                                                avatar: aAvatar,
+                                                fallback: '',
+                                                images: teamAImages,
+                                                side: "LEFT",
+                                                pick: left,
+                                                showImages:
+                                                    !phone || _showPhoneImages,
+                                                compactImages: phone,
+                                              ),
+                                              const SizedBox(height: 10),
+                                              _teamPanel(
+                                                teamNumber: bNum,
+                                                pickIndex: rightIndex + 1,
+                                                stats: bStats,
+                                                avatar: bAvatar,
+                                                fallback: '',
+                                                images: teamBImages,
+                                                side: "RIGHT",
+                                                pick: right,
+                                                showImages:
+                                                    !phone || _showPhoneImages,
+                                                compactImages: phone,
+                                              ),
+                                            ],
+                                          )
+                                        else
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: _teamPanel(
+                                                  teamNumber: aNum,
+                                                  pickIndex: leftIndex + 1,
+                                                  stats: aStats,
+                                                  avatar: aAvatar,
+                                                  fallback: '',
+                                                  images: teamAImages,
+                                                  side: "LEFT",
+                                                  pick: left,
+                                                  showImages: true,
+                                                  compactImages: false,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: _teamPanel(
+                                                  teamNumber: bNum,
+                                                  pickIndex: rightIndex + 1,
+                                                  stats: bStats,
+                                                  avatar: bAvatar,
+                                                  fallback: '',
+                                                  images: teamBImages,
+                                                  side: "RIGHT",
+                                                  pick: right,
+                                                  showImages: true,
+                                                  compactImages: false,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        const SizedBox(height: 10),
+                                        if (phone)
+                                          Column(
+                                            children: [
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: GlassActionButton(
+                                                  icon: const Icon(
+                                                      Icons.thumb_up),
+                                                  label: Text(
+                                                      '${widget.picks[leftIndex].number} better'),
+                                                  color: Colors.blue,
+                                                  onPressed: () {
+                                                    final a = widget
+                                                        .picks[leftIndex]
+                                                        .number;
+                                                    final b = widget
+                                                        .picks[rightIndex]
+                                                        .number;
+                                                    decisionMemory[
+                                                        _pairKey(a, b)] = false;
+                                                    step(false, widget.picks,
+                                                        widget.picks.length);
+                                                    _loadPair();
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: GlassActionButton(
+                                                  icon: const Icon(
+                                                      Icons.thumb_up),
+                                                  label: Text(
+                                                      '${widget.picks[rightIndex].number} better'),
+                                                  color: Colors.blue,
+                                                  onPressed: () {
+                                                    final a = widget
+                                                        .picks[leftIndex]
+                                                        .number;
+                                                    final b = widget
+                                                        .picks[rightIndex]
+                                                        .number;
+                                                    decisionMemory[
+                                                        _pairKey(a, b)] = true;
+                                                    step(true, widget.picks,
+                                                        widget.picks.length);
+                                                    _loadPair();
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        else
+                                          Wrap(
+                                            spacing: 12,
+                                            runSpacing: 8,
+                                            alignment: WrapAlignment.center,
+                                            children: [
+                                              GlassActionButton(
+                                                icon:
+                                                    const Icon(Icons.thumb_up),
+                                                label: Text(
+                                                    '${widget.picks[leftIndex].number} better'),
+                                                color: Colors.blue,
+                                                onPressed: () {
+                                                  final a = widget
+                                                      .picks[leftIndex].number;
+                                                  final b = widget
+                                                      .picks[rightIndex].number;
+                                                  decisionMemory[
+                                                      _pairKey(a, b)] = false;
+                                                  step(false, widget.picks,
+                                                      widget.picks.length);
+                                                  _loadPair();
+                                                },
+                                              ),
+                                              GlassActionButton(
+                                                icon:
+                                                    const Icon(Icons.thumb_up),
+                                                label: Text(
+                                                    '${widget.picks[rightIndex].number} better'),
+                                                color: Colors.blue,
+                                                onPressed: () {
+                                                  final a = widget
+                                                      .picks[leftIndex].number;
+                                                  final b = widget
+                                                      .picks[rightIndex].number;
+                                                  decisionMemory[
+                                                      _pairKey(a, b)] = true;
+                                                  step(true, widget.picks,
+                                                      widget.picks.length);
+                                                  _loadPair();
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        const SizedBox(height: 20),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                         ),
                       ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // ACTION BUTTONS
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green),
-                            onPressed: () {
-                              final a = widget.picks[leftIndex].number;
-                              final b = widget.picks[rightIndex].number;
-
-                              decisionMemory[_pairKey(a, b)] = false;
-
-                              step(false, widget.picks, widget.picks.length);
-                              _loadPair();
-                            },
-                            icon: const Icon(Icons.thumb_up),
-                            label: const Text("LEFT BETTER"),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red),
-                            onPressed: () {
-                              final a = widget.picks[leftIndex].number;
-                              final b = widget.picks[rightIndex].number;
-
-                              decisionMemory[_pairKey(a, b)] = true;
-
-                              step(true, widget.picks, widget.picks.length);
-                              _loadPair();
-                            },
-                            icon: const Icon(Icons.thumb_up),
-                            label: const Text("RIGHT BETTER"),
-                          ),
-                        ),
-                      ],
-                    )
-                  ]),
+                    );
+                  },
                 ),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -5181,13 +5403,25 @@ class _BubbleSortState extends State<BubbleSort> {
 class _ChartPoint {
   final int x;
   final int y;
-
   _ChartPoint(this.x, this.y);
 }
 
 class _BarData {
   final String team;
   final int position;
-
   _BarData({required this.team, required this.position});
+}
+
+class _OwnMetric {
+  final String label;
+  final double value;
+  final bool asPercent;
+  final bool integerLike;
+
+  _OwnMetric(
+    this.label,
+    this.value, {
+    this.asPercent = false,
+    this.integerLike = false,
+  });
 }
