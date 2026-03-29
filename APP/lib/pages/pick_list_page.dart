@@ -9,6 +9,9 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
+import 'package:scouting_app/models/match_scouting_2026.dart';
+import 'package:scouting_app/widgets/auto_display_2026.dart';
+import 'package:scouting_app/widgets/login_widget.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 // ignore: deprecated_member_use
@@ -1873,6 +1876,122 @@ class _PicklistPageState extends State<PicklistPage> {
   }
 }
 
+class AutoFuelComparisonPage extends StatefulWidget {
+  final String eventCode;
+  final String leftTeamNumber;
+  final String rightTeamNumber;
+  final Map<String, String> teamNames;
+
+  const AutoFuelComparisonPage({
+    super.key,
+    required this.eventCode,
+    required this.leftTeamNumber,
+    required this.rightTeamNumber,
+    required this.teamNames,
+  });
+
+  @override
+  State<AutoFuelComparisonPage> createState() => _AutoFuelComparisonPageState();
+}
+
+class _AutoFuelComparisonPageState extends State<AutoFuelComparisonPage> {
+  List<MatchScouting2026> scouting = [];
+  bool isLoading = true;
+  String? token;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  void fetchData() {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    apiService.token.then((_token) {
+      if (_token != null) {
+        if (mounted) {
+          setState(() => token = _token);
+        }
+
+        apiService
+            .fetchTeamMatchScouting(
+          int.parse(widget.eventCode.substring(0, 4)),
+          widget.eventCode.substring(4),
+          "frc${widget.leftTeamNumber}",
+        )
+            .then((_scouting) {
+          if (mounted) {
+            setState(() {
+              scouting = _scouting;
+              isLoading = false;
+            });
+          }
+        });
+      } else {
+        setState(() => isLoading = false);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PolarForecastAppBar(
+        extraText: 'Auto Fuel Comparison - ${widget.eventCode}',
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : token == null
+              ? LoginWidget(
+                  redirect_path: '/event/${widget.eventCode}',
+                )
+              : scouting.isEmpty
+                  ? const Center(child: Text("No scouting data available"))
+                  : ListView.builder(
+                      itemCount: (scouting.length / 2).ceil(),
+                      itemBuilder: (context, rowIndex) {
+                        final leftIndex = rowIndex * 2;
+                        final rightIndex = leftIndex + 1;
+
+                        final left = scouting[leftIndex];
+                        final right = rightIndex < scouting.length
+                            ? scouting[rightIndex]
+                            : null;
+
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(child: _buildCard(left)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: right != null
+                                    ? _buildCard(right)
+                                    : const SizedBox(),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+    );
+  }
+
+  Widget _buildCard(MatchScouting2026 data) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).colorScheme.surfaceVariant,
+      ),
+      child: AutoDisplay2026(
+        scoutingData: data,
+      ),
+    );
+  }
+}
+
 class DeathsComparisonPage extends StatelessWidget {
   final String eventCode;
   final String leftTeamNumber;
@@ -3165,8 +3284,26 @@ class _BubbleSortState extends State<BubbleSort> {
                       opsStats.simulated_rank.toDouble(), side,
                       lowerIsBetter: true, integerLike: true),
                   _buildStatRow("OPR", stats.OPR, opsStats.OPR, side),
-                  _buildStatRow("Auto Points", stats.auto_points,
-                      opsStats.auto_points, side),
+
+                  // Auto Points - Clickable
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AutoFuelComparisonPage(
+                            eventCode: widget.eventCode,
+                            leftTeamNumber: teamNumber,
+                            rightTeamNumber: opsStats.team_number,
+                            teamNames: names,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildStatRow("Auto Points", stats.auto_points,
+                        opsStats.auto_points, side),
+                  ),
+
                   _buildStatRow("Teleop Points", stats.teleop_points,
                       opsStats.teleop_points, side),
                   _buildStatRow("Endgame Points", stats.endgame_points,
@@ -3175,12 +3312,48 @@ class _BubbleSortState extends State<BubbleSort> {
                       opsStats.climbing_points, side),
                   _buildStatRow("Total Pass", stats.total_pass,
                       opsStats.total_pass, side),
-                  _buildStatRow(
-                      "Auto Pass", stats.auto_pass, opsStats.auto_pass, side),
+
+                  // Auto Pass - Clickable
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AutoFuelComparisonPage(
+                            eventCode: widget.eventCode,
+                            leftTeamNumber: teamNumber,
+                            rightTeamNumber: opsStats.team_number,
+                            teamNames: names,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildStatRow(
+                        "Auto Pass", stats.auto_pass, opsStats.auto_pass, side),
+                  ),
+
                   _buildStatRow("Teleop Pass", stats.teleop_pass,
                       opsStats.teleop_pass, side),
-                  _buildStatRow("Auto Fuel", stats.auto_fuel_scored,
-                      opsStats.auto_fuel_scored, side),
+
+                  // Auto Fuel - Clickable
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AutoFuelComparisonPage(
+                            eventCode: widget.eventCode,
+                            leftTeamNumber: teamNumber,
+                            rightTeamNumber: opsStats.team_number,
+                            teamNames: names,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildStatRow("Auto Fuel", stats.auto_fuel_scored,
+                        opsStats.auto_fuel_scored, side),
+                  ),
+
                   _buildStatRow("Teleop Fuel", stats.teleop_fuel_scored,
                       opsStats.teleop_fuel_scored, side),
                   _buildStatRow("Total Fuel", stats.total_fuel_scored,
@@ -3188,17 +3361,17 @@ class _BubbleSortState extends State<BubbleSort> {
                   _buildStatRow("Foul Points", stats.foul_points,
                       opsStats.foul_points, side,
                       lowerIsBetter: true),
+
+                  // Death Rate - Clickable
                   GestureDetector(
                     onTap: () {
-                      // Compare current team with the opposing team in the bubble sort
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => DeathsComparisonPage(
                             eventCode: widget.eventCode,
                             leftTeamNumber: teamNumber,
-                            rightTeamNumber: opsStats
-                                .team_number, // Compare with the other team
+                            rightTeamNumber: opsStats.team_number,
                             teamNames: names,
                           ),
                         ),
@@ -3208,6 +3381,7 @@ class _BubbleSortState extends State<BubbleSort> {
                         opsStats.death_rate, side,
                         lowerIsBetter: true, asPercent: true),
                   ),
+
                   _buildStatRow("Defense Rate", stats.defense_rate,
                       opsStats.defense_rate, side,
                       asPercent: true),
