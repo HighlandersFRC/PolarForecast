@@ -734,7 +734,12 @@ class _BubbleSortState extends State<BubbleSort> {
 
       if (shouldSwap) {
         widget.onSwap(j, j + 1);
+      }
 
+      // Always persist after a comparison decision, even when no swap occurs.
+      widget.onAutoSave();
+
+      if (shouldSwap) {
         if (j > 0) {
           j--;
         } else {

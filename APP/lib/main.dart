@@ -317,20 +317,32 @@ class _BubbleSortPageWrapperState extends State<_BubbleSortPageWrapper> {
     }
   }
 
-  Future<void> _autoSave() async {
+  Future<void> savePicklist() async {
     if (_picklist == null) return;
 
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    await apiService.updatePicklist(
-      widget.groupName,
-      widget.eventCode,
-      widget.picklistID,
-      Picklist2026(
-        picklist_id: _picklist!.picklist_id,
-        name: _picklist!.name,
-        picks: _picks,
-      ),
+    final updatedPicklist = Picklist2026(
+      picklist_id: _picklist!.picklist_id,
+      name: _picklist!.name,
+      picks: _picks,
     );
+
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    if (_picklist!.picklist_id.isEmpty) {
+      await apiService.addPicklist(
+          widget.groupName, widget.eventCode, updatedPicklist);
+    } else {
+      await apiService.updatePicklist(widget.groupName, widget.eventCode,
+          _picklist!.picklist_id, updatedPicklist);
+    }
+  }
+
+  bool _saving = false;
+  Future<void> _autoSave() async {
+    if (_saving) return;
+    _saving = true;
+    await savePicklist();
+    _saving = false;
   }
 
   void _onSwap(int idx1, int idx2) {
@@ -376,7 +388,11 @@ class _BubbleSortPageWrapperState extends State<_BubbleSortPageWrapper> {
       teamNames: _teamNames,
       name: _picklist!.name,
       onSwap: (idx1, idx2) {
-        _onSwap(idx1, idx2);
+        setState(() {
+          final temp = _picks[idx1];
+          _picks[idx1] = _picks[idx2];
+          _picks[idx2] = temp;
+        });
       },
       onAutoSave: _autoSave,
     );
