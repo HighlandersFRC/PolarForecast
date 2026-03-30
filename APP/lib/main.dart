@@ -15,6 +15,9 @@ import 'package:scouting_app/pages/team_page.dart';
 import 'package:scouting_app/pages/home_page.dart';
 import 'package:scouting_app/pages/death_page.dart';
 import 'package:scouting_app/pages/picture_scouting_page.dart';
+import 'package:scouting_app/pages/bubble_sort.dart';
+import 'package:scouting_app/models/group.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/theme/theme_provider.dart';
 import 'package:scouting_app/api_service.dart';
 
@@ -161,6 +164,21 @@ class MainApp extends StatelessWidget {
                       ),
                       settings: settings,
                     );
+                  } else if (pathSegments.length > 6 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'picklist' &&
+                      pathSegments[6].isNotEmpty) {
+                    final eventKey = pathSegments[4];
+                    final picklistID = pathSegments[6];
+
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupKey,
+                        eventCode: eventKey,
+                        picklistID: picklistID,
+                      ),
+                      settings: settings,
+                    );
                   } else if (pathSegments.length > 5 &&
                       pathSegments[3] == 'events' &&
                       pathSegments[5] == 'picklist') {
@@ -219,6 +237,148 @@ class MainApp extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _BubbleSortPageWrapper extends StatefulWidget {
+  final String groupName;
+  final String eventCode;
+  final String picklistID;
+
+  const _BubbleSortPageWrapper({
+    required this.groupName,
+    required this.eventCode,
+    required this.picklistID,
+  });
+
+  @override
+  State<_BubbleSortPageWrapper> createState() => _BubbleSortPageWrapperState();
+}
+
+class _BubbleSortPageWrapperState extends State<_BubbleSortPageWrapper> {
+  bool _isLoading = true;
+  String? _error;
+  List<Picks> _picks = [];
+  List<TeamStats2026> _rankings = [];
+  Map<String, String> _teamNames = {};
+  Picklist2026? _picklist;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    try {
+      final allPicklists =
+          await apiService.fetchPicklists(widget.groupName, widget.eventCode);
+      final picked = allPicklists.firstWhere(
+          (p) => p.picklist_id == widget.picklistID,
+          orElse: () => throw Exception('Picklist not found'));
+
+      final eventYear = (widget.eventCode.length >= 4
+              ? int.tryParse(widget.eventCode.substring(0, 4))
+              : null) ??
+          2026;
+      final eventKey = widget.eventCode.length > 4
+          ? widget.eventCode.substring(4)
+          : widget.eventCode;
+
+      final rankings = await apiService.fetchEventRankings(eventYear, eventKey);
+
+      final names = <String, String>{};
+      for (final pick in picked.picks) {
+        if (names.containsKey(pick.number)) continue;
+        try {
+          final nickname =
+              await apiService.fetchTeamNicknames('frc${pick.number}');
+          names[pick.number] = nickname;
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _picklist = picked;
+        _picks = List.from(picked.picks);
+        _rankings = rankings;
+        _teamNames = names;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _autoSave() async {
+    if (_picklist == null) return;
+
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    await apiService.updatePicklist(
+      widget.groupName,
+      widget.eventCode,
+      widget.picklistID,
+      Picklist2026(
+        picklist_id: _picklist!.picklist_id,
+        name: _picklist!.name,
+        picks: _picks,
+      ),
+    );
+  }
+
+  void _onSwap(int idx1, int idx2) {
+    setState(() {
+      final tmp = _picks[idx1];
+      _picks[idx1] = _picks[idx2];
+      _picks[idx2] = tmp;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Bubble Sort')),
+        body: Center(child: Text('Failed to load bubble sort data: $_error')),
+      );
+    }
+
+    if (_picklist == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Bubble Sort')),
+        body: const Center(child: Text('Picklist not found')),
+      );
+    }
+
+    final eventYear = (widget.eventCode.length >= 4
+            ? int.tryParse(widget.eventCode.substring(0, 4))
+            : null) ??
+        2026;
+
+    return BubbleSort(
+      picks: _picks,
+      rankings: _rankings,
+      eventYear: eventYear,
+      eventCode: widget.eventCode,
+      teamNames: _teamNames,
+      name: _picklist!.name,
+      onSwap: (idx1, idx2) {
+        _onSwap(idx1, idx2);
+      },
+      onAutoSave: _autoSave,
     );
   }
 }

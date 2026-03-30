@@ -274,7 +274,7 @@ class _OverviewTabState extends State<_OverviewTab> {
                   _buildQuickStat(
                     "OPR",
                     (stats['OPR'] is num)
-                        ? (stats['OPR'] as num).round().toString()
+                        ? (stats['OPR'] as num).toStringAsFixed(1)
                         : "-",
                     Colors.orange,
                   ),
