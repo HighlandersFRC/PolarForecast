@@ -345,14 +345,6 @@ class _BubbleSortPageWrapperState extends State<_BubbleSortPageWrapper> {
     _saving = false;
   }
 
-  void _onSwap(int idx1, int idx2) {
-    setState(() {
-      final tmp = _picks[idx1];
-      _picks[idx1] = _picks[idx2];
-      _picks[idx2] = tmp;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
