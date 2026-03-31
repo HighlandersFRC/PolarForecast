@@ -1326,7 +1326,7 @@ class _EventsTabState extends State<_EventsTab> {
                                                               Navigator.of(
                                                                       context)
                                                                   .pushNamed(
-                                                                      '/group/${widget.group?.name}/events/${widget.group!.events[event_index].event_code}/picklist');
+                                                                      '/picklist?group=${widget.group?.name}&event=${widget.group!.events[event_index].event_code}');
                                                             },
                                                             child: const Column(
                                                               mainAxisSize:

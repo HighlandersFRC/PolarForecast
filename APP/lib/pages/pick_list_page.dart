@@ -271,7 +271,14 @@ class _PicklistPageState extends State<PicklistPage> {
     setState(() {
       picklists = initialPicklists;
       if (picklists.isNotEmpty) {
-        selectedPicklist = picklists.first;
+        if (widget.picklistID.isNotEmpty) {
+          selectedPicklist = picklists.firstWhere(
+            (p) => p.picklist_id == widget.picklistID,
+            orElse: () => picklists.first,
+          );
+        } else {
+          selectedPicklist = picklists.first;
+        }
         picks = List.from(selectedPicklist!.picks);
       }
     });
@@ -595,7 +602,7 @@ class _PicklistPageState extends State<PicklistPage> {
     if (picks.length < 2 || selectedPicklist == null) return;
 
     final route =
-        '/group/${widget.groupName}/events/${widget.eventCode}/picklist/${selectedPicklist!.picklist_id}';
+        '/group/${widget.groupName}/events/${widget.eventCode}/picklist/generate/${selectedPicklist!.picklist_id}';
 
     Navigator.of(context).pushNamed(route);
   }
@@ -818,8 +825,16 @@ class _PicklistPageState extends State<PicklistPage> {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(10),
                                 onTap: () {
+                                  final route =
+                                      '/group/${widget.groupName}/events/${widget.eventCode}/picklist/${pl.picklist_id}';
+
                                   selectPicklist(pl);
                                   Navigator.pop(context);
+
+                                  if (pl.picklist_id.isNotEmpty) {
+                                    Navigator.of(context)
+                                        .pushReplacementNamed(route);
+                                  }
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(

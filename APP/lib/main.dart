@@ -142,6 +142,61 @@ class MainApp extends StatelessWidget {
                   return null;
                 }
               }
+              if (pathSegments[1] == 'picklist') {
+                final queryParams = Uri.parse(settings.name!).queryParameters;
+                final groupName = queryParams['group']!;
+                final eventCode = queryParams['event']!;
+                if (pathSegments.length == 2) {
+                  return MaterialPageRoute(
+                    builder: (context) => PicklistPage(
+                      groupName: groupName,
+                      eventCode: eventCode,
+                      picklistID: '',
+                    ),
+                    settings: settings,
+                  );
+                } else if (pathSegments.length == 3) {
+                  if (pathSegments[2] == 'generate') {
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: '',
+                      ),
+                      settings: settings,
+                    );
+                  } else {
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[2],
+                      ),
+                      settings: settings,
+                    );
+                  }
+                } else if (pathSegments.length == 4) {
+                  if (pathSegments[2] == 'generate') {
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[3],
+                      ),
+                      settings: settings,
+                    );
+                  } else {
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[3],
+                      ),
+                      settings: settings,
+                    );
+                  }
+                }
+              }
               if (pathSegments[1] == 'group') {
                 if (pathSegments.length > 2) {
                   final groupKey = pathSegments[2];
@@ -164,6 +219,22 @@ class MainApp extends StatelessWidget {
                       ),
                       settings: settings,
                     );
+                  } else if (pathSegments.length > 7 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'picklist' &&
+                      pathSegments[6] == 'generate' &&
+                      pathSegments[7].isNotEmpty) {
+                    final eventKey = pathSegments[4];
+                    final picklistID = pathSegments[7];
+
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupKey,
+                        eventCode: eventKey,
+                        picklistID: picklistID,
+                      ),
+                      settings: settings,
+                    );
                   } else if (pathSegments.length > 6 &&
                       pathSegments[3] == 'events' &&
                       pathSegments[5] == 'picklist' &&
@@ -172,7 +243,7 @@ class MainApp extends StatelessWidget {
                     final picklistID = pathSegments[6];
 
                     return MaterialPageRoute(
-                      builder: (context) => _BubbleSortPageWrapper(
+                      builder: (context) => PicklistPage(
                         groupName: groupKey,
                         eventCode: eventKey,
                         picklistID: picklistID,
