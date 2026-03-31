@@ -3,7 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'dart:async';
 import 'package:csv/csv.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -227,9 +227,8 @@ class _PicklistPageState extends State<PicklistPage> {
         await picklistAvatarCacheManager.getSingleFile(url, key: url);
         if (!mounted) return;
         await precacheImage(
-          CachedNetworkImageProvider(
+          ExtendedNetworkImageProvider(
             url,
-            cacheManager: picklistAvatarCacheManager,
           ),
           context,
         );
@@ -2452,22 +2451,29 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
                                             minScale: 0.8,
                                             maxScale: 4.5,
                                             child: Center(
-                                              child: CachedNetworkImage(
-                                                imageUrl: image.link,
+                                              child: ExtendedImage.network(
+                                                image.link,
                                                 fit: BoxFit.contain,
-                                                placeholder: (context, url) =>
-                                                    const Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                                strokeWidth:
-                                                                    2)),
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    const Icon(
-                                                        Icons
-                                                            .broken_image_outlined,
-                                                        color: Colors.white70,
-                                                        size: 36),
+                                                loadStateChanged:
+                                                    (ExtendedImageState state) {
+                                                  switch (state
+                                                      .extendedImageLoadState) {
+                                                    case LoadState.loading:
+                                                      return const Center(
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2));
+                                                    case LoadState.failed:
+                                                      return const Icon(
+                                                          Icons
+                                                              .broken_image_outlined,
+                                                          color: Colors.white70,
+                                                          size: 36);
+                                                    default:
+                                                      return null;
+                                                  }
+                                                },
                                               ),
                                             ),
                                           ),
@@ -2492,33 +2498,26 @@ class _TeamImagesDialogState extends State<TeamImagesDialog> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: image.link,
+                                ExtendedImage.network(
+                                  image.link,
                                   fit: BoxFit.cover,
-                                  fadeInDuration: Duration.zero,
-                                  fadeOutDuration: Duration.zero,
-                                  placeholder: (context, url) => Container(
-                                    color: cs.surfaceVariant,
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Container(
-                                    color: cs.surfaceVariant,
-                                    alignment: Alignment.center,
-                                    child:
-                                        const Icon(Icons.broken_image_outlined),
-                                  ),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black.withOpacity(0.35)
-                                      ],
-                                    ),
-                                  ),
+                                  loadStateChanged: (ExtendedImageState state) {
+                                    switch (state.extendedImageLoadState) {
+                                      case LoadState.loading:
+                                        return Container(
+                                          color: cs.surfaceVariant,
+                                        );
+                                      case LoadState.failed:
+                                        return Container(
+                                          color: cs.surfaceVariant,
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                              Icons.broken_image_outlined),
+                                        );
+                                      default:
+                                        return null;
+                                    }
+                                  },
                                 ),
                                 Positioned(
                                   right: 8,
@@ -2628,9 +2627,8 @@ class _TeamAvatarState extends State<TeamAvatar> {
     }
 
     try {
-      final provider = CachedNetworkImageProvider(
+      final provider = ExtendedNetworkImageProvider(
         _currentUrl,
-        cacheManager: picklistAvatarCacheManager,
       );
       final palette = await PaletteGenerator.fromImageProvider(provider,
           size: const Size(40, 40), maximumColorCount: 4);
@@ -2643,7 +2641,7 @@ class _TeamAvatarState extends State<TeamAvatar> {
     }
   }
 
-  void _onImageError(Object _, StackTrace? __) {
+  void _onImageError(Object? _, StackTrace? __) {
     if (!_triedFallback && widget.fallbackUrl.isNotEmpty) {
       setState(() {
         _currentUrl = widget.fallbackUrl;
@@ -2681,24 +2679,26 @@ class _TeamAvatarState extends State<TeamAvatar> {
                   color: cs.onSurfaceVariant.withOpacity(0.7),
                 ),
               )
-            : CachedNetworkImage(
-                imageUrl: _currentUrl,
-                cacheManager: picklistAvatarCacheManager,
+            : ExtendedImage.network(
+                _currentUrl,
+                cacheMaxAge: const Duration(days: 14),
                 fit: BoxFit.cover,
                 width: widget.size,
                 height: widget.size,
-                fadeInDuration: Duration.zero,
-                fadeOutDuration: Duration.zero,
-                memCacheWidth: (widget.size * 3).toInt(),
-                maxWidthDiskCache: (widget.size * 3).toInt(),
-                placeholder: (context, url) => Container(
-                  color: cs.surfaceVariant,
-                ),
-                errorWidget: (context, url, error) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _onImageError(error, null);
-                  });
-                  return const SizedBox.shrink();
+                loadStateChanged: (ExtendedImageState state) {
+                  switch (state.extendedImageLoadState) {
+                    case LoadState.loading:
+                      return Container(
+                        color: cs.surfaceVariant,
+                      );
+                    case LoadState.failed:
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _onImageError(null, null);
+                      });
+                      return const SizedBox.shrink();
+                    default:
+                      return null;
+                  }
                 },
               ),
       ),

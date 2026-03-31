@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'dart:html' as html;
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
@@ -1007,31 +1007,39 @@ class _BubbleSortState extends State<BubbleSort> {
                             onTap: () => _showImagePreview(image.link),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: image.link,
+                              child: ExtendedImage.network(
+                                image.link,
                                 width: compactImages ? 96 : 128,
                                 height: compactImages ? 84 : 112,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceVariant,
-                                  alignment: Alignment.center,
-                                  child: const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceVariant,
-                                  alignment: Alignment.center,
-                                  child:
-                                      const Icon(Icons.broken_image_outlined),
-                                ),
+                                loadStateChanged: (ExtendedImageState state) {
+                                  switch (state.extendedImageLoadState) {
+                                    case LoadState.loading:
+                                      return Container(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceVariant,
+                                        alignment: Alignment.center,
+                                        child: const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        ),
+                                      );
+                                    case LoadState.failed:
+                                      return Container(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceVariant,
+                                        alignment: Alignment.center,
+                                        child: const Icon(
+                                            Icons.broken_image_outlined),
+                                      );
+                                    default:
+                                      return null;
+                                  }
+                                },
                               ),
                             ),
                           );
@@ -1398,15 +1406,22 @@ class _BubbleSortState extends State<BubbleSort> {
                   minScale: 0.8,
                   maxScale: 5,
                   child: Center(
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
+                    child: ExtendedImage.network(
+                      imageUrl,
                       fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2)),
-                      errorWidget: (context, url, error) => const Icon(
-                          Icons.broken_image_outlined,
-                          color: Colors.white70,
-                          size: 36),
+                      loadStateChanged: (ExtendedImageState state) {
+                        switch (state.extendedImageLoadState) {
+                          case LoadState.loading:
+                            return const Center(
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2));
+                          case LoadState.failed:
+                            return const Icon(Icons.broken_image_outlined,
+                                color: Colors.white70, size: 36);
+                          default:
+                            return null;
+                        }
+                      },
                     ),
                   ),
                 ),
