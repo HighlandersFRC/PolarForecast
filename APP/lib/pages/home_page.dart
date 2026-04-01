@@ -239,8 +239,7 @@ class _HomePageState extends State<HomePage> {
                                   .reduce((a, b) => a < b ? a : b),
                               _sort,
                               sortColumns,
-                              (team) =>
-                                  _showTeamEventsDialog(team),
+                              (team) => _showTeamEventsDialog(team),
                             ),
                             showSortNumbers: true,
                             allowFiltering: true,
@@ -263,8 +262,6 @@ class _HomePageState extends State<HomePage> {
                       },
                     );
                   },
-                  config: NumberPaginatorUIConfig(
-                      buttonSelectedBackgroundColor: Colors.blue),
                 )
             ],
           ),

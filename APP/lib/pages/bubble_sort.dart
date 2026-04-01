@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
-import 'dart:html' as html;
+// ignore: deprecated_member_use
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +17,7 @@ import 'package:scouting_app/widgets/deaths_form.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SnowField extends StatefulWidget {
   final int particleCount;
@@ -1251,10 +1252,13 @@ class _BubbleSortState extends State<BubbleSort> {
                                             final matchKey =
                                                 '${match.event_code}_qm${match.match_number}';
 
-                                            html.window.open(
+                                            final url = Uri.parse(
                                               'https://www.thebluealliance.com/match/$matchKey',
-                                              '_blank',
                                             );
+
+                                            launchUrl(url,
+                                                mode: LaunchMode
+                                                    .externalApplication);
                                           },
                                           title: Text(
                                             '${match.event_code}_qm${match.match_number}',

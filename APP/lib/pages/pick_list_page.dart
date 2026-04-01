@@ -12,11 +12,11 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
+import 'package:scouting_app/utils/download_stub.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
-import 'dart:html' as html;
 import '../models/group.dart';
 import '../models/team_stats_2026.dart';
 import '../models/picture_data.dart';
@@ -92,20 +92,13 @@ class _PicklistPageState extends State<PicklistPage> {
     }
 
     final csv = const ListToCsvConverter().convert(rows);
-
     final bytes = utf8.encode(csv);
-    final blob = html.Blob([bytes]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
 
-    // ignore: unused_local_variable
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute(
-        'download',
-        '${widget.eventCode}_${selectedPicklist!.name}.csv',
-      )
-      ..click();
-
-    html.Url.revokeObjectUrl(url);
+    // ✅ FIX: use cross-platform helper
+    downloadFile(
+      bytes,
+      '${widget.eventCode}_${selectedPicklist!.name}.csv',
+    );
   }
 
   Future<void> renamePicklist({

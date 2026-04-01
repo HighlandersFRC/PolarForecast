@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
+import 'package:scouting_app/utils/download_stub.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csv/csv.dart';
 
@@ -122,6 +122,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
 
     void _exportToCSV() {
       List<List<dynamic>> rows = [];
+
       List<dynamic> header = ['team_number'];
       for (var field in fields) {
         if (field.enabled) {
@@ -134,27 +135,27 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
       for (var data in chartData) {
         List<dynamic> row = [data['team_number']];
         double total = 0;
+
         for (var field in fields) {
           if (field.enabled) {
             double value = data[field.key] is num
                 ? (data[field.key] as num).toDouble()
                 : 0.0;
+
             row.add(value);
             total += value;
           }
         }
+
         row.add(total);
         rows.add(row);
       }
 
       String csv = ListToCsvConverter().convert(rows);
       final bytes = utf8.encode(csv);
-      final blob = html.Blob([bytes]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      html.AnchorElement(href: url)
-        ..setAttribute('download', '${widget.title}.csv')
-        ..click();
-      html.Url.revokeObjectUrl(url);
+
+      // ✅ FIX
+      downloadFile(bytes, '${widget.title}.csv');
     }
 
     return Column(
