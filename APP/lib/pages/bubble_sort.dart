@@ -958,10 +958,15 @@ class _BubbleSortState extends State<BubbleSort> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundImage: NetworkImage(avatar),
-                  child: avatar.isEmpty ? null : null,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                      8), // change this for more/less rounding
+                  child: Image.network(
+                    avatar,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(

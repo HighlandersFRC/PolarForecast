@@ -67,17 +67,26 @@ class ApiService {
         return _pendingRequests[cacheKey];
       Map<String, String> headers = extraHeaders;
       Future<dynamic> Function() futureFunc = () async {
-        final _token = await token;
-        if (_token != null) headers = {'token': _token, ...extraHeaders};
-        final response = await http
-            .get(Uri.parse(url), headers: headers)
-            .timeout(const Duration(seconds: 10));
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          _setInCache(cacheKey, data, cacheTime: cacheTime);
-          return data;
-        } else {
-          throw Exception('Failed to load data from ' + url);
+        try {
+          final _token = await token;
+          if (_token != null) headers = {'token': _token, ...extraHeaders};
+          print('📡 API Request: $url');
+          print('🔑 Token present: ${_token != null}');
+          final response = await http
+              .get(Uri.parse(url), headers: headers)
+              .timeout(const Duration(seconds: 10));
+          print('📊 API Response Status: ${response.statusCode}');
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            _setInCache(cacheKey, data, cacheTime: cacheTime);
+            return data;
+          } else {
+            print('❌ API Error: ${response.statusCode} - ${response.body}');
+            throw Exception('Failed to load data from ' + url);
+          }
+        } catch (e) {
+          print('🛑 Exception in _fetchFromAPI: $e');
+          rethrow;
         }
       };
       final future = futureFunc().whenComplete(() {

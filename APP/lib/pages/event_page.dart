@@ -14,7 +14,7 @@ import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/utils/download_stub.dart';
+import 'package:scouting_app/utils/download_helper.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';

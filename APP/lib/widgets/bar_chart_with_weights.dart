@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
-import 'package:scouting_app/utils/download_stub.dart';
+import 'package:scouting_app/utils/download_helper.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csv/csv.dart';
 

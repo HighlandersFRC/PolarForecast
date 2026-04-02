@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
-import 'package:scouting_app/utils/download_stub.dart';
+import 'package:scouting_app/utils/download_helper.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
@@ -97,7 +97,7 @@ class _PicklistPageState extends State<PicklistPage> {
     // ✅ FIX: use cross-platform helper
     downloadFile(
       bytes,
-      '${widget.eventCode}_${selectedPicklist!.name}.csv',
+      '${widget.eventCode}_Picklist${selectedPicklist!.name}.csv',
     );
   }
 
