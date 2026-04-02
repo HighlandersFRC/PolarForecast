@@ -11,6 +11,8 @@ pubspec.lock
 # If you don't generate documentation locally you can remove this line.
 doc/api/
 
+# Build file idk if its important
+/build_android_app.bat
 # dotenv environment variables file
 .env*
 

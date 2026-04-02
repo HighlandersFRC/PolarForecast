@@ -69,7 +69,9 @@ class ApiService {
       Future<dynamic> Function() futureFunc = () async {
         final _token = await token;
         if (_token != null) headers = {'token': _token, ...extraHeaders};
-        final response = await http.get(Uri.parse(url), headers: headers);
+        final response = await http
+            .get(Uri.parse(url), headers: headers)
+            .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           _setInCache(cacheKey, data, cacheTime: cacheTime);
