@@ -65,6 +65,8 @@ def extract_token_from_headers(token: str | None = None, authorization: str | No
             bearer_token = normalized[len(prefix):].strip()
             if bearer_token:
                 return bearer_token
+        if token is None and normalized:
+            return normalized
     return token
 
 
