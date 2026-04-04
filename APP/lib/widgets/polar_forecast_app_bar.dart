@@ -305,67 +305,137 @@ class _AccountMenuButton extends StatelessWidget {
   final String? token;
   final ApiService apiService;
 
-  const _AccountMenuButton({this.token, required this.apiService});
+  const _AccountMenuButton({
+    this.token,
+    required this.apiService,
+  });
 
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<int>(
       offset: const Offset(0, 50),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       icon: Icon(
-          token == null ? Icons.account_circle_outlined : Icons.account_circle),
+        token == null ? Icons.account_circle_outlined : Icons.account_circle,
+      ),
       itemBuilder: (context) => [
         if (token != null) ...[
           PopupMenuItem(
             enabled: false,
             child: Text(
               'User: ${get_scout_info(token!).username}',
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const PopupMenuDivider(),
-          PopupMenuItem(
-              value: 1, child: const _MenuLabel(Icons.group_work, 'Groups')),
-          PopupMenuItem(
-              value: 2,
-              child: const _MenuLabel(
-                  Icons.notifications_active, 'Join Requests')),
-          PopupMenuItem(
-              value: 3, child: const _MenuLabel(Icons.logout, 'Logout')),
+          const PopupMenuItem(
+            value: 1,
+            child: _MenuLabel(Icons.group_work, 'Groups'),
+          ),
+          const PopupMenuItem(
+            value: 2,
+            child: _MenuLabel(Icons.notifications_active, 'Join Requests'),
+          ),
+          const PopupMenuItem(
+            value: 3,
+            child: _MenuLabel(Icons.logout, 'Logout'),
+          ),
         ] else
-          PopupMenuItem(
-              value: 4, child: const _MenuLabel(Icons.login, 'Login')),
+          const PopupMenuItem(
+            value: 4,
+            child: _MenuLabel(Icons.login, 'Login'),
+          ),
       ],
       onSelected: (val) async {
+        if (!context.mounted) return;
+
         if (val == 1) _openGroupsPopup(context);
         if (val == 2) _openJoinRequestsPopup(context);
-        if (val == 3) apiService.logout();
-        if (val == 4) {
-          try {
-            await apiService.login('home');
-            // Check if login succeeded by getting the token
-            final token = await apiService.token;
-            if (token == null && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Login failed: OAuth token exchange failed. Check Keycloak mobile client configuration.'),
-                  duration: Duration(seconds: 8),
-                ),
-              );
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Login error: $e'),
-                  duration: const Duration(seconds: 8),
-                ),
-              );
-            }
+
+        if (val == 3) {
+          await apiService.logout();
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Logged out')),
+            );
           }
         }
+
+        if (val == 4) {
+          await _handleLogin(context);
+        }
       },
+    );
+  }
+
+  // ---------------------------
+  // 🔥 CLEAN LOGIN HANDLER
+  // ---------------------------
+  Future<void> _handleLogin(BuildContext context) async {
+    try {
+      final result = await apiService.login('home');
+
+      // ❗ login() now returns either token OR error string
+      if (!context.mounted) return;
+
+      if (result == null) {
+        _showError(context, 'Login failed (no response)');
+        return;
+      }
+
+      if (result.startsWith('❌') ||
+          result.startsWith('🚨') ||
+          result.startsWith('⚠️')) {
+        _showError(context, result);
+        return;
+      }
+
+      // ✅ Force refresh token state
+      final token = await apiService.token;
+
+      if (token == null) {
+        _showError(context, 'Login failed: token exchange did not complete');
+        return;
+      }
+
+      await apiService.fetchTournaments();
+      final validatedToken = await apiService.token;
+      if (validatedToken == null) {
+        _showError(
+            context, 'Session could not be validated; continuing signed-out.');
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } on AuthRecoveryException catch (e) {
+      if (!context.mounted) return;
+      _showError(context, e.message);
+    } catch (e) {
+      if (!context.mounted) return;
+      _showError(context, 'Login exception: $e');
+    }
+  }
+
+  // ---------------------------
+  // 🔥 SNACKBAR HELPER
+  // ---------------------------
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 8),
+      ),
     );
   }
 }

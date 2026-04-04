@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:scouting_app/api_service.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/pit_scouting_2026.dart';
-import 'package:scouting_app/utils/download_helper.dart';
+import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
@@ -51,7 +51,7 @@ class _PicklistPageState extends State<PicklistPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Set<String> _warmedAvatarUrls = {};
 
-  void exportCSV() {
+  Future<void> exportCSV() async {
     if (selectedPicklist == null) return;
 
     List<List<String>> rows = [];
@@ -95,7 +95,7 @@ class _PicklistPageState extends State<PicklistPage> {
     final bytes = utf8.encode(csv);
 
     // ✅ FIX: use cross-platform helper
-    downloadFile(
+    await downloadFile(
       bytes,
       '${widget.eventCode}_Picklist${selectedPicklist!.name}.csv',
     );
@@ -917,7 +917,7 @@ class _PicklistPageState extends State<PicklistPage> {
                                                   'AutoGenerate') {
                                                 _openBubbleCompare();
                                               } else if (value == 'Export') {
-                                                exportCSV();
+                                                await exportCSV();
                                               }
                                             },
                                             itemBuilder:

@@ -6,6 +6,7 @@ import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/group_page.dart';
 import 'package:scouting_app/pages/match_page.dart';
+import 'package:scouting_app/pages/mobile_auth_callback_page.dart';
 import 'package:scouting_app/pages/pick_list_page.dart';
 import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/scouter_documentation.dart';
@@ -195,6 +196,15 @@ class MainApp extends StatelessWidget {
                       settings: settings,
                     );
                   }
+                }
+              }
+              if (pathSegments[1] == 'auth') {
+                if (pathSegments.length > 2 &&
+                    pathSegments[2] == 'mobile-callback') {
+                  return MaterialPageRoute(
+                    builder: (context) => const MobileAuthCallbackPage(),
+                    settings: settings,
+                  );
                 }
               }
               if (pathSegments[1] == 'group') {

@@ -30,7 +30,7 @@ from models.pit_scouting_2026 import PitScouting2026
 from models.alliance_request import AllianceRequest
 from models.group import AllianceGroup, Group, GroupEvent, GroupEventSettings, GroupSettings, PickList2026
 from models.group_join_request import GroupJoinRequest
-from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
+from auth import add_user_to_group, check_token_active, create_join_code, delete_group_kc, extract_token_from_headers, fetch_group_members, find_user_groups, get_token_active, get_user_info, make_group, remove_user_from_group, scout_info_from_id, scout_info_from_token
 from GeneticPolar import analyzeData
 from config import EDIT_PASSWORD, TBA_POLLING_INTERVAL, TBA_API_KEY, TBA_API_URL, MONGO_CONNECTION, ALLOW_ORIGINS, get_blob_storage_client, get_redis_client
 import requests
@@ -268,7 +268,8 @@ def join_code(group_name):
 
 
 @app.get("/{year}/{event}/{team}/stats", tags=["stats"])
-def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None)):
+def get_event_Team_Stats(year: int, event: str, team: str, token: str = Header(None), authorization: str | None = Header(None)):
+    token = extract_token_from_headers(token=token, authorization=authorization)
     event_code = str(year) + event
     foundTeam = False
     if (token == None):
@@ -316,7 +317,8 @@ def get_Team_Event_Matches(year: int, event: str, team: str):
 
 
 @app.get("/{year}/{event}/stats", tags=["stats"])
-def get_Event_Stats(year: int, event: str, token: str = Header(None)):
+def get_Event_Stats(year: int, event: str, token: str = Header(None), authorization: str | None = Header(None)):
+    token = extract_token_from_headers(token=token, authorization=authorization)
     event_code = str(year)+event
     if (token == None):
         data = getEventCalculatedData(event_code)
@@ -369,7 +371,8 @@ def get_Search_Keys():
 
 
 @app.get("/{year}/{event}/predictions", tags=["stats"])
-def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
+def get_Event_Predictions(year: int, event: str, token: str = Header(None), authorization: str | None = Header(None)):
+    token = extract_token_from_headers(token=token, authorization=authorization)
     event_code = str(year)+event
     try:
         if (token == None):
@@ -398,7 +401,8 @@ def get_Event_Predictions(year: int, event: str, token: str = Header(None)):
 
 
 @app.get("/{year}/{event}/{match_key}/match_details", tags=["stats"])
-def get_match_details(year: int, event: str, match_key: str, token: str = Header(None)):
+def get_match_details(year: int, event: str, match_key: str, token: str = Header(None), authorization: str | None = Header(None)):
+    token = extract_token_from_headers(token=token, authorization=authorization)
     try:
         event_code = str(year)+event
         tbaMatch = TBACollection.find_one({"key": match_key})
@@ -449,7 +453,8 @@ def get_match_details(year: int, event: str, match_key: str, token: str = Header
 
 
 @app.get("/{year}/{event}/{team}/predictions", tags=["stats"])
-def get_team_match_predictions(year: int, event: str, team: str, token: str = Header(None)):
+def get_team_match_predictions(year: int, event: str, team: str, token: str = Header(None), authorization: str | None = Header(None)):
+    token = extract_token_from_headers(token=token, authorization=authorization)
     event_code = str(year) + event
     if (token == None):
         data = getEventPredictions(event_code)

@@ -3050,7 +3050,7 @@
         "redirectUris": [
           "http://localhost:3000/*",
           "${WEBAPP_ORIGIN}/*",
-          "com.polarforecastfrc.app://callback"
+          "com.polarforecastfrc.app:/callback"
         ],
         "webOrigins": [
           "http://localhost:3000",

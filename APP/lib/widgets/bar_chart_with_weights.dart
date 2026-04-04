@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
-import 'package:scouting_app/utils/download_helper.dart';
+import 'package:scouting_app/utils/download.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csv/csv.dart';
 
@@ -120,7 +120,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
       Colors.greenAccent,
     ];
 
-    void _exportToCSV() {
+    Future<void> _exportToCSV() async {
       List<List<dynamic>> rows = [];
 
       List<dynamic> header = ['team_number'];
@@ -155,7 +155,7 @@ class _BarChartWithWeightsState extends State<BarChartWithWeights> {
       final bytes = utf8.encode(csv);
 
       // ✅ FIX
-      downloadFile(bytes, '${widget.title}.csv');
+      await downloadFile(bytes, '${widget.title}.csv');
     }
 
     return Column(

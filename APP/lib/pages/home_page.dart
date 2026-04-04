@@ -31,6 +31,8 @@ class _HomePageState extends State<HomePage> {
   List<GlobalRank> rankings = [];
   List<SortColumnDetails> sortColumns = [];
   int snowCount = 100;
+  bool _isLoading = false;
+  String? _loadError;
 
   final columns = [
     GridColumn(
@@ -122,17 +124,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchRankings() async {
-    final _rankingsFuture = Provider.of<ApiService>(context, listen: false)
-        .fetch_global_rankings(
-            limit: _limit,
-            offset: _limit * pageNum,
-            sortBy: _sortBy,
-            sortOrder: _sortOrder);
-    final (_rankings, _numTeams) = await _rankingsFuture;
     safeSetState(() {
-      rankings = _rankings;
-      numTeams = _numTeams;
+      _isLoading = true;
+      _loadError = null;
     });
+
+    try {
+      final _rankingsFuture = Provider.of<ApiService>(context, listen: false)
+          .fetch_global_rankings(
+              limit: _limit,
+              offset: _limit * pageNum,
+              sortBy: _sortBy,
+              sortOrder: _sortOrder);
+      final (_rankings, _numTeams) = await _rankingsFuture;
+      print('DEBUG: Fetched ${_rankings.length} rankings, numTeams=$_numTeams');
+      safeSetState(() {
+        rankings = _rankings;
+        numTeams = _numTeams;
+        _isLoading = false;
+        _loadError = null;
+      });
+    } catch (e, st) {
+      print('DEBUG: Error fetching rankings: $e');
+      print('DEBUG: Stack trace: $st');
+      safeSetState(() {
+        rankings = [];
+        numTeams = 0;
+        _isLoading = false;
+        _loadError = 'Failed to load rankings: $e';
+      });
+    }
   }
 
   Future<void> _showTeamEventsDialog(String teamNumber) async {
@@ -222,34 +243,57 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Expanded(
-                  child: rankings.isEmpty
+                  child: _isLoading
                       ? Center(
                           child: CircularProgressIndicator(
                           color: Colors.blue,
                         ))
-                      : Expanded(
-                          child: SfDataGrid(
-                            source: GlobalRankDataSource(
-                              rankings,
-                              rankings
-                                  .map((rank) => rank.data.OPR)
-                                  .reduce((a, b) => a > b ? a : b),
-                              rankings
-                                  .map((rank) => rank.data.OPR)
-                                  .reduce((a, b) => a < b ? a : b),
-                              _sort,
-                              sortColumns,
-                              (team) => _showTeamEventsDialog(team),
-                            ),
-                            showSortNumbers: true,
-                            allowFiltering: true,
-                            columnWidthMode: isWide
-                                ? ColumnWidthMode.fill
-                                : ColumnWidthMode.none,
-                            columns: columns,
-                            allowSorting: true,
-                          ),
-                        )),
+                      : _loadError != null
+                          ? Center(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  _loadError!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      color: Colors.redAccent,
+                                      fontFamily: 'Font'),
+                                ),
+                              ),
+                            )
+                          : rankings.isEmpty
+                              ? const Center(
+                                  child: Text(
+                                    'No rankings available right now.',
+                                    style: TextStyle(fontFamily: 'Font'),
+                                  ),
+                                )
+                              : SfDataGrid(
+                                  source: GlobalRankDataSource(
+                                    rankings,
+                                    rankings.isEmpty
+                                        ? 0.0
+                                        : rankings
+                                            .map((rank) => rank.data.OPR)
+                                            .reduce((a, b) => a > b ? a : b),
+                                    rankings.isEmpty
+                                        ? 0.0
+                                        : rankings
+                                            .map((rank) => rank.data.OPR)
+                                            .reduce((a, b) => a < b ? a : b),
+                                    _sort,
+                                    sortColumns,
+                                    (team) => _showTeamEventsDialog(team),
+                                  ),
+                                  showSortNumbers: true,
+                                  allowFiltering: true,
+                                  columnWidthMode: isWide
+                                      ? ColumnWidthMode.fill
+                                      : ColumnWidthMode.none,
+                                  columns: columns,
+                                  allowSorting: true,
+                                )),
               if ((numTeams / _limit).ceil() != 0)
                 NumberPaginator(
                   numberPages: (numTeams / _limit).ceil(),

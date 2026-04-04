@@ -14,7 +14,7 @@ import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
-import 'package:scouting_app/utils/download_helper.dart';
+import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
@@ -426,7 +426,7 @@ class _RankingsTabState extends State<_RankingsTab> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             List<List<dynamic>> csvData = [
               dataColumns.map((e) => e.columnName).toList()
             ];
@@ -438,7 +438,7 @@ class _RankingsTabState extends State<_RankingsTab> {
             final bytes = utf8.encode(csv);
 
             // ✅ CROSS-PLATFORM FIX
-            downloadFile(bytes, '${widget.tournament.display}.csv');
+            await downloadFile(bytes, '${widget.tournament.display}.csv');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
