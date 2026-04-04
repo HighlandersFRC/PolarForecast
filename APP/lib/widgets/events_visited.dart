@@ -18,22 +18,41 @@ class EventsVisited extends StatefulWidget {
 }
 
 class _EventsVisitedState extends State<EventsVisited> {
-  late Future<List<Tournament>> tournamentsFuture;
+  late Future<_EventsVisitedData> eventsVisitedFuture;
 
   @override
   void initState() {
     super.initState();
     final api = Provider.of<ApiService>(context, listen: false);
-    tournamentsFuture = api.fetchTournaments();
+    eventsVisitedFuture = _loadData(api);
+  }
+
+  Future<_EventsVisitedData> _loadData(ApiService api) async {
+    final tournaments = await api.fetchTournaments();
+    String nickname = '';
+    try {
+      nickname = await api.fetchTeamNicknames('frc${widget.teamNumber}');
+    } catch (_) {
+      nickname = '';
+    }
+    return _EventsVisitedData(tournaments, nickname);
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Team ${widget.teamNumber} visited',
-          style: TextStyle(fontFamily: 'Font')),
-      content: FutureBuilder<List<Tournament>>(
-        future: tournamentsFuture,
+      title: FutureBuilder<_EventsVisitedData>(
+        future: eventsVisitedFuture,
+        builder: (context, snapshot) {
+          final nickname = snapshot.data?.nickname ?? '';
+          final titleText = nickname.isNotEmpty
+              ? 'Team ${widget.teamNumber} • $nickname visited'
+              : 'Team ${widget.teamNumber} visited';
+          return Text(titleText, style: TextStyle(fontFamily: 'Font'));
+        },
+      ),
+      content: FutureBuilder<_EventsVisitedData>(
+        future: eventsVisitedFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -41,7 +60,7 @@ class _EventsVisitedState extends State<EventsVisited> {
             return Text('Error: ${snapshot.error}',
                 style: TextStyle(fontFamily: 'Font'));
           } else {
-            final tournaments = snapshot.data ?? [];
+            final tournaments = snapshot.data?.tournaments ?? [];
             return SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -79,4 +98,11 @@ class _EventsVisitedState extends State<EventsVisited> {
       ],
     );
   }
+}
+
+class _EventsVisitedData {
+  final List<Tournament> tournaments;
+  final String nickname;
+
+  _EventsVisitedData(this.tournaments, this.nickname);
 }

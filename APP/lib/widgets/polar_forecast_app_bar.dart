@@ -336,11 +336,35 @@ class _AccountMenuButton extends StatelessWidget {
           PopupMenuItem(
               value: 4, child: const _MenuLabel(Icons.login, 'Login')),
       ],
-      onSelected: (val) {
+      onSelected: (val) async {
         if (val == 1) _openGroupsPopup(context);
         if (val == 2) _openJoinRequestsPopup(context);
         if (val == 3) apiService.logout();
-        if (val == 4) apiService.login('home');
+        if (val == 4) {
+          try {
+            await apiService.login('home');
+            // Check if login succeeded by getting the token
+            final token = await apiService.token;
+            if (token == null && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Login failed: OAuth token exchange failed. Check Keycloak mobile client configuration.'),
+                  duration: Duration(seconds: 8),
+                ),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Login error: $e'),
+                  duration: const Duration(seconds: 8),
+                ),
+              );
+            }
+          }
+        }
       },
     );
   }
