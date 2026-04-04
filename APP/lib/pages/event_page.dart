@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
 // ignore: deprecated_member_use
-import 'dart:html' as html;
 import 'package:csv/csv.dart';
 import 'package:flat/flat.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +14,11 @@ import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
+import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/match_details_2026.dart';
 import '../models/pit_scouting_2026.dart' hide Data;
 import '../widgets/bar_chart_with_weights.dart';
@@ -214,6 +215,20 @@ class _RankingsTabState extends State<_RankingsTab> {
     ),
     GridColumn(
       allowSorting: true,
+      label: Text('Auto Defense Power Rating',
+          style: TextStyle(fontFamily: 'Font')),
+      columnName: 'auto_fuel_denied',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
+      label: Text('Teleop Defense Power Rating',
+          style: TextStyle(fontFamily: 'Font')),
+      columnName: 'teleop_fuel_denied',
+      allowFiltering: false,
+    ),
+    GridColumn(
+      allowSorting: true,
       label: Text('Defense Rate', style: TextStyle(fontFamily: 'Font')),
       columnName: 'defense_rate',
       allowFiltering: false,
@@ -227,6 +242,8 @@ class _RankingsTabState extends State<_RankingsTab> {
     'auto_fuel_scored': true,
     'teleop_fuel_scored': true,
     'climbing_points': true,
+    'auto_fuel_denied': true,
+    'teleop_fuel_denied': true,
     'defense_rate': true,
     'death_rate': true,
     'teleop_pass': true,
@@ -409,21 +426,19 @@ class _RankingsTabState extends State<_RankingsTab> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             List<List<dynamic>> csvData = [
               dataColumns.map((e) => e.columnName).toList()
             ];
             for (var row in dataRows) {
               csvData.add(row.getCells().map((e) => e.value).toList());
             }
-            String csv = const ListToCsvConverter().convert(csvData);
+
+            String csv = ListToCsvConverter().convert(csvData);
             final bytes = utf8.encode(csv);
-            final blob = html.Blob([bytes]);
-            final url = html.Url.createObjectUrlFromBlob(blob);
-            html.AnchorElement(href: url)
-              ..setAttribute('download', '${widget.tournament.display}.csv')
-              ..click();
-            html.Url.revokeObjectUrl(url);
+
+            // ✅ CROSS-PLATFORM FIX
+            await downloadFile(bytes, '${widget.tournament.display}.csv');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -620,10 +635,12 @@ class _DefenseMatchesOnClick extends StatelessWidget {
                             final matchKey =
                                 '${match.event_code}_qm${match.match_number}';
 
-                            html.window.open(
+                            final url = Uri.parse(
                               'https://www.thebluealliance.com/match/$matchKey',
-                              '_blank',
                             );
+
+                            launchUrl(url,
+                                mode: LaunchMode.externalApplication);
                           },
                           title: Text(
                             '${match.event_code}_qm${match.match_number}',

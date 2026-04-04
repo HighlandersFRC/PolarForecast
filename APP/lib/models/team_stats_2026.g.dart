@@ -31,6 +31,9 @@ _$TeamStats2026Impl _$$TeamStats2026ImplFromJson(Map<String, dynamic> json) =>
       foul_points: (json['foul_points'] as num?)?.toDouble() ?? 0.0,
       simulated_rp: (json['simulated_rp'] as num?)?.toInt() ?? 0,
       simulated_rank: (json['simulated_rank'] as num?)?.toInt() ?? 0,
+      auto_fuel_denied: (json['auto_fuel_denied'] as num?)?.toDouble() ?? 0.0,
+      teleop_fuel_denied:
+          (json['teleop_fuel_denied'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$$TeamStats2026ImplToJson(_$TeamStats2026Impl instance) =>
@@ -57,4 +60,6 @@ Map<String, dynamic> _$$TeamStats2026ImplToJson(_$TeamStats2026Impl instance) =>
       'foul_points': instance.foul_points,
       'simulated_rp': instance.simulated_rp,
       'simulated_rank': instance.simulated_rank,
+      'auto_fuel_denied': instance.auto_fuel_denied,
+      'teleop_fuel_denied': instance.teleop_fuel_denied,
     };

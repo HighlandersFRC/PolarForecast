@@ -18,10 +18,21 @@ import 'models/scouting_report.dart';
 import 'package:image/image.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+class AuthRecoveryException implements Exception {
+  final String message;
+  final Object? cause;
+
+  const AuthRecoveryException(this.message, {this.cause});
+
+  @override
+  String toString() => cause == null ? message : '$message ($cause)';
+}
+
 class ApiService {
   final String APIURL, AUTHURL, APPURL, REALM, TBA_KEY, CLIENT;
   final Duration cacheDuration;
   final AuthService authService;
+  final http.Client _httpClient;
   Future<String?> get token async => await authService.getToken();
 
   WebSocketChannel? picklistChannel;
@@ -29,14 +40,30 @@ class ApiService {
   // set token(dynamic token) => _token = token;
 
   ApiService(
-      {required this.APIURL,
-      required this.AUTHURL,
-      required this.APPURL,
-      required this.REALM,
-      required this.TBA_KEY,
-      required this.CLIENT,
+      {required String APIURL,
+      required String AUTHURL,
+      required String APPURL,
+      required String REALM,
+      required String TBA_KEY,
+      required String CLIENT,
       required this.authService,
-      required this.cacheDuration});
+      required this.cacheDuration,
+      http.Client? httpClient})
+      : APIURL = _normalizeBaseUrl(APIURL),
+        AUTHURL = _normalizeBaseUrl(AUTHURL),
+        APPURL = _normalizeBaseUrl(APPURL),
+        REALM = REALM,
+        TBA_KEY = TBA_KEY,
+        CLIENT = CLIENT,
+        _httpClient = httpClient ?? http.Client();
+
+  static String _normalizeBaseUrl(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return trimmed;
+    return trimmed.endsWith('/')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
+  }
 
   Map<String, dynamic> _cache = {};
   Map<String, Future> _pendingRequests = {};
@@ -62,20 +89,109 @@ class ApiService {
       {bool? useCache,
       Duration cacheTime = const Duration(minutes: 5),
       Map<String, String> extraHeaders = const {}}) async {
+    Future<dynamic> requestWithOptionalAuth({
+      required bool includeAuth,
+      required bool didAuthRetry,
+    }) async {
+      String? requestToken;
+      var headers = Map<String, String>.from(extraHeaders);
+      if (includeAuth) {
+        requestToken = await token;
+        if (requestToken != null) {
+          headers = {'Authorization': 'Bearer $requestToken', ...extraHeaders};
+        }
+      }
+
+      print('API Request: $url');
+      print('Token present: ${requestToken != null}');
+      final response = await _httpClient
+          .get(Uri.parse(url), headers: headers)
+          .timeout(const Duration(seconds: 10));
+      print('API Response Status: ${response.statusCode}');
+
+      dynamic decodedBody;
+      try {
+        decodedBody = json.decode(response.body);
+      } catch (_) {}
+
+      final isAuthStatusCode =
+          response.statusCode == 401 || response.statusCode == 403;
+      final isAuthFailurePayload =
+          _isAuthFailurePayload(decodedBody ?? response.body);
+
+      if (response.statusCode != 200) {
+        print('API Error: ${response.statusCode} - ${response.body}');
+        if ((isAuthStatusCode || isAuthFailurePayload) &&
+            includeAuth &&
+            requestToken != null &&
+            !didAuthRetry) {
+          await authService.logout();
+          try {
+            return await requestWithOptionalAuth(
+              includeAuth: false,
+              didAuthRetry: true,
+            );
+          } catch (e) {
+            if (e is AuthRecoveryException) rethrow;
+            throw AuthRecoveryException(
+              'Session could not be validated; continuing signed-out.',
+              cause: e,
+            );
+          }
+        }
+
+        if (isAuthStatusCode || isAuthFailurePayload) {
+          throw const AuthRecoveryException(
+            'Session could not be validated; continuing signed-out.',
+          );
+        }
+
+        throw Exception('Failed to load data from $url');
+      }
+
+      final data = decodedBody ?? json.decode(response.body);
+      if (isAuthFailurePayload) {
+        if (includeAuth && requestToken != null && !didAuthRetry) {
+          await authService.logout();
+          try {
+            return await requestWithOptionalAuth(
+              includeAuth: false,
+              didAuthRetry: true,
+            );
+          } catch (e) {
+            if (e is AuthRecoveryException) rethrow;
+            throw AuthRecoveryException(
+              'Session could not be validated; continuing signed-out.',
+              cause: e,
+            );
+          }
+        }
+
+        throw const AuthRecoveryException(
+          'Session could not be validated; continuing signed-out.',
+        );
+      }
+
+      return data;
+    }
+
     Function() getFromAPI = () async {
-      if (_pendingRequests.containsKey(cacheKey))
+      if (_pendingRequests.containsKey(cacheKey)) {
         return _pendingRequests[cacheKey];
-      Map<String, String> headers = extraHeaders;
+      }
       Future<dynamic> Function() futureFunc = () async {
-        final _token = await token;
-        if (_token != null) headers = {'token': _token, ...extraHeaders};
-        final response = await http.get(Uri.parse(url), headers: headers);
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
+        try {
+          final data = await requestWithOptionalAuth(
+            includeAuth: true,
+            didAuthRetry: false,
+          );
           _setInCache(cacheKey, data, cacheTime: cacheTime);
           return data;
-        } else {
-          throw Exception('Failed to load data from ' + url);
+        } on AuthRecoveryException {
+          rethrow;
+        } catch (e) {
+          print('Exception in _fetchFromAPI: $e');
+          rethrow;
         }
       };
       final future = futureFunc().whenComplete(() {
@@ -86,6 +202,38 @@ class ApiService {
     };
     if (useCache ?? true) return _getFromCache(cacheKey, getFromAPI);
     return getFromAPI();
+  }
+
+  bool _isAuthFailurePayload(dynamic payload) {
+    final combined = _extractAuthFailureText(payload);
+    if (combined.isEmpty) return false;
+
+    return combined.contains('token') ||
+        combined.contains('introspect') ||
+        combined.contains('authorization') ||
+        combined.contains('unauthorized') ||
+        combined.contains('forbidden') ||
+        combined.contains('authentication') ||
+        combined.contains('invalid_grant');
+  }
+
+  String _extractAuthFailureText(dynamic payload) {
+    if (payload == null) {
+      return '';
+    }
+    if (payload is String) {
+      return payload.toLowerCase();
+    }
+    if (payload is List) {
+      return payload.map(_extractAuthFailureText).join(' ').toLowerCase();
+    }
+    if (payload is Map) {
+      final detail = _extractAuthFailureText(payload['detail']);
+      final error = _extractAuthFailureText(payload['error']);
+      final message = _extractAuthFailureText(payload['message']);
+      return '$detail $error $message'.trim().toLowerCase();
+    }
+    return payload.toString().toLowerCase();
   }
 
   Future<String> fetchTeamNicknames(String team_number) async {
@@ -219,7 +367,7 @@ class ApiService {
         Uri.parse(endpoint),
         headers: {
           'Content-Type': 'application/json',
-          'token': (await token) ?? ''
+          'Authorization': 'Bearer ${(await token) ?? ''}'
         },
         body: json.encode(data.toJson()),
       );
@@ -319,7 +467,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse(endpoint),
         headers: {
-          'token': await token ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: jsonEncode(data),
@@ -340,17 +488,17 @@ class ApiService {
     return MatchDetails2026.fromJson(data);
   }
 
-  Future<void> login(String redirectPath) async {
-    // try {
+  Future<String?> login(String redirectPath) async {
     final String? token = await authService.login(redirectPath);
+
     if (token != null) {
+      // Optional: debug print
       // print('Login successful! Access token: $token');
+      return token;
     } else {
       print('Login failed or canceled');
+      return null;
     }
-    // } catch (e) {
-    //   print('Error during login: $e');
-    // }
   }
 
   Future<void> logout() async {
@@ -400,7 +548,7 @@ class ApiService {
           ? Uri.parse('$APIURL/CreateGroup?group_name=$name&event=$eventCode')
           : Uri.parse('$APIURL/CreateGroup?group_name=$name'),
       headers: {
-        'token': token,
+        'Authorization': 'Bearer $token',
         'group_name': name,
         if (eventCode != null) 'event': eventCode,
       },
@@ -434,7 +582,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$APIURL/Group/$name/Join?join_code=$join_code'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -453,7 +601,7 @@ class ApiService {
       Uri.parse(
           '$APIURL/Group/$group_name/Members/Demote?demote_id=$demote_id'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -466,7 +614,7 @@ class ApiService {
     final response = await http.delete(
       Uri.parse('$APIURL/Group/$group_name/Members/Kick?kick_id=$kick_id'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -480,7 +628,7 @@ class ApiService {
       Uri.parse(
           '$APIURL/Group/$group_name/Members/PromoteMember?promote_id=$promote_id'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -494,7 +642,7 @@ class ApiService {
       Uri.parse(
           '$APIURL/Group/$group_name/Members/PromoteAdmin?promote_id=$promote_id'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -507,7 +655,7 @@ class ApiService {
     final response = await http.delete(
       Uri.parse('$APIURL/Group/$group_name/Leave'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -519,7 +667,7 @@ class ApiService {
     final response = await http.delete(
       Uri.parse('$APIURL/Group/$group_name/Delete'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -532,7 +680,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$APIURL/Group/$group_name/Event/$event/Add'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -547,7 +695,7 @@ class ApiService {
     final response = await http.delete(
       Uri.parse('$APIURL/Group/$group_name/Event/$event/Remove'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -607,7 +755,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$APIURL/Group/$group/Event/$event/AddPickList'),
       headers: {
-        'token': t,
+        'Authorization': 'Bearer ${(await token) ?? ''}',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
@@ -634,7 +782,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse(url),
       headers: {
-        'token': t,
+        'Authorization': 'Bearer ${(await token) ?? ''}',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(picklist.toJson()),
@@ -655,7 +803,7 @@ class ApiService {
     final response = await http.get(
       Uri.parse('$APIURL/Group/$groupName/Event/$event/GetPicklists'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
         'Content-Type': 'application/json',
       },
     );
@@ -682,7 +830,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse(url),
       headers: {
-        'token': t,
+        'Authorization': 'Bearer ${(await token) ?? ''}',
         'Content-Type': 'application/json',
       },
     );
@@ -703,7 +851,7 @@ class ApiService {
       Uri.parse(
           '$APIURL/Group/$group_name/Event/$event_key/Alliance/Request?other_group=$other_group'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (response.statusCode != 200) {
@@ -732,7 +880,7 @@ class ApiService {
     final response = await http.post(
         Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Accept'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -752,7 +900,7 @@ class ApiService {
     final response = await http.delete(
         Uri.parse('$APIURL/Group/$group_name/Event/$event/Alliance/Decline'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -773,7 +921,7 @@ class ApiService {
         Uri.parse(
             '$APIURL/Group/$group_name/Event/$event/Alliance/DeleteRequest'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -794,7 +942,7 @@ class ApiService {
         Uri.parse(
             '$APIURL/Group/$group_name/Event/$event/Alliance/Leave?other_group=$other_group'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
         });
     if (response.statusCode != 200) {
       throw Exception(json.decode(response.body)['detail']);
@@ -829,7 +977,7 @@ class ApiService {
     final response = await http.post(
         Uri.parse('$APIURL/Group/${request.group_name}/JoinRequests/Accept'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -849,7 +997,7 @@ class ApiService {
     final response = await http.delete(
         Uri.parse('$APIURL/Group/${request.group_name}/JoinRequests/Decline'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -869,7 +1017,7 @@ class ApiService {
     final response = await http.delete(
         Uri.parse('$APIURL/Group/${request.group_name}/DeleteJoinRequest'),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()));
@@ -890,7 +1038,7 @@ class ApiService {
     final putURLResponse = await http.get(
       Uri.parse('$APIURL/Pictures/PutURL'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
       },
     );
     if (putURLResponse.statusCode != 200) {
@@ -930,7 +1078,7 @@ class ApiService {
     final postItOnAPI = await http.post(
       Uri.parse('$APIURL/Pictures/ConfirmUpload'),
       headers: {
-        'token': (await token) ?? '',
+        'Authorization': 'Bearer ${(await token) ?? ''}',
         'Content-Type': 'application/json',
       },
       body: json.encode(data.toJson()),
@@ -944,7 +1092,7 @@ class ApiService {
     final url = '$APIURL/Pictures/Delete';
     final request = await http.delete(Uri.parse(url),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(image.toJson()));
@@ -957,7 +1105,7 @@ class ApiService {
     final url = '$APIURL/MatchScouting/';
     final request = await http.post(Uri.parse(url),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(data.toJson()));
@@ -972,7 +1120,7 @@ class ApiService {
     final url = '$APIURL/MatchScouting/';
     final request = await http.put(Uri.parse(url),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(data.toJson()));
@@ -985,7 +1133,7 @@ class ApiService {
     final url = '$APIURL/MatchScouting/Delete';
     final request = await http.delete(Uri.parse(url),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(data.toJson()));
@@ -1012,7 +1160,7 @@ class ApiService {
     };
     final url = Uri.parse('$APIURL/${DateTime.now().year}/GlobalRankings')
         .replace(queryParameters: queryParams);
-    var data = await _fetchFromAPI(url.toString(), cacheKey, useCache: true);
+    var data = await _fetchFromAPI(url.toString(), cacheKey, useCache: false);
     return (
       [for (var rank in data['data']) GlobalRank.fromJson(rank)],
       data['max_data_query'] as int
@@ -1023,7 +1171,7 @@ class ApiService {
     final url = '$APIURL/MatchScouting/Offline/';
     final request = await http.post(Uri.parse(url),
         headers: {
-          'token': (await token) ?? '',
+          'Authorization': 'Bearer ${(await token) ?? ''}',
           'Content-Type': 'application/json',
         },
         body: json.encode(data.toJson()));
@@ -1045,3 +1193,7 @@ class ApiService {
     return ScoutingReport.fromJson(decoded);
   }
 }
+
+
+
+

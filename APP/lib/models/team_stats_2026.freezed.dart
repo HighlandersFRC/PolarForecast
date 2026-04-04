@@ -42,6 +42,8 @@ mixin _$TeamStats2026 {
   double get foul_points => throw _privateConstructorUsedError;
   int get simulated_rp => throw _privateConstructorUsedError;
   int get simulated_rank => throw _privateConstructorUsedError;
+  double get auto_fuel_denied => throw _privateConstructorUsedError;
+  double get teleop_fuel_denied => throw _privateConstructorUsedError;
 
   /// Serializes this TeamStats2026 to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -81,7 +83,9 @@ abstract class $TeamStats2026CopyWith<$Res> {
       double total_fuel_scored,
       double foul_points,
       int simulated_rp,
-      int simulated_rank});
+      int simulated_rank,
+      double auto_fuel_denied,
+      double teleop_fuel_denied});
 }
 
 /// @nodoc
@@ -121,6 +125,8 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
+    Object? auto_fuel_denied = null,
+    Object? teleop_fuel_denied = null,
   }) {
     return _then(_value.copyWith(
       historical: null == historical
@@ -211,6 +217,14 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.simulated_rank
           : simulated_rank // ignore: cast_nullable_to_non_nullable
               as int,
+      auto_fuel_denied: null == auto_fuel_denied
+          ? _value.auto_fuel_denied
+          : auto_fuel_denied // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_fuel_denied: null == teleop_fuel_denied
+          ? _value.teleop_fuel_denied
+          : teleop_fuel_denied // ignore: cast_nullable_to_non_nullable
+              as double,
     ) as $Val);
   }
 }
@@ -245,7 +259,9 @@ abstract class _$$TeamStats2026ImplCopyWith<$Res>
       double total_fuel_scored,
       double foul_points,
       int simulated_rp,
-      int simulated_rank});
+      int simulated_rank,
+      double auto_fuel_denied,
+      double teleop_fuel_denied});
 }
 
 /// @nodoc
@@ -283,6 +299,8 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
     Object? foul_points = null,
     Object? simulated_rp = null,
     Object? simulated_rank = null,
+    Object? auto_fuel_denied = null,
+    Object? teleop_fuel_denied = null,
   }) {
     return _then(_$TeamStats2026Impl(
       historical: null == historical
@@ -373,6 +391,14 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.simulated_rank
           : simulated_rank // ignore: cast_nullable_to_non_nullable
               as int,
+      auto_fuel_denied: null == auto_fuel_denied
+          ? _value.auto_fuel_denied
+          : auto_fuel_denied // ignore: cast_nullable_to_non_nullable
+              as double,
+      teleop_fuel_denied: null == teleop_fuel_denied
+          ? _value.teleop_fuel_denied
+          : teleop_fuel_denied // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -402,7 +428,9 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
       this.total_fuel_scored = 0.0,
       this.foul_points = 0.0,
       this.simulated_rp = 0,
-      this.simulated_rank = 0});
+      this.simulated_rank = 0,
+      this.auto_fuel_denied = 0.0,
+      this.teleop_fuel_denied = 0.0});
 
   factory _$TeamStats2026Impl.fromJson(Map<String, dynamic> json) =>
       _$$TeamStats2026ImplFromJson(json);
@@ -468,10 +496,16 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
   @override
   @JsonKey()
   final int simulated_rank;
+  @override
+  @JsonKey()
+  final double auto_fuel_denied;
+  @override
+  @JsonKey()
+  final double teleop_fuel_denied;
 
   @override
   String toString() {
-    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_scored: $auto_fuel_scored, teleop_fuel_scored: $teleop_fuel_scored, total_fuel_scored: $total_fuel_scored, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank)';
+    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_scored: $auto_fuel_scored, teleop_fuel_scored: $teleop_fuel_scored, total_fuel_scored: $total_fuel_scored, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank, auto_fuel_denied: $auto_fuel_denied, teleop_fuel_denied: $teleop_fuel_denied)';
   }
 
   @override
@@ -518,7 +552,11 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
             (identical(other.simulated_rp, simulated_rp) ||
                 other.simulated_rp == simulated_rp) &&
             (identical(other.simulated_rank, simulated_rank) ||
-                other.simulated_rank == simulated_rank));
+                other.simulated_rank == simulated_rank) &&
+            (identical(other.auto_fuel_denied, auto_fuel_denied) ||
+                other.auto_fuel_denied == auto_fuel_denied) &&
+            (identical(other.teleop_fuel_denied, teleop_fuel_denied) ||
+                other.teleop_fuel_denied == teleop_fuel_denied));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -546,7 +584,9 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
         total_fuel_scored,
         foul_points,
         simulated_rp,
-        simulated_rank
+        simulated_rank,
+        auto_fuel_denied,
+        teleop_fuel_denied
       ]);
 
   /// Create a copy of TeamStats2026
@@ -588,7 +628,9 @@ abstract class _TeamStats2026 implements TeamStats2026 {
       final double total_fuel_scored,
       final double foul_points,
       final int simulated_rp,
-      final int simulated_rank}) = _$TeamStats2026Impl;
+      final int simulated_rank,
+      final double auto_fuel_denied,
+      final double teleop_fuel_denied}) = _$TeamStats2026Impl;
 
   factory _TeamStats2026.fromJson(Map<String, dynamic> json) =
       _$TeamStats2026Impl.fromJson;
@@ -637,6 +679,10 @@ abstract class _TeamStats2026 implements TeamStats2026 {
   int get simulated_rp;
   @override
   int get simulated_rank;
+  @override
+  double get auto_fuel_denied;
+  @override
+  double get teleop_fuel_denied;
 
   /// Create a copy of TeamStats2026
   /// with the given fields replaced by the non-null parameter values.

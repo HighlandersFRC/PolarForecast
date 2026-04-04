@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/polar_mobile.iml" filepath="$PROJECT_DIR$/polar_mobile.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/polar_mobile_android.iml" filepath="$PROJECT_DIR$/android/polar_mobile_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scouting_app.iml" filepath="$PROJECT_DIR$/scouting_app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/scouting_app_android.iml" filepath="$PROJECT_DIR$/android/scouting_app_android.iml" />
     </modules>
   </component>
 </project>

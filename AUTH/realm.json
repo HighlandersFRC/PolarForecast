@@ -3049,11 +3049,13 @@
         "clientAuthenticatorType": "client-secret",
         "redirectUris": [
           "http://localhost:3000/*",
-          "${WEBAPP_ORIGIN}/*"
+          "${WEBAPP_ORIGIN}/*",
+          "com.polarforecastfrc.app:/callback"
         ],
         "webOrigins": [
           "http://localhost:3000",
-          "${WEBAPP_ORIGIN}"
+          "${WEBAPP_ORIGIN}",
+          "com.polarforecastfrc.app"
         ],
         "notBefore": 0,
         "bearerOnly": false,

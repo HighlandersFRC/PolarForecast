@@ -6,6 +6,7 @@ import 'package:scouting_app/auth/auth_service.dart';
 import 'package:scouting_app/pages/event_page.dart';
 import 'package:scouting_app/pages/group_page.dart';
 import 'package:scouting_app/pages/match_page.dart';
+import 'package:scouting_app/pages/mobile_auth_callback_page.dart';
 import 'package:scouting_app/pages/pick_list_page.dart';
 import 'package:scouting_app/pages/pit_scouting_page.dart';
 import 'package:scouting_app/pages/scouter_documentation.dart';
@@ -15,6 +16,9 @@ import 'package:scouting_app/pages/team_page.dart';
 import 'package:scouting_app/pages/home_page.dart';
 import 'package:scouting_app/pages/death_page.dart';
 import 'package:scouting_app/pages/picture_scouting_page.dart';
+import 'package:scouting_app/pages/bubble_sort.dart';
+import 'package:scouting_app/models/group.dart';
+import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/theme/theme_provider.dart';
 import 'package:scouting_app/api_service.dart';
 
@@ -139,6 +143,70 @@ class MainApp extends StatelessWidget {
                   return null;
                 }
               }
+              if (pathSegments[1] == 'picklist') {
+                final queryParams = Uri.parse(settings.name!).queryParameters;
+                final groupName = queryParams['group']!;
+                final eventCode = queryParams['event']!;
+                if (pathSegments.length == 2) {
+                  return MaterialPageRoute(
+                    builder: (context) => PicklistPage(
+                      groupName: groupName,
+                      eventCode: eventCode,
+                      picklistID: '',
+                    ),
+                    settings: settings,
+                  );
+                } else if (pathSegments.length == 3) {
+                  if (pathSegments[2] == 'generate') {
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: '',
+                      ),
+                      settings: settings,
+                    );
+                  } else {
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[2],
+                      ),
+                      settings: settings,
+                    );
+                  }
+                } else if (pathSegments.length == 4) {
+                  if (pathSegments[2] == 'generate') {
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[3],
+                      ),
+                      settings: settings,
+                    );
+                  } else {
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupName,
+                        eventCode: eventCode,
+                        picklistID: pathSegments[3],
+                      ),
+                      settings: settings,
+                    );
+                  }
+                }
+              }
+              if (pathSegments[1] == 'auth') {
+                if (pathSegments.length > 2 &&
+                    pathSegments[2] == 'mobile-callback') {
+                  return MaterialPageRoute(
+                    builder: (context) => const MobileAuthCallbackPage(),
+                    settings: settings,
+                  );
+                }
+              }
               if (pathSegments[1] == 'group') {
                 if (pathSegments.length > 2) {
                   final groupKey = pathSegments[2];
@@ -158,6 +226,37 @@ class MainApp extends StatelessWidget {
                       builder: (context) => ScoutingReportPage(
                         group: groupKey,
                         event: pathSegments[4],
+                      ),
+                      settings: settings,
+                    );
+                  } else if (pathSegments.length > 7 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'picklist' &&
+                      pathSegments[6] == 'generate' &&
+                      pathSegments[7].isNotEmpty) {
+                    final eventKey = pathSegments[4];
+                    final picklistID = pathSegments[7];
+
+                    return MaterialPageRoute(
+                      builder: (context) => _BubbleSortPageWrapper(
+                        groupName: groupKey,
+                        eventCode: eventKey,
+                        picklistID: picklistID,
+                      ),
+                      settings: settings,
+                    );
+                  } else if (pathSegments.length > 6 &&
+                      pathSegments[3] == 'events' &&
+                      pathSegments[5] == 'picklist' &&
+                      pathSegments[6].isNotEmpty) {
+                    final eventKey = pathSegments[4];
+                    final picklistID = pathSegments[6];
+
+                    return MaterialPageRoute(
+                      builder: (context) => PicklistPage(
+                        groupName: groupKey,
+                        eventCode: eventKey,
+                        picklistID: picklistID,
                       ),
                       settings: settings,
                     );
@@ -219,6 +318,156 @@ class MainApp extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _BubbleSortPageWrapper extends StatefulWidget {
+  final String groupName;
+  final String eventCode;
+  final String picklistID;
+
+  const _BubbleSortPageWrapper({
+    required this.groupName,
+    required this.eventCode,
+    required this.picklistID,
+  });
+
+  @override
+  State<_BubbleSortPageWrapper> createState() => _BubbleSortPageWrapperState();
+}
+
+class _BubbleSortPageWrapperState extends State<_BubbleSortPageWrapper> {
+  bool _isLoading = true;
+  String? _error;
+  List<Picks> _picks = [];
+  List<TeamStats2026> _rankings = [];
+  Map<String, String> _teamNames = {};
+  Picklist2026? _picklist;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    try {
+      final allPicklists =
+          await apiService.fetchPicklists(widget.groupName, widget.eventCode);
+      final picked = allPicklists.firstWhere(
+          (p) => p.picklist_id == widget.picklistID,
+          orElse: () => throw Exception('Picklist not found'));
+
+      final eventYear = (widget.eventCode.length >= 4
+              ? int.tryParse(widget.eventCode.substring(0, 4))
+              : null) ??
+          2026;
+      final eventKey = widget.eventCode.length > 4
+          ? widget.eventCode.substring(4)
+          : widget.eventCode;
+
+      final rankings = await apiService.fetchEventRankings(eventYear, eventKey);
+
+      final names = <String, String>{};
+      for (final pick in picked.picks) {
+        if (names.containsKey(pick.number)) continue;
+        try {
+          final nickname =
+              await apiService.fetchTeamNicknames('frc${pick.number}');
+          names[pick.number] = nickname;
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _picklist = picked;
+        _picks = List.from(picked.picks);
+        _rankings = rankings;
+        _teamNames = names;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> savePicklist() async {
+    if (_picklist == null) return;
+
+    final updatedPicklist = Picklist2026(
+      picklist_id: _picklist!.picklist_id,
+      name: _picklist!.name,
+      picks: _picks,
+    );
+
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    if (_picklist!.picklist_id.isEmpty) {
+      await apiService.addPicklist(
+          widget.groupName, widget.eventCode, updatedPicklist);
+    } else {
+      await apiService.updatePicklist(widget.groupName, widget.eventCode,
+          _picklist!.picklist_id, updatedPicklist);
+    }
+  }
+
+  bool _saving = false;
+  Future<void> _autoSave() async {
+    if (_saving) return;
+    _saving = true;
+    await savePicklist();
+    _saving = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Bubble Sort')),
+        body: Center(child: Text('Failed to load bubble sort data: $_error')),
+      );
+    }
+
+    if (_picklist == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Bubble Sort')),
+        body: const Center(child: Text('Picklist not found')),
+      );
+    }
+
+    final eventYear = (widget.eventCode.length >= 4
+            ? int.tryParse(widget.eventCode.substring(0, 4))
+            : null) ??
+        2026;
+
+    return BubbleSort(
+      picks: _picks,
+      rankings: _rankings,
+      eventYear: eventYear,
+      eventCode: widget.eventCode,
+      teamNames: _teamNames,
+      name: _picklist!.name,
+      onSwap: (idx1, idx2) {
+        setState(() {
+          final temp = _picks[idx1];
+          _picks[idx1] = _picks[idx2];
+          _picks[idx2] = temp;
+        });
+      },
+      onAutoSave: _autoSave,
     );
   }
 }

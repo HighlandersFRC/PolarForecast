@@ -57,11 +57,24 @@ def get_token_active(token: str):
     return introspect["active"]
 
 
-def check_token_active(token: str = Header(None)):
-    if token is None:
+def extract_token_from_headers(token: str | None = None, authorization: str | None = None):
+    if authorization is not None:
+        prefix = "bearer "
+        normalized = authorization.strip()
+        if normalized.lower().startswith(prefix):
+            bearer_token = normalized[len(prefix):].strip()
+            if bearer_token:
+                return bearer_token
+    return token
+
+
+def check_token_active(token: str = Header(None), authorization: str | None = Header(None)):
+    resolved_token = extract_token_from_headers(
+        token=token, authorization=authorization)
+    if resolved_token is None:
         raise HTTPException(401, "Login token is required")
-    if get_token_active(token):
-        return token
+    if get_token_active(resolved_token):
+        return resolved_token
     else:
         raise HTTPException(401, "Token is bad or expired")
 
