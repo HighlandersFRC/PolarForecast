@@ -125,24 +125,6 @@ class ApiService {
 
       if (response.statusCode != 200) {
         print('API Error: ${response.statusCode} - ${response.body}');
-        if ((isAuthStatusCode || isAuthFailurePayload) &&
-            includeAuth &&
-            requestToken != null &&
-            !didAuthRetry) {
-          await authService.logout();
-          try {
-            return await requestWithOptionalAuth(
-              includeAuth: false,
-              didAuthRetry: true,
-            );
-          } catch (e) {
-            if (e is AuthRecoveryException) rethrow;
-            throw AuthRecoveryException(
-              'Session could not be validated; continuing signed-out.',
-              cause: e,
-            );
-          }
-        }
 
         if (isAuthStatusCode || isAuthFailurePayload) {
           throw const AuthRecoveryException(
@@ -1197,7 +1179,3 @@ class ApiService {
     return ScoutingReport.fromJson(decoded);
   }
 }
-
-
-
-
