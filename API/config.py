@@ -108,12 +108,18 @@ MONGO_CONNECTION = os.environ.get(
     "PF_MONGO_CONNECTION", "mongodb://localhost:27017")
 
 APP_HOST = os.environ.get("APP_HOST", "")
-ALLOW_ORIGINS = [
-    "127.0.0.1:8000",
+_default_allow_origins = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
     "http://localhost:8080",
+    "https://polarforecastfrc.com",
+    "https://polarforecast-frc.com",
 ]
+_allow_origins_from_env = os.environ.get("PF_ALLOW_ORIGINS", "").strip()
+if _allow_origins_from_env:
+    ALLOW_ORIGINS = [origin.strip() for origin in _allow_origins_from_env.split(",") if origin.strip()]
+else:
+    ALLOW_ORIGINS = _default_allow_origins
 # Password
 EDIT_PASSWORD = os.environ.get("PF_EDIT_PASSWORD", "")
 KEYCLOAK_ADMIN = os.environ.get("KEYCLOAK_ADMIN", "")
