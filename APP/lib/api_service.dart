@@ -91,7 +91,6 @@ class ApiService {
       Map<String, String> extraHeaders = const {}}) async {
     Future<dynamic> requestWithOptionalAuth({
       required bool includeAuth,
-      required bool didAuthRetry,
     }) async {
       String? requestToken;
       var headers = Map<String, String>.from(extraHeaders);
@@ -128,7 +127,7 @@ class ApiService {
 
         if (isAuthStatusCode || isAuthFailurePayload) {
           throw const AuthRecoveryException(
-            'Session could not be validated; continuing signed-out.',
+            'Session could not be validated. Access is denied until you log in again.',
           );
         }
 
@@ -137,24 +136,8 @@ class ApiService {
 
       final data = decodedBody ?? json.decode(response.body);
       if (isAuthFailurePayload) {
-        if (includeAuth && requestToken != null && !didAuthRetry) {
-          await authService.logout();
-          try {
-            return await requestWithOptionalAuth(
-              includeAuth: false,
-              didAuthRetry: true,
-            );
-          } catch (e) {
-            if (e is AuthRecoveryException) rethrow;
-            throw AuthRecoveryException(
-              'Session could not be validated; continuing signed-out.',
-              cause: e,
-            );
-          }
-        }
-
         throw const AuthRecoveryException(
-          'Session could not be validated; continuing signed-out.',
+          'Session could not be validated. Access is denied until you log in again.',
         );
       }
 
@@ -169,7 +152,6 @@ class ApiService {
         try {
           final data = await requestWithOptionalAuth(
             includeAuth: true,
-            didAuthRetry: false,
           );
           _setInCache(cacheKey, data, cacheTime: cacheTime);
           return data;

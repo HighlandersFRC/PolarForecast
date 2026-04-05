@@ -408,7 +408,7 @@ class _AccountMenuButton extends StatelessWidget {
       final validatedToken = await apiService.token;
       if (validatedToken == null) {
         _showError(
-            context, 'Session could not be validated; continuing signed-out.');
+            context, 'Session could not be validated. Access is denied until you log in again.');
         return;
       }
 
