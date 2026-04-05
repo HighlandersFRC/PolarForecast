@@ -92,7 +92,15 @@ def check_token_active(token: str = Header(None), authorization: str | None = He
 
 
 def get_user_info(token: str):
-    info = keycloak_openid.userinfo(token)
+    try:
+        info = keycloak_openid.userinfo(token)
+    except Exception as e:
+        logging.warning(f"Failed to fetch user info from token: {e}")
+        raise HTTPException(401, "Token is bad or expired")
+
+    if not isinstance(info, dict) or not info.get("sub"):
+        raise HTTPException(401, "Token is bad or expired")
+
     return info
 
 
@@ -148,10 +156,34 @@ def make_group(token: str, group_name: str, event: str | None):
 
 
 def find_user_groups(user_id: str):
-    groups = keycloak_admin.get_user_groups(
-        user_id, query={
-        }, brief_representation=False)
-    return groups
+    # Be tolerant of python-keycloak signature differences across versions.
+    attempts = [
+        lambda: keycloak_admin.get_user_groups(user_id),
+        lambda: keycloak_admin.get_user_groups(user_id=user_id),
+        lambda: keycloak_admin.get_user_groups(user_id, query={}),
+        lambda: keycloak_admin.get_user_groups(
+            user_id, query={}, brief_representation=False),
+    ]
+
+    last_type_error = None
+    for attempt in attempts:
+        try:
+            groups = attempt()
+            return groups if isinstance(groups, list) else []
+        except TypeError as e:
+            last_type_error = e
+            continue
+        except HTTPException:
+            raise
+        except Exception as e:
+            logging.warning(f"Failed to fetch groups for user {user_id}: {e}")
+            raise HTTPException(
+                502, "Unable to fetch user groups from identity provider")
+
+    if last_type_error is not None:
+        logging.warning(
+            f"No compatible keycloak get_user_groups signature for current library: {last_type_error}")
+    raise HTTPException(502, "Unable to fetch user groups from identity provider")
 
 
 def fetch_group_members(group_id: str):
