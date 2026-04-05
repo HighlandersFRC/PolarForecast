@@ -97,11 +97,7 @@ class ApiService {
       if (includeAuth) {
         requestToken = await token;
         if (requestToken != null) {
-          headers = {
-            'Authorization': 'Bearer $requestToken',
-            'token': requestToken,
-            ...extraHeaders
-          };
+          headers = {'Authorization': 'Bearer $requestToken', ...extraHeaders};
         }
       }
 
