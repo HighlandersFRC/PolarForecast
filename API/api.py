@@ -1460,7 +1460,7 @@ def remove_event_from_group(group_name: str, event: str, token: str = Depends(ch
 @app.post("/CreateGroup", tags=["groups"])
 def create_group(group_name: str | None = None, token: str = Depends(check_token_active), event: str | None = None) -> Group:
     if len(get_user_groups(token)) != 0:
-        HTTPException(400, "You are already part of a group")
+        raise HTTPException(400, "You are already part of a group")
     if group_name == None:
         raise HTTPException(400, "Please provide a group name")
     for char in group_name:
@@ -2458,6 +2458,27 @@ def get_user_groups(token: str = Depends(check_token_active)):
                 logging.warning(
                     f"Using cached Keycloak groups for user {userID} due to upstream identity provider failure.")
                 return cached_groups
+            team_number = user_data.get("team_number")
+            if team_number is not None:
+                affiliation = f"frc{team_number}"
+                fallback_groups = []
+                for group_doc in GroupCollection.find({"affiliation": affiliation}):
+                    db_group = Group(**group_doc)
+                    # Minimal Keycloak-like shape required by downstream checks.
+                    fallback_groups.append({
+                        "id": db_group.group_id,
+                        "name": db_group.name,
+                        "path": f"/{db_group.name}",
+                    })
+                    fallback_groups.append({
+                        "id": db_group.member_group_id,
+                        "name": "Member",
+                        "path": f"/{db_group.name}/Member",
+                    })
+                if len(fallback_groups) > 0:
+                    logging.warning(
+                        f"Using affiliation fallback groups for user {userID} (team {team_number}) due to identity provider outage.")
+                    return fallback_groups
             logging.warning(
                 f"Unable to fetch groups for user {userID}; returning empty group list to avoid hard failure.")
             return []

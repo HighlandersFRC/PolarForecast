@@ -131,19 +131,41 @@ def make_group(token: str, group_name: str, event: str | None):
         group_id = keycloak_admin.create_group(
             payload=payload
         )
-    except:
-        raise HTTPException(400, "This group name is already taken.")
+    except Exception as e:
+        error_text = str(e).lower()
+        if (
+            "409" in error_text
+            or "already exists" in error_text
+            or "group exists" in error_text
+            or "conflict" in error_text
+            or "duplicate" in error_text
+        ):
+            raise HTTPException(400, "This group name is already taken.")
+        logging.warning(f"Identity provider failed while creating group '{group_name}': {e}")
+        raise HTTPException(
+            502, "Unable to create group in identity provider")
     subIDs = [group_id]
-    for subgroup in subgroups:
-        subIDs.append(keycloak_admin.create_group(
-            payload=subgroup,
-            parent=group_id
-        ))
-    for subID in subIDs:
-        keycloak_admin.group_user_add(
-            user_id=user_info["sub"],
-            group_id=subID
-        )
+    try:
+        for subgroup in subgroups:
+            subIDs.append(keycloak_admin.create_group(
+                payload=subgroup,
+                parent=group_id
+            ))
+        for subID in subIDs:
+            keycloak_admin.group_user_add(
+                user_id=user_info["sub"],
+                group_id=subID
+            )
+    except Exception as e:
+        logging.warning(
+            f"Identity provider failed while finalizing group '{group_name}': {e}")
+        try:
+            keycloak_admin.delete_group(group_id)
+        except Exception as cleanup_error:
+            logging.warning(
+                f"Failed to roll back partially-created group '{group_name}' ({group_id}): {cleanup_error}")
+        raise HTTPException(
+            502, "Unable to create group in identity provider")
     codeStr = create_join_code()
     return {
         "group": payload,
