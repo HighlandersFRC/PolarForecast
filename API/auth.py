@@ -178,12 +178,13 @@ def find_user_groups(user_id: str):
         except Exception as e:
             logging.warning(f"Failed to fetch groups for user {user_id}: {e}")
             raise HTTPException(
-                502, "Unable to fetch user groups from identity provider")
+                502, f"Unable to fetch user groups from identity provider ({type(e).__name__})")
 
     if last_type_error is not None:
         logging.warning(
             f"No compatible keycloak get_user_groups signature for current library: {last_type_error}")
-    raise HTTPException(502, "Unable to fetch user groups from identity provider")
+    raise HTTPException(
+        502, "Unable to fetch user groups from identity provider (incompatible keycloak client signature)")
 
 
 def fetch_group_members(group_id: str):
