@@ -48,13 +48,23 @@ def create_join_code() -> str:
 
 
 def get_token_active(token: str):
-    # logging.info(f"Middleware get_token_active introspect token {token}")
+    if token is None or token.strip() == "":
+        return False
+
+    # Preferred path: token introspection.
     try:
         introspect = keycloak_openid.introspect(token)
+        return bool(introspect.get("active", False))
     except Exception as e:
-        raise HTTPException(200, str(e))
-    # logging.info(f"introspect: {introspect}")
-    return introspect["active"]
+        logging.warning(f"Token introspection failed, falling back to userinfo: {e}")
+
+    # Fallback path: validate token by fetching userinfo.
+    try:
+        info = keycloak_openid.userinfo(token)
+        return isinstance(info, dict) and bool(info.get("sub"))
+    except Exception as e:
+        logging.warning(f"Token userinfo fallback failed: {e}")
+        return False
 
 
 def extract_token_from_headers(token: str | None = None, authorization: str | None = None):
