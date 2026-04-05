@@ -2446,7 +2446,22 @@ def get_team_follow_up(team: str, event: str, year: int, token: str = Depends(ch
 def get_user_groups(token: str = Depends(check_token_active)):
     user_data = get_user_info(token)
     userID = user_data["sub"]
-    return find_user_groups(user_id=userID)
+    cache_key = f"user-groups:{userID}"
+    try:
+        groups = find_user_groups(user_id=userID)
+        store_in_cache(cache_key, groups, durationSeconds=60 * 60)
+        return groups
+    except HTTPException as e:
+        if e.status_code == 502:
+            cached_groups = get_from_cache(cache_key)
+            if isinstance(cached_groups, list):
+                logging.warning(
+                    f"Using cached Keycloak groups for user {userID} due to upstream identity provider failure.")
+                return cached_groups
+            logging.warning(
+                f"Unable to fetch groups for user {userID}; returning empty group list to avoid hard failure.")
+            return []
+        raise
 
 
 @app.get('/User/Groups/Detailed', tags=["users"], response_model=list[Group])
