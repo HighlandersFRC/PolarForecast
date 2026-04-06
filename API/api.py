@@ -2307,24 +2307,61 @@ def deleteBlob(blob_name: str):
     blob_client.delete_blob()
 
 
+def _collect_visible_member_ids_for_event(
+    groups: list[Group],
+    event_code: str,
+    token: str,
+) -> tuple[list[str], list[str]]:
+    user_id = get_user_info(token)["sub"]
+    member_ids: set[str] = {user_id}
+    alliance_member_ids: set[str] = set()
+
+    for group in groups:
+        try:
+            members = fetch_group_members(group.group_id)
+            for member in members:
+                member_id = member.get("id")
+                if member_id:
+                    member_ids.add(member_id)
+        except HTTPException as e:
+            if e.status_code == 502:
+                logging.warning(
+                    f"Skipping root group member fetch for {group.group_id} due to identity provider outage.")
+                continue
+            raise
+
+    for group in groups:
+        for groupEvent in group.events:
+            if groupEvent.event_code != event_code:
+                continue
+            for alliance in groupEvent.alliance_groups:
+                try:
+                    alliance_members = fetch_group_members(alliance.group_id)
+                    for member in alliance_members:
+                        member_id = member.get("id")
+                        if member_id:
+                            alliance_member_ids.add(member_id)
+                except HTTPException as e:
+                    if e.status_code == 502:
+                        logging.warning(
+                            f"Skipping alliance group member fetch for {alliance.group_id} due to identity provider outage.")
+                        continue
+                    raise
+
+    return list(member_ids), list(alliance_member_ids)
+
+
 @app.get("/{year}/{event}/{team}/ScoutEntries", tags=["scouting"])
 def get_scout_team_entries(team: str, event: str, year: int, token: str = Depends(check_token_active)):
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
     if (len(groups) != 0):
-        members = []
         team_number = int(team[3:])
-        for group in groups:
-            members.extend(fetch_group_members(group.group_id))
-        member_ids = [member['id'] for member in members]
-        alliance_members = []
-        for group in groups:
-            for groupEvent in group.events:
-                if groupEvent.event_code == event_code:
-                    for alliance in groupEvent.alliance_groups:
-                        alliance_members.extend(
-                            fetch_group_members(alliance.group_id))
-        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_ids, alliance_member_ids = _collect_visible_member_ids_for_event(
+            groups=groups,
+            event_code=event_code,
+            token=token,
+        )
         member_entries = [MatchScouting2026(
             **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'team_number': team_number, 'scout_info.user_id': {'$in': member_ids}})]
         alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
@@ -2348,18 +2385,11 @@ def get_scout_event_entries(event: str, year: int, token: str = Depends(check_to
     event_code = str(year)+event
     groups = [Group(**group) for group in get_user_groups_detailed(token)]
     if (len(groups) != 0):
-        members = []
-        for group in groups:
-            members.extend(fetch_group_members(group.group_id))
-        member_ids = [member['id'] for member in members]
-        alliance_members = []
-        for group in groups:
-            for groupEvent in group.events:
-                if groupEvent.event_code == event_code:
-                    for alliance in groupEvent.alliance_groups:
-                        alliance_members.extend(
-                            fetch_group_members(alliance.group_id))
-        alliance_member_ids = [member['id'] for member in alliance_members]
+        member_ids, alliance_member_ids = _collect_visible_member_ids_for_event(
+            groups=groups,
+            event_code=event_code,
+            token=token,
+        )
         member_entries = [MatchScouting2026(
             **entry) for entry in MatchScoutingCollection.find({'event_code': event_code, 'scout_info.user_id': {'$in': member_ids}})]
         alliance_entries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
