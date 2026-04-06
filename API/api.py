@@ -235,6 +235,26 @@ def fetch_group_members_resilient(group_id: str) -> list[dict]:
         raise
 
 
+def resolve_group_member_ids(group_id: str, include_user_id: str | None = None) -> list[str]:
+    member_ids = set()
+    if include_user_id:
+        member_ids.add(include_user_id)
+
+    for member in fetch_group_members_resilient(group_id):
+        user_id = member.get("id") if isinstance(member, dict) else None
+        if user_id:
+            member_ids.add(user_id)
+
+    # Keycloak fallback: use accepted join requests stored in Mongo.
+    if len(member_ids) == (1 if include_user_id else 0):
+        for request in GroupJoinRequestCollection.find({"group_id": group_id, "accepted": True}):
+            user_id = request.get("user_id")
+            if user_id:
+                member_ids.add(user_id)
+
+    return list(member_ids)
+
+
 @cacheValue()
 def getGroupCalculatedData(event_code: str, group_id: str):
     return GroupDataCollection.find_one(
@@ -514,19 +534,25 @@ def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_
         except Exception as e:
             raise HTTPException(404, str(e))
     group = groups[0]
-    members = fetch_group_members_resilient(group.group_id)
-    if len(members) == 0:
-        members = [{"id": user_info['sub']}]
-    allianceMembers = []
+    member_ids = set(resolve_group_member_ids(
+        group.group_id, include_user_id=user_info['sub']))
+    alliance_member_ids = set()
     for groupEvent in group.events:
         if groupEvent.event_code == event_code:
             for alliance in groupEvent.alliance_groups:
-                allianceMembers.extend(fetch_group_members_resilient(alliance.group_id))
-    member_ids = [member['id'] for member in members]
+                alliance_member_ids.update(
+                    resolve_group_member_ids(alliance.group_id))
     groupPitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": member_ids}})]
+        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": list(member_ids)}})]
     alliancePitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": [member['id'] for member in allianceMembers]}})]
+        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": list(alliance_member_ids)}})]
+    if len(groupPitEntries) == 0 and len(alliancePitEntries) == 0:
+        # Last-resort fallback during identity provider outages: use entries from the
+        # caller's FRC affiliation.
+        user_team_number = user_info.get("team_number")
+        if user_team_number is not None:
+            groupPitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
+                {"event_code": event_code, "team_number": int(team[3:]), "scout_info.team_number": int(user_team_number)})]
     if len(groupPitEntries) == 0 and len(alliancePitEntries) == 0:
         raise HTTPException(404, f"No entries for {team} at {event} in {year}")
     if len(groupPitEntries) != 0:
@@ -619,20 +645,19 @@ def updateGroupStatus(group: Group, event_code: str):
     for team in teams:
         statuses.append(PitScoutingStatus(key=team[3:], pit_status="Not Started", picture_status="Not Started",
                                           follow_up_status="Not Started"))
-    members = fetch_group_members_resilient(group.group_id)
+    member_ids = set(resolve_group_member_ids(group.group_id))
     for event in group.events:
         if event.event_code == event_code:
             for alliance in event.alliance_groups:
-                members.extend(fetch_group_members_resilient(alliance.group_id))
-    member_ids = [member['id'] for member in members]
+                member_ids.update(resolve_group_member_ids(alliance.group_id))
     pitScoutingEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
+        {'event_code': event_code, 'scout_info.user_id': {"$in": list(member_ids)}})]
     followUpScoutingEntries = [DeathScoutingForm(**entry)
-                               for entry in FollowUpCollection.find({'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
+                               for entry in FollowUpCollection.find({'event_code': event_code, 'scout_info.user_id': {"$in": list(member_ids)}})]
     pictures = [PictureData(**entry) for entry in PictureCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
+        {'event_code': event_code, 'scout_info.user_id': {"$in": list(member_ids)}})]
     matchScoutingEntries = [MatchScouting2026(**entry) for entry in MatchScoutingCollection.find(
-        {'event_code': event_code, 'scout_info.user_id': {"$in": member_ids}})]
+        {'event_code': event_code, 'scout_info.user_id': {"$in": list(member_ids)}})]
     for status in statuses:
         teamPitScoutingEntries = [
             x for x in pitScoutingEntries if x.team_number == int(status.key)]
@@ -704,14 +729,13 @@ def updateGroupStatus(group: Group, event_code: str):
 def updateGroupGridPitData(group: Group, event_code: str):
     data = GroupDataCollection.find_one(
         {'group_id': group.group_id, 'event_code': event_code})
-    members = fetch_group_members_resilient(group.group_id)
+    member_ids = set(resolve_group_member_ids(group.group_id))
     for event in group.events:
         if event.event_code == event_code:
             for alliance in event.alliance_groups:
-                members.extend(fetch_group_members_resilient(alliance.group_id))
-    member_ids = [member['id'] for member in members]
+                member_ids.update(resolve_group_member_ids(alliance.group_id))
     pitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "scout_info.user_id": {"$in": member_ids}})]
+        {"event_code": event_code, "scout_info.user_id": {"$in": list(member_ids)}})]
     for doc in data["data"]:
         teamPitEntries = [
             x for x in pitEntries if x.team_number == int(doc['key'] if doc.__contains__('key') else -1)]
