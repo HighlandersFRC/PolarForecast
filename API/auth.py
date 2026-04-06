@@ -3,35 +3,77 @@ import os
 import random
 import string
 from fastapi import HTTPException, Header
-from keycloak import KeycloakAdmin, KeycloakOpenID, KeycloakOpenIDConnection
-import requests
+from keycloak import KeycloakAdmin, KeycloakOpenID
 
 from models.scout_info import ScoutInfo
 
-keycloak_openid = None
-while (keycloak_openid == None):
+
+def _env(name: str, default: str = "") -> str:
+    value = os.getenv(name, default)
+    if value is None:
+        return default
+    return value.strip().strip('"').strip("'")
+
+
+def _normalized_keycloak_server_url() -> str:
+    server_url = _env("KEYCLOAK_ENDPOINT")
+    if server_url == "":
+        return server_url
+    return server_url if server_url.endswith("/") else f"{server_url}/"
+
+
+def _build_keycloak_openid() -> KeycloakOpenID:
+    return KeycloakOpenID(
+        server_url=_normalized_keycloak_server_url(),
+        realm_name=_env("KEYCLOAK_REALM"),
+        client_id=_env("KEYCLOAK_API_CLIENT_ID"),
+        client_secret_key=_env("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+    )
+
+
+def _build_keycloak_admin() -> KeycloakAdmin:
+    return KeycloakAdmin(
+        server_url=_normalized_keycloak_server_url(),
+        realm_name=_env("KEYCLOAK_REALM"),
+        client_id=_env("KEYCLOAK_API_CLIENT_ID"),
+        client_secret_key=_env("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+        username=_env("KEYCLOAK_ADMIN"),
+        password=_env("KEYCLOAK_ADMIN_PASSWORD"),
+    )
+
+
+def _is_authentication_error(exc: Exception) -> bool:
+    if type(exc).__name__ == "KeycloakAuthenticationError":
+        return True
+    response_code = getattr(exc, "response_code", None)
+    if response_code in [401, 403]:
+        return True
+    message = str(exc).lower()
+    return "unauthorized" in message or "invalid token" in message
+
+
+def _refresh_keycloak_admin() -> bool:
+    global keycloak_admin
     try:
-        keycloak_openid = KeycloakOpenID(
-            server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-            realm_name=os.getenv("KEYCLOAK_REALM"),
-            client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-            client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-        )
+        keycloak_admin = _build_keycloak_admin()
+        return True
+    except Exception as e:
+        logging.warning(f"Failed to refresh Keycloak admin client: {e}")
+        return False
+
+
+keycloak_openid = None
+while (keycloak_openid is None):
+    try:
+        keycloak_openid = _build_keycloak_openid()
     except Exception as e:
         logging.error(str(e))
-        keycloak_admin = None
+        keycloak_openid = None
 
 keycloak_admin = None
-while (keycloak_admin == None):
+while (keycloak_admin is None):
     try:
-        keycloak_admin = KeycloakAdmin(
-            server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-            realm_name=os.getenv("KEYCLOAK_REALM"),
-            client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-            client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-            username=os.getenv("KEYCLOAK_ADMIN"),
-            password=os.getenv("KEYCLOAK_ADMIN_PASSWORD"),
-        )
+        keycloak_admin = _build_keycloak_admin()
     except Exception as e:
         logging.error(str(e))
         keycloak_admin = None
@@ -48,26 +90,59 @@ def create_join_code() -> str:
 
 
 def get_token_active(token: str):
-    # logging.info(f"Middleware get_token_active introspect token {token}")
+    if token is None or token.strip() == "":
+        return False
+
+    # Preferred path: token introspection.
     try:
         introspect = keycloak_openid.introspect(token)
+        return bool(introspect.get("active", False))
     except Exception as e:
-        raise HTTPException(200, str(e))
-    # logging.info(f"introspect: {introspect}")
-    return introspect["active"]
+        logging.warning(f"Token introspection failed, falling back to userinfo: {e}")
+
+    # Fallback path: validate token by fetching userinfo.
+    try:
+        info = keycloak_openid.userinfo(token)
+        return isinstance(info, dict) and bool(info.get("sub"))
+    except Exception as e:
+        logging.warning(f"Token userinfo fallback failed: {e}")
+        return False
 
 
-def check_token_active(token: str = Header(None)):
-    if token is None:
+def extract_token_from_headers(token: str | None = None, authorization: str | None = None):
+    if authorization is not None:
+        prefix = "bearer "
+        normalized = authorization.strip()
+        if normalized.lower().startswith(prefix):
+            bearer_token = normalized[len(prefix):].strip()
+            if bearer_token:
+                return bearer_token
+        if token is None and normalized:
+            return normalized
+    return token
+
+
+def check_token_active(token: str = Header(None), authorization: str | None = Header(None)):
+    resolved_token = extract_token_from_headers(
+        token=token, authorization=authorization)
+    if resolved_token is None:
         raise HTTPException(401, "Login token is required")
-    if get_token_active(token):
-        return token
+    if get_token_active(resolved_token):
+        return resolved_token
     else:
         raise HTTPException(401, "Token is bad or expired")
 
 
 def get_user_info(token: str):
-    info = keycloak_openid.userinfo(token)
+    try:
+        info = keycloak_openid.userinfo(token)
+    except Exception as e:
+        logging.warning(f"Failed to fetch user info from token: {e}")
+        raise HTTPException(401, "Token is bad or expired")
+
+    if not isinstance(info, dict) or not info.get("sub"):
+        raise HTTPException(401, "Token is bad or expired")
+
     return info
 
 
@@ -98,19 +173,41 @@ def make_group(token: str, group_name: str, event: str | None):
         group_id = keycloak_admin.create_group(
             payload=payload
         )
-    except:
-        raise HTTPException(400, "This group name is already taken.")
+    except Exception as e:
+        error_text = str(e).lower()
+        if (
+            "409" in error_text
+            or "already exists" in error_text
+            or "group exists" in error_text
+            or "conflict" in error_text
+            or "duplicate" in error_text
+        ):
+            raise HTTPException(400, "This group name is already taken.")
+        logging.warning(f"Identity provider failed while creating group '{group_name}': {e}")
+        raise HTTPException(
+            502, "Unable to create group in identity provider")
     subIDs = [group_id]
-    for subgroup in subgroups:
-        subIDs.append(keycloak_admin.create_group(
-            payload=subgroup,
-            parent=group_id
-        ))
-    for subID in subIDs:
-        keycloak_admin.group_user_add(
-            user_id=user_info["sub"],
-            group_id=subID
-        )
+    try:
+        for subgroup in subgroups:
+            subIDs.append(keycloak_admin.create_group(
+                payload=subgroup,
+                parent=group_id
+            ))
+        for subID in subIDs:
+            keycloak_admin.group_user_add(
+                user_id=user_info["sub"],
+                group_id=subID
+            )
+    except Exception as e:
+        logging.warning(
+            f"Identity provider failed while finalizing group '{group_name}': {e}")
+        try:
+            keycloak_admin.delete_group(group_id)
+        except Exception as cleanup_error:
+            logging.warning(
+                f"Failed to roll back partially-created group '{group_name}' ({group_id}): {cleanup_error}")
+        raise HTTPException(
+            502, "Unable to create group in identity provider")
     codeStr = create_join_code()
     return {
         "group": payload,
@@ -122,15 +219,74 @@ def make_group(token: str, group_name: str, event: str | None):
     }
 
 
-def find_user_groups(user_id: str):
-    groups = keycloak_admin.get_user_groups(
-        user_id, query={
-        }, brief_representation=False)
-    return groups
+def find_user_groups(user_id: str, _auth_retry: bool = True):
+    # Be tolerant of python-keycloak signature differences across versions.
+    attempts = [
+        lambda: keycloak_admin.get_user_groups(user_id),
+        lambda: keycloak_admin.get_user_groups(user_id=user_id),
+        lambda: keycloak_admin.get_user_groups(user_id, query={}),
+        lambda: keycloak_admin.get_user_groups(
+            user_id, query={}, brief_representation=False),
+    ]
+
+    last_type_error = None
+    for attempt in attempts:
+        try:
+            groups = attempt()
+            return groups if isinstance(groups, list) else []
+        except TypeError as e:
+            last_type_error = e
+            continue
+        except HTTPException:
+            raise
+        except Exception as e:
+            if _auth_retry and _is_authentication_error(e):
+                logging.warning(
+                    f"Keycloak auth failed while fetching groups for user {user_id}; refreshing admin client and retrying once.")
+                if _refresh_keycloak_admin():
+                    return find_user_groups(user_id=user_id, _auth_retry=False)
+            logging.warning(f"Failed to fetch groups for user {user_id}: {e}")
+            raise HTTPException(
+                502, f"Unable to fetch user groups from identity provider ({type(e).__name__})")
+
+    if last_type_error is not None:
+        logging.warning(
+            f"No compatible keycloak get_user_groups signature for current library: {last_type_error}")
+    raise HTTPException(
+        502, "Unable to fetch user groups from identity provider (incompatible keycloak client signature)")
 
 
-def fetch_group_members(group_id: str):
-    return keycloak_admin.get_group_members(group_id=group_id, query={'max': 1000})
+def fetch_group_members(group_id: str, _auth_retry: bool = True):
+    attempts = [
+        lambda: keycloak_admin.get_group_members(group_id),
+        lambda: keycloak_admin.get_group_members(group_id, query={'max': 1000}),
+        lambda: keycloak_admin.get_group_members(group_id=group_id),
+        lambda: keycloak_admin.get_group_members(group_id=group_id, query={'max': 1000}),
+    ]
+
+    last_type_error = None
+    for attempt in attempts:
+        try:
+            members = attempt()
+            return members if isinstance(members, list) else []
+        except TypeError as e:
+            last_type_error = e
+            continue
+        except Exception as e:
+            if _auth_retry and _is_authentication_error(e):
+                logging.warning(
+                    f"Keycloak auth failed while fetching members for group {group_id}; refreshing admin client and retrying once.")
+                if _refresh_keycloak_admin():
+                    return fetch_group_members(group_id=group_id, _auth_retry=False)
+            logging.warning(f"Failed to fetch members for group {group_id}: {e}")
+            raise HTTPException(
+                502, f"Unable to fetch group members from identity provider ({type(e).__name__})")
+
+    if last_type_error is not None:
+        logging.warning(
+            f"No compatible keycloak get_group_members signature for current library: {last_type_error}")
+    raise HTTPException(
+        502, "Unable to fetch group members from identity provider (incompatible keycloak client signature)")
 
 
 def add_user_to_group(user_id: str, group_id: str,):
