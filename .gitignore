@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+/API/fixkeycloak.py
+
 .vscode/
 .dart_tool/
 # Distribution / packaging

@@ -1752,6 +1752,58 @@ def delete_group_join_request(group_name: str | None = None, token: str = Depend
 
 @app.get("/Group/{group_name}/Members", tags=["groups"])
 def get_group_members(group_name: str, token: str = Depends(check_token_active)):
+    def _user_entry(user_id: str, first_name: str | None = None, username: str | None = None):
+        display_first = first_name if first_name else (username if username else "Unknown")
+        display_username = username if username else user_id
+        return {
+            "id": user_id,
+            "firstName": display_first,
+            "username": display_username,
+        }
+
+    def _fallback_group_members(DBgroup: Group, groups: list[dict], user_info: dict):
+        is_owner = any(group.get('id') == DBgroup.owner_group_id for group in groups)
+        is_admin = any(group.get('id') == DBgroup.admin_group_id for group in groups)
+
+        owners = []
+        admins = []
+        members = []
+        seen_ids = set()
+
+        current_user = _user_entry(
+            user_id=user_info.get('sub', ''),
+            first_name=user_info.get('name'),
+            username=user_info.get('preferred_username'),
+        )
+        if current_user["id"]:
+            if is_owner:
+                owners.append(current_user)
+            elif is_admin:
+                admins.append(current_user)
+            else:
+                members.append(current_user)
+            seen_ids.add(current_user["id"])
+
+        accepted_requests = GroupJoinRequestCollection.find(
+            {"group_id": DBgroup.group_id, "accepted": True})
+        for request in accepted_requests:
+            user_id = request.get("user_id")
+            if not user_id or user_id in seen_ids:
+                continue
+            user_entry = _user_entry(
+                user_id=user_id,
+                first_name=request.get("username"),
+                username=request.get("username"),
+            )
+            members.append(user_entry)
+            seen_ids.add(user_id)
+
+        return {
+            "owners": owners,
+            "admins": admins,
+            "members": members,
+        }
+
     try:
         DBgroup = Group(**GroupCollection.find_one({"name": group_name}))
     except Exception as e:
@@ -1759,14 +1811,22 @@ def get_group_members(group_name: str, token: str = Depends(check_token_active))
     groups = get_user_groups(token)
     KCgroup = {}
     for group in groups:
-        if group['id'] == DBgroup.group_id:
+        if isinstance(group, dict) and group.get('id') == DBgroup.group_id:
             KCgroup = group
             break
     if KCgroup == {}:
         raise HTTPException(403, f"You are not part of group '{group_name}'")
-    owners = fetch_group_members(group_id=DBgroup.owner_group_id)
-    admins = fetch_group_members(group_id=DBgroup.admin_group_id)
-    members = fetch_group_members(group_id=DBgroup.member_group_id)
+    user_info = get_user_info(token)
+    try:
+        owners = fetch_group_members(group_id=DBgroup.owner_group_id)
+        admins = fetch_group_members(group_id=DBgroup.admin_group_id)
+        members = fetch_group_members(group_id=DBgroup.member_group_id)
+    except HTTPException as e:
+        if e.status_code == 502:
+            logging.warning(
+                f"Using fallback member roster for group '{group_name}' due to identity provider outage.")
+            return _fallback_group_members(DBgroup, groups, user_info)
+        raise
     pop_keys = ['totp', 'createdTimestamp', 'enabled', 'emailVerified',
                 'disableableCredentialTypes', 'requiredActions', 'notBefore', ]
     for i in range(len(owners)):
