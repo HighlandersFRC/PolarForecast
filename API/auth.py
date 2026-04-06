@@ -8,23 +8,37 @@ from keycloak import KeycloakAdmin, KeycloakOpenID
 from models.scout_info import ScoutInfo
 
 
+def _env(name: str, default: str = "") -> str:
+    value = os.getenv(name, default)
+    if value is None:
+        return default
+    return value.strip().strip('"').strip("'")
+
+
+def _normalized_keycloak_server_url() -> str:
+    server_url = _env("KEYCLOAK_ENDPOINT")
+    if server_url == "":
+        return server_url
+    return server_url if server_url.endswith("/") else f"{server_url}/"
+
+
 def _build_keycloak_openid() -> KeycloakOpenID:
     return KeycloakOpenID(
-        server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-        realm_name=os.getenv("KEYCLOAK_REALM"),
-        client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-        client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+        server_url=_normalized_keycloak_server_url(),
+        realm_name=_env("KEYCLOAK_REALM"),
+        client_id=_env("KEYCLOAK_API_CLIENT_ID"),
+        client_secret_key=_env("KEYCLOAK_API_CLIENT_SECRET_KEY"),
     )
 
 
 def _build_keycloak_admin() -> KeycloakAdmin:
     return KeycloakAdmin(
-        server_url=os.getenv("KEYCLOAK_ENDPOINT"),
-        realm_name=os.getenv("KEYCLOAK_REALM"),
-        client_id=os.getenv("KEYCLOAK_API_CLIENT_ID"),
-        client_secret_key=os.getenv("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-        username=os.getenv("KEYCLOAK_ADMIN"),
-        password=os.getenv("KEYCLOAK_ADMIN_PASSWORD"),
+        server_url=_normalized_keycloak_server_url(),
+        realm_name=_env("KEYCLOAK_REALM"),
+        client_id=_env("KEYCLOAK_API_CLIENT_ID"),
+        client_secret_key=_env("KEYCLOAK_API_CLIENT_SECRET_KEY"),
+        username=_env("KEYCLOAK_ADMIN"),
+        password=_env("KEYCLOAK_ADMIN_PASSWORD"),
     )
 
 
