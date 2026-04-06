@@ -522,14 +522,32 @@ def get_Stat_Descriptions():
 
 @app.get("/{year}/{event}/{team}/PitScouting", tags=["scouting"], response_model=PitScouting2026)
 def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_token_active)):
+    def _entry_time(entry: PitScouting2026) -> float:
+        if isinstance(entry.time, (int, float)):
+            return float(entry.time)
+        return -1.0
+
+    def _load_pit_entries(query: dict) -> list[PitScouting2026]:
+        entries: list[PitScouting2026] = []
+        for raw_entry in PitScoutingCollection.find(query):
+            try:
+                entries.append(PitScouting2026(**raw_entry))
+            except Exception as e:
+                logging.warning(f"Skipping malformed pit scouting entry for query {query}: {e}")
+        return entries
+
     user_info = get_user_info(token=token)
     event_code = str(year) + event
+    try:
+        team_number = int(team[3:])
+    except Exception:
+        raise HTTPException(400, f"Invalid team key '{team}'")
     groups = [Group(**group)
               for group in get_user_groups_detailed(token=token)]
     if len(groups) == 0:
         try:
             data = PitScouting2026(**PitScoutingCollection.find_one(
-                {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": user_info['sub']}))
+                {"event_code": event_code, "team_number": team_number, "scout_info.user_id": user_info['sub']}))
             return data
         except Exception as e:
             raise HTTPException(404, str(e))
@@ -542,17 +560,17 @@ def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_
             for alliance in groupEvent.alliance_groups:
                 alliance_member_ids.update(
                     resolve_group_member_ids(alliance.group_id))
-    groupPitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": list(member_ids)}})]
-    alliancePitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-        {"event_code": event_code, "team_number": int(team[3:]), "scout_info.user_id": {"$in": list(alliance_member_ids)}})]
+    groupPitEntries = _load_pit_entries(
+        {"event_code": event_code, "team_number": team_number, "scout_info.user_id": {"$in": list(member_ids)}})
+    alliancePitEntries = _load_pit_entries(
+        {"event_code": event_code, "team_number": team_number, "scout_info.user_id": {"$in": list(alliance_member_ids)}})
     if len(groupPitEntries) == 0 and len(alliancePitEntries) == 0:
         # Last-resort fallback during identity provider outages: use entries from the
         # caller's FRC affiliation.
         user_team_number = user_info.get("team_number")
         if user_team_number is not None:
-            groupPitEntries = [PitScouting2026(**entry) for entry in PitScoutingCollection.find(
-                {"event_code": event_code, "team_number": int(team[3:]), "scout_info.team_number": int(user_team_number)})]
+            groupPitEntries = _load_pit_entries(
+                {"event_code": event_code, "team_number": team_number, "scout_info.team_number": int(user_team_number)})
     if len(groupPitEntries) == 0 and len(alliancePitEntries) == 0:
         raise HTTPException(404, f"No entries for {team} at {event} in {year}")
     if len(groupPitEntries) != 0:
@@ -562,17 +580,20 @@ def get_pit_scouting_data(year: int, event: str, team: str, token=Depends(check_
         latestEntry = alliancePitEntries[0]
         alliance = True
     for entry in groupPitEntries:
-        if entry.time > latestEntry.time:
+        if _entry_time(entry) > _entry_time(latestEntry):
             alliance = False
             latestEntry = entry
     for entry in alliancePitEntries:
-        if entry.time > latestEntry.time:
+        if _entry_time(entry) > _entry_time(latestEntry):
             alliance = True
             latestEntry = entry
     if alliance:
         retVal = latestEntry.dict(exclude={'scout_info'})
-        retVal['scout_info'] = latestEntry.scout_info.dict(
-            exclude={'first_name', 'username'})
+        if latestEntry.scout_info is None:
+            retVal['scout_info'] = None
+        else:
+            retVal['scout_info'] = latestEntry.scout_info.dict(
+                exclude={'first_name', 'username'})
     else:
         retVal = latestEntry.dict()
     return retVal
