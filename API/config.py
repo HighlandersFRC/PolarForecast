@@ -113,13 +113,17 @@ _default_allow_origins = [
     "http://localhost:3000",
     "http://localhost:8080",
     "https://polarforecastfrc.com",
+    "https://www.polarforecastfrc.com",
     "https://polarforecast-frc.com",
+    "https://www.polarforecast-frc.com",
+    "https://highlanderscouting.azurewebsites.net",
+    "https://highlanderscoutingkc.azurewebsites.net",
 ]
 _allow_origins_from_env = os.environ.get("PF_ALLOW_ORIGINS", "").strip()
+_env_allow_origins = []
 if _allow_origins_from_env:
-    ALLOW_ORIGINS = [origin.strip() for origin in _allow_origins_from_env.split(",") if origin.strip()]
-else:
-    ALLOW_ORIGINS = _default_allow_origins
+    _env_allow_origins = [origin.strip() for origin in _allow_origins_from_env.split(",") if origin.strip()]
+ALLOW_ORIGINS = list(dict.fromkeys(_default_allow_origins + _env_allow_origins))
 # Password
 EDIT_PASSWORD = os.environ.get("PF_EDIT_PASSWORD", "")
 KEYCLOAK_ADMIN = os.environ.get("KEYCLOAK_ADMIN", "")

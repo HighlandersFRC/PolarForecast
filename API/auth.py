@@ -210,7 +210,29 @@ def find_user_groups(user_id: str):
 
 
 def fetch_group_members(group_id: str):
-    return keycloak_admin.get_group_members(group_id=group_id, query={'max': 1000})
+    attempts = [
+        lambda: keycloak_admin.get_group_members(group_id=group_id),
+        lambda: keycloak_admin.get_group_members(group_id=group_id, query={'max': 1000}),
+    ]
+
+    last_type_error = None
+    for attempt in attempts:
+        try:
+            members = attempt()
+            return members if isinstance(members, list) else []
+        except TypeError as e:
+            last_type_error = e
+            continue
+        except Exception as e:
+            logging.warning(f"Failed to fetch members for group {group_id}: {e}")
+            raise HTTPException(
+                502, f"Unable to fetch group members from identity provider ({type(e).__name__})")
+
+    if last_type_error is not None:
+        logging.warning(
+            f"No compatible keycloak get_group_members signature for current library: {last_type_error}")
+    raise HTTPException(
+        502, "Unable to fetch group members from identity provider (incompatible keycloak client signature)")
 
 
 def add_user_to_group(user_id: str, group_id: str,):
