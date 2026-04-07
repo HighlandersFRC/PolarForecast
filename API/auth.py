@@ -146,76 +146,98 @@ def get_user_info(token: str):
     return info
 
 
+import logging
+from fastapi import HTTPException
+
 def make_group(token: str, group_name: str, event: str | None):
     user_info = get_user_info(token)
-    eventAttribute = [event] if event is not None else []
-    payload = {
-        "name": group_name,
-        "attributes": {"event": eventAttribute},
-    }
-    subgroups = [
-        {
-            "name": "Owner",
-            "attributes": {"event": eventAttribute},
 
-        },
-        {
-            "name": "Admin",
-            "attributes": {"event": eventAttribute},
-        },
-        {
-            "name": "Member",
-            "attributes": {"event": eventAttribute},
+    event_attribute = [event] if event else []
+
+    # --- 1. Create parent group ---
+    parent_payload = {
+        "name": group_name,
+        "attributes": {
+            "event": event_attribute
         }
-    ]
-    payload["subGroups"] = subgroups
+    }
+
     try:
-        group_id = keycloak_admin.create_group(
-            payload=payload
-        )
+        group_id = keycloak_admin.create_group(payload=parent_payload)
+
     except Exception as e:
         error_text = str(e).lower()
-        if (
-            "409" in error_text
-            or "already exists" in error_text
-            or "group exists" in error_text
-            or "conflict" in error_text
-            or "duplicate" in error_text
-        ):
+
+        if any(x in error_text for x in ["409", "conflict", "duplicate", "already exists", "group exists"]):
             raise HTTPException(400, "This group name is already taken.")
-        logging.warning(f"Identity provider failed while creating group '{group_name}': {e}")
-        raise HTTPException(
-            502, "Unable to create group in identity provider")
-    subIDs = [group_id]
+
+        logging.exception("Failed to create parent group in Keycloak")
+        raise HTTPException(502, "Unable to create group in identity provider")
+
+    # --- 2. Create subgroups (correct Keycloak way) ---
     try:
-        for subgroup in subgroups:
-            subIDs.append(keycloak_admin.create_group(
-                payload=subgroup,
-                parent=group_id
-            ))
-        for subID in subIDs:
-            keycloak_admin.group_user_add(
-                user_id=user_info["sub"],
-                group_id=subID
-            )
+        owner_id = keycloak_admin.create_group(
+            payload={
+                "name": "Owner",
+                "attributes": {"event": event_attribute},
+            },
+            parent=group_id
+        )
+
+        admin_id = keycloak_admin.create_group(
+            payload={
+                "name": "Admin",
+                "attributes": {"event": event_attribute},
+            },
+            parent=group_id
+        )
+
+        member_id = keycloak_admin.create_group(
+            payload={
+                "name": "Member",
+                "attributes": {"event": event_attribute},
+            },
+            parent=group_id
+        )
+
     except Exception as e:
-        logging.warning(
-            f"Identity provider failed while finalizing group '{group_name}': {e}")
+        logging.exception("Failed creating subgroups, rolling back parent group")
+
         try:
             keycloak_admin.delete_group(group_id)
         except Exception as cleanup_error:
-            logging.warning(
-                f"Failed to roll back partially-created group '{group_name}' ({group_id}): {cleanup_error}")
-        raise HTTPException(
-            502, "Unable to create group in identity provider")
-    codeStr = create_join_code()
+            logging.warning(f"Rollback failed for group {group_id}: {cleanup_error}")
+
+        raise HTTPException(502, "Unable to create group in identity provider")
+
+    # --- 3. Add user to all groups ---
+    try:
+        user_id = user_info["sub"]
+
+        for gid in [group_id, owner_id, admin_id, member_id]:
+            keycloak_admin.group_user_add(
+                user_id=user_id,
+                group_id=gid
+            )
+
+    except Exception as e:
+        logging.exception("Failed adding user to groups, rolling back")
+
+        try:
+            keycloak_admin.delete_group(group_id)
+        except Exception as cleanup_error:
+            logging.warning(f"Rollback failed for group {group_id}: {cleanup_error}")
+
+        raise HTTPException(502, "Unable to finalize group membership")
+
+    # --- 4. Final output ---
     return {
-        "group": payload,
-        "code": codeStr,
+        "group": parent_payload,
+        "code": create_join_code(),
         "group_id": group_id,
-        "owner_subgroup_id": subIDs[1],
-        "admin_subgroup_id": subIDs[2],
-        "member_subgroup_id": subIDs[3],
+        "owner_subgroup_id": owner_id,
+        "admin_subgroup_id": admin_id,
+        "member_subgroup_id": member_id,
     }
 
 
