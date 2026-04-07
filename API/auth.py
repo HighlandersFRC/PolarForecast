@@ -208,7 +208,8 @@ def make_group(token: str, group_name: str, event: str | None):
         except Exception as cleanup_error:
             logging.warning(f"Rollback failed for group {group_id}: {cleanup_error}")
 
-        raise HTTPException(502, "Unable to create group in identity provider")
+        logging.exception("KEYCLOAK RAW ERROR")
+        raise HTTPException(500, detail=str(e))
 
     # --- 3. Add user to all groups ---
     try:
