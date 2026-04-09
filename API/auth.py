@@ -172,7 +172,9 @@ def make_group(token: str, group_name: str, event: str | None):
             raise HTTPException(400, "This group name is already taken.")
 
         logging.exception("Failed to create parent group in Keycloak")
-        raise HTTPException(502, "Unable to create group in identity provider")
+        
+        logging.exception("KEYCLOAK ERROR")
+        raise HTTPException(500, detail=str(e))
 
     # --- 2. Create subgroups (correct Keycloak way) ---
     try:
