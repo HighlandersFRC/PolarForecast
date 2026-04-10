@@ -34,11 +34,9 @@ def _build_keycloak_openid() -> KeycloakOpenID:
 def _build_keycloak_admin() -> KeycloakAdmin:
     return KeycloakAdmin(
         server_url=_normalized_keycloak_server_url(),
-        realm_name=_env("KEYCLOAK_REALM"),
-        client_id=_env("KEYCLOAK_API_CLIENT_ID"),
+        realm_name=_env("KEYCLOAK_REALM"),        
+        client_id=_env("KEYCLOAK_API_CLIENT_ID"),    
         client_secret_key=_env("KEYCLOAK_API_CLIENT_SECRET_KEY"),
-        username=_env("KEYCLOAK_ADMIN"),
-        password=_env("KEYCLOAK_ADMIN_PASSWORD"),
     )
 
 
