@@ -1100,6 +1100,11 @@ class _BubbleSortState extends State<BubbleSort> {
                       opsStats.simulated_rank.toDouble(), side,
                       lowerIsBetter: true, integerLike: true),
                   _buildStatRow("OPR", stats.OPR, opsStats.OPR, side),
+                  _buildStatRow(
+                      "DPR",
+                      stats.auto_fuel_denied + stats.teleop_fuel_denied,
+                      opsStats.auto_fuel_denied + opsStats.teleop_fuel_denied,
+                      side),
 
                   // Auto Points - Clickable
                   GestureDetector(
@@ -1475,6 +1480,8 @@ class _BubbleSortState extends State<BubbleSort> {
         simulated_rp: 0,
         historical: false,
         key: '',
+        auto_fuel_denied: 0,
+        teleop_fuel_denied: 0,
       );
     }
   }
