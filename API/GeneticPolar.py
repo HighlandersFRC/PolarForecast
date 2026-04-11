@@ -411,8 +411,6 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     endgameClimbL1 = endgameClimbL1 / teamMatchCount
     endgameClimbL2 = endgameClimbL2 / teamMatchCount
     endgameClimbL3 = endgameClimbL3 / teamMatchCount
-    autoPassing = autoPassing / matchScoutingCount
-    teleopPassing = teleopPassing / matchScoutingCount
 
     teamDeaths = teamDeaths / matchScoutingCount
     teamDefenses = teamDefenses / matchScoutingCount

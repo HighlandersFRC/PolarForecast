@@ -2989,6 +2989,10 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
 
 
 def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
+    ENERGIZED_THRESHOLD   = 240 if eventType >= 1 else 100
+    SUPERCHARGED_THRESHOLD = 360  
+    TRAVERSAL_THRESHOLD   = 50  
+
     matchPredictions = []
     for match in TBAData:
         if match.score_breakdown is not None:
@@ -3073,6 +3077,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
 
                     "predicted": True,
             }
+
         for alliance in match.alliances:
             for team in match.alliances[alliance].team_keys:
                 for i in range(1, len(calculatedData)):
@@ -3087,25 +3092,54 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                         matchPrediction[f"{alliance}_endgame_points"] += teamData["endgame_points"]
                         matchPrediction[f"{alliance}_auto_fuel_cycles"] += teamData["auto_fuel_scored"]
                         matchPrediction[f"{alliance}_teleop_fuel_cycles"] += teamData["teleop_fuel_scored"]
+
         for alliance in match.alliances:
             if alliance == "red":
                 opponent = "blue"
             else:
                 opponent = "red"
-            matchPrediction[f"{alliance}_win_rp"] = 3 if matchPrediction[f"{opponent}_score"] < matchPrediction[
-                f"{alliance}_score"] else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"] else 0
-            matchPrediction[f"{alliance}_total_rp"] = matchPrediction[f"{alliance}_win_rp"]
+
+            matchPrediction[f"{alliance}_win_rp"] = (
+                3 if matchPrediction[f"{opponent}_score"] < matchPrediction[f"{alliance}_score"]
+                else 1 if matchPrediction[f"{opponent}_score"] == matchPrediction[f"{alliance}_score"]
+                else 0
+            )
+
+            total_fuel = (
+                matchPrediction[f"{alliance}_auto_fuel_cycles"] +
+                matchPrediction[f"{alliance}_teleop_fuel_cycles"]
+            )
+            tower_points = matchPrediction[f"{alliance}_endgame_points"]
+
+            matchPrediction[f"{alliance}_energized_rp"]   = 1 if total_fuel   >= ENERGIZED_THRESHOLD   else 0
+            matchPrediction[f"{alliance}_supercharged_rp"] = 1 if total_fuel   >= SUPERCHARGED_THRESHOLD else 0
+            matchPrediction[f"{alliance}_traversal_rp"]   = 1 if tower_points >= TRAVERSAL_THRESHOLD    else 0
+
+            matchPrediction[f"{alliance}_total_rp"] = (
+                matchPrediction[f"{alliance}_win_rp"] +
+                matchPrediction[f"{alliance}_energized_rp"] +
+                matchPrediction[f"{alliance}_supercharged_rp"] +
+                matchPrediction[f"{alliance}_traversal_rp"]
+            )
+
             if not matchPrediction["predicted"]:
                 matchPrediction[f"{alliance}_display_rp"] = match.score_breakdown[alliance].rp
             else:
                 matchPrediction[f"{alliance}_display_rp"] = matchPrediction[f"{alliance}_total_rp"]
+
         matchPredictions.append(matchPrediction)
+
     for i in range(1, len(calculatedData)):
         calculatedData[i]["simulated_rp"] = 0
         calculatedData[i]["simulated_rank"] = int(0)
+
     for matchPrediction in matchPredictions:
         for alliance in ["red", "blue"]:
-            for team in [x for x in matchPrediction[f"{alliance}_teams"] if x not in matchPrediction[f"{alliance}_dq_team_keys"] and x not in matchPrediction[f"{alliance}_surrogate_team_keys"]]:
+            for team in [
+                x for x in matchPrediction[f"{alliance}_teams"]
+                if x not in matchPrediction[f"{alliance}_dq_team_keys"]
+                and x not in matchPrediction[f"{alliance}_surrogate_team_keys"]
+            ]:
                 dataTeam = {}
                 idx = 0
                 try:
@@ -3123,8 +3157,8 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     calculatedData[idx] = dataTeam
                 except Exception as e:
                     pass
-    sorted_list = sorted(
-        calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
+
+    sorted_list = sorted(calculatedData[1:], key=lambda x: x["simulated_rp"], reverse=True)
     for i, item in enumerate(sorted_list):
         sorted_list[i]["simulated_rank"] = int(i + 1)
     sorted_list.insert(0, calculatedData[0])
