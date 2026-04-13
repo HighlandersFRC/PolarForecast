@@ -264,9 +264,41 @@ class _HomePageState extends State<HomePage> {
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: "Search team number...",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                hintText: "Search Teams",
+                                hintStyle:
+                                    TextStyle(color: Colors.blueGrey.shade200),
+
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Colors.lightBlueAccent,
+                                ),
+
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.clear,
+                                      color: Colors.lightBlueAccent),
+                                  onPressed: () {
+                                    // clear controller
+                                  },
+                                ),
+
+                                filled: true,
+                                fillColor: const Color(0xFF0D1B2A), // deep navy
+
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                      color: Colors.blue.shade900, width: 1.2),
+                                ),
+
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: Colors.lightBlueAccent,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
