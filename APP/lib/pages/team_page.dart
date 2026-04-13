@@ -716,13 +716,18 @@ class _ScheduleStatusSource extends DataGridSource {
           ? Theme.of(context).primaryColor.withOpacity(0.3)
           : Colors.black.withOpacity(0);
       if (cell.columnName == 'key') {
-        String matchNumber = cell.value.toString().split(' ')[1];
-        String type = cell.value.toString().contains('Quals')
-            ? 'qm'
-            : cell.value.toString().contains('Semi')
-                ? 'sf'
-                : 'f';
-        String match_key = '${tournament.key}_$type$matchNumber';
+        String match_key = '';
+
+        if (matchStatus.isNotEmpty) {
+          if (matchStatus['comp_level'] == 'qm') {
+            match_key = '${tournament.key}_qm${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'sf') {
+            match_key =
+                '${tournament.key}_sf${matchStatus['set_number']}m${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'f') {
+            match_key = '${tournament.key}_f1m${matchStatus['match_number']}';
+          }
+        }
         returnCells.add(Container(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             alignment: Alignment.center,
