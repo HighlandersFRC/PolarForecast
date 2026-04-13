@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -238,11 +240,20 @@ class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
             ),
             title: Row(
               children: [
-                Hero(
-                  tag: 'app_logo',
-                  child: Image.asset(
-                    'assets/PolarBearHead.png',
-                    height: logoHeight,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/');
+                    },
+                    child: Hero(
+                      tag: 'app_logo',
+                      child: Image.asset(
+                        'assets/PolarBearHead.png',
+                        height: logoHeight,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -407,8 +418,8 @@ class _AccountMenuButton extends StatelessWidget {
       await apiService.fetchTournaments();
       final validatedToken = await apiService.token;
       if (validatedToken == null) {
-        _showError(
-            context, 'Session could not be validated. Access is denied until you log in again.');
+        _showError(context,
+            'Session could not be validated. Access is denied until you log in again.');
         return;
       }
 
@@ -480,7 +491,8 @@ _openGroupsPopup(BuildContext context) async {
                 separatorBuilder: (_, __) => const Divider(),
                 itemBuilder: (context, i) => ListTile(
                   leading: const CircleAvatar(
-                      child: Icon(Icons.group, color: Colors.blue)),
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.group, color: Colors.white)),
                   title: Text(groups[i]['name']),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.pushNamed(
@@ -496,6 +508,10 @@ _openGroupsPopup(BuildContext context) async {
           FilledButton.icon(
             icon: const Icon(Icons.add),
             label: const Text('Create New'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => _showCreateGroupDialog(context),
           ),
       ],
@@ -525,63 +541,97 @@ class PolarForecastAppBar extends StatelessWidget
     final apiService = Provider.of<ApiService>(context);
     final desktop = isDesktop(context);
 
-    // Sizes based on desktop vs mobile
     final logoHeight = desktop ? 24.0 : 32.0;
     final titleFontSize = desktop ? 16.0 : 20.0;
     final iconSize = desktop ? 20.0 : 24.0;
     final spacing = desktop ? 8.0 : 12.0;
 
-    return AppBar(
-      automaticallyImplyLeading: backButton,
-      backgroundColor: Colors.blue,
-      elevation: 0,
-      centerTitle: !desktop,
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset('assets/PolarBearHead.png', height: logoHeight),
-          SizedBox(width: spacing),
-          Flexible(
-            child: Text(
-              extraText ?? 'Polar Forecast',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Font',
-                fontSize: titleFontSize,
-              ),
-              overflow: TextOverflow.ellipsis,
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: AppBar(
+          automaticallyImplyLeading: backButton,
+          backgroundColor:
+              const Color(0xFF1E3A8A).withOpacity(0.35), // soft blue glass
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: !desktop,
+
+          // glass border effect
+          shape: const Border(
+            bottom: BorderSide(
+              color: Colors.white24,
+              width: 0.5,
             ),
           ),
-        ],
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.help_outline_rounded, size: iconSize),
-          onPressed: () => _openDocumentationSheet(context),
-        ),
-        FutureBuilder<String?>(
-          future: apiService.token,
-          builder: (context, snapshot) {
-            return _AccountMenuButton(
-                token: snapshot.data,
-                apiService: apiService // pass down icon size
+
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/');
+                  },
+                  child: Hero(
+                    tag: 'app_logo',
+                    child: Image.asset(
+                      'assets/PolarBearHead.png',
+                      height: logoHeight,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: spacing),
+              Flexible(
+                child: Text(
+                  extraText ?? 'Polar Forecast',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                    fontSize: titleFontSize,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+            IconButton(
+              icon: Icon(Icons.help_outline_rounded,
+                  size: iconSize, color: Colors.white70),
+              onPressed: () => _openDocumentationSheet(context),
+            ),
+            FutureBuilder<String?>(
+              future: apiService.token,
+              builder: (context, snapshot) {
+                return _AccountMenuButton(
+                  token: snapshot.data,
+                  apiService: apiService,
                 );
-          },
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.search_rounded,
+                  size: iconSize, color: Colors.white70),
+              onPressed: () async {
+                final list = await apiService.fetchTournaments();
+                if (context.mounted) {
+                  showSearch(
+                    context: context,
+                    delegate: TournamentSearchDelegate(list),
+                  );
+                }
+              },
+            ),
+            SizedBox(width: spacing),
+          ],
         ),
-        IconButton(
-          icon: Icon(Icons.search_rounded, size: iconSize),
-          onPressed: () async {
-            final list = await apiService.fetchTournaments();
-            if (context.mounted) {
-              showSearch(
-                context: context,
-                delegate: TournamentSearchDelegate(list),
-              );
-            }
-          },
-        ),
-        SizedBox(width: spacing),
-      ],
+      ),
     );
   }
 }
@@ -620,6 +670,10 @@ void _showCreateGroupDialog(BuildContext context) {
             });
           },
           child: const Text('Create'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
         ),
       ],
     ),
