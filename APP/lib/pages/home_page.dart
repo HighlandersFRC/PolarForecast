@@ -15,6 +15,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<GlobalRank> suggestions = [];
+  bool showSuggestions = false;
+  final Map<String, String> _nicknameCache = {};
+  final TextEditingController _searchController = TextEditingController();
+
   void safeSetState(VoidCallback callback) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -158,9 +163,21 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+
+    final displayRankings = query.isEmpty
+        ? rankings
+        : rankings.where((r) {
+            final team = r.data.team_number.toString();
+            final nickname = (_nicknameCache[team] ?? "").toLowerCase();
+
+            return team.contains(query) || nickname.contains(query);
+          }).toList();
+
     const columnMinWidth = 95.0;
-    bool isWide =
+    final bool isWide =
         MediaQuery.of(context).size.width >= columns.length * columnMinWidth;
+
     return Scaffold(
       appBar: PolarForecastAppBar(backButton: false),
       body: Stack(
@@ -172,12 +189,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-          // 👇 THIS FIXES THE OVERFLOW
           Positioned.fill(
             child: Column(
               children: [
-                Text(
+                const Text(
                   'Global Rankings',
                   style: TextStyle(color: Colors.blue, fontSize: 24),
                 ),
@@ -185,7 +200,7 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     launchUrl(Uri.parse('https://www.thebluealliance.com'));
                   },
-                  child: Text(
+                  child: const Text(
                     'Powered by The Blue Alliance',
                     style: TextStyle(
                       color: Colors.blueAccent,
@@ -194,19 +209,88 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) async {
+                                final query = value.trim().toLowerCase();
+
+                                if (query.isEmpty) {
+                                  setState(() {
+                                    suggestions = [];
+                                    showSuggestions = false;
+                                  });
+                                  return;
+                                }
+
+                                final matches = rankings
+                                    .where((r) => r.data.team_number
+                                        .toString()
+                                        .contains(query))
+                                    .toList();
+
+                                final limited = matches.take(8).toList();
+
+                                final api = Provider.of<ApiService>(
+                                  context,
+                                  listen: false,
+                                );
+
+                                for (final r in limited) {
+                                  final team = r.data.team_number.toString();
+
+                                  if (!_nicknameCache.containsKey(team)) {
+                                    try {
+                                      _nicknameCache[team] =
+                                          await api.fetchTeamNicknames(team);
+                                    } catch (_) {
+                                      _nicknameCache[team] = "";
+                                    }
+                                  }
+                                }
+
+                                setState(() {
+                                  suggestions = limited;
+                                  showSuggestions = true;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Search team number...",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Expanded(
-                  child: rankings.isEmpty
-                      ? Center(
-                          child: CircularProgressIndicator(color: Colors.blue),
+                  child: displayRankings.isEmpty
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.blue,
+                          ),
                         )
                       : SfDataGrid(
                           source: GlobalRankDataSource(
-                            rankings,
-                            rankings
-                                .map((rank) => rank.data.OPR)
+                            displayRankings,
+                            displayRankings
+                                .map((r) => r.data.OPR)
                                 .reduce((a, b) => a > b ? a : b),
-                            rankings
-                                .map((rank) => rank.data.OPR)
+                            displayRankings
+                                .map((r) => r.data.OPR)
                                 .reduce((a, b) => a < b ? a : b),
                             _sort,
                             sortColumns,
@@ -231,7 +315,7 @@ class _HomePageState extends State<HomePage> {
                         _fetchRankings();
                       });
                     },
-                    config: NumberPaginatorUIConfig(
+                    config: const NumberPaginatorUIConfig(
                       buttonSelectedBackgroundColor: Colors.blue,
                     ),
                   ),
