@@ -183,8 +183,8 @@ def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting202
     for entry in scoutingBaseData:
         matchScoutingCount[teams.index(str(entry.team_number))] += 1 if entry else 0
         teamDefenses[teams.index(str(entry.team_number))] += 1 if entry.data.miscellaneous.defense else 0
-        autoPassing[teams.index(str(entry.team_number))] += 1 if entry.data.auto_scoring.passing_cycles else 0
-        teleopPassing[teams.index(str(entry.team_number))] += 1 if entry.data.teleop_scoring.passing_cycles else 0
+        autoPassing[teams.index(str(entry.team_number))] += entry.data.auto_scoring.passing_cycles
+        teleopPassing[teams.index(str(entry.team_number))] += entry.data.teleop_scoring.passing_cycles
         teamDeaths[teams.index(str(entry.team_number))
                    ] += 1 if entry.data.miscellaneous.died else 0
 
