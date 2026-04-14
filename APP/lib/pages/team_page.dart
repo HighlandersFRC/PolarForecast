@@ -1271,10 +1271,9 @@ class _PicturesTabState extends State<_PicturesTab> {
   List<PictureData> images = [];
   bool isLoading = true;
   String? token;
-
   String selectedType = 'full_robot';
 
-  List<String> imageTypes = [
+  final List<String> imageTypes = [
     'full_robot',
     'wires',
     'shooter',
@@ -1299,62 +1298,37 @@ class _PicturesTabState extends State<_PicturesTab> {
     }
   }
 
-  List<PictureData> get filteredImages {
-    return images.where((img) => img.image_type == selectedType).toList();
-  }
-
-  Map<String, List<PictureData>> groupByType(List<PictureData> images) {
-    const allowedTypes = {
-      'full_robot',
-      'wires',
-      'shooter',
-      'intake',
-      'feeder',
-    };
-
-    final Map<String, List<PictureData>> grouped = {};
-
-    for (var img in images) {
-      final type = img.image_type;
-
-      if (!allowedTypes.contains(type)) continue;
-
-      grouped.putIfAbsent(type, () => []);
-      grouped[type]!.add(img);
-    }
-
-    return grouped;
-  }
+  List<PictureData> get filteredImages =>
+      images.where((img) => img.image_type == selectedType).toList();
 
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    this.token = await apiService.token;
+    token = await apiService.token;
     if (token != null) {
       try {
-        final fetchedStats = await apiService.fetchTeamImages(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4],
+        final parts = widget.widget.tournament.page.split('/');
+        final fetched = await apiService.fetchTeamImages(
+          int.parse(parts[3]),
+          parts[4],
           'frc${widget.widget.teamNumber}',
         );
-        if (mounted) {
+        if (mounted)
           setState(() {
-            images = fetchedStats;
+            images = fetched;
             isLoading = false;
           });
-        } else {
-          images = fetchedStats;
+        else {
+          images = fetched;
           isLoading = false;
         }
       } catch (e) {
-        print('Error fetching data: $e');
+        debugPrint('Error fetching pictures: $e');
       }
     } else {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-      isLoading = false;
+      if (mounted)
+        setState(() => isLoading = false);
+      else
+        isLoading = false;
     }
   }
 
@@ -1364,148 +1338,194 @@ class _PicturesTabState extends State<_PicturesTab> {
     fetchPictures();
   }
 
+  // ── Full-screen zoomable viewer ──────────────────────────────────────────
+  void _openImageViewer(BuildContext context, PictureData image) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Zoomable image ───────────────────────────────────────────
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 5.0,
+                    child: Image.network(image.link),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Footer card ──────────────────────────────────────────────
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 16),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        image.scout_info.first_name != null
+                            ? 'Uploaded by ${image.scout_info.first_name}'
+                            : 'Scout from team ${image.scout_info.team_number}',
+                        style:
+                            const TextStyle(fontFamily: 'Font', fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (image.permissions.contains('delete'))
+                      TextButton.icon(
+                        style:
+                            TextButton.styleFrom(foregroundColor: Colors.red),
+                        icon: const Icon(Icons.delete_outline, size: 16),
+                        label: const Text('Delete',
+                            style: TextStyle(fontFamily: 'Font')),
+                        onPressed: () {
+                          final api =
+                              Provider.of<ApiService>(ctx, listen: false);
+                          Navigator.of(ctx).pop();
+                          api.delete_image(image).then((_) {
+                            setState(() => images.remove(image));
+                          });
+                        },
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Close',
+                          style: TextStyle(fontFamily: 'Font')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: isLoading
-          ? CircularProgressIndicator(color: Colors.blue)
-          : token == null
-              ? LoginWidget(
-                  redirect_path:
-                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
-              : images.isEmpty
-                  ? Text('No Images', style: TextStyle(fontFamily: 'Font'))
-                  : Column(
-                      children: [
-                        /// DROPDOWN
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: DropdownButtonFormField<String>(
-                            value: selectedType,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.blue));
+    }
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+    if (images.isEmpty) {
+      return const Center(
+        child: Text('No Images', style: TextStyle(fontFamily: 'Font')),
+      );
+    }
+
+    return Column(
+      children: [
+        // ── Type selector ────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+          child: DropdownButtonFormField<String>(
+            value: selectedType,
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            items: imageTypes.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(formatType(type),
+                    style: const TextStyle(fontFamily: 'Font')),
+              );
+            }).toList(),
+            onChanged: (v) => setState(() => selectedType = v!),
+          ),
+        ),
+
+        // ── Grid ─────────────────────────────────────────────────────────
+        Expanded(
+          child: filteredImages.isEmpty
+              ? Center(
+                  child: Text(
+                    'No ${formatType(selectedType)} images',
+                    style: const TextStyle(fontFamily: 'Font'),
+                  ),
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final cols = constraints.maxWidth > 600 ? 4 : 2;
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: filteredImages.length,
+                      itemBuilder: (context, index) {
+                        final image = filteredImages[index];
+                        return GestureDetector(
+                          onTap: () => _openImageViewer(context, image),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                image.link,
+                                fit: BoxFit.cover,
+                                // Lightweight loading placeholder
+                                loadingBuilder: (_, child, progress) =>
+                                    progress == null
+                                        ? child
+                                        : Container(
+                                            color: Colors.grey.shade200,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            ),
+                                          ),
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.broken_image_outlined,
+                                      color: Colors.grey),
+                                ),
                               ),
                             ),
-                            items: imageTypes.map((type) {
-                              return DropdownMenuItem(
-                                value: type,
-                                child: Text(
-                                  formatType(type),
-                                  style: const TextStyle(fontFamily: 'Font'),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedType = value!;
-                              });
-                            },
                           ),
-                        ),
-
-                        /// GRID
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return GridView.builder(
-                                padding: const EdgeInsets.all(8),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      constraints.maxWidth > 600 ? 4 : 2,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                ),
-                                itemCount: filteredImages.length,
-                                itemBuilder: (context, index) {
-                                  final image = filteredImages[index];
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return Padding(
-                                            padding: const EdgeInsets.all(20),
-                                            child: AlertDialog(
-                                              content: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(20),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child:
-                                                      Image.network(image.link),
-                                                ),
-                                              ),
-                                              actions: [
-                                                Text(
-                                                  'Uploaded by: ${image.scout_info.first_name ?? 'scout on ${image.scout_info.team_number}'}',
-                                                  style: const TextStyle(
-                                                      fontFamily: 'Font'),
-                                                ),
-                                                if (image.permissions
-                                                    .contains('delete'))
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                    ),
-                                                    onPressed: () {
-                                                      final api = Provider.of<
-                                                              ApiService>(
-                                                          context,
-                                                          listen: false);
-
-                                                      Navigator.of(context)
-                                                          .pop();
-
-                                                      api
-                                                          .delete_image(image)
-                                                          .then((_) {
-                                                        setState(() {
-                                                          images.remove(image);
-                                                        });
-                                                      });
-                                                    },
-                                                    child: const Text('Delete',
-                                                        style: TextStyle(
-                                                            fontFamily:
-                                                                'Font')),
-                                                  ),
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(),
-                                                  child: const Text('Close',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font')),
-                                                )
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        image.link,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                        );
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
