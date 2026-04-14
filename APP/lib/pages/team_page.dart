@@ -1508,7 +1508,8 @@ class _PicturesTabState extends State<_PicturesTab> {
                                             color: Colors.grey.shade200,
                                             child: const Center(
                                               child: CircularProgressIndicator(
-                                                  strokeWidth: 2),
+                                                  strokeWidth: 2,
+                                                  color: Colors.blue),
                                             ),
                                           ),
                                 errorBuilder: (_, __, ___) => Container(

@@ -138,19 +138,61 @@ class TournamentSearchDelegate extends SearchDelegate {
   TournamentSearchDelegate(this.tournaments);
 
   @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () => close(context, null),
+  String get searchFieldLabel => 'Search tournaments…';
+
+  @override
+  TextStyle get searchFieldStyle => const TextStyle(
+        fontFamily: 'Font',
+        fontSize: 16,
+        color: Colors.white,
+      );
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return Theme.of(context).copyWith(
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0x591E3A8A),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: TextStyle(
+          fontFamily: 'Font',
+          color: Colors.white.withOpacity(0.45),
+          fontSize: 16,
+        ),
+        border: InputBorder.none,
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: Colors.white,
+          fontFamily: 'Font',
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.close_rounded, color: Colors.white70),
+          tooltip: 'Clear',
+          onPressed: () {
+            query = '';
+            showSuggestions(context);
+          },
+        ),
     ];
   }
 
   @override
-  Widget? buildLeading(BuildContext context) {
+  Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.arrow_back),
+      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+      tooltip: 'Back',
       onPressed: () => close(context, null),
     );
   }
@@ -162,22 +204,184 @@ class TournamentSearchDelegate extends SearchDelegate {
   Widget buildSuggestions(BuildContext context) => _buildList(context);
 
   Widget _buildList(BuildContext context) {
-    final results = tournaments
-        .where((t) => t.display.toLowerCase().contains(query.toLowerCase()))
-        .toList();
+    final results = query.isEmpty
+        ? tournaments
+        : tournaments
+            .where((t) => t.display.toLowerCase().contains(query.toLowerCase()))
+            .toList();
 
-    return ListView.builder(
+    if (results.isEmpty) {
+      return _EmptyState(query: query);
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: results.length,
+      separatorBuilder: (_, __) => Divider(
+        height: 0.5,
+        thickness: 0.5,
+        color: Colors.white.withOpacity(0.08),
+        indent: 64,
+        endIndent: 16,
+      ),
       itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(results[index].display,
-              style: const TextStyle(fontFamily: 'Font')),
-          leading: const Icon(Icons.event),
+        final tournament = results[index];
+        final highlighted = _highlight(tournament.display, query);
+
+        return _TournamentTile(
+          tournament: tournament,
+          highlighted: highlighted,
           onTap: () {
-            Navigator.pushNamed(context, '/event/${results[index].key}');
+            close(context, null);
+            Navigator.pushNamed(context, '/event/${tournament.key}');
           },
         );
       },
+    );
+  }
+
+  // Returns spans with the matching query portion highlighted
+  List<TextSpan> _highlight(String text, String query) {
+    if (query.isEmpty) {
+      return [TextSpan(text: text)];
+    }
+    final spans = <TextSpan>[];
+    final lower = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    int start = 0;
+    int idx;
+    while ((idx = lower.indexOf(lowerQuery, start)) != -1) {
+      if (idx > start) {
+        spans.add(TextSpan(text: text.substring(start, idx)));
+      }
+      spans.add(TextSpan(
+        text: text.substring(idx, idx + query.length),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          backgroundColor: Color(0x33FFFFFF),
+        ),
+      ));
+      start = idx + query.length;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return spans;
+  }
+}
+
+// ─── Tournament Tile ──────────────────────────────────────────────────────────
+
+class _TournamentTile extends StatefulWidget {
+  final Tournament tournament;
+  final List<TextSpan> highlighted;
+  final VoidCallback onTap;
+
+  const _TournamentTile({
+    required this.tournament,
+    required this.highlighted,
+    required this.onTap,
+  });
+
+  @override
+  State<_TournamentTile> createState() => _TournamentTileState();
+}
+
+class _TournamentTileState extends State<_TournamentTile> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        color: _hovering ? Colors.white.withOpacity(0.06) : Colors.transparent,
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.12),
+                width: 0.5,
+              ),
+            ),
+            child: Icon(
+              Icons.emoji_events_rounded,
+              color: Colors.white.withOpacity(0.6),
+              size: 20,
+            ),
+          ),
+          title: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: 'Font',
+                fontSize: 15,
+                color: Colors.white.withOpacity(0.85),
+              ),
+              children: widget.highlighted,
+            ),
+          ),
+          subtitle: widget.tournament.key.isNotEmpty
+              ? Text(
+                  widget.tournament.key,
+                  style: TextStyle(
+                    fontFamily: 'Font',
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.35),
+                    letterSpacing: 0.3,
+                  ),
+                )
+              : null,
+          trailing: Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.white.withOpacity(0.25),
+            size: 18,
+          ),
+          onTap: widget.onTap,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+class _EmptyState extends StatelessWidget {
+  final String query;
+  const _EmptyState({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: Colors.white.withOpacity(0.2),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            query.isEmpty
+                ? 'Start typing to search'
+                : 'No results for "$query"',
+            style: TextStyle(
+              fontFamily: 'Font',
+              fontSize: 15,
+              color: Colors.white.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -200,112 +404,130 @@ class PolarForecastSliverBar extends StatefulWidget
 class _PolarForecastSliverBarState extends State<PolarForecastSliverBar> {
   late final Future<List<Tournament>> tournaments;
   String? token;
+  bool isSearching = false;
+
+  bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 900;
 
   @override
   void initState() {
     super.initState();
     final apiService = Provider.of<ApiService>(context, listen: false);
     tournaments = apiService.fetchTournaments();
-    apiService.token.then((t) => setState(() => token = t));
+    apiService.token.then((t) {
+      if (mounted) setState(() => token = t);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 900;
+    final desktop = isDesktop(context);
 
-    // Adjust sizes based on screen width
-    final logoHeight = isDesktop ? 24.0 : 28.0;
-    final titleFontSize = isDesktop ? 16.0 : 18.0;
-    final iconSize = isDesktop ? 20.0 : 24.0;
+    final logoHeight = desktop ? 24.0 : 32.0;
+    final titleFontSize = desktop ? 16.0 : 20.0;
+    final iconSize = desktop ? 20.0 : 24.0;
+    final spacing = desktop ? 8.0 : 12.0;
 
     return SliverAppBar(
       automaticallyImplyLeading: widget.showBackButton,
       pinned: true,
-      stretch: true,
-      expandedHeight: 120,
-      backgroundColor: Colors.blue,
+      floating: true,
       elevation: 0,
-      flexibleSpace: LayoutBuilder(
-        builder: (context, constraints) {
-          final topPadding = MediaQuery.of(context).padding.top;
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
+      centerTitle: !desktop,
 
-          return FlexibleSpaceBar(
-            centerTitle: false,
-            titlePadding: const EdgeInsetsDirectional.only(
-              start: 72, // space for back button
-              end: 120, // reserve space for actions
-              bottom: 16,
+      // Glass background via flexibleSpace
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0x591E3A8A), // ~35% opacity 0xFF1E3A8A
+              border: Border(
+                bottom: BorderSide(color: Colors.white24, width: 0.5),
+              ),
             ),
-            title: Row(
-              children: [
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () {
-                      Navigator.pushNamed(context, '/');
-                    },
-                    child: Hero(
-                      tag: 'app_logo',
-                      child: Image.asset(
-                        'assets/PolarBearHead.png',
-                        height: logoHeight,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Polar Forecast ${widget.extraText ?? ''}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: titleFontSize,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            background: Container(
-              padding: EdgeInsets.only(top: topPadding),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: [Colors.blue, Colors.black],
+          ),
+        ),
+      ),
+
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => Navigator.pushNamed(context, '/'),
+              child: Hero(
+                tag: 'app_logo',
+                child: Image.asset(
+                  'assets/PolarBearHead.png',
+                  height: logoHeight,
                 ),
               ),
             ),
-          );
-        },
+          ),
+          SizedBox(width: spacing),
+          if (!isMobile())
+            Flexible(
+              child: Text(
+                widget.extraText ?? 'Polar Forecast',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Font',
+                  fontSize: titleFontSize,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
       ),
+
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline_rounded),
-          tooltip: 'Documentation',
-          iconSize: iconSize,
+          icon: Icon(Icons.help_outline_rounded,
+              size: iconSize, color: Colors.white70),
           onPressed: () => _openDocumentationSheet(context),
         ),
-        _AccountMenuButton(
-          token: token,
-          apiService: apiService,
-        ),
-        IconButton(
-          icon: const Icon(Icons.search_rounded),
-          iconSize: iconSize,
-          onPressed: () async {
-            final list = await tournaments;
-            showSearch(
-              context: context,
-              delegate: TournamentSearchDelegate(list),
+        FutureBuilder<String?>(
+          future: apiService.token,
+          builder: (context, snapshot) {
+            return _AccountMenuButton(
+              token: snapshot.data,
+              apiService: apiService,
             );
           },
         ),
-        const SizedBox(width: 8),
+        IconButton(
+          icon: isSearching
+              ? SizedBox(
+                  width: iconSize,
+                  height: iconSize,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white70,
+                  ),
+                )
+              : Icon(Icons.search_rounded,
+                  size: iconSize, color: Colors.white70),
+          onPressed: () async {
+            if (isSearching) return;
+            setState(() => isSearching = true);
+            final list = await tournaments;
+            if (mounted) {
+              setState(() => isSearching = false);
+              showSearch(
+                context: context,
+                delegate: TournamentSearchDelegate(list),
+              );
+            }
+          },
+        ),
+        SizedBox(width: spacing),
       ],
     );
   }
@@ -477,46 +699,248 @@ _openGroupsPopup(BuildContext context) async {
 
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Your Groups',
-          style: TextStyle(fontWeight: FontWeight.bold)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: groups.isEmpty
-            ? const Text('You are not part of any group yet.')
-            : ListView.separated(
-                shrinkWrap: true,
-                itemCount: groups.length,
-                separatorBuilder: (_, __) => const Divider(),
-                itemBuilder: (context, i) => ListTile(
-                  leading: const CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.group, color: Colors.black)),
-                  title: Text(groups[i]['name']),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.pushNamed(
-                      context, '/group/${groups[i]['name']}'),
-                ),
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            width: double.maxFinite,
+            constraints: const BoxConstraints(maxWidth: 400),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E3A8A).withOpacity(0.55),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.15),
+                width: 0.5,
               ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close')),
-        if (groups.isEmpty)
-          FilledButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Create New'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.black,
             ),
-            onPressed: () => _showCreateGroupDialog(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header ─────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.15),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Icon(Icons.group_rounded,
+                            color: Colors.white.withOpacity(0.8), size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Your Groups',
+                        style: TextStyle(
+                          fontFamily: 'Font',
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.95),
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded,
+                            color: Colors.white.withOpacity(0.5), size: 20),
+                        onPressed: () => Navigator.pop(context),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.08),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Divider(color: Colors.white.withOpacity(0.08), height: 0.5),
+
+                // ── Body ───────────────────────────────
+                groups.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 40, horizontal: 24),
+                        child: Column(
+                          children: [
+                            Icon(Icons.group_off_rounded,
+                                size: 44, color: Colors.white.withOpacity(0.2)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No groups yet',
+                              style: TextStyle(
+                                fontFamily: 'Font',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Create a group to collect scouting data with your team and share insights.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Font',
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 320),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          itemCount: groups.length,
+                          separatorBuilder: (_, __) => Divider(
+                            height: 0.5,
+                            thickness: 0.5,
+                            color: Colors.white.withOpacity(0.08),
+                            indent: 60,
+                            endIndent: 16,
+                          ),
+                          itemBuilder: (context, i) => _GroupTile(
+                            group: groups[i],
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/group/${groups[i]['name']}',
+                            ),
+                          ),
+                        ),
+                      ),
+
+                Divider(color: Colors.white.withOpacity(0.08), height: 0.5),
+
+                // ── Footer (FIXED LOGIC) ─────────────────
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (groups.isEmpty) ...[
+                        const SizedBox(width: 8),
+                        _GlassFilledButton(
+                          icon: Icons.add_rounded,
+                          label: 'Create Group',
+                          onPressed: () => _showCreateGroupDialog(context),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-      ],
+        ),
+      ),
     ),
   );
+}
+// ─── Group Tile ───────────────────────────────────────────────────────────────
+
+class _GroupTile extends StatefulWidget {
+  final Map<String, dynamic> group;
+  final VoidCallback onTap;
+
+  const _GroupTile({required this.group, required this.onTap});
+
+  @override
+  State<_GroupTile> createState() => _GroupTileState();
+}
+
+class _GroupTileState extends State<_GroupTile> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        color: _hovering ? Colors.white.withOpacity(0.06) : Colors.transparent,
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.15),
+                width: 0.5,
+              ),
+            ),
+            child: Icon(Icons.group_rounded,
+                color: Colors.white.withOpacity(0.7), size: 18),
+          ),
+          title: Text(
+            widget.group['name'],
+            style: TextStyle(
+              fontFamily: 'Font',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+          subtitle: Text(
+            widget.group['path'],
+            style: TextStyle(
+              fontFamily: 'Font',
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.35),
+            ),
+          ),
+          trailing: Icon(Icons.chevron_right_rounded,
+              color: Colors.white.withOpacity(0.25), size: 18),
+          onTap: widget.onTap,
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassFilledButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _GlassFilledButton(
+      {required this.icon, required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 16),
+      label:
+          Text(label, style: const TextStyle(fontFamily: 'Font', fontSize: 13)),
+      style: FilledButton.styleFrom(
+        backgroundColor: Colors.white.withOpacity(0.18),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: Colors.white.withOpacity(0.25), width: 0.5),
+        ),
+      ),
+    );
+  }
 }
 
 class PolarForecastAppBar extends StatelessWidget
@@ -638,44 +1062,165 @@ class PolarForecastAppBar extends StatelessWidget
 
 void _showCreateGroupDialog(BuildContext context) {
   final controller = TextEditingController();
+
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Create Group'),
-      content: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          labelText: 'Group Name',
-        ),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]'))
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () async {
-            final apiService = Provider.of<ApiService>(context, listen: false);
-            apiService.make_group(controller.text, null, null).then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed('/group/${value.name}');
-            }).onError((e, _) {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(e.toString())));
-            });
-          },
-          child: const Text('Create'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.black,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E3A8A).withOpacity(0.55),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.12),
+                width: 0.5,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header ─────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.15),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 18,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Create Group',
+                      style: TextStyle(
+                        fontFamily: 'Font',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.95),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Input ──────────────────────────────
+                TextField(
+                  controller: controller,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z0-9]'),
+                    ),
+                  ],
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontFamily: 'Font',
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Group Name',
+                    labelStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.06),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withOpacity(0.10),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.blueAccent.withOpacity(0.8),
+                        width: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // ── Buttons ────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        backgroundColor: Colors.white.withOpacity(0.06),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.12),
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 10),
+                    FilledButton(
+                      onPressed: () async {
+                        final apiService =
+                            Provider.of<ApiService>(context, listen: false);
+
+                        apiService
+                            .make_group(controller.text, null, null)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          Navigator.of(context)
+                              .pushNamed('/group/${value.name}');
+                        }).onError((e, _) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())),
+                          );
+                        });
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.18),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.25),
+                          ),
+                        ),
+                      ),
+                      child: const Text('Create'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ],
+      ),
     ),
   );
 }
