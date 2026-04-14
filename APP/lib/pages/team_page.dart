@@ -2116,7 +2116,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
               ?.copyWith(color: theme.primaryColor, letterSpacing: 1.2),
         ),
         Text(
-          "Team ${widget.widget.teamNumber} | ${nickname.isNotEmpty ? nickname : 'No Nickname'}",
+          "Team ${widget.widget.teamNumber}",
           style: theme.textTheme.headlineMedium
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
