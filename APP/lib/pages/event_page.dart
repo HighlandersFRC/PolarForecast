@@ -208,7 +208,8 @@ class _EventPageState extends State<EventPage> {
       _MatchScoutingTab(widget),
       _PitScoutingTab(widget),
       _QualsTab(widget),
-      _ElimsTab(widget)
+      _ElimsTab(widget),
+      _TBATab(widget, widget.tournament)
     ];
     return Scaffold(
         appBar: PolarForecastAppBar(
@@ -249,7 +250,11 @@ class _EventPageState extends State<EventPage> {
                     color: theme.primaryColor),
                 activeIcon:
                     Icon(Icons.workspace_premium, color: theme.primaryColor),
-                label: 'Elims')
+                label: 'Elims'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.shield_outlined, color: theme.primaryColor),
+                activeIcon: Icon(Icons.shield, color: theme.primaryColor),
+                label: 'TBA')
           ],
           type: BottomNavigationBarType.shifting,
           selectedLabelStyle: TextStyle(
@@ -267,6 +272,138 @@ class _EventPageState extends State<EventPage> {
           showUnselectedLabels: true,
         ),
         body: tabs[_currentTab]);
+  }
+}
+
+class _TBATab extends StatefulWidget {
+  final EventPage widget;
+  final Tournament tournament;
+  const _TBATab(this.widget, this.tournament);
+
+  @override
+  _TBATabState createState() => _TBATabState();
+}
+
+class _TBATabState extends State<_TBATab> {
+  late final String tbaUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    tbaUrl =
+        'https://www.thebluealliance.com/event/${widget.widget.tournament.page.split('/')[3]}${widget.widget.tournament.page.split('/')[4]}';
+  }
+
+  Future<void> _openTBA() async {
+    final uri = Uri.parse(tbaUrl);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $tbaUrl';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 48,
+                  color: Colors.blue,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  "View Event on The Blue Alliance",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  '${widget.tournament.display}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontFamily: 'Font',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 🔥 Clean CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openTBA,
+                    icon: const Icon(Icons.link),
+                    label: const Text("Open Event"),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Font',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // subtle link text
+                TextButton(
+                  onPressed: _openTBA,
+                  child: Text(
+                    tbaUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Font',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
