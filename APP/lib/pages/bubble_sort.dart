@@ -1561,7 +1561,7 @@ class _BubbleSortState extends State<BubbleSort> {
           PolarForecastAppBar(extraText: 'Generate Picklist ${widget.name}'),
       body: Stack(
         children: [
-          // 🌨 Background
+          // Background
           Positioned.fill(
             child: IgnorePointer(
               ignoring: true,

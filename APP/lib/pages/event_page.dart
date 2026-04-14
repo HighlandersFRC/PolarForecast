@@ -35,6 +35,131 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../models/tournament.dart';
 import 'home_page.dart';
 
+class SnowField extends StatefulWidget {
+  final int particleCount;
+  final Color color;
+
+  const SnowField({
+    super.key,
+    this.particleCount = 40,
+    this.color = Colors.white,
+  });
+
+  @override
+  State<SnowField> createState() => _SnowFieldState();
+}
+
+class _SnowFieldState extends State<SnowField>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<_SnowParticle> _particles;
+  late DateTime _lastTick;
+  final Random _rnd = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _particles = List.generate(widget.particleCount, (i) => _createParticle());
+    _controller = AnimationController.unbounded(vsync: this);
+    _controller.addListener(_tick);
+    _controller.repeat(
+        min: 0, max: 1, period: const Duration(milliseconds: 16));
+    _lastTick = DateTime.now();
+  }
+
+  _SnowParticle _createParticle() {
+    return _SnowParticle(
+      x: _rnd.nextDouble(),
+      y: _rnd.nextDouble(),
+      radius: 1.5 + _rnd.nextDouble() * 3,
+      speed: 20 + _rnd.nextDouble() * 60,
+      drift: -20 + _rnd.nextDouble() * 40,
+      opacity: 0.25 + _rnd.nextDouble() * 0.75,
+    );
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final dt = now.difference(_lastTick).inMilliseconds / 1000.0;
+    _lastTick = now;
+
+    for (final p in _particles) {
+      p._logicalY += (p.speed * dt) / 300.0;
+      p._logicalX += (p.drift * dt) / 300.0;
+      if (p._logicalY > 1.25) {
+        p._logicalY = -0.05 - _rnd.nextDouble() * 0.1;
+        p._logicalX = _rnd.nextDouble();
+      }
+      if (p._logicalX < -0.2) p._logicalX = 1.05;
+      if (p._logicalX > 1.2) p._logicalX = -0.05;
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_tick);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SnowPainter(
+          _particles, widget.color, MediaQuery.of(context).devicePixelRatio),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _SnowParticle {
+  double x;
+  double y;
+  final double radius;
+  final double speed;
+  final double drift;
+  final double opacity;
+  double _logicalX;
+  double _logicalY;
+
+  _SnowParticle({
+    required this.x,
+    required this.y,
+    required this.radius,
+    required this.speed,
+    required this.drift,
+    required this.opacity,
+  })  : _logicalX = x,
+        _logicalY = y;
+}
+
+class _SnowPainter extends CustomPainter {
+  final List<_SnowParticle> particles;
+  final Color baseColor;
+  final double devicePixelRatio;
+
+  _SnowPainter(this.particles, this.baseColor, this.devicePixelRatio);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final Color dotColor = baseColor.withOpacity(0.7);
+
+    for (final p in particles) {
+      final dx = (p._logicalX.clamp(-0.5, 1.5)) * size.width;
+      final dy = (p._logicalY.clamp(-0.5, 1.5)) * size.height;
+
+      paint.color = dotColor.withOpacity(p.opacity * 0.9);
+      canvas.drawCircle(Offset(dx, dy), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnowPainter old) => true;
+}
+
 class EventPage extends StatefulWidget {
   final Tournament tournament;
   static Widget fromEventKey(BuildContext context, String eventKey) {
@@ -1986,9 +2111,18 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       );
     }
 
-    return Container(
-      color: backgroundDb,
-      child: SingleChildScrollView(
+    return Scaffold(
+        body: Stack(children: [
+      Positioned.fill(
+        child: IgnorePointer(
+          ignoring: true,
+          child: SnowField(
+            particleCount: 50,
+            color: Theme.of(context).colorScheme.onBackground,
+          ),
+        ),
+      ),
+      SingleChildScrollView(
         controller: scrollController,
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         child: Center(
@@ -1997,6 +2131,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             child: Column(
               children: [
                 // HEADER
+
                 Text(
                   widget.widget.tournament.display,
                   textAlign: TextAlign.center,
@@ -2236,7 +2371,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           ),
         ),
       ),
-    );
+    ]));
   }
 
 // UI HELPERS (Dark Mode)

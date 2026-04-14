@@ -741,7 +741,7 @@ _openGroupsPopup(BuildContext context) async {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Your Groups',
+                        'Your Group',
                         style: TextStyle(
                           fontFamily: 'Font',
                           fontSize: 17,
