@@ -363,7 +363,8 @@ mixin _$PitData2026 {
   String get favorite_color => throw _privateConstructorUsedError;
   Auto2026? get auto => throw _privateConstructorUsedError;
   int get hopper_capacity => throw _privateConstructorUsedError;
-  double get bps =>
+  double get bps => throw _privateConstructorUsedError;
+  String get comments =>
       throw _privateConstructorUsedError; // keep autos dynamic to avoid type-mismatch with other code/widgets
   List<Auto2026>? get autos => throw _privateConstructorUsedError;
   double get robot_height => throw _privateConstructorUsedError;
@@ -411,6 +412,7 @@ abstract class $PitData2026CopyWith<$Res> {
       Auto2026? auto,
       int hopper_capacity,
       double bps,
+      String comments,
       List<Auto2026>? autos,
       double robot_height,
       bool straddling_pole_climb_right,
@@ -458,6 +460,7 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? auto = freezed,
     Object? hopper_capacity = null,
     Object? bps = null,
+    Object? comments = null,
     Object? autos = freezed,
     Object? robot_height = null,
     Object? straddling_pole_climb_right = null,
@@ -551,6 +554,10 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
               as double,
+      comments: null == comments
+          ? _value.comments
+          : comments // ignore: cast_nullable_to_non_nullable
+              as String,
       autos: freezed == autos
           ? _value.autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -627,6 +634,7 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       Auto2026? auto,
       int hopper_capacity,
       double bps,
+      String comments,
       List<Auto2026>? autos,
       double robot_height,
       bool straddling_pole_climb_right,
@@ -673,6 +681,7 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? auto = freezed,
     Object? hopper_capacity = null,
     Object? bps = null,
+    Object? comments = null,
     Object? autos = freezed,
     Object? robot_height = null,
     Object? straddling_pole_climb_right = null,
@@ -766,6 +775,10 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.bps
           : bps // ignore: cast_nullable_to_non_nullable
               as double,
+      comments: null == comments
+          ? _value.comments
+          : comments // ignore: cast_nullable_to_non_nullable
+              as String,
       autos: freezed == autos
           ? _value._autos
           : autos // ignore: cast_nullable_to_non_nullable
@@ -823,6 +836,7 @@ class _$PitData2026Impl implements _PitData2026 {
       this.auto,
       required this.hopper_capacity,
       required this.bps,
+      required this.comments,
       final List<Auto2026>? autos,
       required this.robot_height,
       required this.straddling_pole_climb_right,
@@ -884,6 +898,8 @@ class _$PitData2026Impl implements _PitData2026 {
   final int hopper_capacity;
   @override
   final double bps;
+  @override
+  final String comments;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
   final List<Auto2026>? _autos;
 // keep autos dynamic to avoid type-mismatch with other code/widgets
@@ -911,7 +927,7 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, type_of_shooter: $type_of_shooter, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, fixedShooting: $fixedShooting, nearTower: $nearTower, nearHub: $nearHub, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, type_of_shooter: $type_of_shooter, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, fixedShooting: $fixedShooting, nearTower: $nearTower, nearHub: $nearHub, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, comments: $comments, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
   }
 
   @override
@@ -957,6 +973,8 @@ class _$PitData2026Impl implements _PitData2026 {
             (identical(other.hopper_capacity, hopper_capacity) ||
                 other.hopper_capacity == hopper_capacity) &&
             (identical(other.bps, bps) || other.bps == bps) &&
+            (identical(other.comments, comments) ||
+                other.comments == comments) &&
             const DeepCollectionEquality().equals(other._autos, _autos) &&
             (identical(other.robot_height, robot_height) ||
                 other.robot_height == robot_height) &&
@@ -970,8 +988,7 @@ class _$PitData2026Impl implements _PitData2026 {
                 other.left_pole_climb == left_pole_climb) &&
             (identical(other.right_pole_climb, right_pole_climb) ||
                 other.right_pole_climb == right_pole_climb) &&
-            (identical(other.center_pole_climb, center_pole_climb) ||
-                other.center_pole_climb == center_pole_climb));
+            (identical(other.center_pole_climb, center_pole_climb) || other.center_pole_climb == center_pole_climb));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -999,6 +1016,7 @@ class _$PitData2026Impl implements _PitData2026 {
         auto,
         hopper_capacity,
         bps,
+        comments,
         const DeepCollectionEquality().hash(_autos),
         robot_height,
         straddling_pole_climb_right,
@@ -1047,6 +1065,7 @@ abstract class _PitData2026 implements PitData2026 {
       final Auto2026? auto,
       required final int hopper_capacity,
       required final double bps,
+      required final String comments,
       final List<Auto2026>? autos,
       required final double robot_height,
       required final bool straddling_pole_climb_right,
@@ -1099,8 +1118,10 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   int get hopper_capacity;
   @override
-  double
-      get bps; // keep autos dynamic to avoid type-mismatch with other code/widgets
+  double get bps;
+  @override
+  String
+      get comments; // keep autos dynamic to avoid type-mismatch with other code/widgets
   @override
   List<Auto2026>? get autos;
   @override

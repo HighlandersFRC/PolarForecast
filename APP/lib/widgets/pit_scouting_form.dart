@@ -46,6 +46,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   final TextEditingController favoriteColorController = TextEditingController();
   final TextEditingController mainStrategyController = TextEditingController();
+  final TextEditingController commentsController = TextEditingController();
 
   bool formSubmitted = false;
   bool loading = true;
@@ -55,6 +56,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       team_number: widget.teamNumber,
       event_code: widget.tournament.key,
       data: PitData2026(
+          comments: '',
           driver_experience_events: 0,
           type_of_shooter: '',
           drive_train: '',
@@ -117,6 +119,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   void fetchPitScoutingData() async {
     final api = Provider.of<ApiService>(context, listen: false);
+
     api.token.then((token) {
       api
           .fetchTeamPitScouting(
@@ -136,6 +139,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     pitScoutingData.data.favorite_color;
                 mainStrategyController.text =
                     pitScoutingData.data.main_strategy;
+                commentsController.text = pitScoutingData.data.comments;
               }))
           .onError((e, _) {
         loading = false;
@@ -175,6 +179,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'main_strategy':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(main_strategy: value),
+          );
+          break;
+        case 'comments':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(comments: value),
           );
           break;
         case 'can_feed_human_player':
@@ -1398,6 +1407,37 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                               ? null
                                               : (val) => handleChange(
                                                   'main_strategy', val),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                Card(
+                                  color: const Color.fromARGB(24, 68, 137, 255),
+                                  elevation: 2,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Comments',
+                                            style: TextStyle(
+                                                fontFamily: 'Font',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500)),
+                                        SizedBox(height: 8),
+                                        TextField(
+                                          controller: commentsController,
+                                          enabled: !widget.locked,
+                                          style: TextStyle(fontFamily: 'Font'),
+                                          onChanged: widget.locked
+                                              ? null
+                                              : (val) =>
+                                                  handleChange('comments', val),
                                         ),
                                       ],
                                     ),

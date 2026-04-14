@@ -200,6 +200,7 @@ class ApiService {
             climb: false,
             contacts_robot: false,
           ),
+          comments: '',
           driver_experience_events: 0,
           type_of_shooter: '',
           drive_train: '',

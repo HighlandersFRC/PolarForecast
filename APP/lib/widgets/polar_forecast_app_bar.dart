@@ -492,7 +492,7 @@ _openGroupsPopup(BuildContext context) async {
                 itemBuilder: (context, i) => ListTile(
                   leading: const CircleAvatar(
                       backgroundColor: Colors.blue,
-                      child: Icon(Icons.group, color: Colors.white)),
+                      child: Icon(Icons.group, color: Colors.black)),
                   title: Text(groups[i]['name']),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.pushNamed(
@@ -510,7 +510,7 @@ _openGroupsPopup(BuildContext context) async {
             label: const Text('Create New'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
+              foregroundColor: Colors.black,
             ),
             onPressed: () => _showCreateGroupDialog(context),
           ),
@@ -672,7 +672,7 @@ void _showCreateGroupDialog(BuildContext context) {
           child: const Text('Create'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
+            foregroundColor: Colors.black,
           ),
         ),
       ],
