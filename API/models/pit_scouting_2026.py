@@ -72,6 +72,8 @@ class PitData2026(BaseModel):
 
     robot_height: float
 
+    comments: Optional[str] = None
+
 
 
     straddling_pole_climb_right: bool

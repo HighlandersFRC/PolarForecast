@@ -35,6 +35,131 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../models/tournament.dart';
 import 'home_page.dart';
 
+class SnowField extends StatefulWidget {
+  final int particleCount;
+  final Color color;
+
+  const SnowField({
+    super.key,
+    this.particleCount = 40,
+    this.color = Colors.white,
+  });
+
+  @override
+  State<SnowField> createState() => _SnowFieldState();
+}
+
+class _SnowFieldState extends State<SnowField>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<_SnowParticle> _particles;
+  late DateTime _lastTick;
+  final Random _rnd = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _particles = List.generate(widget.particleCount, (i) => _createParticle());
+    _controller = AnimationController.unbounded(vsync: this);
+    _controller.addListener(_tick);
+    _controller.repeat(
+        min: 0, max: 1, period: const Duration(milliseconds: 16));
+    _lastTick = DateTime.now();
+  }
+
+  _SnowParticle _createParticle() {
+    return _SnowParticle(
+      x: _rnd.nextDouble(),
+      y: _rnd.nextDouble(),
+      radius: 1.5 + _rnd.nextDouble() * 3,
+      speed: 20 + _rnd.nextDouble() * 60,
+      drift: -20 + _rnd.nextDouble() * 40,
+      opacity: 0.25 + _rnd.nextDouble() * 0.75,
+    );
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final dt = now.difference(_lastTick).inMilliseconds / 1000.0;
+    _lastTick = now;
+
+    for (final p in _particles) {
+      p._logicalY += (p.speed * dt) / 300.0;
+      p._logicalX += (p.drift * dt) / 300.0;
+      if (p._logicalY > 1.25) {
+        p._logicalY = -0.05 - _rnd.nextDouble() * 0.1;
+        p._logicalX = _rnd.nextDouble();
+      }
+      if (p._logicalX < -0.2) p._logicalX = 1.05;
+      if (p._logicalX > 1.2) p._logicalX = -0.05;
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_tick);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SnowPainter(
+          _particles, widget.color, MediaQuery.of(context).devicePixelRatio),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _SnowParticle {
+  double x;
+  double y;
+  final double radius;
+  final double speed;
+  final double drift;
+  final double opacity;
+  double _logicalX;
+  double _logicalY;
+
+  _SnowParticle({
+    required this.x,
+    required this.y,
+    required this.radius,
+    required this.speed,
+    required this.drift,
+    required this.opacity,
+  })  : _logicalX = x,
+        _logicalY = y;
+}
+
+class _SnowPainter extends CustomPainter {
+  final List<_SnowParticle> particles;
+  final Color baseColor;
+  final double devicePixelRatio;
+
+  _SnowPainter(this.particles, this.baseColor, this.devicePixelRatio);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final Color dotColor = baseColor.withOpacity(0.7);
+
+    for (final p in particles) {
+      final dx = (p._logicalX.clamp(-0.5, 1.5)) * size.width;
+      final dy = (p._logicalY.clamp(-0.5, 1.5)) * size.height;
+
+      paint.color = dotColor.withOpacity(p.opacity * 0.9);
+      canvas.drawCircle(Offset(dx, dy), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnowPainter old) => true;
+}
+
 class EventPage extends StatefulWidget {
   final Tournament tournament;
   static Widget fromEventKey(BuildContext context, String eventKey) {
@@ -83,7 +208,8 @@ class _EventPageState extends State<EventPage> {
       _MatchScoutingTab(widget),
       _PitScoutingTab(widget),
       _QualsTab(widget),
-      _ElimsTab(widget)
+      _ElimsTab(widget),
+      _TBATab(widget, widget.tournament)
     ];
     return Scaffold(
         appBar: PolarForecastAppBar(
@@ -124,7 +250,11 @@ class _EventPageState extends State<EventPage> {
                     color: theme.primaryColor),
                 activeIcon:
                     Icon(Icons.workspace_premium, color: theme.primaryColor),
-                label: 'Elims')
+                label: 'Elims'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.shield_outlined, color: theme.primaryColor),
+                activeIcon: Icon(Icons.shield, color: theme.primaryColor),
+                label: 'TBA')
           ],
           type: BottomNavigationBarType.shifting,
           selectedLabelStyle: TextStyle(
@@ -142,6 +272,138 @@ class _EventPageState extends State<EventPage> {
           showUnselectedLabels: true,
         ),
         body: tabs[_currentTab]);
+  }
+}
+
+class _TBATab extends StatefulWidget {
+  final EventPage widget;
+  final Tournament tournament;
+  const _TBATab(this.widget, this.tournament);
+
+  @override
+  _TBATabState createState() => _TBATabState();
+}
+
+class _TBATabState extends State<_TBATab> {
+  late final String tbaUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    tbaUrl =
+        'https://www.thebluealliance.com/event/${widget.widget.tournament.page.split('/')[3]}${widget.widget.tournament.page.split('/')[4]}';
+  }
+
+  Future<void> _openTBA() async {
+    final uri = Uri.parse(tbaUrl);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $tbaUrl';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 48,
+                  color: Colors.blue,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  "View Event on The Blue Alliance",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  '${widget.tournament.display}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontFamily: 'Font',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 🔥 Clean CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openTBA,
+                    icon: const Icon(Icons.link),
+                    label: const Text("Open Event"),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Font',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // subtle link text
+                TextButton(
+                  onPressed: _openTBA,
+                  child: Text(
+                    tbaUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Font',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1986,9 +2248,18 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       );
     }
 
-    return Container(
-      color: backgroundDb,
-      child: SingleChildScrollView(
+    return Scaffold(
+        body: Stack(children: [
+      Positioned.fill(
+        child: IgnorePointer(
+          ignoring: true,
+          child: SnowField(
+            particleCount: 50,
+            color: Theme.of(context).colorScheme.onBackground,
+          ),
+        ),
+      ),
+      SingleChildScrollView(
         controller: scrollController,
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         child: Center(
@@ -1997,6 +2268,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             child: Column(
               children: [
                 // HEADER
+
                 Text(
                   widget.widget.tournament.display,
                   textAlign: TextAlign.center,
@@ -2236,7 +2508,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
           ),
         ),
       ),
-    );
+    ]));
   }
 
 // UI HELPERS (Dark Mode)

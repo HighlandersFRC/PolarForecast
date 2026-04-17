@@ -10,7 +10,7 @@ import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/picture_data.dart';
 import 'package:scouting_app/widgets/auto_display_2026.dart';
-import 'package:scouting_app/widgets/pit_scouting_form.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/match_scouting_2026.dart';
 import '../models/pit_scouting_2026.dart';
 import '../widgets/deaths_form.dart';
@@ -78,6 +78,7 @@ class _TeamPageState extends State<TeamPage> {
       _PitScoutingTab(widget),
       _AutosTab(widget),
       _DeathsTab(widget),
+      _TBATab(widget)
     ];
     return Scaffold(
       appBar: PolarForecastAppBar(
@@ -120,7 +121,11 @@ class _TeamPageState extends State<TeamPage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.privacy_tip_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.privacy_tip, color: theme.primaryColor),
-              label: 'Deaths')
+              label: 'Deaths'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shield_outlined, color: theme.primaryColor),
+              activeIcon: Icon(Icons.shield, color: theme.primaryColor),
+              label: 'TBA')
         ],
         type: BottomNavigationBarType.shifting,
         selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
@@ -131,6 +136,136 @@ class _TeamPageState extends State<TeamPage> {
         showUnselectedLabels: true,
       ),
       body: tabs[_currentTab],
+    );
+  }
+}
+
+class _TBATab extends StatefulWidget {
+  final TeamPage widget;
+  const _TBATab(this.widget);
+
+  @override
+  _TBATabState createState() => _TBATabState();
+}
+
+class _TBATabState extends State<_TBATab> {
+  late final String tbaUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    tbaUrl = 'https://www.thebluealliance.com/team/${widget.widget.teamNumber}';
+  }
+
+  Future<void> _openTBA() async {
+    final uri = Uri.parse(tbaUrl);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $tbaUrl';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 48,
+                  color: Colors.blue,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  "View Team on The Blue Alliance",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  'frc${widget.widget.teamNumber}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontFamily: 'Font',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 🔥 Clean CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openTBA,
+                    icon: const Icon(Icons.link),
+                    label: const Text("Open Team"),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Font',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // subtle link text
+                TextButton(
+                  onPressed: _openTBA,
+                  child: Text(
+                    tbaUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Font',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -716,13 +851,18 @@ class _ScheduleStatusSource extends DataGridSource {
           ? Theme.of(context).primaryColor.withOpacity(0.3)
           : Colors.black.withOpacity(0);
       if (cell.columnName == 'key') {
-        String matchNumber = cell.value.toString().split(' ')[1];
-        String type = cell.value.toString().contains('Quals')
-            ? 'qm'
-            : cell.value.toString().contains('Semi')
-                ? 'sf'
-                : 'f';
-        String match_key = '${tournament.key}_$type$matchNumber';
+        String match_key = '';
+
+        if (matchStatus.isNotEmpty) {
+          if (matchStatus['comp_level'] == 'qm') {
+            match_key = '${tournament.key}_qm${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'sf') {
+            match_key =
+                '${tournament.key}_sf${matchStatus['set_number']}m${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'f') {
+            match_key = '${tournament.key}_f1m${matchStatus['match_number']}';
+          }
+        }
         returnCells.add(Container(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             alignment: Alignment.center,
@@ -1131,10 +1271,9 @@ class _PicturesTabState extends State<_PicturesTab> {
   List<PictureData> images = [];
   bool isLoading = true;
   String? token;
-
   String selectedType = 'full_robot';
 
-  List<String> imageTypes = [
+  final List<String> imageTypes = [
     'full_robot',
     'wires',
     'shooter',
@@ -1159,62 +1298,37 @@ class _PicturesTabState extends State<_PicturesTab> {
     }
   }
 
-  List<PictureData> get filteredImages {
-    return images.where((img) => img.image_type == selectedType).toList();
-  }
-
-  Map<String, List<PictureData>> groupByType(List<PictureData> images) {
-    const allowedTypes = {
-      'full_robot',
-      'wires',
-      'shooter',
-      'intake',
-      'feeder',
-    };
-
-    final Map<String, List<PictureData>> grouped = {};
-
-    for (var img in images) {
-      final type = img.image_type;
-
-      if (!allowedTypes.contains(type)) continue;
-
-      grouped.putIfAbsent(type, () => []);
-      grouped[type]!.add(img);
-    }
-
-    return grouped;
-  }
+  List<PictureData> get filteredImages =>
+      images.where((img) => img.image_type == selectedType).toList();
 
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    this.token = await apiService.token;
+    token = await apiService.token;
     if (token != null) {
       try {
-        final fetchedStats = await apiService.fetchTeamImages(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4],
+        final parts = widget.widget.tournament.page.split('/');
+        final fetched = await apiService.fetchTeamImages(
+          int.parse(parts[3]),
+          parts[4],
           'frc${widget.widget.teamNumber}',
         );
-        if (mounted) {
+        if (mounted)
           setState(() {
-            images = fetchedStats;
+            images = fetched;
             isLoading = false;
           });
-        } else {
-          images = fetchedStats;
+        else {
+          images = fetched;
           isLoading = false;
         }
       } catch (e) {
-        print('Error fetching data: $e');
+        debugPrint('Error fetching pictures: $e');
       }
     } else {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-      isLoading = false;
+      if (mounted)
+        setState(() => isLoading = false);
+      else
+        isLoading = false;
     }
   }
 
@@ -1224,148 +1338,195 @@ class _PicturesTabState extends State<_PicturesTab> {
     fetchPictures();
   }
 
+  // ── Full-screen zoomable viewer ──────────────────────────────────────────
+  void _openImageViewer(BuildContext context, PictureData image) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Zoomable image ───────────────────────────────────────────
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 5.0,
+                    child: Image.network(image.link),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Footer card ──────────────────────────────────────────────
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 16),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        image.scout_info.first_name != null
+                            ? 'Uploaded by ${image.scout_info.first_name}'
+                            : 'Scout from team ${image.scout_info.team_number}',
+                        style:
+                            const TextStyle(fontFamily: 'Font', fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (image.permissions.contains('delete'))
+                      TextButton.icon(
+                        style:
+                            TextButton.styleFrom(foregroundColor: Colors.red),
+                        icon: const Icon(Icons.delete_outline, size: 16),
+                        label: const Text('Delete',
+                            style: TextStyle(fontFamily: 'Font')),
+                        onPressed: () {
+                          final api =
+                              Provider.of<ApiService>(ctx, listen: false);
+                          Navigator.of(ctx).pop();
+                          api.delete_image(image).then((_) {
+                            setState(() => images.remove(image));
+                          });
+                        },
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Close',
+                          style: TextStyle(fontFamily: 'Font')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: isLoading
-          ? CircularProgressIndicator(color: Colors.blue)
-          : token == null
-              ? LoginWidget(
-                  redirect_path:
-                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
-              : images.isEmpty
-                  ? Text('No Images', style: TextStyle(fontFamily: 'Font'))
-                  : Column(
-                      children: [
-                        /// DROPDOWN
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: DropdownButtonFormField<String>(
-                            value: selectedType,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.blue));
+    }
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+    if (images.isEmpty) {
+      return const Center(
+        child: Text('No Images', style: TextStyle(fontFamily: 'Font')),
+      );
+    }
+
+    return Column(
+      children: [
+        // ── Type selector ────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+          child: DropdownButtonFormField<String>(
+            value: selectedType,
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            items: imageTypes.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(formatType(type),
+                    style: const TextStyle(fontFamily: 'Font')),
+              );
+            }).toList(),
+            onChanged: (v) => setState(() => selectedType = v!),
+          ),
+        ),
+
+        // ── Grid ─────────────────────────────────────────────────────────
+        Expanded(
+          child: filteredImages.isEmpty
+              ? Center(
+                  child: Text(
+                    'No ${formatType(selectedType)} images',
+                    style: const TextStyle(fontFamily: 'Font'),
+                  ),
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final cols = constraints.maxWidth > 600 ? 4 : 2;
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: filteredImages.length,
+                      itemBuilder: (context, index) {
+                        final image = filteredImages[index];
+                        return GestureDetector(
+                          onTap: () => _openImageViewer(context, image),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                image.link,
+                                fit: BoxFit.cover,
+                                // Lightweight loading placeholder
+                                loadingBuilder: (_, child, progress) =>
+                                    progress == null
+                                        ? child
+                                        : Container(
+                                            color: Colors.grey.shade200,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.blue),
+                                            ),
+                                          ),
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.broken_image_outlined,
+                                      color: Colors.grey),
+                                ),
                               ),
                             ),
-                            items: imageTypes.map((type) {
-                              return DropdownMenuItem(
-                                value: type,
-                                child: Text(
-                                  formatType(type),
-                                  style: const TextStyle(fontFamily: 'Font'),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedType = value!;
-                              });
-                            },
                           ),
-                        ),
-
-                        /// GRID
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return GridView.builder(
-                                padding: const EdgeInsets.all(8),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      constraints.maxWidth > 600 ? 4 : 2,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                ),
-                                itemCount: filteredImages.length,
-                                itemBuilder: (context, index) {
-                                  final image = filteredImages[index];
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return Padding(
-                                            padding: const EdgeInsets.all(20),
-                                            child: AlertDialog(
-                                              content: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(20),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child:
-                                                      Image.network(image.link),
-                                                ),
-                                              ),
-                                              actions: [
-                                                Text(
-                                                  'Uploaded by: ${image.scout_info.first_name ?? 'scout on ${image.scout_info.team_number}'}',
-                                                  style: const TextStyle(
-                                                      fontFamily: 'Font'),
-                                                ),
-                                                if (image.permissions
-                                                    .contains('delete'))
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                    ),
-                                                    onPressed: () {
-                                                      final api = Provider.of<
-                                                              ApiService>(
-                                                          context,
-                                                          listen: false);
-
-                                                      Navigator.of(context)
-                                                          .pop();
-
-                                                      api
-                                                          .delete_image(image)
-                                                          .then((_) {
-                                                        setState(() {
-                                                          images.remove(image);
-                                                        });
-                                                      });
-                                                    },
-                                                    child: const Text('Delete',
-                                                        style: TextStyle(
-                                                            fontFamily:
-                                                                'Font')),
-                                                  ),
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(),
-                                                  child: const Text('Close',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font')),
-                                                )
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        image.link,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                        );
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
@@ -1782,11 +1943,287 @@ class _PitScoutingTab extends StatefulWidget {
 }
 
 class _PitScoutingTabState extends State<_PitScoutingTab> {
+  String nickname = '';
+  bool loading = true;
+  PitScouting2026? pitScouting;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPitScoutingData();
+  }
+
+  void fetchPitScoutingData() async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    try {
+      final data = await api.fetchTeamPitScouting(
+        widget.widget.tournament.page.split('/')[3],
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+
+      setState(() {
+        pitScouting = data;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        loading = false;
+      });
+      print("Pit scouting error: $e");
+    }
+
+    try {
+      nickname = await api.fetchTeamNicknames('frc${widget.widget.teamNumber}');
+    } catch (e) {
+      print('Error fetching nickname: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: PitScoutingForm(
-          widget.widget.tournament, widget.widget.teamNumber, true),
+    final theme = Theme.of(context);
+
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (pitScouting == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: theme.disabledColor),
+            const SizedBox(height: 16),
+            const Text("No Pit Scouting Data Available",
+                style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      );
+    }
+
+    final data = pitScouting!.data;
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(theme),
+              const SizedBox(height: 24),
+              _buildSection(
+                title: "Drivetrain & Movement",
+                icon: Icons.settings_input_component,
+                theme: theme,
+                children: [
+                  _buildDetailRow("Drive Train", data.drive_train, Colors.blue),
+                  _buildDetailRow("Robot Height", "${data.robot_height}\"",
+                      Colors.blueGrey),
+                  _buildBoolRow("Can Go Over Bump", data.go_over_bump),
+                  _buildBoolRow("Can Go Under Trench", data.go_under_trench),
+                ],
+              ),
+              _buildSection(
+                title: "Shooting System",
+                icon: Icons.gps_fixed,
+                theme: theme,
+                children: [
+                  _buildDetailRow("Type", data.type_of_shooter, Colors.orange),
+                  _buildDetailRow(
+                      "BPS", data.bps.toStringAsFixed(2), Colors.orange),
+                  _buildBoolRow("Auto Shooting", data.automatically_shooting),
+                  _buildBoolRow(
+                      "Shooting While Moving", data.shooting_while_moving),
+                  _buildBoolRow("Fixed Shooting", data.fixedShooting),
+                ],
+              ),
+              _buildSection(
+                title: "Intake & Handling",
+                icon: Icons.download,
+                theme: theme,
+                children: [
+                  _buildBoolRow("Ground Pickup", data.can_pick_up_from_ground),
+                  _buildBoolRow("Human Feed", data.can_feed_human_player),
+                  _buildBoolRow("Near Tower", data.nearTower),
+                  _buildBoolRow("Near Hub", data.nearHub),
+                  _buildDetailRow("Hopper Capacity",
+                      data.hopper_capacity.toString(), Colors.blueGrey),
+                ],
+              ),
+              _buildSection(
+                title: "Climbing",
+                icon: Icons.upload,
+                theme: theme,
+                children: [
+                  _buildBoolRow("Can Climb", data.can_climb),
+                  _buildBoolRow("Auto Climb", data.can_climb_in_autonomous),
+                  const Divider(height: 24),
+                  const Text("Pole Availability",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildChip("Left", data.left_pole_climb),
+                      _buildChip("Straddle L", data.straddling_pole_climb_left),
+                      _buildChip("Center", data.center_pole_climb),
+                      _buildChip(
+                          "Straddle R", data.straddling_pole_climb_right),
+                      _buildChip("Right", data.right_pole_climb),
+                    ],
+                  ),
+                ],
+              ),
+              _buildSection(
+                title: "Strategy & Info",
+                icon: Icons.lightbulb,
+                theme: theme,
+                children: [
+                  _buildDetailRow(
+                      "Main Strategy", data.main_strategy, Colors.purple),
+                  _buildDetailRow(
+                      "Favorite Color", data.favorite_color, Colors.pink),
+                  _buildDetailRow(
+                      "Experience",
+                      "${data.driver_experience_events} Events",
+                      Colors.blueGrey),
+                  _buildDetailRow("Comments", data.comments, Colors.grey)
+                ],
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "PIT SCOUTING",
+          style: theme.textTheme.labelLarge
+              ?.copyWith(color: theme.primaryColor, letterSpacing: 1.2),
+        ),
+        Text(
+          "Team ${widget.widget.teamNumber}",
+          style: theme.textTheme.headlineMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection(
+      {required String title,
+      required IconData icon,
+      required List<Widget> children,
+      required ThemeData theme}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: theme.primaryColor),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: color, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBoolRow(String label, bool value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14)),
+          Icon(
+            value ? Icons.check_circle : Icons.cancel,
+            color: value ? Colors.green : Colors.red.withOpacity(0.5),
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: active
+            ? Colors.green.withOpacity(0.1)
+            : Colors.grey.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: active ? Colors.green : Colors.transparent),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: active ? Colors.green : Colors.grey,
+          fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }

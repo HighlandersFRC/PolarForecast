@@ -523,191 +523,177 @@ class _EventsTabState extends State<_EventsTab> {
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontFamily: 'Font',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    icon:
-                        const Icon(Icons.event, size: 28, color: Colors.white),
-                    label: const Text('Join An Event'),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return FutureBuilder<List<Tournament>>(
-                            future: apiService.fetchTournaments(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              if (snapshot.hasError) {
-                                return AlertDialog(
-                                  title: const Text('Error',
-                                      style: TextStyle(fontFamily: 'Font')),
-                                  content: const Text(
-                                    'Failed to load events. Please try again later.',
-                                    style: TextStyle(fontFamily: 'Font'),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: const Text('OK',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                      child: InkWell(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return FutureBuilder<List<Tournament>>(
+                                future: apiService.fetchTournaments(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+
+                                  if (snapshot.hasError) {
+                                    return AlertDialog(
+                                      title: const Text('Error',
                                           style: TextStyle(fontFamily: 'Font')),
-                                    ),
-                                  ],
-                                );
-                              }
-
-                              final tournaments = snapshot.data ?? [];
-                              String? selectedEvent;
-
-                              return StatefulBuilder(
-                                builder: (context, setState) {
-                                  return AlertDialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    title: const Text(
-                                      'Choose an Event',
-                                      style: TextStyle(
-                                          fontFamily: 'Font',
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    content: SizedBox(
-                                      width: double.maxFinite,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SearchAnchor.bar(
-                                            barHintText: 'Search events',
-                                            suggestionsBuilder:
-                                                (context, controller) {
-                                              final filteredTournaments =
-                                                  tournaments
-                                                      .where((tournament) =>
-                                                          tournament.display
-                                                              .toLowerCase()
-                                                              .contains(controller
-                                                                  .text
-                                                                  .toLowerCase()))
-                                                      .toList();
-                                              return [
-                                                ListTile(
-                                                  title: const Text('None',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font')),
-                                                  onTap: () {
-                                                    setState(() {
-                                                      selectedEvent = null;
-                                                    });
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                ...filteredTournaments
-                                                    .map((tournament) {
-                                                  return ListTile(
-                                                    title: Text(
-                                                        tournament.display,
-                                                        style: const TextStyle(
-                                                            fontFamily:
-                                                                'Font')),
-                                                    onTap: () {
-                                                      setState(() {
-                                                        selectedEvent =
-                                                            tournament.key;
-                                                      });
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                  );
-                                                }),
-                                              ];
-                                            },
-                                          ),
-                                          if (selectedEvent != null)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 16.0),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Icon(Icons.check_circle,
-                                                      color: Colors.blue,
-                                                      size: 28),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    'Selected Event: $selectedEvent',
-                                                    style: const TextStyle(
-                                                      color: Colors.blue,
-                                                      fontSize: 22,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontFamily: 'Font',
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                        ],
+                                      content: const Text(
+                                        'Failed to load events. Please try again later.',
+                                        style: TextStyle(fontFamily: 'Font'),
                                       ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                        child: const Text('Cancel',
-                                            style:
-                                                TextStyle(fontFamily: 'Font')),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: selectedEvent != null
-                                            ? () {
-                                                apiService
-                                                    .add_group_to_event(
-                                                        widget.group?.name ??
-                                                            '',
-                                                        selectedEvent!)
-                                                    .then((val) {
-                                                  var (group, membership) = val;
-                                                  widget.widget.group = group;
-                                                  widget.widget.membership =
-                                                      membership;
-                                                });
-                                                Navigator.of(context)
-                                                    .pop(selectedEvent);
-                                              }
-                                            : null,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blueAccent,
-                                          textStyle: const TextStyle(
-                                              fontFamily: 'Font',
-                                              fontWeight: FontWeight.bold),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text('OK',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font')),
                                         ),
-                                        child: const Text('Confirm'),
-                                      ),
-                                    ],
+                                      ],
+                                    );
+                                  }
+
+                                  final tournaments = snapshot.data ?? [];
+                                  String? selectedEvent;
+
+                                  return StatefulBuilder(
+                                    builder: (context, setState) {
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        ),
+                                        title: const Text(
+                                          'Choose an Event',
+                                          style: TextStyle(
+                                            fontFamily: 'Font',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        content: SizedBox(
+                                          width: double.maxFinite,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SearchAnchor.bar(
+                                                barHintText: 'Search events',
+                                                suggestionsBuilder:
+                                                    (context, controller) {
+                                                  final filtered = tournaments
+                                                      .where((t) => t.display
+                                                          .toLowerCase()
+                                                          .contains(controller
+                                                              .text
+                                                              .toLowerCase()))
+                                                      .toList();
+
+                                                  return [
+                                                    ListTile(
+                                                      title: const Text('None'),
+                                                      onTap: () {
+                                                        setState(() =>
+                                                            selectedEvent =
+                                                                null);
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                    ),
+                                                    ...filtered.map((t) =>
+                                                        ListTile(
+                                                          title:
+                                                              Text(t.display),
+                                                          onTap: () {
+                                                            setState(() =>
+                                                                selectedEvent =
+                                                                    t.key);
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                        )),
+                                                  ];
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: selectedEvent != null
+                                                ? () {
+                                                    apiService
+                                                        .add_group_to_event(
+                                                            widget.group
+                                                                    ?.name ??
+                                                                '',
+                                                            selectedEvent!)
+                                                        .then((val) {
+                                                      var (group, membership) =
+                                                          val;
+                                                      widget.widget.group =
+                                                          group;
+                                                      widget.widget.membership =
+                                                          membership;
+                                                    });
+
+                                                    Navigator.of(context)
+                                                        .pop(selectedEvent);
+                                                  }
+                                                : null,
+                                            child: const Text('Confirm'),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                               );
                             },
                           );
                         },
-                      );
-                    },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: const Color(0xFF1E3A8A)
+                                .withOpacity(0.25), // soft blue glass
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.event, size: 28, color: Colors.white),
+                              SizedBox(width: 10),
+                              Text(
+                                'Join An Event',
+                                style: TextStyle(
+                                  fontFamily: 'Font',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

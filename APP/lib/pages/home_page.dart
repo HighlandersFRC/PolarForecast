@@ -15,6 +15,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<GlobalRank> suggestions = [];
+  bool showSuggestions = false;
+  final Map<String, String> _nicknameCache = {};
+  final TextEditingController _searchController = TextEditingController();
+
   void safeSetState(VoidCallback callback) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -30,10 +35,6 @@ class _HomePageState extends State<HomePage> {
   String _sortOrder = 'desc';
   List<GlobalRank> rankings = [];
   List<SortColumnDetails> sortColumns = [];
-  int snowCount = 100;
-  bool _isLoading = false;
-  String? _loadError;
-
   final columns = [
     GridColumn(
       allowFiltering: false,
@@ -41,10 +42,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'Team',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('Team'),
       ),
     ),
     GridColumn(
@@ -53,10 +51,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'OPR',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('OPR'),
       ),
     ),
     GridColumn(
@@ -65,10 +60,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'OPR Rank',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('OPR Rank'),
       ),
     ),
     GridColumn(
@@ -77,10 +69,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'Auto Points',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('Auto Points'),
       ),
     ),
     GridColumn(
@@ -89,10 +78,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'Teleop Points',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('Teleop Points'),
       ),
     ),
     GridColumn(
@@ -101,10 +87,7 @@ class _HomePageState extends State<HomePage> {
       label: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(
-          'Endgame Points',
-          style: TextStyle(fontFamily: 'Font'),
-        ),
+        child: Text('Endgame Points'),
       ),
     ),
   ];
@@ -124,36 +107,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchRankings() async {
+    final _rankingsFuture = Provider.of<ApiService>(context, listen: false)
+        .fetch_global_rankings(
+            limit: _limit,
+            offset: _limit * pageNum,
+            sortBy: _sortBy,
+            sortOrder: _sortOrder);
+    final (_rankings, _numTeams) = await _rankingsFuture;
     safeSetState(() {
-      _isLoading = true;
-      _loadError = null;
+      rankings = _rankings;
+      numTeams = _numTeams;
     });
-
-    try {
-      final _rankingsFuture = Provider.of<ApiService>(context, listen: false)
-          .fetch_global_rankings(
-              limit: _limit,
-              offset: _limit * pageNum,
-              sortBy: _sortBy,
-              sortOrder: _sortOrder);
-      final (_rankings, _numTeams) = await _rankingsFuture;
-      print('DEBUG: Fetched ${_rankings.length} rankings, numTeams=$_numTeams');
-      safeSetState(() {
-        rankings = _rankings;
-        numTeams = _numTeams;
-        _isLoading = false;
-        _loadError = null;
-      });
-    } catch (e, st) {
-      print('DEBUG: Error fetching rankings: $e');
-      print('DEBUG: Stack trace: $st');
-      safeSetState(() {
-        rankings = [];
-        numTeams = 0;
-        _isLoading = false;
-        _loadError = 'Failed to load rankings: $e';
-      });
-    }
   }
 
   Future<void> _showTeamEventsDialog(String teamNumber) async {
@@ -175,11 +139,7 @@ class _HomePageState extends State<HomePage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-          'Error fetching events: $e',
-          style: TextStyle(fontFamily: 'Font'),
-        )),
+        SnackBar(content: Text('Error fetching events: $e')),
       );
     }
   }
@@ -203,111 +163,196 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const columnMinWidth = 95.0;
-    bool isWide =
-        MediaQuery.of(context).size.width >= columns.length * columnMinWidth;
+    final query = _searchController.text.trim().toLowerCase();
 
-    final cs = Theme.of(context).colorScheme;
+    final displayRankings = query.isEmpty
+        ? rankings
+        : rankings.where((r) {
+            final team = r.data.team_number.toString();
+            final nickname = (_nicknameCache[team] ?? "").toLowerCase();
+
+            return team.contains(query) || nickname.contains(query);
+          }).toList();
+
+    const columnMinWidth = 95.0;
+    final bool isWide =
+        MediaQuery.of(context).size.width >= columns.length * columnMinWidth;
 
     return Scaffold(
       appBar: PolarForecastAppBar(backButton: false),
       body: Stack(
         children: [
-          Positioned.fill(
+          const Positioned.fill(
             child: IgnorePointer(
-              ignoring: true,
               child: SnowField(
-                particleCount: snowCount,
-                color: cs.onBackground,
+                particleCount: 60,
               ),
             ),
           ),
-          Column(
-            children: [
-              Text(
-                'Global Rankings',
-                style: TextStyle(
-                    color: Colors.blue, fontSize: 24, fontFamily: 'Font'),
-              ),
-              GestureDetector(
-                onTap: () {
-                  launchUrl(Uri.parse('https://www.thebluealliance.com'));
-                },
-                child: Text(
-                  'Powered by The Blue Alliance',
-                  style: TextStyle(
+          Positioned.fill(
+            child: Column(
+              children: [
+                const Text(
+                  'Global Rankings',
+                  style: TextStyle(color: Colors.blue, fontSize: 24),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    launchUrl(Uri.parse('https://www.thebluealliance.com'));
+                  },
+                  child: const Text(
+                    'Powered by The Blue Alliance',
+                    style: TextStyle(
                       color: Colors.blueAccent,
                       fontSize: 18,
                       decoration: TextDecoration.underline,
-                      fontFamily: 'Font'),
+                    ),
+                  ),
                 ),
-              ),
-              Expanded(
-                  child: _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                          color: Colors.blue,
-                        ))
-                      : _loadError != null
-                          ? Center(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  _loadError!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Colors.redAccent,
-                                      fontFamily: 'Font'),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) async {
+                                final query = value.trim().toLowerCase();
+
+                                if (query.isEmpty) {
+                                  setState(() {
+                                    suggestions = [];
+                                    showSuggestions = false;
+                                  });
+                                  return;
+                                }
+
+                                final matches = rankings
+                                    .where((r) => r.data.team_number
+                                        .toString()
+                                        .contains(query))
+                                    .toList();
+
+                                final limited = matches.take(8).toList();
+
+                                final api = Provider.of<ApiService>(
+                                  context,
+                                  listen: false,
+                                );
+
+                                for (final r in limited) {
+                                  final team = r.data.team_number.toString();
+
+                                  if (!_nicknameCache.containsKey(team)) {
+                                    try {
+                                      _nicknameCache[team] =
+                                          await api.fetchTeamNicknames(team);
+                                    } catch (_) {
+                                      _nicknameCache[team] = "";
+                                    }
+                                  }
+                                }
+
+                                setState(() {
+                                  suggestions = limited;
+                                  showSuggestions = true;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Search Teams",
+                                hintStyle:
+                                    TextStyle(color: Colors.blueGrey.shade200),
+
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Colors.lightBlueAccent,
+                                ),
+
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.clear,
+                                      color: Colors.lightBlueAccent),
+                                  onPressed: () {
+                                    // clear controller
+                                  },
+                                ),
+
+                                filled: true,
+                                fillColor: const Color(0xFF0D1B2A), // deep navy
+
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                      color: Colors.blue.shade900, width: 1.2),
+                                ),
+
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: Colors.lightBlueAccent,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
-                            )
-                          : rankings.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'No rankings available right now.',
-                                    style: TextStyle(fontFamily: 'Font'),
-                                  ),
-                                )
-                              : SfDataGrid(
-                                  source: GlobalRankDataSource(
-                                    rankings,
-                                    rankings.isEmpty
-                                        ? 0.0
-                                        : rankings
-                                            .map((rank) => rank.data.OPR)
-                                            .reduce((a, b) => a > b ? a : b),
-                                    rankings.isEmpty
-                                        ? 0.0
-                                        : rankings
-                                            .map((rank) => rank.data.OPR)
-                                            .reduce((a, b) => a < b ? a : b),
-                                    _sort,
-                                    sortColumns,
-                                    (team) => _showTeamEventsDialog(team),
-                                  ),
-                                  showSortNumbers: true,
-                                  allowFiltering: true,
-                                  columnWidthMode: isWide
-                                      ? ColumnWidthMode.fill
-                                      : ColumnWidthMode.none,
-                                  columns: columns,
-                                  allowSorting: true,
-                                )),
-              if ((numTeams / _limit).ceil() != 0)
-                NumberPaginator(
-                  numberPages: (numTeams / _limit).ceil(),
-                  initialPage: min((numTeams / _limit).ceil() - 1, pageNum),
-                  onPageChange: (newPage) {
-                    setState(
-                      () {
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: displayRankings.isEmpty
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.blue,
+                          ),
+                        )
+                      : SfDataGrid(
+                          source: GlobalRankDataSource(
+                            displayRankings,
+                            displayRankings
+                                .map((r) => r.data.OPR)
+                                .reduce((a, b) => a > b ? a : b),
+                            displayRankings
+                                .map((r) => r.data.OPR)
+                                .reduce((a, b) => a < b ? a : b),
+                            _sort,
+                            sortColumns,
+                            (team) => _showTeamEventsDialog(team),
+                          ),
+                          showSortNumbers: true,
+                          allowFiltering: true,
+                          columnWidthMode: isWide
+                              ? ColumnWidthMode.fill
+                              : ColumnWidthMode.none,
+                          columns: columns,
+                          allowSorting: true,
+                        ),
+                ),
+                if ((numTeams / _limit).ceil() != 0)
+                  NumberPaginator(
+                    numberPages: (numTeams / _limit).ceil(),
+                    initialPage: min((numTeams / _limit).ceil() - 1, pageNum),
+                    onPageChange: (newPage) {
+                      setState(() {
                         pageNum = newPage;
                         _fetchRankings();
-                      },
-                    );
-                  },
-                )
-            ],
+                      });
+                    },
+                    config: const NumberPaginatorUIConfig(
+                      buttonSelectedBackgroundColor: Colors.blue,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -422,9 +467,9 @@ class GlobalRankDataSource extends DataGridSource {
               child: Text(
                 cell.value.toString(),
                 style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontFamily: 'Font'),
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           );
@@ -442,12 +487,9 @@ class GlobalRankDataSource extends DataGridSource {
           padding: EdgeInsets.all(8.0),
           alignment: Alignment.center,
           color: color,
-          child: Text(
-            cell.value.runtimeType == double
-                ? (cell.value as double).toStringAsFixed(1)
-                : cell.value.toString(),
-            style: TextStyle(fontFamily: 'Font'),
-          ),
+          child: Text(cell.value.runtimeType == double
+              ? (cell.value as double).toStringAsFixed(1)
+              : cell.value.toString()),
         );
       })
     ]);

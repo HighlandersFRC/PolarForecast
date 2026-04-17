@@ -42,6 +42,7 @@ class PitData2026 with _$PitData2026 {
       Auto2026? auto,
       required int hopper_capacity,
       required double bps,
+      required String comments,
       // keep autos dynamic to avoid type-mismatch with other code/widgets
       List<Auto2026>? autos,
       required double robot_height,

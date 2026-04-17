@@ -13,6 +13,131 @@ import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';
 
+class SnowField extends StatefulWidget {
+  final int particleCount;
+  final Color color;
+
+  const SnowField({
+    super.key,
+    this.particleCount = 40,
+    this.color = Colors.white,
+  });
+
+  @override
+  State<SnowField> createState() => _SnowFieldState();
+}
+
+class _SnowFieldState extends State<SnowField>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<_SnowParticle> _particles;
+  late DateTime _lastTick;
+  final Random _rnd = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _particles = List.generate(widget.particleCount, (i) => _createParticle());
+    _controller = AnimationController.unbounded(vsync: this);
+    _controller.addListener(_tick);
+    _controller.repeat(
+        min: 0, max: 1, period: const Duration(milliseconds: 16));
+    _lastTick = DateTime.now();
+  }
+
+  _SnowParticle _createParticle() {
+    return _SnowParticle(
+      x: _rnd.nextDouble(),
+      y: _rnd.nextDouble(),
+      radius: 1.5 + _rnd.nextDouble() * 3,
+      speed: 20 + _rnd.nextDouble() * 60,
+      drift: -20 + _rnd.nextDouble() * 40,
+      opacity: 0.25 + _rnd.nextDouble() * 0.75,
+    );
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final dt = now.difference(_lastTick).inMilliseconds / 1000.0;
+    _lastTick = now;
+
+    for (final p in _particles) {
+      p._logicalY += (p.speed * dt) / 300.0;
+      p._logicalX += (p.drift * dt) / 300.0;
+      if (p._logicalY > 1.25) {
+        p._logicalY = -0.05 - _rnd.nextDouble() * 0.1;
+        p._logicalX = _rnd.nextDouble();
+      }
+      if (p._logicalX < -0.2) p._logicalX = 1.05;
+      if (p._logicalX > 1.2) p._logicalX = -0.05;
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_tick);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SnowPainter(
+          _particles, widget.color, MediaQuery.of(context).devicePixelRatio),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _SnowParticle {
+  double x;
+  double y;
+  final double radius;
+  final double speed;
+  final double drift;
+  final double opacity;
+  double _logicalX;
+  double _logicalY;
+
+  _SnowParticle({
+    required this.x,
+    required this.y,
+    required this.radius,
+    required this.speed,
+    required this.drift,
+    required this.opacity,
+  })  : _logicalX = x,
+        _logicalY = y;
+}
+
+class _SnowPainter extends CustomPainter {
+  final List<_SnowParticle> particles;
+  final Color baseColor;
+  final double devicePixelRatio;
+
+  _SnowPainter(this.particles, this.baseColor, this.devicePixelRatio);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final Color dotColor = baseColor.withOpacity(0.7);
+
+    for (final p in particles) {
+      final dx = (p._logicalX.clamp(-0.5, 1.5)) * size.width;
+      final dy = (p._logicalY.clamp(-0.5, 1.5)) * size.height;
+
+      paint.color = dotColor.withOpacity(p.opacity * 0.9);
+      canvas.drawCircle(Offset(dx, dy), p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnowPainter old) => true;
+}
+
 class PitScoutingForm extends StatefulWidget {
   const PitScoutingForm(
     this.tournament,
@@ -46,6 +171,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   final TextEditingController favoriteColorController = TextEditingController();
   final TextEditingController mainStrategyController = TextEditingController();
+  final TextEditingController commentsController = TextEditingController();
 
   bool formSubmitted = false;
   bool loading = true;
@@ -55,6 +181,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
       team_number: widget.teamNumber,
       event_code: widget.tournament.key,
       data: PitData2026(
+          comments: '',
           driver_experience_events: 0,
           type_of_shooter: '',
           drive_train: '',
@@ -117,6 +244,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
 
   void fetchPitScoutingData() async {
     final api = Provider.of<ApiService>(context, listen: false);
+
     api.token.then((token) {
       api
           .fetchTeamPitScouting(
@@ -136,6 +264,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                     pitScoutingData.data.favorite_color;
                 mainStrategyController.text =
                     pitScoutingData.data.main_strategy;
+                commentsController.text = pitScoutingData.data.comments;
               }))
           .onError((e, _) {
         loading = false;
@@ -175,6 +304,11 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'main_strategy':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(main_strategy: value),
+          );
+          break;
+        case 'comments':
+          pitScoutingData = pitScoutingData.copyWith(
+            data: pitScoutingData.data.copyWith(comments: value),
           );
           break;
         case 'can_feed_human_player':
@@ -571,50 +705,469 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                 // On desktop, limit width
                 final cardWidth = isMobile ? maxWidth : min(maxWidth, 900.0);
 
-                return Center(
-                    child: SizedBox(
-                  width: cardWidth,
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.all(isMobile ? 20 : 16),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
-                                    style: TextStyle(
-                                        fontSize: 30,
-                                        color: Colors.blue,
-                                        fontFamily: 'Font'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Questions',
-                                    style: TextStyle(
-                                        fontSize: 30,
-                                        color: Colors.blue,
-                                        fontFamily: 'Font'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Divider(color: Colors.blue),
-                            _buildSectionCard(
+                return Scaffold(
+                    body: Stack(children: [
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: true,
+                      child: SnowField(
+                        particleCount: 50,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                  ),
+                  Center(
+                      child: SizedBox(
+                    width: cardWidth,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.all(isMobile ? 20 : 16),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
                                 child: Column(
-                              children: [
-                                Padding(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Scout: ${pitScoutingData.scout_info.first_name ?? 'Scout From ${pitScoutingData.scout_info.team_number}'}',
+                                      style: TextStyle(
+                                          fontSize: 30,
+                                          color: Colors.blue,
+                                          fontFamily: 'Font'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Questions',
+                                      style: TextStyle(
+                                          fontSize: 30,
+                                          color: Colors.blue,
+                                          fontFamily: 'Font'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Divider(color: Colors.blue),
+                              _buildSectionCard(
+                                  child: Column(
+                                children: [
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      child: Row(
+                                        children: [
+                                          Wrap(
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            spacing: 8,
+                                            children: [
+                                              Icon(Icons.check,
+                                                  color: Colors.blue),
+                                              SizedBox(width: 4),
+                                              Text(' / ',
+                                                  style: TextStyle(
+                                                      color: Colors.blue,
+                                                      fontSize: 20)),
+                                              SizedBox(width: 4),
+                                              Icon(Icons.close,
+                                                  color: Colors.blue),
+                                              SizedBox(width: 8),
+                                              Text('True / False Questions',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Font',
+                                                      fontSize:
+                                                          isMobile ? 14 : 30,
+                                                      color: Colors.blue))
+                                            ],
+                                          )
+                                        ],
+                                      )),
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137,
+                                        255), // light blue background
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        children: [
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text('Human Player Feed',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.can_feed_human_player,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'can_feed_human_player',
+                                                    value),
+                                          ),
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text('Ground Pickup',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.can_pick_up_from_ground,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'can_pick_up_from_ground',
+                                                    value),
+                                          ),
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text('Can Go Under Trench',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.go_under_trench,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'go_under_trench', value),
+                                          ),
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text('Can Go Over Bump',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.go_over_bump,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'go_over_bump', value),
+                                          ),
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text(
+                                                'Automatically Shooting',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.automatically_shooting,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'automatically_shooting',
+                                                    value),
+                                          ),
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text(
+                                                'Can Shoot While Moving',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.shooting_while_moving,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'shooting_while_moving',
+                                                    value),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Divider(
+                                    color: Colors.blue,
+                                    thickness: 5,
+                                    radius: BorderRadius.circular(10),
+                                  ),
+                                  // Climbing Abilities
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        children: [
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text(
+                                                'Fixed Shooting Distance',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value: pitScoutingData
+                                                .data.fixedShooting,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'fixedShooting', value),
+                                          ),
+                                          AnimatedSwitcher(
+                                            key: ValueKey(pitScoutingData
+                                                .data.fixedShooting),
+                                            duration: const Duration(
+                                                milliseconds: 250),
+                                            child: !pitScoutingData
+                                                    .data.fixedShooting
+                                                ? SizedBox.shrink()
+                                                : Column(
+                                                    key: const ValueKey(
+                                                        'fixedShooting_options'),
+                                                    children: [
+                                                      Divider(
+                                                          color: Colors.blue,
+                                                          thickness: 4,
+                                                          radius: BorderRadius
+                                                              .circular(10)),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Shoots near the Tower',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data.nearTower,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'nearTower',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Shoot near the Hub',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data.nearHub,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'nearHub',
+                                                                    value),
+                                                      ),
+                                                    ],
+                                                  ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Divider(
+                                    color: Colors.blue,
+                                    thickness: 5,
+                                    radius: BorderRadius.circular(10),
+                                  ),
+                                  // Climbing Abilities
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        children: [
+                                          SwitchListTile(
+                                            activeThumbColor: Colors.blue,
+                                            inactiveThumbColor: Colors.blue,
+                                            title: Text('Can Climb',
+                                                style: TextStyle(
+                                                    fontFamily: 'Font')),
+                                            value:
+                                                pitScoutingData.data.can_climb,
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (value) => handleChange(
+                                                    'can_climb', value),
+                                          ),
+                                          AnimatedSwitcher(
+                                            key: ValueKey(
+                                                pitScoutingData.data.can_climb),
+                                            duration: const Duration(
+                                                milliseconds: 250),
+                                            child: !pitScoutingData
+                                                    .data.can_climb
+                                                ? SizedBox.shrink()
+                                                : Column(
+                                                    key: const ValueKey(
+                                                        'climb_options'),
+                                                    children: [
+                                                      Divider(
+                                                          color: Colors.blue,
+                                                          thickness: 4,
+                                                          radius: BorderRadius
+                                                              .circular(10)),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Can Climb in Autonomous',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .can_climb_in_autonomous,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'can_climb_in_autonomous',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Straddles the Pole Right',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .straddling_pole_climb_right,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'straddling_pole_climb_right',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Straddles the Pole Left',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .straddling_pole_climb_left,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'straddling_pole_climb_left',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Climbs from Pole Left',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .left_pole_climb,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'left_pole_climb',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Climbs from Pole Right',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .right_pole_climb,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'right_pole_climb',
+                                                                    value),
+                                                      ),
+                                                      SwitchListTile(
+                                                        activeThumbColor:
+                                                            Colors.blue,
+                                                        inactiveThumbColor:
+                                                            Colors.blue,
+                                                        title: Text(
+                                                            'Climbs from the Center',
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Font')),
+                                                        value: pitScoutingData
+                                                            .data
+                                                            .center_pole_climb,
+                                                        onChanged: widget.locked
+                                                            ? null
+                                                            : (value) =>
+                                                                handleChange(
+                                                                    'center_pole_climb',
+                                                                    value),
+                                                      ),
+                                                    ],
+                                                  ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )),
+                              Divider(color: Colors.blue),
+                              _buildSectionCard(
+                                  child: Column(
+                                children: [
+                                  // Section Title
+                                  Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 8),
                                     child: Row(
@@ -624,889 +1177,551 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                               WrapCrossAlignment.center,
                                           spacing: 8,
                                           children: [
-                                            Icon(Icons.check,
-                                                color: Colors.blue),
-                                            SizedBox(width: 4),
-                                            Text(' / ',
-                                                style: TextStyle(
-                                                    color: Colors.blue,
-                                                    fontSize: 20)),
-                                            SizedBox(width: 4),
-                                            Icon(Icons.close,
+                                            Icon(Icons.tune,
                                                 color: Colors.blue),
                                             SizedBox(width: 8),
-                                            Text('True / False Questions',
+                                            Text('Quantitative Questions',
                                                 style: TextStyle(
-                                                    fontFamily: 'Font',
                                                     fontSize:
-                                                        isMobile ? 14 : 30,
-                                                    color: Colors.blue))
+                                                        isMobile ? 22 : 30,
+                                                    color: Colors.blue,
+                                                    fontFamily: 'Font')),
                                           ],
                                         )
                                       ],
-                                    )),
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137,
-                                      255), // light blue background
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      children: [
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Human Player Feed',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.can_feed_human_player,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'can_feed_human_player',
-                                                  value),
-                                        ),
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Ground Pickup',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.can_pick_up_from_ground,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'can_pick_up_from_ground',
-                                                  value),
-                                        ),
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Can Go Under Trench',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.go_under_trench,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'go_under_trench', value),
-                                        ),
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Can Go Over Bump',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value:
-                                              pitScoutingData.data.go_over_bump,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'go_over_bump', value),
-                                        ),
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Automatically Shooting',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.automatically_shooting,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'automatically_shooting',
-                                                  value),
-                                        ),
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Can Shoot While Moving',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.shooting_while_moving,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'shooting_while_moving',
-                                                  value),
-                                        ),
-                                      ],
                                     ),
                                   ),
-                                ),
-                                Divider(
-                                  color: Colors.blue,
-                                  thickness: 5,
-                                  radius: BorderRadius.circular(10),
-                                ),
-                                // Climbing Abilities
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      children: [
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Fixed Shooting Distance',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData
-                                              .data.fixedShooting,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'fixedShooting', value),
-                                        ),
-                                        AnimatedSwitcher(
-                                          key: ValueKey(pitScoutingData
-                                              .data.fixedShooting),
-                                          duration:
-                                              const Duration(milliseconds: 250),
-                                          child: !pitScoutingData
-                                                  .data.fixedShooting
-                                              ? SizedBox.shrink()
-                                              : Column(
-                                                  key: const ValueKey(
-                                                      'fixedShooting_options'),
-                                                  children: [
-                                                    Divider(
-                                                        color: Colors.blue,
-                                                        thickness: 4,
-                                                        radius: BorderRadius
-                                                            .circular(10)),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Shoots near the Tower',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data.nearTower,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) =>
-                                                              handleChange(
-                                                                  'nearTower',
-                                                                  value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Shoot near the Hub',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data.nearHub,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) =>
-                                                              handleChange(
-                                                                  'nearHub',
-                                                                  value),
-                                                    ),
-                                                  ],
-                                                ),
-                                        ),
-                                      ],
+
+                                  // Distance to Shoot
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                  ),
+
+                                  // Robot Height
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: FloatyCounter(
+                                        locked: widget.locked,
+                                        label: 'Robot Height (Inches)',
+                                        value:
+                                            pitScoutingData.data.robot_height,
+                                        max: 30,
+                                        onChanged: (height) {
+                                          setState(() {
+                                            pitScoutingData =
+                                                pitScoutingData.copyWith(
+                                                    data: pitScoutingData.data
+                                                        .copyWith(
+                                                            robot_height:
+                                                                height));
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Divider(
-                                  color: Colors.blue,
-                                  thickness: 5,
-                                  radius: BorderRadius.circular(10),
-                                ),
-                                // Climbing Abilities
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      children: [
-                                        SwitchListTile(
-                                          activeThumbColor: Colors.blue,
-                                          inactiveThumbColor: Colors.blue,
-                                          title: Text('Can Climb',
-                                              style: TextStyle(
-                                                  fontFamily: 'Font')),
-                                          value: pitScoutingData.data.can_climb,
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (value) => handleChange(
-                                                  'can_climb', value),
-                                        ),
-                                        AnimatedSwitcher(
-                                          key: ValueKey(
-                                              pitScoutingData.data.can_climb),
-                                          duration:
-                                              const Duration(milliseconds: 250),
-                                          child: !pitScoutingData.data.can_climb
-                                              ? SizedBox.shrink()
-                                              : Column(
-                                                  key: const ValueKey(
-                                                      'climb_options'),
-                                                  children: [
-                                                    Divider(
-                                                        color: Colors.blue,
-                                                        thickness: 4,
-                                                        radius: BorderRadius
-                                                            .circular(10)),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Can Climb in Autonomous',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data
-                                                          .can_climb_in_autonomous,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'can_climb_in_autonomous',
-                                                              value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Straddles the Pole Right',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data
-                                                          .straddling_pole_climb_right,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'straddling_pole_climb_right',
-                                                              value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Straddles the Pole Left',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data
-                                                          .straddling_pole_climb_left,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'straddling_pole_climb_left',
-                                                              value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Climbs from Pole Left',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data.left_pole_climb,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'left_pole_climb',
-                                                              value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Climbs from Pole Right',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data
-                                                          .right_pole_climb,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'right_pole_climb',
-                                                              value),
-                                                    ),
-                                                    SwitchListTile(
-                                                      activeThumbColor:
-                                                          Colors.blue,
-                                                      inactiveThumbColor:
-                                                          Colors.blue,
-                                                      title: Text(
-                                                          'Climbs from the Center',
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Font')),
-                                                      value: pitScoutingData
-                                                          .data
-                                                          .center_pole_climb,
-                                                      onChanged: widget.locked
-                                                          ? null
-                                                          : (value) => handleChange(
-                                                              'center_pole_climb',
-                                                              value),
-                                                    ),
-                                                  ],
-                                                ),
-                                        ),
-                                      ],
+
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: FloatyCounter(
+                                        locked: widget.locked,
+                                        label: 'Fuel Per Second',
+                                        value: pitScoutingData.data.bps,
+                                        max: 30,
+                                        onChanged: (speed) {
+                                          setState(() {
+                                            pitScoutingData =
+                                                pitScoutingData.copyWith(
+                                                    data: pitScoutingData.data
+                                                        .copyWith(bps: speed));
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            )),
-                            Divider(color: Colors.blue),
-                            _buildSectionCard(
-                                child: Column(
-                              children: [
-                                // Section Title
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      Wrap(
+                                  // Hopper Capacity
+                                  Card(
+                                    color: Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Counter(
+                                        label: 'Hopper Capacity',
+                                        value: pitScoutingData
+                                            .data.hopper_capacity,
+                                        max: 100000,
+                                        locked: widget.locked,
+                                        onChanged: (capacity) {
+                                          setState(() {
+                                            pitScoutingData =
+                                                pitScoutingData.copyWith(
+                                                    data: pitScoutingData.data
+                                                        .copyWith(
+                                                            hopper_capacity:
+                                                                capacity));
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )),
+                              Divider(
+                                color: Colors.blue,
+                              ),
+                              _buildSectionCard(
+                                  child: Column(
+                                children: [
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      child: Wrap(
                                         crossAxisAlignment:
                                             WrapCrossAlignment.center,
                                         spacing: 8,
                                         children: [
-                                          Icon(Icons.tune, color: Colors.blue),
-                                          SizedBox(width: 8),
-                                          Text('Quantitative Questions',
-                                              style: TextStyle(
-                                                  fontSize: isMobile ? 22 : 30,
-                                                  color: Colors.blue,
-                                                  fontFamily: 'Font')),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-
-                                // Distance to Shoot
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
-
-                                // Robot Height
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: FloatyCounter(
-                                      locked: widget.locked,
-                                      label: 'Robot Height (Inches)',
-                                      value: pitScoutingData.data.robot_height,
-                                      max: 30,
-                                      onChanged: (height) {
-                                        setState(() {
-                                          pitScoutingData =
-                                              pitScoutingData.copyWith(
-                                                  data: pitScoutingData.data
-                                                      .copyWith(
-                                                          robot_height:
-                                                              height));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: FloatyCounter(
-                                      locked: widget.locked,
-                                      label: 'Fuel Per Second',
-                                      value: pitScoutingData.data.bps,
-                                      max: 30,
-                                      onChanged: (speed) {
-                                        setState(() {
-                                          pitScoutingData =
-                                              pitScoutingData.copyWith(
-                                                  data: pitScoutingData.data
-                                                      .copyWith(bps: speed));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                // Hopper Capacity
-                                Card(
-                                  color: Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 12),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Counter(
-                                      label: 'Hopper Capacity',
-                                      value:
-                                          pitScoutingData.data.hopper_capacity,
-                                      max: 100000,
-                                      locked: widget.locked,
-                                      onChanged: (capacity) {
-                                        setState(() {
-                                          pitScoutingData =
-                                              pitScoutingData.copyWith(
-                                                  data: pitScoutingData.data
-                                                      .copyWith(
-                                                          hopper_capacity:
-                                                              capacity));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )),
-                            Divider(
-                              color: Colors.blue,
-                            ),
-                            _buildSectionCard(
-                                child: Column(
-                              children: [
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    child: Wrap(
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      spacing: 8,
-                                      children: [
-                                        Icon(Icons.star_border_outlined,
-                                            color: Colors.blue),
-                                        Text(
-                                          'Qualitative Questions',
-                                          style: TextStyle(
-                                            fontSize: isMobile ? 22 : 30,
-                                            color: Colors.blue,
-                                            fontFamily: 'Font',
-                                          ),
-                                        ),
-                                      ],
-                                    )),
-                                // Favorite Color
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Favorite Color',
+                                          Icon(Icons.star_border_outlined,
+                                              color: Colors.blue),
+                                          Text(
+                                            'Qualitative Questions',
                                             style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        TextField(
-                                          controller: favoriteColorController,
-                                          enabled: !widget.locked,
-                                          style: TextStyle(fontFamily: 'Font'),
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) => handleChange(
-                                                  'favorite_color', val),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Type of Shooter',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        DropdownButton<String>(
-                                          isExpanded: true,
-                                          value: pitScoutingData
-                                              .data.type_of_shooter,
-                                          items: [
-                                            // ['Single', 'Single with Hood', 'Double', 'Double with Hood', 'Multi', 'Multi with Hood', 'Turret', 'Turret with Hood', 'Multi Turret', 'Multi Turret with Hood', 'Other']
-                                            DropdownMenuItem(
-                                                value: '',
-                                                child: Text('Choose...',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Single',
-                                                child: Text('Single',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Single with Hood',
-                                                child: Text('Single with Hood',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Double',
-                                                child: Text('Double',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Double with Hood',
-                                                child: Text('Double with Hood',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Multi',
-                                                child: Text('Multi',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Multi with Hood',
-                                                child: Text('Multi with Hood',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Turret',
-                                                child: Text('Turret',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Turret with Hood',
-                                                child: Text('Turret with Hood',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Multi Turret',
-                                                child: Text('Multi Turret',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Multi Turret with Hood',
-                                                child: Text(
-                                                    'Multi Turret with Hood',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                          ],
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) {
-                                                  if (val != null)
-                                                    handleChange(
-                                                        'type_of_shooter', val);
-                                                },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // Drive Train
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Drive Train',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        DropdownButton<String>(
-                                          isExpanded: true,
-                                          value:
-                                              pitScoutingData.data.drive_train,
-                                          items: [
-                                            DropdownMenuItem(
-                                                value: '',
-                                                child: Text('Choose...',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Tank',
-                                                child: Text('Tank',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Swerve',
-                                                child: Text('Swerve',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                            DropdownMenuItem(
-                                                value: 'Mecanum',
-                                                child: Text('Mecanum',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Font'))),
-                                          ],
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) {
-                                                  if (val != null)
-                                                    handleChange(
-                                                        'drive_train', val);
-                                                },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                // # of Events Driver has Driven
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('# of Events Driver has Driven',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        Counter(
-                                          label: '',
-                                          value: pitScoutingData
-                                              .data.driver_experience_events,
-                                          max: 500,
-                                          locked: widget.locked,
-                                          onChanged: (val) {
-                                            setState(() {
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                        driver_experience_events:
-                                                            val),
-                                              );
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                // Main Strategy
-                                Card(
-                                  color: const Color.fromARGB(24, 68, 137, 255),
-                                  elevation: 2,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Main Strategy',
-                                            style: TextStyle(
-                                                fontFamily: 'Font',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500)),
-                                        SizedBox(height: 8),
-                                        TextField(
-                                          controller: mainStrategyController,
-                                          enabled: !widget.locked,
-                                          style: TextStyle(fontFamily: 'Font'),
-                                          onChanged: widget.locked
-                                              ? null
-                                              : (val) => handleChange(
-                                                  'main_strategy', val),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )),
-                            Divider(color: Colors.blue),
-                            _buildSectionCard(
-                                child: Column(children: [
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.smart_toy_outlined,
-                                            color: Colors.blue),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Autonomous',
-                                          style: TextStyle(
                                               fontSize: isMobile ? 22 : 30,
                                               color: Colors.blue,
-                                              fontFamily: 'Font'),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemCount: pitScoutingData.data.autos!.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0),
-                                      child: Card(
-                                          child: Column(children: [
-                                        AutoPieces2026(
-                                          auto: pitScoutingData
-                                              .data.autos![index],
-                                          locked: widget.locked,
-                                          onChanged: (newAuto) {
-                                            setState(() {
-                                              List<Auto2026> newAutos =
-                                                  pitScoutingData.data.autos!
-                                                      .toList();
-                                              newAutos[index] = newAuto;
+                                              fontFamily: 'Font',
+                                            ),
+                                          ),
+                                        ],
+                                      )),
+                                  // Favorite Color
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Favorite Color',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          TextField(
+                                            controller: favoriteColorController,
+                                            enabled: !widget.locked,
+                                            style:
+                                                TextStyle(fontFamily: 'Font'),
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (val) => handleChange(
+                                                    'favorite_color', val),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Type of Shooter',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          DropdownButton<String>(
+                                            isExpanded: true,
+                                            value: pitScoutingData
+                                                .data.type_of_shooter,
+                                            items: [
+                                              // ['Single', 'Single with Hood', 'Double', 'Double with Hood', 'Multi', 'Multi with Hood', 'Turret', 'Turret with Hood', 'Multi Turret', 'Multi Turret with Hood', 'Other']
+                                              DropdownMenuItem(
+                                                  value: '',
+                                                  child: Text('Choose...',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Single',
+                                                  child: Text('Single',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Single with Hood',
+                                                  child: Text(
+                                                      'Single with Hood',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Double',
+                                                  child: Text('Double',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Double with Hood',
+                                                  child: Text(
+                                                      'Double with Hood',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Multi',
+                                                  child: Text('Multi',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Multi with Hood',
+                                                  child: Text('Multi with Hood',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Turret',
+                                                  child: Text('Turret',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Turret with Hood',
+                                                  child: Text(
+                                                      'Turret with Hood',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Multi Turret',
+                                                  child: Text('Multi Turret',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value:
+                                                      'Multi Turret with Hood',
+                                                  child: Text(
+                                                      'Multi Turret with Hood',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                            ],
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (val) {
+                                                    if (val != null)
+                                                      handleChange(
+                                                          'type_of_shooter',
+                                                          val);
+                                                  },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  // Drive Train
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Drive Train',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          DropdownButton<String>(
+                                            isExpanded: true,
+                                            value: pitScoutingData
+                                                .data.drive_train,
+                                            items: [
+                                              DropdownMenuItem(
+                                                  value: '',
+                                                  child: Text('Choose...',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Tank',
+                                                  child: Text('Tank',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Swerve',
+                                                  child: Text('Swerve',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                              DropdownMenuItem(
+                                                  value: 'Mecanum',
+                                                  child: Text('Mecanum',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Font'))),
+                                            ],
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (val) {
+                                                    if (val != null)
+                                                      handleChange(
+                                                          'drive_train', val);
+                                                  },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
 
-                                              pitScoutingData =
-                                                  pitScoutingData.copyWith(
-                                                data: pitScoutingData.data
-                                                    .copyWith(
-                                                  autos: newAutos,
-                                                ),
-                                              );
-                                            });
-                                          },
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        if (!widget.locked)
-                                          IconButton(
-                                            icon: Icon(Icons.delete,
-                                                color: Colors.red),
-                                            onPressed: () {
+                                  // # of Events Driver has Driven
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('# of Events Driver has Driven',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          Counter(
+                                            label: '',
+                                            value: pitScoutingData
+                                                .data.driver_experience_events,
+                                            max: 500,
+                                            locked: widget.locked,
+                                            onChanged: (val) {
                                               setState(() {
                                                 pitScoutingData =
                                                     pitScoutingData.copyWith(
                                                   data: pitScoutingData.data
                                                       .copyWith(
-                                                    autos: List.from(
-                                                        pitScoutingData
-                                                                .data.autos
-                                                            as Iterable<
-                                                                dynamic>)
-                                                      ..removeAt(index),
+                                                          driver_experience_events:
+                                                              val),
+                                                );
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Main Strategy
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Main Strategy',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          TextField(
+                                            controller: mainStrategyController,
+                                            enabled: !widget.locked,
+                                            style:
+                                                TextStyle(fontFamily: 'Font'),
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (val) => handleChange(
+                                                    'main_strategy', val),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  Card(
+                                    color:
+                                        const Color.fromARGB(24, 68, 137, 255),
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Comments',
+                                              style: TextStyle(
+                                                  fontFamily: 'Font',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 8),
+                                          TextField(
+                                            controller: commentsController,
+                                            enabled: !widget.locked,
+                                            style:
+                                                TextStyle(fontFamily: 'Font'),
+                                            onChanged: widget.locked
+                                                ? null
+                                                : (val) => handleChange(
+                                                    'comments', val),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )),
+                              Divider(color: Colors.blue),
+                              _buildSectionCard(
+                                  child: Column(children: [
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.smart_toy_outlined,
+                                              color: Colors.blue),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Autonomous',
+                                            style: TextStyle(
+                                                fontSize: isMobile ? 22 : 30,
+                                                color: Colors.blue,
+                                                fontFamily: 'Font'),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: pitScoutingData.data.autos!.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8.0),
+                                        child: Card(
+                                            child: Column(children: [
+                                          AutoPieces2026(
+                                            auto: pitScoutingData
+                                                .data.autos![index],
+                                            locked: widget.locked,
+                                            onChanged: (newAuto) {
+                                              setState(() {
+                                                List<Auto2026> newAutos =
+                                                    pitScoutingData.data.autos!
+                                                        .toList();
+                                                newAutos[index] = newAuto;
+
+                                                pitScoutingData =
+                                                    pitScoutingData.copyWith(
+                                                  data: pitScoutingData.data
+                                                      .copyWith(
+                                                    autos: newAutos,
                                                   ),
                                                 );
                                               });
                                             },
                                           ),
-                                      ])));
-                                },
-                              )
-                            ])),
-                            if (!widget.locked)
-                              ElevatedButton(
-                                onPressed:
-                                    widget.locked ? () {} : handleAddAuto,
-                                child: Text('Add Auto',
-                                    style: TextStyle(fontFamily: 'Font')),
-                              ),
-                            SizedBox(height: 20),
-                            if (!widget.locked)
-                              ElevatedButton(
-                                onPressed: widget.locked ? () {} : handleSubmit,
-                                child: Text('Submit',
-                                    style: TextStyle(fontFamily: 'Font')),
-                              ),
-                          ]),
+                                          SizedBox(
+                                            height: 8,
+                                          ),
+                                          if (!widget.locked)
+                                            IconButton(
+                                              icon: Icon(Icons.delete,
+                                                  color: Colors.red),
+                                              onPressed: () {
+                                                setState(() {
+                                                  pitScoutingData =
+                                                      pitScoutingData.copyWith(
+                                                    data: pitScoutingData.data
+                                                        .copyWith(
+                                                      autos: List.from(
+                                                          pitScoutingData
+                                                                  .data.autos
+                                                              as Iterable<
+                                                                  dynamic>)
+                                                        ..removeAt(index),
+                                                    ),
+                                                  );
+                                                });
+                                              },
+                                            ),
+                                        ])));
+                                  },
+                                )
+                              ])),
+                              if (!widget.locked)
+                                ElevatedButton(
+                                  onPressed:
+                                      widget.locked ? () {} : handleAddAuto,
+                                  child: Text('Add Auto',
+                                      style: TextStyle(fontFamily: 'Font')),
+                                ),
+                              SizedBox(height: 20),
+                              if (!widget.locked)
+                                ElevatedButton(
+                                  onPressed:
+                                      widget.locked ? () {} : handleSubmit,
+                                  child: Text('Submit',
+                                      style: TextStyle(fontFamily: 'Font')),
+                                ),
+                            ]),
+                      ),
                     ),
-                  ),
-                ));
+                  ))
+                ]));
               }));
   }
 }
