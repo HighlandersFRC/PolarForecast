@@ -34,7 +34,7 @@ while (keycloak_admin == None):
         keycloak_admin = KeycloakAdmin(connection=connection)
     except Exception as e:
         logging.error(str(e))
-        keycloak_admin = None
+        keycloak_openid = None
 
 
 def _refresh_admin_token():

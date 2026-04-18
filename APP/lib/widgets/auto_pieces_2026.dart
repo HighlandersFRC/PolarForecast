@@ -269,8 +269,8 @@ class _AutoPieces2026State extends State<AutoPieces2026> {
               double overlayWidthHub = displayedImageWidth * 0.35;
               double overlayHeightHub = displayedImageHeight * 0.1;
 
-              double overlayWidthHuman = displayedImageWidth * 0.11;
-              double overlayHeightHuman = displayedImageHeight * 0.1;
+              double overlayWidthHuman = displayedImageWidth * 0.13;
+              double overlayHeightHuman = displayedImageHeight * 0.13;
 
               double overlayWidthPass = displayedImageWidth * 0.55;
               double overlayHeightPass = displayedImageHeight * 0.1;

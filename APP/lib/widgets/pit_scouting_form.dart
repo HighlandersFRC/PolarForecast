@@ -1355,7 +1355,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                     color:
                                         const Color.fromARGB(24, 68, 137, 255),
                                     elevation: 2,
-                                    margin: EdgeInsets.symmetric(
+                                    margin: const EdgeInsets.symmetric(
                                         vertical: 8, horizontal: 12),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
@@ -1363,86 +1363,152 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('Type of Shooter',
-                                              style: TextStyle(
+                                          Row(
+                                            children: [
+                                              Text(
+                                                'Type of Shooter',
+                                                style: TextStyle(
                                                   fontFamily: 'Font',
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.w500)),
-                                          SizedBox(height: 8),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Builder(
+                                                builder: (context) =>
+                                                    GestureDetector(
+                                                  onTapDown: (details) async {
+                                                    await showMenu(
+                                                      context: context,
+                                                      position:
+                                                          RelativeRect.fromLTRB(
+                                                        details
+                                                            .globalPosition.dx,
+                                                        details
+                                                            .globalPosition.dy,
+                                                        details
+                                                            .globalPosition.dx,
+                                                        details
+                                                            .globalPosition.dy,
+                                                      ),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                      items: [
+                                                        PopupMenuItem(
+                                                          enabled: false,
+                                                          child: SizedBox(
+                                                            width: 220,
+                                                            child: Text(
+                                                              'Single: One shooter\n\n'
+                                                              'Double: Two shooters\n\n'
+                                                              'Multi: Multiple shooters\n\n'
+                                                              'Turret: Rotates to aim\n\n'
+                                                              'Hood: Adjustable angle',
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      'Font'),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                  child: Icon(
+                                                    Icons.info_outline,
+                                                    size: 18,
+                                                    color: Colors.blueAccent
+                                                        .withOpacity(0.8),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
                                           DropdownButton<String>(
                                             isExpanded: true,
                                             value: pitScoutingData
                                                 .data.type_of_shooter,
                                             items: [
-                                              // ['Single', 'Single with Hood', 'Double', 'Double with Hood', 'Multi', 'Multi with Hood', 'Turret', 'Turret with Hood', 'Multi Turret', 'Multi Turret with Hood', 'Other']
                                               DropdownMenuItem(
-                                                  value: '',
-                                                  child: Text('Choose...',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: '',
+                                                child: Text('Choose...',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Single',
-                                                  child: Text('Single',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Single',
+                                                child: Text('Single',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Single with Hood',
-                                                  child: Text(
-                                                      'Single with Hood',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Single with Hood',
+                                                child: Text('Single with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Double',
-                                                  child: Text('Double',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Double',
+                                                child: Text('Double',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Double with Hood',
-                                                  child: Text(
-                                                      'Double with Hood',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Double with Hood',
+                                                child: Text('Double with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Multi',
-                                                  child: Text('Multi',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Multi',
+                                                child: Text('Multi',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Multi with Hood',
-                                                  child: Text('Multi with Hood',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Multi with Hood',
+                                                child: Text('Multi with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Turret',
-                                                  child: Text('Turret',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Turret',
+                                                child: Text('Turret',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Turret with Hood',
-                                                  child: Text(
-                                                      'Turret with Hood',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Turret with Hood',
+                                                child: Text('Turret with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value: 'Multi Turret',
-                                                  child: Text('Multi Turret',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Multi Turret',
+                                                child: Text('Multi Turret',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                               DropdownMenuItem(
-                                                  value:
-                                                      'Multi Turret with Hood',
-                                                  child: Text(
-                                                      'Multi Turret with Hood',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Font'))),
+                                                value: 'Multi Turret with Hood',
+                                                child: Text(
+                                                    'Multi Turret with Hood',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Font')),
+                                              ),
                                             ],
                                             onChanged: widget.locked
                                                 ? null
                                                 : (val) {
-                                                    if (val != null)
+                                                    if (val != null) {
                                                       handleChange(
                                                           'type_of_shooter',
                                                           val);
+                                                    }
                                                   },
                                           ),
                                         ],

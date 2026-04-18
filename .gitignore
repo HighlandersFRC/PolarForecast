@@ -8,6 +8,8 @@ __pycache__/
 
 /API/fixkeycloak.py
 
+/API/runRegressionOnScouts.py
+
 .vscode/
 .dart_tool/
 # Distribution / packaging
