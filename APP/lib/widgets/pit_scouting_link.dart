@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../api_service.dart';
 import '../models/tournament.dart';
 
 class PitScoutingLink extends StatelessWidget {
@@ -15,10 +18,12 @@ class PitScoutingLink extends StatelessWidget {
       child: TextButton(
           onPressed: () => Navigator.pushNamed(
               context, '/event/${tournament.key}/pit_scouting/frc$number'),
+          onLongPress: () => _openInNewTab(context),
           child: Text(
             '${value}',
             textScaler: TextScaler.linear(1.25),
             style: TextStyle(
+              fontFamily: 'Font',
               color: value == 'Incomplete'
                   ? Colors.yellow
                   : value == 'Done'
@@ -33,5 +38,13 @@ class PitScoutingLink extends StatelessWidget {
             ),
           )),
     );
+  }
+
+  void _openInNewTab(BuildContext context) {
+    final api = Provider.of<ApiService>(context, listen: false);
+    launchUrl(
+        Uri.parse(
+            api.APPURL + '/event/${tournament.key}/pit_scouting/frc$number'),
+        mode: LaunchMode.externalApplication);
   }
 }

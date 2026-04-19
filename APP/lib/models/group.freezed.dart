@@ -14,6 +14,365 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+Picks _$PicksFromJson(Map<String, dynamic> json) {
+  return _Picks.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Picks {
+  String get number => throw _privateConstructorUsedError;
+  String get comments => throw _privateConstructorUsedError;
+
+  /// Serializes this Picks to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Picks
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $PicksCopyWith<Picks> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PicksCopyWith<$Res> {
+  factory $PicksCopyWith(Picks value, $Res Function(Picks) then) =
+      _$PicksCopyWithImpl<$Res, Picks>;
+  @useResult
+  $Res call({String number, String comments});
+}
+
+/// @nodoc
+class _$PicksCopyWithImpl<$Res, $Val extends Picks>
+    implements $PicksCopyWith<$Res> {
+  _$PicksCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Picks
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? number = null,
+    Object? comments = null,
+  }) {
+    return _then(_value.copyWith(
+      number: null == number
+          ? _value.number
+          : number // ignore: cast_nullable_to_non_nullable
+              as String,
+      comments: null == comments
+          ? _value.comments
+          : comments // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$PicksImplCopyWith<$Res> implements $PicksCopyWith<$Res> {
+  factory _$$PicksImplCopyWith(
+          _$PicksImpl value, $Res Function(_$PicksImpl) then) =
+      __$$PicksImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String number, String comments});
+}
+
+/// @nodoc
+class __$$PicksImplCopyWithImpl<$Res>
+    extends _$PicksCopyWithImpl<$Res, _$PicksImpl>
+    implements _$$PicksImplCopyWith<$Res> {
+  __$$PicksImplCopyWithImpl(
+      _$PicksImpl _value, $Res Function(_$PicksImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Picks
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? number = null,
+    Object? comments = null,
+  }) {
+    return _then(_$PicksImpl(
+      number: null == number
+          ? _value.number
+          : number // ignore: cast_nullable_to_non_nullable
+              as String,
+      comments: null == comments
+          ? _value.comments
+          : comments // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$PicksImpl implements _Picks {
+  const _$PicksImpl({required this.number, required this.comments});
+
+  factory _$PicksImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PicksImplFromJson(json);
+
+  @override
+  final String number;
+  @override
+  final String comments;
+
+  @override
+  String toString() {
+    return 'Picks(number: $number, comments: $comments)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PicksImpl &&
+            (identical(other.number, number) || other.number == number) &&
+            (identical(other.comments, comments) ||
+                other.comments == comments));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, number, comments);
+
+  /// Create a copy of Picks
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PicksImplCopyWith<_$PicksImpl> get copyWith =>
+      __$$PicksImplCopyWithImpl<_$PicksImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PicksImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Picks implements Picks {
+  const factory _Picks(
+      {required final String number,
+      required final String comments}) = _$PicksImpl;
+
+  factory _Picks.fromJson(Map<String, dynamic> json) = _$PicksImpl.fromJson;
+
+  @override
+  String get number;
+  @override
+  String get comments;
+
+  /// Create a copy of Picks
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PicksImplCopyWith<_$PicksImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Picklist2026 _$Picklist2026FromJson(Map<String, dynamic> json) {
+  return _Picklist2026.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Picklist2026 {
+  String get picklist_id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  List<Picks> get picks => throw _privateConstructorUsedError;
+
+  /// Serializes this Picklist2026 to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Picklist2026
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $Picklist2026CopyWith<Picklist2026> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $Picklist2026CopyWith<$Res> {
+  factory $Picklist2026CopyWith(
+          Picklist2026 value, $Res Function(Picklist2026) then) =
+      _$Picklist2026CopyWithImpl<$Res, Picklist2026>;
+  @useResult
+  $Res call({String picklist_id, String name, List<Picks> picks});
+}
+
+/// @nodoc
+class _$Picklist2026CopyWithImpl<$Res, $Val extends Picklist2026>
+    implements $Picklist2026CopyWith<$Res> {
+  _$Picklist2026CopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Picklist2026
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? picklist_id = null,
+    Object? name = null,
+    Object? picks = null,
+  }) {
+    return _then(_value.copyWith(
+      picklist_id: null == picklist_id
+          ? _value.picklist_id
+          : picklist_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      picks: null == picks
+          ? _value.picks
+          : picks // ignore: cast_nullable_to_non_nullable
+              as List<Picks>,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$Picklist2026ImplCopyWith<$Res>
+    implements $Picklist2026CopyWith<$Res> {
+  factory _$$Picklist2026ImplCopyWith(
+          _$Picklist2026Impl value, $Res Function(_$Picklist2026Impl) then) =
+      __$$Picklist2026ImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String picklist_id, String name, List<Picks> picks});
+}
+
+/// @nodoc
+class __$$Picklist2026ImplCopyWithImpl<$Res>
+    extends _$Picklist2026CopyWithImpl<$Res, _$Picklist2026Impl>
+    implements _$$Picklist2026ImplCopyWith<$Res> {
+  __$$Picklist2026ImplCopyWithImpl(
+      _$Picklist2026Impl _value, $Res Function(_$Picklist2026Impl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Picklist2026
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? picklist_id = null,
+    Object? name = null,
+    Object? picks = null,
+  }) {
+    return _then(_$Picklist2026Impl(
+      picklist_id: null == picklist_id
+          ? _value.picklist_id
+          : picklist_id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      picks: null == picks
+          ? _value._picks
+          : picks // ignore: cast_nullable_to_non_nullable
+              as List<Picks>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$Picklist2026Impl implements _Picklist2026 {
+  const _$Picklist2026Impl(
+      {required this.picklist_id,
+      required this.name,
+      required final List<Picks> picks})
+      : _picks = picks;
+
+  factory _$Picklist2026Impl.fromJson(Map<String, dynamic> json) =>
+      _$$Picklist2026ImplFromJson(json);
+
+  @override
+  final String picklist_id;
+  @override
+  final String name;
+  final List<Picks> _picks;
+  @override
+  List<Picks> get picks {
+    if (_picks is EqualUnmodifiableListView) return _picks;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_picks);
+  }
+
+  @override
+  String toString() {
+    return 'Picklist2026(picklist_id: $picklist_id, name: $name, picks: $picks)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Picklist2026Impl &&
+            (identical(other.picklist_id, picklist_id) ||
+                other.picklist_id == picklist_id) &&
+            (identical(other.name, name) || other.name == name) &&
+            const DeepCollectionEquality().equals(other._picks, _picks));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, picklist_id, name,
+      const DeepCollectionEquality().hash(_picks));
+
+  /// Create a copy of Picklist2026
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Picklist2026ImplCopyWith<_$Picklist2026Impl> get copyWith =>
+      __$$Picklist2026ImplCopyWithImpl<_$Picklist2026Impl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$Picklist2026ImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Picklist2026 implements Picklist2026 {
+  const factory _Picklist2026(
+      {required final String picklist_id,
+      required final String name,
+      required final List<Picks> picks}) = _$Picklist2026Impl;
+
+  factory _Picklist2026.fromJson(Map<String, dynamic> json) =
+      _$Picklist2026Impl.fromJson;
+
+  @override
+  String get picklist_id;
+  @override
+  String get name;
+  @override
+  List<Picks> get picks;
+
+  /// Create a copy of Picklist2026
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Picklist2026ImplCopyWith<_$Picklist2026Impl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
 Group _$GroupFromJson(Map<String, dynamic> json) {
   return _Group.fromJson(json);
 }
@@ -394,6 +753,7 @@ mixin _$GroupEvent {
   bool get up_to_date => throw _privateConstructorUsedError;
   GroupEventSettings get settings => throw _privateConstructorUsedError;
   List<AllianceGroup> get alliance_groups => throw _privateConstructorUsedError;
+  List<Picklist2026> get picklists => throw _privateConstructorUsedError;
 
   /// Serializes this GroupEvent to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -415,7 +775,8 @@ abstract class $GroupEventCopyWith<$Res> {
       {String event_code,
       bool up_to_date,
       GroupEventSettings settings,
-      List<AllianceGroup> alliance_groups});
+      List<AllianceGroup> alliance_groups,
+      List<Picklist2026> picklists});
 
   $GroupEventSettingsCopyWith<$Res> get settings;
 }
@@ -439,6 +800,7 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
     Object? up_to_date = null,
     Object? settings = null,
     Object? alliance_groups = null,
+    Object? picklists = null,
   }) {
     return _then(_value.copyWith(
       event_code: null == event_code
@@ -457,6 +819,10 @@ class _$GroupEventCopyWithImpl<$Res, $Val extends GroupEvent>
           ? _value.alliance_groups
           : alliance_groups // ignore: cast_nullable_to_non_nullable
               as List<AllianceGroup>,
+      picklists: null == picklists
+          ? _value.picklists
+          : picklists // ignore: cast_nullable_to_non_nullable
+              as List<Picklist2026>,
     ) as $Val);
   }
 
@@ -483,7 +849,8 @@ abstract class _$$GroupEventImplCopyWith<$Res>
       {String event_code,
       bool up_to_date,
       GroupEventSettings settings,
-      List<AllianceGroup> alliance_groups});
+      List<AllianceGroup> alliance_groups,
+      List<Picklist2026> picklists});
 
   @override
   $GroupEventSettingsCopyWith<$Res> get settings;
@@ -506,6 +873,7 @@ class __$$GroupEventImplCopyWithImpl<$Res>
     Object? up_to_date = null,
     Object? settings = null,
     Object? alliance_groups = null,
+    Object? picklists = null,
   }) {
     return _then(_$GroupEventImpl(
       event_code: null == event_code
@@ -524,6 +892,10 @@ class __$$GroupEventImplCopyWithImpl<$Res>
           ? _value._alliance_groups
           : alliance_groups // ignore: cast_nullable_to_non_nullable
               as List<AllianceGroup>,
+      picklists: null == picklists
+          ? _value._picklists
+          : picklists // ignore: cast_nullable_to_non_nullable
+              as List<Picklist2026>,
     ));
   }
 }
@@ -535,8 +907,10 @@ class _$GroupEventImpl implements _GroupEvent {
       {required this.event_code,
       required this.up_to_date,
       required this.settings,
-      required final List<AllianceGroup> alliance_groups})
-      : _alliance_groups = alliance_groups;
+      required final List<AllianceGroup> alliance_groups,
+      required final List<Picklist2026> picklists})
+      : _alliance_groups = alliance_groups,
+        _picklists = picklists;
 
   factory _$GroupEventImpl.fromJson(Map<String, dynamic> json) =>
       _$$GroupEventImplFromJson(json);
@@ -555,9 +929,17 @@ class _$GroupEventImpl implements _GroupEvent {
     return EqualUnmodifiableListView(_alliance_groups);
   }
 
+  final List<Picklist2026> _picklists;
+  @override
+  List<Picklist2026> get picklists {
+    if (_picklists is EqualUnmodifiableListView) return _picklists;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_picklists);
+  }
+
   @override
   String toString() {
-    return 'GroupEvent(event_code: $event_code, up_to_date: $up_to_date, settings: $settings, alliance_groups: $alliance_groups)';
+    return 'GroupEvent(event_code: $event_code, up_to_date: $up_to_date, settings: $settings, alliance_groups: $alliance_groups, picklists: $picklists)';
   }
 
   @override
@@ -572,13 +954,20 @@ class _$GroupEventImpl implements _GroupEvent {
             (identical(other.settings, settings) ||
                 other.settings == settings) &&
             const DeepCollectionEquality()
-                .equals(other._alliance_groups, _alliance_groups));
+                .equals(other._alliance_groups, _alliance_groups) &&
+            const DeepCollectionEquality()
+                .equals(other._picklists, _picklists));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, event_code, up_to_date, settings,
-      const DeepCollectionEquality().hash(_alliance_groups));
+  int get hashCode => Object.hash(
+      runtimeType,
+      event_code,
+      up_to_date,
+      settings,
+      const DeepCollectionEquality().hash(_alliance_groups),
+      const DeepCollectionEquality().hash(_picklists));
 
   /// Create a copy of GroupEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -601,7 +990,8 @@ abstract class _GroupEvent implements GroupEvent {
       {required final String event_code,
       required final bool up_to_date,
       required final GroupEventSettings settings,
-      required final List<AllianceGroup> alliance_groups}) = _$GroupEventImpl;
+      required final List<AllianceGroup> alliance_groups,
+      required final List<Picklist2026> picklists}) = _$GroupEventImpl;
 
   factory _GroupEvent.fromJson(Map<String, dynamic> json) =
       _$GroupEventImpl.fromJson;
@@ -614,6 +1004,8 @@ abstract class _GroupEvent implements GroupEvent {
   GroupEventSettings get settings;
   @override
   List<AllianceGroup> get alliance_groups;
+  @override
+  List<Picklist2026> get picklists;
 
   /// Create a copy of GroupEvent
   /// with the given fields replaced by the non-null parameter values.

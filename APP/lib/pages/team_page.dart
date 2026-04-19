@@ -1,16 +1,18 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flat/flat.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import 'package:scouting_app/widgets/auto_display_2025.dart';
-import 'package:scouting_app/widgets/pit_scouting_form.dart';
-import '../models/match_scouting_2025.dart';
+import 'package:scouting_app/widgets/auto_display_2026.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../models/match_scouting_2026.dart';
+import '../models/pit_scouting_2026.dart';
 import '../widgets/deaths_form.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../widgets/login_widget.dart';
@@ -68,6 +70,7 @@ class _TeamPageState extends State<TeamPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final List<Widget> tabs = [
+      _OverviewTab(widget),
       _StatsTab(widget),
       _ScheduleTab(widget),
       _PicturesTab(widget),
@@ -75,6 +78,7 @@ class _TeamPageState extends State<TeamPage> {
       _PitScoutingTab(widget),
       _AutosTab(widget),
       _DeathsTab(widget),
+      _TBATab(widget)
     ];
     return Scaffold(
       appBar: PolarForecastAppBar(
@@ -84,6 +88,10 @@ class _TeamPageState extends State<TeamPage> {
         currentIndex: _currentTab,
         onTap: (newTabIdx) => setState(() => _currentTab = newTabIdx),
         items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.group_outlined, color: theme.primaryColor),
+              activeIcon: Icon(Icons.group, color: theme.primaryColor),
+              label: 'Overview'),
           BottomNavigationBarItem(
               icon: Icon(Icons.storage_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.storage, color: theme.primaryColor),
@@ -113,18 +121,475 @@ class _TeamPageState extends State<TeamPage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.privacy_tip_outlined, color: theme.primaryColor),
               activeIcon: Icon(Icons.privacy_tip, color: theme.primaryColor),
-              label: 'Deaths')
+              label: 'Deaths'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shield_outlined, color: theme.primaryColor),
+              activeIcon: Icon(Icons.shield, color: theme.primaryColor),
+              label: 'TBA')
         ],
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(
-            color: theme.brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black),
-        selectedItemColor:
-            theme.brightness == Brightness.dark ? Colors.white : Colors.black,
-        showUnselectedLabels: false,
+        selectedLabelStyle: TextStyle(color: Colors.white, fontFamily: 'Font'),
+        unselectedLabelStyle:
+            TextStyle(color: Colors.white, fontFamily: 'Font'),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
+        showUnselectedLabels: true,
       ),
       body: tabs[_currentTab],
+    );
+  }
+}
+
+class _TBATab extends StatefulWidget {
+  final TeamPage widget;
+  const _TBATab(this.widget);
+
+  @override
+  _TBATabState createState() => _TBATabState();
+}
+
+class _TBATabState extends State<_TBATab> {
+  late final String tbaUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    tbaUrl = 'https://www.thebluealliance.com/team/${widget.widget.teamNumber}';
+  }
+
+  Future<void> _openTBA() async {
+    final uri = Uri.parse(tbaUrl);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $tbaUrl';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 48,
+                  color: Colors.blue,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  "View Team on The Blue Alliance",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Font',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  'frc${widget.widget.teamNumber}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontFamily: 'Font',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 🔥 Clean CTA button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openTBA,
+                    icon: const Icon(Icons.link),
+                    label: const Text("Open Team"),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Font',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // subtle link text
+                TextButton(
+                  onPressed: _openTBA,
+                  child: Text(
+                    tbaUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Font',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewTab extends StatefulWidget {
+  final TeamPage widget;
+
+  const _OverviewTab(this.widget);
+
+  @override
+  _OverviewTabState createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<_OverviewTab> {
+  Map<String, dynamic> stats = {};
+  String nickname = '';
+  List<PictureData> pictures = [];
+  PitScouting2026? pitScouting;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  void fetchData() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    // Fetch stats
+    try {
+      final fetchedStats = await apiService.fetchTeamStats(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+      stats = fetchedStats;
+    } catch (e) {
+      print('Error fetching stats: $e');
+    }
+
+    // Fetch nickname
+    try {
+      nickname =
+          await apiService.fetchTeamNicknames('frc${widget.widget.teamNumber}');
+    } catch (e) {
+      print('Error fetching nickname: $e');
+    }
+
+    // Fetch pictures
+    try {
+      pictures = await apiService.fetchTeamImages(
+        int.parse(widget.widget.tournament.page.split('/')[3]),
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+    } catch (e) {
+      print('Error fetching pictures: $e');
+    }
+
+    // Fetch pit scouting
+    try {
+      pitScouting = await apiService.fetchTeamPitScouting(
+        widget.widget.tournament.page.split('/')[3],
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+    } catch (e) {
+      print('Error fetching pit scouting: $e');
+      pitScouting = null;
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final fullRobotPics =
+        pictures.where((pic) => pic.image_type == 'full_robot');
+    final fullRobotPic = fullRobotPics.isNotEmpty
+        ? fullRobotPics.first
+        : (pictures.isNotEmpty ? pictures[0] : null);
+
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 30),
+
+            /// ---------------- TEAM NAME ----------------
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "Team ${widget.widget.teamNumber} | ${nickname}",
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (fullRobotPic != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                child: Image.network(
+                  fullRobotPic.link, // better for phones
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            const SizedBox(height: 16),
+
+            /// ---------------- STATS ----------------
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _buildQuickStat(
+                    "Rank",
+                    stats['rank']?.toString() ?? "-",
+                    Colors.blue,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildQuickStat(
+                    "OPR",
+                    (stats['OPR'] is num)
+                        ? (stats['OPR'] as num).toStringAsFixed(1)
+                        : "-",
+                    Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            /// ---------------- PIT SCOUTING ----------------
+            if (pitScouting != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Pit Scouting Info",
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildLargeDataCard(
+                  title: "Physical Capabilities",
+                  context: context,
+                  children: [
+                    _buildLargeDetailRow(
+                      "Can Go Under Trench",
+                      pitScouting!.data.go_under_trench ? "YES" : "NO",
+                      pitScouting!.data.go_under_trench
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    _buildLargeDetailRow(
+                      "Can Climb",
+                      pitScouting!.data.can_climb ? "YES" : "NO",
+                      pitScouting!.data.can_climb ? Colors.green : Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildLargeDataCard(
+                  title: "Mechanism Specs",
+                  context: context,
+                  children: [
+                    _buildLargeDetailRow(
+                      "Hopper Capacity",
+                      "${pitScouting!.data.hopper_capacity}",
+                      Colors.blueGrey,
+                    ),
+                    _buildLargeDetailRow(
+                      "Fuel Per Second",
+                      pitScouting!.data.bps.toStringAsFixed(2),
+                      Colors.blueGrey,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+// --- NEW SCALED HELPERS ---
+  Widget _buildQuickStat(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLargeDataCard({
+    required String title,
+    required List<Widget> children,
+    required BuildContext context,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
+          const Divider(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeDetailRow(String label, String value, Color valueColor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: valueColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: valueColor,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -140,7 +605,57 @@ class _StatsTab extends StatefulWidget {
 
 class _StatsTabState extends State<_StatsTab> {
   Map<String, dynamic> stats = {};
+
   bool isLoading = true;
+
+  // Only show these fields in the UI
+  final Map<String, String> fieldLabels = {
+    'rank': 'Rank',
+    'match_count': 'Match Count',
+    'OPR': 'OPR',
+    'OPRRank': 'OPR Rank',
+    'total_pass': 'Total Pass',
+    'auto_pass': 'Auto Pass',
+    'teleop_pass': 'Teleop Pass',
+    'endgame_points': 'Endgame Points',
+    'teleop_points': 'Teleop Points',
+    'auto_points': 'Auto Points',
+    'climbing_points': 'Climbing Points',
+    'auto_fuel_cycles': 'Auto Fuel Scored',
+    'teleop_fuel_cycles': 'Teleop Fuel Scored',
+    'total_fuel_cycles': 'Total Fuel Scored',
+    'foul_points': 'Foul Points',
+    'simulated_rp': 'Simulated RP',
+    'simulated_rank': 'Simulated Rank',
+  };
+
+  final Map<String, List<String>> groupedFields = {
+    'Rankings': [
+      'rank',
+      'simulated_rank',
+      'match_count',
+      'OPR',
+      'OPRRank',
+      'simulated_rp',
+    ],
+    'Scoring Breakdown': [
+      'auto_points',
+      'teleop_points',
+      'endgame_points',
+      'climbing_points',
+      'foul_points',
+    ],
+    'Passing': [
+      'total_pass',
+      'auto_pass',
+      'teleop_pass',
+    ],
+    'Fuel Scored': [
+      'auto_fuel_cycles',
+      'teleop_fuel_cycles',
+      'total_fuel_cycles',
+    ],
+  };
 
   @override
   void initState() {
@@ -194,40 +709,63 @@ class _StatsTabState extends State<_StatsTab> {
                           fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        ...stats.entries.map((entry) {
-                          return Card(
-                            elevation: 5,
-                            shadowColor: theme.primaryColor.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.primaryColor),
+                    Column(
+                      children: groupedFields.entries.map((group) {
+                        final groupTitle = group.key;
+                        final keys = group.value
+                            .where((key) => stats.containsKey(key))
+                            .toList();
+
+                        if (keys.isEmpty) return SizedBox();
+
+                        return Card(
+                          elevation: 6,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  groupTitle,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    formatValue(entry.value),
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 16),
+                                ...keys.map((key) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          fieldLabels[key] ?? key,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        Text(
+                                          formatValue(stats[key]),
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
@@ -313,13 +851,18 @@ class _ScheduleStatusSource extends DataGridSource {
           ? Theme.of(context).primaryColor.withOpacity(0.3)
           : Colors.black.withOpacity(0);
       if (cell.columnName == 'key') {
-        String matchNumber = cell.value.toString().split(' ')[1];
-        String type = cell.value.toString().contains('Quals')
-            ? 'qm'
-            : cell.value.toString().contains('Semi')
-                ? 'sf'
-                : 'f';
-        String match_key = '${tournament.key}_$type$matchNumber';
+        String match_key = '';
+
+        if (matchStatus.isNotEmpty) {
+          if (matchStatus['comp_level'] == 'qm') {
+            match_key = '${tournament.key}_qm${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'sf') {
+            match_key =
+                '${tournament.key}_sf${matchStatus['set_number']}m${matchStatus['match_number']}';
+          } else if (matchStatus['comp_level'] == 'f') {
+            match_key = '${tournament.key}_f1m${matchStatus['match_number']}';
+          }
+        }
         returnCells.add(Container(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             alignment: Alignment.center,
@@ -341,9 +884,9 @@ class _ScheduleStatusSource extends DataGridSource {
                       .withOpacity(0.6)
                   : Colors.grey.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'color')
         returnCells.add(Container(
@@ -355,9 +898,9 @@ class _ScheduleStatusSource extends DataGridSource {
                   ? const Color.fromARGB(255, 0, 100, 150)
                   : const Color.fromARGB(255, 125, 0, 150),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'team_score')
         returnCells.add(Container(
@@ -418,9 +961,9 @@ class _ScheduleStatusSource extends DataGridSource {
                                       : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6)
                               : Color.lerp(Colors.red, Colors.green, 0.5)!.withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else if (cell.columnName == 'opponent_score')
         returnCells.add(Container(
@@ -463,9 +1006,9 @@ class _ScheduleStatusSource extends DataGridSource {
                           : Color.lerp(Colors.red, Colors.green, 0.5)!
                               .withOpacity(0.6),
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
       else
         returnCells.add(Container(
@@ -473,9 +1016,9 @@ class _ScheduleStatusSource extends DataGridSource {
           alignment: Alignment.center,
           color: color,
           child: Text(
-            textScaler: TextScaler.linear(1.25),
-            cell.value.toString(),
-          ),
+              textScaler: TextScaler.linear(1.25),
+              cell.value.toString(),
+              style: TextStyle(fontFamily: 'Font')),
         ));
     }
     return DataGridRowAdapter(
@@ -545,56 +1088,50 @@ class _ScheduleTabState extends State<_ScheduleTab> {
           columnName: 'key',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Match',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Match',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'result_type',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Type',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Type',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'color',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Alliance',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Alliance',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Team Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Team Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'opponent_score',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Opponent Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Opponent Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
       GridColumn(
           columnName: 'team_rp',
           label: Container(
               alignment: Alignment.center,
-              child: Text(
-                'Ranking Points',
-                textAlign: TextAlign.center,
-                textScaler: TextScaler.linear(1.25),
-              ))),
+              child: Text('Ranking Points',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.25),
+                  style: TextStyle(fontFamily: 'Font')))),
     ];
 
     statuses.sort((a, b) {
@@ -734,35 +1271,64 @@ class _PicturesTabState extends State<_PicturesTab> {
   List<PictureData> images = [];
   bool isLoading = true;
   String? token;
+  String selectedType = 'full_robot';
+
+  final List<String> imageTypes = [
+    'full_robot',
+    'wires',
+    'shooter',
+    'intake',
+    'feeder',
+  ];
+
+  String formatType(String type) {
+    switch (type) {
+      case 'full_robot':
+        return 'Full Robot';
+      case 'wires':
+        return 'Wiring';
+      case 'shooter':
+        return 'Shooter';
+      case 'intake':
+        return 'Intake';
+      case 'feeder':
+        return 'Feeder';
+      default:
+        return type;
+    }
+  }
+
+  List<PictureData> get filteredImages =>
+      images.where((img) => img.image_type == selectedType).toList();
+
   void fetchPictures() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    this.token = await apiService.token;
+    token = await apiService.token;
     if (token != null) {
       try {
-        final fetchedStats = await apiService.fetchTeamImages(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4],
+        final parts = widget.widget.tournament.page.split('/');
+        final fetched = await apiService.fetchTeamImages(
+          int.parse(parts[3]),
+          parts[4],
           'frc${widget.widget.teamNumber}',
         );
-        if (mounted) {
+        if (mounted)
           setState(() {
-            images = fetchedStats;
+            images = fetched;
             isLoading = false;
           });
-        } else {
-          images = fetchedStats;
+        else {
+          images = fetched;
           isLoading = false;
         }
       } catch (e) {
-        print('Error fetching data: $e');
+        debugPrint('Error fetching pictures: $e');
       }
     } else {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-      isLoading = false;
+      if (mounted)
+        setState(() => isLoading = false);
+      else
+        isLoading = false;
     }
   }
 
@@ -772,101 +1338,195 @@ class _PicturesTabState extends State<_PicturesTab> {
     fetchPictures();
   }
 
+  // ── Full-screen zoomable viewer ──────────────────────────────────────────
+  void _openImageViewer(BuildContext context, PictureData image) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Zoomable image ───────────────────────────────────────────
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: InteractiveViewer(
+                    minScale: 1.0,
+                    maxScale: 5.0,
+                    child: Image.network(image.link),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Footer card ──────────────────────────────────────────────
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 16),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        image.scout_info.first_name != null
+                            ? 'Uploaded by ${image.scout_info.first_name}'
+                            : 'Scout from team ${image.scout_info.team_number}',
+                        style:
+                            const TextStyle(fontFamily: 'Font', fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (image.permissions.contains('delete'))
+                      TextButton.icon(
+                        style:
+                            TextButton.styleFrom(foregroundColor: Colors.red),
+                        icon: const Icon(Icons.delete_outline, size: 16),
+                        label: const Text('Delete',
+                            style: TextStyle(fontFamily: 'Font')),
+                        onPressed: () {
+                          final api =
+                              Provider.of<ApiService>(ctx, listen: false);
+                          Navigator.of(ctx).pop();
+                          api.delete_image(image).then((_) {
+                            setState(() => images.remove(image));
+                          });
+                        },
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Close',
+                          style: TextStyle(fontFamily: 'Font')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: isLoading
-          ? CircularProgressIndicator(color: Colors.blue)
-          : token == null
-              ? LoginWidget(
-                  redirect_path:
-                      '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}')
-              : images.isEmpty
-                  ? Text('No Images')
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        return GridView.builder(
-                          padding: EdgeInsets.all(8),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                          itemCount: images.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return Padding(
-                                        padding: EdgeInsets.all(20.0),
-                                        child: AlertDialog(
-                                          content: Padding(
-                                            padding: EdgeInsets.all(20.0),
-                                            child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Image.network(
-                                                    images[index].link)),
-                                          ),
-                                          actions: [
-                                            ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.red,
-                                                    foregroundColor:
-                                                        Colors.white),
-                                                onPressed: () {
-                                                  final api =
-                                                      Provider.of<ApiService>(
-                                                          context,
-                                                          listen: false);
-                                                  Navigator.of(context).pop();
-                                                  api
-                                                      .delete_image(
-                                                          images[index])
-                                                      .then((_) {
-                                                    setState(() {
-                                                      images.removeAt(index);
-                                                    });
-                                                  });
-                                                },
-                                                child: Text('Delete')),
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text('Close'))
-                                          ],
-                                        ));
-                                  },
-                                );
-                              },
-                              child: AnimatedContainer(
-                                duration: Duration(milliseconds: 300),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 5),
-                                    ),
-                                  ],
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.blue));
+    }
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+    if (images.isEmpty) {
+      return const Center(
+        child: Text('No Images', style: TextStyle(fontFamily: 'Font')),
+      );
+    }
+
+    return Column(
+      children: [
+        // ── Type selector ────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+          child: DropdownButtonFormField<String>(
+            value: selectedType,
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            items: imageTypes.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(formatType(type),
+                    style: const TextStyle(fontFamily: 'Font')),
+              );
+            }).toList(),
+            onChanged: (v) => setState(() => selectedType = v!),
+          ),
+        ),
+
+        // ── Grid ─────────────────────────────────────────────────────────
+        Expanded(
+          child: filteredImages.isEmpty
+              ? Center(
+                  child: Text(
+                    'No ${formatType(selectedType)} images',
+                    style: const TextStyle(fontFamily: 'Font'),
+                  ),
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final cols = constraints.maxWidth > 600 ? 4 : 2;
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: filteredImages.length,
+                      itemBuilder: (context, index) {
+                        final image = filteredImages[index];
+                        return GestureDetector(
+                          onTap: () => _openImageViewer(context, image),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
                                 ),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      images[index].link,
-                                      fit: BoxFit.fill,
-                                    )),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                image.link,
+                                fit: BoxFit.cover,
+                                // Lightweight loading placeholder
+                                loadingBuilder: (_, child, progress) =>
+                                    progress == null
+                                        ? child
+                                        : Container(
+                                            color: Colors.grey.shade200,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.blue),
+                                            ),
+                                          ),
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.broken_image_outlined,
+                                      color: Colors.grey),
+                                ),
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         );
                       },
-                    ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
@@ -880,13 +1540,16 @@ class _MatchScoutingTab extends StatefulWidget {
   _MatchScoutingTabState createState() => _MatchScoutingTabState();
 }
 
+// Assuming you have these imports based on your code
+// import 'your_models.dart';
+// import 'api_service.dart';
+
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
-  List<MatchScouting2025> scouting = [];
-  List<DataGridRow> rows = [];
-  List<GridColumn> columns = [];
+  List<MatchScouting2026> scouting = [];
   late ScrollController scrollController;
   String? role, token;
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -896,196 +1559,339 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   Future<void> fetchData() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    // try {
-    this.token = await apiService.token;
+
+    token = await apiService.token;
     if (token != null) {
-      final fetchedStats = (await apiService.fetchTeamMatchScouting(
+      final fetchedStats = await apiService.fetchTeamMatchScouting(
         int.parse(widget.widget.tournament.page.split('/')[3]),
         widget.widget.tournament.page.split('/')[4],
         'frc${widget.widget.teamNumber}',
-      ));
-      final groups = (await apiService.get_user_groups_detailed());
+      );
+
+      final groups = await apiService.get_user_groups_detailed();
       if (groups.isNotEmpty) {
-        final (_group, _role) = (await apiService.get_group(groups[0].name));
-        if (mounted)
+        final (_, _role) = await apiService.get_group(groups[0].name);
+        if (mounted) {
           setState(() {
             role = _role;
-            scouting = [...fetchedStats];
+            scouting = fetchedStats;
           });
-        role = _role;
-        scouting = [...fetchedStats];
+        }
       }
     }
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-    isLoading = false;
-    // } catch (e) {
-    //   print('Error fetching data: $e');
-    // }
+
+    if (mounted) setState(() => isLoading = false);
   }
 
+  // Kept for compatibility – triggers a rebuild (no longer builds grid rows)
   void updateGrid() {
-    setState(() {
-      columns = [
-        GridColumn(columnName: 'scout_name', label: Text('Scout Name')),
-        GridColumn(columnName: 'match_number', label: Text('Match')),
-        GridColumn(columnName: 'auto_scoring_l_1', label: Text('Auto L1')),
-        GridColumn(columnName: 'auto_scoring_l_2', label: Text('Auto L2')),
-        GridColumn(columnName: 'auto_scoring_l_3', label: Text('Auto L3')),
-        GridColumn(columnName: 'auto_scoring_l_4', label: Text('Auto L4')),
-        GridColumn(columnName: 'auto_scoring_net', label: Text('Auto Net')),
-        GridColumn(
-            columnName: 'auto_scoring_processor',
-            label: Text('Auto Processor')),
-        GridColumn(columnName: 'teleop_scoring_l_1', label: Text('Teleop L1')),
-        GridColumn(columnName: 'teleop_scoring_l_2', label: Text('Teleop L2')),
-        GridColumn(columnName: 'teleop_scoring_l_3', label: Text('Teleop L3')),
-        GridColumn(columnName: 'teleop_scoring_l_4', label: Text('Teleop L4')),
-        GridColumn(columnName: 'teleop_scoring_net', label: Text('Teleop Net')),
-        GridColumn(
-            columnName: 'teleop_scoring_processor',
-            label: Text('Teleop Processor')),
-        GridColumn(columnName: 'died', label: Text('Died')),
-        GridColumn(columnName: 'comments', label: Text('Comments')),
-        GridColumn(columnName: 'delete', label: Text('Delete'))
-      ];
-      rows = [];
-      for (var entry in scouting) {
-        var flattened = flatten(entry.toJson()['data'], delimiter: '_');
-        flattened = {
-          ...flattened,
-          ...entry.data.miscellaneous.toJson(),
-          'scout_name': entry.scout_info.first_name ??
-              'From Team ${entry.scout_info.team_number}',
-        };
-        rows.add(DataGridRow(cells: [
-          DataGridCell(
-              columnName: 'scout_name',
-              value: entry.scout_info.first_name ??
-                  'Scout from ${entry.scout_info.team_number}'),
-          DataGridCell(columnName: 'match_number', value: entry.match_number),
-          DataGridCell(
-              columnName: 'auto_scoring_l_1',
-              value: entry.data.auto_scoring.l_1),
-          DataGridCell(
-              columnName: 'auto_scoring_l_2',
-              value: entry.data.auto_scoring.l_2),
-          DataGridCell(
-              columnName: 'auto_scoring_l_3',
-              value: entry.data.auto_scoring.l_3),
-          DataGridCell(
-              columnName: 'auto_scoring_l_4',
-              value: entry.data.auto_scoring.l_4),
-          DataGridCell(
-              columnName: 'auto_scoring_net',
-              value: entry.data.auto_scoring.net),
-          DataGridCell(
-              columnName: 'auto_scoring_processor',
-              value: entry.data.auto_scoring.processor),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_1',
-              value: entry.data.teleop_scoring.l_1),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_2',
-              value: entry.data.teleop_scoring.l_2),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_3',
-              value: entry.data.teleop_scoring.l_3),
-          DataGridCell(
-              columnName: 'teleop_scoring_l_4',
-              value: entry.data.teleop_scoring.l_4),
-          DataGridCell(
-              columnName: 'teleop_scoring_net',
-              value: entry.data.teleop_scoring.net),
-          DataGridCell(
-              columnName: 'teleop_scoring_processor',
-              value: entry.data.teleop_scoring.processor),
-          DataGridCell(
-              columnName: 'died', value: entry.data.miscellaneous.died),
-          DataGridCell(
-              columnName: 'comments', value: entry.data.miscellaneous.comments),
-          DataGridCell(
-            columnName: 'delete',
-            value: entry.scout_info.first_name != null &&
-                (role == 'admin' || role == 'owner'),
-          ),
-        ]));
-      }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _refreshData() async {
+    setState(() => isLoading = true);
+    await fetchData();
+    updateGrid();
+  }
+
+  void _deleteEntry(int index) {
+    ApiService api = Provider.of<ApiService>(context, listen: false);
+
+    api.delete_match_scouting(scouting[index]).then((_) {
+      setState(() {
+        scouting.removeAt(index);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Successfully Deleted')),
+      );
+    }).onError((e, trace) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: isLoading
-            ? CircularProgressIndicator(color: Colors.blue)
-            : token == null
-                ? LoginWidget(
-                    redirect_path:
-                        '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
-                  )
-                : scouting.isEmpty
-                    ? Text('No Entries')
-                    : LayoutBuilder(
-                        builder: (context, constraints) => Container(
-                            height: constraints.maxHeight,
-                            width: constraints.maxWidth,
-                            child: InteractiveViewer(
-                              child: SfDataGrid(
-                                allowFiltering: true,
-                                allowSorting: true,
-                                columns: columns,
-                                frozenColumnsCount: 0,
-                                columnWidthMode: ColumnWidthMode.auto,
-                                source: _MatchScoutingSource(rows, scouting,
-                                    (delete_index) {
-                                  setState(() {
-                                    scouting.removeAt(delete_index);
-                                    updateGrid();
-                                  });
-                                }),
-                              ),
-                            ))));
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (token == null) {
+      return LoginWidget(
+        redirect_path:
+            '/event/${widget.widget.tournament.key}/team/frc${widget.widget.teamNumber}',
+      );
+    }
+
+    if (scouting.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assignment_outlined, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No Scouting Entries Yet',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull down to refresh',
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(12),
+        itemCount: scouting.length,
+        itemBuilder: (context, index) {
+          final data = scouting[index];
+          final backgroundColor = index % 2 == 0
+              ? Colors.blueGrey.shade900
+              : Colors.blueGrey.shade800;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _ScoutingCard(
+              data: data,
+              backgroundColor: backgroundColor,
+              role: role,
+              onDelete: () => _confirmDelete(context, index),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Entry'),
+        content:
+            const Text('Are you sure you want to delete this scouting entry?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteEntry(index);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _MatchScoutingSource extends DataGridSource {
-  final List<DataGridRow> rows;
-  final List<MatchScouting2025> scoutingData;
-  final void Function(int) onDelete;
-  _MatchScoutingSource(
-      List<DataGridRow> this.rows, this.scoutingData, this.onDelete);
+// Extracted card widget (identical to previous version)
+class _ScoutingCard extends StatelessWidget {
+  final MatchScouting2026 data;
+  final Color backgroundColor;
+  final String? role;
+  final VoidCallback onDelete;
+
+  const _ScoutingCard({
+    required this.data,
+    required this.backgroundColor,
+    required this.role,
+    required this.onDelete,
+  });
+
   @override
-  DataGridRowAdapter? buildRow(
-    DataGridRow row,
-  ) {
-    int index = rows.indexOf(row);
-    List<Widget> cells = [];
-    for (var cell in row.getCells()) {
-      if (cell.columnName == 'delete') {
-        if (cell.value)
-          cells.add(DeleteButton(
-            data: scoutingData[index],
-            onDelete: () {
-              onDelete(index);
-            },
-          ));
-        else
-          cells.add(SizedBox.shrink());
-      } else
-        cells.add(Text(
-          cell.value.toString(),
-        ));
-    }
-    return DataGridRowAdapter(cells: cells);
+  Widget build(BuildContext context) {
+    return Card(
+      color: backgroundColor,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.blue[800],
+                      child: Text(
+                        data.scout_info.first_name?[0] ?? 'S',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.scout_info.first_name ??
+                              'Scout ${data.scout_info.team_number}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Match ${data.match_number}',
+                          style:
+                              TextStyle(color: Colors.blue[200], fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (role == 'admin' || role == 'owner')
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.redAccent),
+                    onPressed: onDelete,
+                    tooltip: 'Delete',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Stats sections with icons
+            _buildSection(
+              title: 'Auto',
+              icon: Icons.smart_toy_outlined,
+              chips: [
+                // _StatChip(
+                //     label: 'Fuel',
+                //     value: data.data.auto_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.auto_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Teleop',
+              icon: Icons.videogame_asset_outlined,
+              chips: [
+                // _StatChip(
+                //     label: 'Fuel',
+                //     value: data.data.teleop_scoring.fuel_cycles.toString()),
+                _StatChip(
+                    label: 'Pass',
+                    value: data.data.teleop_scoring.passing_cycles.toString()),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSection(
+              title: 'Misc',
+              icon: Icons.widgets_outlined,
+              chips: [
+                _StatChip(
+                  label: 'Died',
+                  value: data.data.miscellaneous.died ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.died ? Colors.orange : null,
+                ),
+                _StatChip(
+                  label: 'Defense',
+                  value: data.data.miscellaneous.defense ? 'Yes' : 'No',
+                  color: data.data.miscellaneous.defense ? Colors.purple : null,
+                ),
+              ],
+            ),
+
+            // Comments (if any)
+            if (data.data.miscellaneous.comments.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Comments: ${data.data.miscellaneous.comments}',
+                  style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Updated _buildSection with an icon parameter
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> chips,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.blue[200]),
+            const SizedBox(width: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue[200],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: chips,
+        ),
+      ],
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+
+  const _StatChip({required this.label, required this.value, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      backgroundColor: color ?? Colors.blueGrey[700],
+      label: Text(
+        '$label: $value',
+        style: const TextStyle(fontSize: 13, color: Colors.white),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    );
   }
 }
 
 class DeleteButton extends StatefulWidget {
-  final MatchScouting2025 data;
+  final MatchScouting2026 data;
   final void Function() onDelete;
   DeleteButton({Key? key, required this.data, required this.onDelete})
       : super(key: key);
@@ -1110,13 +1916,15 @@ class _DeleteButtonState extends State<DeleteButton> {
         ApiService api = Provider.of<ApiService>(context, listen: false);
         api.delete_match_scouting(widget.data).then(
           (_) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Successfully Deleted')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Successfully Deleted',
+                    style: TextStyle(fontFamily: 'Font'))));
             widget.onDelete();
           },
         ).onError((e, trace) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
         });
       },
       icon: Icon(Icons.delete_forever),
@@ -1135,11 +1943,287 @@ class _PitScoutingTab extends StatefulWidget {
 }
 
 class _PitScoutingTabState extends State<_PitScoutingTab> {
+  String nickname = '';
+  bool loading = true;
+  PitScouting2026? pitScouting;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPitScoutingData();
+  }
+
+  void fetchPitScoutingData() async {
+    final api = Provider.of<ApiService>(context, listen: false);
+    try {
+      final data = await api.fetchTeamPitScouting(
+        widget.widget.tournament.page.split('/')[3],
+        widget.widget.tournament.page.split('/')[4],
+        'frc${widget.widget.teamNumber}',
+      );
+
+      setState(() {
+        pitScouting = data;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        loading = false;
+      });
+      print("Pit scouting error: $e");
+    }
+
+    try {
+      nickname = await api.fetchTeamNicknames('frc${widget.widget.teamNumber}');
+    } catch (e) {
+      print('Error fetching nickname: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: PitScoutingForm(
-          widget.widget.tournament, widget.widget.teamNumber, true),
+    final theme = Theme.of(context);
+
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (pitScouting == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: theme.disabledColor),
+            const SizedBox(height: 16),
+            const Text("No Pit Scouting Data Available",
+                style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      );
+    }
+
+    final data = pitScouting!.data;
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(theme),
+              const SizedBox(height: 24),
+              _buildSection(
+                title: "Drivetrain & Movement",
+                icon: Icons.settings_input_component,
+                theme: theme,
+                children: [
+                  _buildDetailRow("Drive Train", data.drive_train, Colors.blue),
+                  _buildDetailRow("Robot Height", "${data.robot_height}\"",
+                      Colors.blueGrey),
+                  _buildBoolRow("Can Go Over Bump", data.go_over_bump),
+                  _buildBoolRow("Can Go Under Trench", data.go_under_trench),
+                ],
+              ),
+              _buildSection(
+                title: "Shooting System",
+                icon: Icons.gps_fixed,
+                theme: theme,
+                children: [
+                  _buildDetailRow("Type", data.type_of_shooter, Colors.orange),
+                  _buildDetailRow(
+                      "BPS", data.bps.toStringAsFixed(2), Colors.orange),
+                  _buildBoolRow("Auto Shooting", data.automatically_shooting),
+                  _buildBoolRow(
+                      "Shooting While Moving", data.shooting_while_moving),
+                  _buildBoolRow("Fixed Shooting", data.fixedShooting),
+                ],
+              ),
+              _buildSection(
+                title: "Intake & Handling",
+                icon: Icons.download,
+                theme: theme,
+                children: [
+                  _buildBoolRow("Ground Pickup", data.can_pick_up_from_ground),
+                  _buildBoolRow("Human Feed", data.can_feed_human_player),
+                  _buildBoolRow("Near Tower", data.nearTower),
+                  _buildBoolRow("Near Hub", data.nearHub),
+                  _buildDetailRow("Hopper Capacity",
+                      data.hopper_capacity.toString(), Colors.blueGrey),
+                ],
+              ),
+              _buildSection(
+                title: "Climbing",
+                icon: Icons.upload,
+                theme: theme,
+                children: [
+                  _buildBoolRow("Can Climb", data.can_climb),
+                  _buildBoolRow("Auto Climb", data.can_climb_in_autonomous),
+                  const Divider(height: 24),
+                  const Text("Pole Availability",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildChip("Left", data.left_pole_climb),
+                      _buildChip("Straddle L", data.straddling_pole_climb_left),
+                      _buildChip("Center", data.center_pole_climb),
+                      _buildChip(
+                          "Straddle R", data.straddling_pole_climb_right),
+                      _buildChip("Right", data.right_pole_climb),
+                    ],
+                  ),
+                ],
+              ),
+              _buildSection(
+                title: "Strategy & Info",
+                icon: Icons.lightbulb,
+                theme: theme,
+                children: [
+                  _buildDetailRow(
+                      "Main Strategy", data.main_strategy, Colors.purple),
+                  _buildDetailRow(
+                      "Favorite Color", data.favorite_color, Colors.pink),
+                  _buildDetailRow(
+                      "Experience",
+                      "${data.driver_experience_events} Events",
+                      Colors.blueGrey),
+                  _buildDetailRow("Comments", data.comments, Colors.grey)
+                ],
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "PIT SCOUTING",
+          style: theme.textTheme.labelLarge
+              ?.copyWith(color: theme.primaryColor, letterSpacing: 1.2),
+        ),
+        Text(
+          "Team ${widget.widget.teamNumber}",
+          style: theme.textTheme.headlineMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection(
+      {required String title,
+      required IconData icon,
+      required List<Widget> children,
+      required ThemeData theme}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: theme.primaryColor),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: color, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBoolRow(String label, bool value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14)),
+          Icon(
+            value ? Icons.check_circle : Icons.cancel,
+            color: value ? Colors.green : Colors.red.withOpacity(0.5),
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: active
+            ? Colors.green.withOpacity(0.1)
+            : Colors.grey.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: active ? Colors.green : Colors.transparent),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: active ? Colors.green : Colors.grey,
+          fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }
@@ -1154,7 +2238,7 @@ class _AutosTab extends StatefulWidget {
 }
 
 class _AutosTabState extends State<_AutosTab> {
-  List<MatchScouting2025> scouting = [];
+  List<MatchScouting2026> scouting = [];
   int AUTOS_PER_PAGE = 15;
   int currentPage = 0;
   bool isLoading = true;
@@ -1203,7 +2287,7 @@ class _AutosTabState extends State<_AutosTab> {
     if (currentPage < 0) {
       currentPage = 0;
     }
-    List<MatchScouting2025> pageData = scouting.sublist(
+    List<MatchScouting2026> pageData = scouting.sublist(
       currentPage * AUTOS_PER_PAGE,
       min(scouting.length, currentPage * AUTOS_PER_PAGE + AUTOS_PER_PAGE),
     );
@@ -1220,7 +2304,7 @@ class _AutosTabState extends State<_AutosTab> {
                     if (scouting.length == 0)
                       Text(
                         'No data for this event',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 30, fontFamily: 'Font'),
                       ),
                     Expanded(
                         child: LayoutBuilder(builder: (context, constraints) {
@@ -1241,7 +2325,7 @@ class _AutosTabState extends State<_AutosTab> {
                                       int index =
                                           rowIndex * numColumns + colIndex;
                                       if (index < pageData.length) {
-                                        return AutoDisplay2025(
+                                        return AutoDisplay2026(
                                           scoutingData: pageData[index],
                                         );
                                       }

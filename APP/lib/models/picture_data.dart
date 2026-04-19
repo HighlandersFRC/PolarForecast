@@ -14,6 +14,7 @@ class PictureData with _$PictureData {
     required String image_id,
     required String link,
     required List<String> permissions,
+    @Default('full_robot') String image_type,
   }) = _PictureData;
 
   factory PictureData.fromJson(Map<String, dynamic> json) =>

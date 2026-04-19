@@ -4,8 +4,8 @@ from types import TracebackType
 import pandas as pd
 import numpy as np
 import warnings
-from models.match_scouting_2025 import MatchScouting2025
-from models.tba_match_2025 import ReefLevel, TBAMatch2025
+from models.match_scouting_2026 import MatchScouting2026
+from models.tba_match_2026 import HubScore, TBAMatch2026
 from GeneticAlg import geneticAlg
 
 from RemoveBadData import (
@@ -13,7 +13,7 @@ from RemoveBadData import (
 )
 
 warnings.filterwarnings("ignore")
-NET_ALGAE_COMPLETION_RATE = 0.9
+
 
 
 def flatten_dict(dd, separator="_", prefix=""):
@@ -52,58 +52,35 @@ def getPieceScored(
     return retval
 
 
-def getLevelScoringCount(level: ReefLevel, autoLevel: ReefLevel = ReefLevel(nodeA=False, nodeB=False, nodeC=False, nodeD=False, nodeE=False, nodeF=False, nodeG=False, nodeH=False, nodeI=False, nodeJ=False, nodeK=False, nodeL=False)):
-    count = 0
-    if level.nodeA and not autoLevel.nodeA:
-        count += 1
-    if level.nodeB and not autoLevel.nodeB:
-        count += 1
-    if level.nodeC and not autoLevel.nodeC:
-        count += 1
-    if level.nodeD and not autoLevel.nodeD:
-        count += 1
-    if level.nodeE and not autoLevel.nodeE:
-        count += 1
-    if level.nodeF and not autoLevel.nodeF:
-        count += 1
-    if level.nodeG and not autoLevel.nodeG:
-        count += 1
-    if level.nodeH and not autoLevel.nodeH:
-        count += 1
-    if level.nodeI and not autoLevel.nodeI:
-        count += 1
-    if level.nodeJ and not autoLevel.nodeJ:
-        count += 1
-    if level.nodeK and not autoLevel.nodeK:
-        count += 1
-    if level.nodeL and not autoLevel.nodeL:
-        count += 1
-    return count
 
 
-def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting2025]):
+
+def analyzeData(TBAdata: list[TBAMatch2026], scoutingData: list[MatchScouting2026]):
     data = copy.deepcopy(TBAdata)
     scoutingBaseData = scoutingData
     oprMatchList = []
     # Isolating Data Related to OPR
     blankOprEntry = {
-        "auto_scoring_l_1": 0,
-        "auto_scoring_l_2": 0,
-        "auto_scoring_l_3": 0,
-        "auto_scoring_l_4": 0,
-        "net": 0,
-        "processor": 0,
-        "teleop_scoring_l_1": 0,
-        "teleop_scoring_l_2": 0,
-        "teleop_scoring_l_3": 0,
-        "teleop_scoring_l_4": 0,
+        "auto_fuel_denied": 0,
+        "teleop_fuel_denied": 0,
+
+        "auto_fuel_scored": 0,
+        "teleop_fuel_scored": 0,
+        "total_fuel_scored": 0,
         "foul_points": 0,
+
         "station1": 0,
         "station2": 0,
         "station3": 0,
-        "endGameRobot1": False,
-        "endGameRobot2": False,
-        "endGameRobot3": False,
+
+        "station1_auto_tower": "",
+        "station2_auto_tower": "",
+        "station3_auto_tower": "",
+
+        "station1_endgame_tower": "",
+        "station2_endgame_tower": "",
+        "station3_endgame_tower": "",
+
         "match_number": 0,
         "allianceStr": "",
     }
@@ -120,32 +97,27 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
                 for k in range(3):
                     oprMatchEntry["station" +
                                   str(k + 1)] = row.alliances[allianceStr].team_keys[k][3:]
-                oprMatchEntry["endGameRobot1"] = row.score_breakdown[allianceStr].endGameRobot1
-                oprMatchEntry["endGameRobot2"] = row.score_breakdown[allianceStr].endGameRobot2
-                oprMatchEntry["endGameRobot3"] = row.score_breakdown[allianceStr].endGameRobot3
-                oprMatchEntry["station1_mobility"] = row.score_breakdown[allianceStr].autoLineRobot1
-                oprMatchEntry["station2_mobility"] = row.score_breakdown[allianceStr].autoLineRobot2
-                oprMatchEntry["station3_mobility"] = row.score_breakdown[allianceStr].autoLineRobot3
-                oprMatchEntry["auto_scoring_l_1"] = row.score_breakdown[allianceStr].autoReef.trough
-                oprMatchEntry["auto_scoring_l_2"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.botRow)
-                oprMatchEntry["auto_scoring_l_3"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.midRow)
-                oprMatchEntry["auto_scoring_l_4"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].autoReef.topRow)
-                oprMatchEntry["teleop_scoring_l_1"] = row.score_breakdown[allianceStr].teleopReef.trough
-                oprMatchEntry["teleop_scoring_l_2"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.botRow, autoLevel=row.score_breakdown[allianceStr].autoReef.botRow)
-                oprMatchEntry["teleop_scoring_l_3"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.midRow, autoLevel=row.score_breakdown[allianceStr].autoReef.midRow)
-                oprMatchEntry["teleop_scoring_l_4"] = getLevelScoringCount(
-                    row.score_breakdown[allianceStr].teleopReef.topRow, autoLevel=row.score_breakdown[allianceStr].autoReef.topRow)
-                oprMatchEntry["processor"] = row.score_breakdown[allianceStr].wallAlgaeCount
-                oprMatchEntry["net"] = row.score_breakdown[allianceStr].netAlgaeCount - \
-                    (row.score_breakdown[opponentStr].wallAlgaeCount *
-                     NET_ALGAE_COMPLETION_RATE)
-                oprMatchEntry["coopertition"] = 1 if row.score_breakdown[allianceStr].coopertitionCriteriaMet else 0
-                oprMatchEntry['foul_points'] = row.score_breakdown[allianceStr].foulPoints
+
+                oprMatchEntry["auto_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.autoCount
+                oprMatchEntry["teleop_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.teleopCount
+                oprMatchEntry["total_fuel_scored"] = row.score_breakdown[allianceStr].hubScore.teleopCount + row.score_breakdown[allianceStr].hubScore.autoCount
+      
+
+                oprMatchEntry["foul_points"] = row.score_breakdown[allianceStr].foulPoints
+
+                oprMatchEntry["station1_auto_tower"] = row.score_breakdown[allianceStr].autoTowerRobot1
+                oprMatchEntry["station2_auto_tower"] = row.score_breakdown[allianceStr].autoTowerRobot2
+                oprMatchEntry["station3_auto_tower"] = row.score_breakdown[allianceStr].autoTowerRobot3
+ 
+                oprMatchEntry["station1_endgame_tower"] = row.score_breakdown[allianceStr].endGameTowerRobot1
+                oprMatchEntry["station2_endgame_tower"] = row.score_breakdown[allianceStr].endGameTowerRobot2
+                oprMatchEntry["station3_endgame_tower"] = row.score_breakdown[allianceStr].endGameTowerRobot3
+ 
+                oprMatchEntry["endgame_scoring"] = row.score_breakdown[allianceStr].endGameTowerPoints
+                oprMatchEntry["total_points"] = row.score_breakdown[allianceStr].totalPoints
+                oprMatchEntry["total_tower_points"] = row.score_breakdown[allianceStr].totalTowerPoints
+
+            
                 oprMatchList.append(copy.deepcopy(oprMatchEntry))
     oprMatchDataFrame = pd.DataFrame(oprMatchList)
     # print(oprMatchDataFrame)
@@ -160,18 +132,18 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     # print("made list of teams")
     # Initializing sets of Data
     teamMatchCount = np.zeros(len(teams))
-    teamParking = np.zeros(len(teams))
-    teamShallow = np.zeros(len(teams))
-    teamDeep = np.zeros(len(teams))
-    teamMobility = np.zeros(len(teams))
-    piecesScored = np.zeros(len(teams))
-    autoCoral = np.zeros(len(teams))
-    teleopCoral = np.zeros(len(teams))
     autoPoints = np.zeros(len(teams))
     teleopPoints = np.zeros(len(teams))
     teamDeaths = np.zeros(len(teams))
-    teamCoopertition = np.zeros(len(teams))
+    teamDefenses = np.zeros(len(teams))
     matchScoutingCount = np.zeros(len(teams))
+
+    autoClimb = np.zeros(len(teams))
+    endgameClimbL1 = np.zeros(len(teams))
+    endgameClimbL2 = np.zeros(len(teams))
+    endgameClimbL3 = np.zeros(len(teams))
+    autoPassing = np.zeros(len(teams))
+    teleopPassing = np.zeros(len(teams))
 
     # Counting the number of matches that each team has
     stations = ['station1', 'station2', 'station3']
@@ -181,97 +153,84 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     # print("Counted Matches per team")
 
     # Analyzing data that is directly extracted from
-    for index, row in oprMatchDataFrame.iterrows():
+    for _, row in oprMatchDataFrame.iterrows():
         for k in range(3):
+            # print(k)
+            # print(row)
             matchTeam = row["station" + str(k + 1)]
+            # print(matchTeam)
             idx = teams.index(matchTeam)
-            teamCoopertition[idx] += row["coopertition"]
-            if row["endGameRobot" + str(k + 1)] == "Parked":
-                teamParking[idx] += 1
-            elif not row["endGameRobot" + str(k + 1)] == "None":
-                if row["endGameRobot" + str(k+1)] == "DeepCage":
-                    teamDeep[idx] += 1
-                else:
-                    teamShallow[idx] += 1
-            if row["station" + str(k + 1)+"_mobility"] == "Yes":
-                teamMobility[idx] += 1
-    # print("found TBA only stats")
+            # print("station" + str(k + 1) + "_endgame_tower")
+            # print(row["station" + str(k + 1) + "_endgame_tower"])
+            if not row["station" + str(k + 1) + "_endgame_tower"] == "None":
+                if row["station" + str(k + 1) + "_endgame_tower"] == "Level1":
+                    
+                    endgameClimbL1[idx] += 1
+                    
+                elif row["station" + str(k + 1) + "_endgame_tower"] == "Level2":
+                    endgameClimbL2[idx] += 1
+                    
+                elif row["station" + str(k + 1) + "_endgame_tower"] == "Level3":
+                    endgameClimbL3[idx] += 1
+                    
+            # print("found endgame climb data")
+            if not row["station" + str(k + 1) + "_auto_tower"] == "None":
+                if row["station" + str(k + 1) + "_auto_tower"] == "Level1" or row["station" + str(k + 1) + "_auto_tower"] == "Level2" or row["station" + str(k + 1) + "_auto_tower"] == "Level3":
+                    
+                    autoClimb[idx] += 1
 
     # Analyzing data coming directly from scouting data
     for entry in scoutingBaseData:
-        matchScoutingCount[teams.index(entry.team_number)] += 1
-        teamDeaths[teams.index(entry.team_number)
+        matchScoutingCount[teams.index(str(entry.team_number))] += 1 if entry else 0
+        teamDefenses[teams.index(str(entry.team_number))] += 1 if entry.data.miscellaneous.defense else 0
+        autoPassing[teams.index(str(entry.team_number))] += entry.data.auto_scoring.passing_cycles
+        teleopPassing[teams.index(str(entry.team_number))] += entry.data.teleop_scoring.passing_cycles
+        teamDeaths[teams.index(str(entry.team_number))
                    ] += 1 if entry.data.miscellaneous.died else 0
 
     # All of the keys, maxs, and mins
-    ScoutingDataKeys = [
-        "auto_scoring_l_1",
-        "auto_scoring_l_2",
-        "auto_scoring_l_3",
-        "auto_scoring_l_4",
-        "teleop_scoring_l_1",
-        "teleop_scoring_l_2",
-        "teleop_scoring_l_3",
-        "teleop_scoring_l_4",
-        "net",
-        "processor"
+    # ScoutingDataKeys = [
+       
+    # ]
+    # ScoutingDataMins = [
+      
+    # ]
+    # ScoutingDataMaxs = [
+        
+    # ]
+    DefenseOnlyKeys = [
+        "auto_fuel_denied",
+        "teleop_fuel_denied",
     ]
-    ScoutingDataMins = [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    ]
-    ScoutingDataMaxs = [
-        60,
-        12,
-        12,
-        12,
-        60,
-        12,
-        12,
-        12,
-        18,
-        60,
-    ]
+
     TBAOnlyKeys = [
-        "foul_points",
-        "coopertition",
+        "auto_fuel_scored",
+        "teleop_fuel_scored",
+        "foul_points",  
     ]
     TBAOnlyMins = [
         0,
         0,
+        0,
     ]
     TBAOnlyMaxs = [
-        100,
-        1,
+        1000000,
+        1000000,
+        1000000,
     ]
     OPRWeights = [
-        3,
-        4,
-        6,
-        7,
-        2,
-        3,
-        4,
-        5,
-        4,
-        2,
+       1,
+       1,
+       -1,
     ]
 
     numEntries = len(scoutingBaseData)
     j = numEntries  # set j to the max number of scout entries to analyze
     # print("setup hardcoded stuff")
     # TBA Data
-    YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
+    # YMatrix = pd.DataFrame(None, columns=unpack_nested_list(ScoutingDataKeys))
     TBAOnlyYMatrix = pd.DataFrame(None, columns=TBAOnlyKeys)
-    YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
+    # YMatrix = oprMatchDataFrame[unpack_nested_list(ScoutingDataKeys)]
     # print("ymatrix set up")
     TBAOnlyYMatrix = pd.DataFrame(oprMatchDataFrame[TBAOnlyKeys])
     # print("tba only ymatrix set up")
@@ -289,60 +248,62 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
 
     # Throw out bad scouting data
     scoutingData = copy.deepcopy(scoutingBaseData[:j])
-    teamMatchesList = copy.deepcopy(blankAEntry)
+    teamMatchesList: dict[str, dict[int, list[MatchScouting2026]]] = {
+        team: {} for team in blankAEntry}
     scoutingDataFunction = TeamBasedData
     # print("throwing scouting data")
+    ratings = {'scouts': [], 'trustRatings': [], 'entries': []}
     try:
         scoutingData, ratings = scoutingDataFunction(
             oprMatchDataFrame, scoutingData)
     except Exception as e:
         print(e)
-    # print("threw away scouting data")
     # Make A and Y lists with scouting data
-    for team in teams:
-        teamMatches = []
-        for entry in scoutingData:
-            if entry.team_number == team:
-                if not teamMatches.__contains__(
-                    entry.match_number
-                ):
-                    teamMatches.append(entry.match_number)
-        teamMatchesList[team] = teamMatches
+    for entry in scoutingData:
+        if str(entry.team_number) not in teamMatchesList:
+            teamMatchesList[str(entry.team_number)] = {}
+        if entry.match_number not in teamMatchesList[str(entry.team_number)]:
+            teamMatchesList[str(entry.team_number)][entry.match_number] = []
+        teamMatchesList[str(entry.team_number)
+                        ][entry.match_number].append(entry)
+    # print('trying to find data for all teams.')
+    hasEnoughEntriesPerTeam = True
+    for team in teamMatchesList:
+        if len(teamMatchesList[team].keys()) < 5:
+            hasEnoughEntriesPerTeam = False
+    if hasEnoughEntriesPerTeam:
+        # YMatrix = pd.DataFrame(
+        #     None, columns=unpack_nested_list(ScoutingDataKeys))
+        Alist = []
     teamIdx = -1
     for team in teams:
         teamIdx += 1
-        teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
+        # teamYEntry = np.zeros(len(unpack_nested_list(ScoutingDataKeys)))
+        teamYEntry = np.zeros(len(TBAOnlyKeys))
         for teamMatch in teamMatchesList[team]:
             numEntries = 0
             for entry in scoutingData:
                 if (
-                    entry.team_number == team
+                    str(entry.team_number) == team
                     and entry.match_number == teamMatch
                 ):
                     numEntries += 1
             for entry in scoutingData:
                 if (
-                    entry.team_number == team
+                    str(entry.team_number) == team
                     and entry.match_number == teamMatch
                 ):
                     newY = [
-                        entry.data.auto_scoring.l_1,
-                        entry.data.auto_scoring.l_2,
-                        entry.data.auto_scoring.l_3,
-                        entry.data.auto_scoring.l_4,
-                        entry.data.teleop_scoring.l_1,
-                        entry.data.teleop_scoring.l_2,
-                        entry.data.teleop_scoring.l_3,
-                        entry.data.teleop_scoring.l_4,
-                        entry.data.auto_scoring.net + entry.data.teleop_scoring.net,
-                        entry.data.auto_scoring.processor + entry.data.teleop_scoring.processor,
+                        entry.data.auto_scoring.fuel_cycles,
+                        entry.data.teleop_scoring.fuel_cycles,
+                        0,
                     ]
                     teamYEntry = [
                         teamYEntry[i]
                         + (newY[i] / len(teamMatchesList[team]) / numEntries)
                         for i in range(len(teamYEntry))
                     ]
-        YMatrix.loc[len(YMatrix)] = teamYEntry
+        # YMatrix.loc[len(YMatrix)] = teamYEntry
         teamAEntry = copy.deepcopy(blankAEntry)
         teamAEntry[team] = 1
         Alist.append(teamAEntry)
@@ -353,7 +314,12 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     TBAOnlyAPseudoInverse = np.linalg.pinv(pd.DataFrame(TBAOnlyAList)[teams])
     # print("ready for regression")
     # Multivariate Regression
-    XMatrix = pd.DataFrame(APseudoInverse @ YMatrix)
+    XMatrix = pd.DataFrame()
+    
+    AMatrixDefense = pd.DataFrame(TBAOnlyAList, columns=teams)
+    APseudoInverseDefense = np.linalg.pinv(AMatrixDefense[teams])
+    YDefenseMatrix = pd.DataFrame(None, columns=DefenseOnlyKeys)
+
     TBAOnlyXMatrix = pd.DataFrame(TBAOnlyAPseudoInverse @ TBAOnlyYMatrix)
     # Run Genetic Algorithm
 
@@ -381,31 +347,41 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
     # print("doing genetic algorithm")
     results = []
 
-    def perform_genetic_algorithm(i):
-        ga = geneticAlg(
-            create_fitness_func(ScoutingDataMins[i], ScoutingDataMaxs[i]),
-            [pd.DataFrame(AMatrix[teams]), pd.DataFrame(
-                YMatrix[ScoutingDataKeys[i]])],
-            pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
-            mutation_percent_genes,
-        )
-        result = ga.run()
-        for key in result[0].columns:
-            if type(result[0][key].tolist()) is not None:
-                results.append(result[0][key].tolist())
+    # def perform_genetic_algorithm(i):
+    #     ga = geneticAlg(
+    #         errorFunction=create_fitness_func(
+    #             ScoutingDataMins[i], ScoutingDataMaxs[i]),
+    #         functionInputs=[pd.DataFrame(AMatrix[teams]), pd.DataFrame(
+    #             YMatrix[ScoutingDataKeys[i]])],
+    #         maxs={ScoutingDataKeys[j]: ScoutingDataMaxs[j]
+    #               for j in range(len(ScoutingDataKeys))},
+    #         mins={ScoutingDataKeys[j]: ScoutingDataMins[j]
+    #               for j in range(len(ScoutingDataKeys))},
+    #         startingValue=pd.DataFrame(XMatrix[ScoutingDataKeys[i]]),
+    #         mutationPercent=mutation_percent_genes,
+    #     )
+    #     result = ga.run()
+    #     for key in result[0].columns:
+    #         if type(result[0][key].tolist()) is not None:
+    #             results.append(result[0][key].tolist())
+
     # Number of processes to run simultaneously
     num_processes = 10  # Adjust this value based on your system's capabilities
-    for i in range(len(ScoutingDataKeys)):
-        perform_genetic_algorithm(i)
+    # for i in range(len(ScoutingDataKeys)):
+    #     perform_genetic_algorithm(i)
     # results = joblib.Parallel(num_processes)(joblib.delayed(perform_genetic_algorithm)(i) for i in range(10))
     # print("Doing TBA only genetic alg")
     for i in range(len(TBAOnlyKeys)):
         ga = geneticAlg(
-            create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
-            [pd.DataFrame(TBAOnlyAList, columns=teams),
-             pd.DataFrame(TBAOnlyYMatrix[TBAOnlyKeys[i]])],
-            pd.DataFrame(TBAOnlyXMatrix[TBAOnlyKeys[i]]),
-            mutation_percent_genes,
+            errorFunction=create_fitness_func(TBAOnlyMins[i], TBAOnlyMaxs[i]),
+            functionInputs=[pd.DataFrame(TBAOnlyAList, columns=teams),
+                            pd.DataFrame(TBAOnlyYMatrix[TBAOnlyKeys[i]])],
+            maxs={TBAOnlyKeys[j]: TBAOnlyMaxs[j]
+                  for j in range(len(TBAOnlyKeys))},
+            mins={TBAOnlyKeys[j]: TBAOnlyMins[j]
+                  for j in range(len(TBAOnlyKeys))},
+            startingValue=pd.DataFrame(TBAOnlyXMatrix[TBAOnlyKeys[i]]),
+            mutationPercent=mutation_percent_genes,
         )
         result = ga.run()
         # print(result[0].columns)
@@ -413,7 +389,8 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
             if result[0][key] is not None:
                 results.append(result[0][key].tolist())
         # results.append((result[0], len(ScoutingDataKeys)+i))
-    dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
+    # dataKeys = copy.deepcopy(unpack_nested_list(ScoutingDataKeys))
+    dataKeys = copy.deepcopy(unpack_nested_list(TBAOnlyKeys))
     dataKeys.extend(unpack_nested_list(TBAOnlyKeys))
     # print("compiling data to json")
     # print(results)
@@ -422,71 +399,124 @@ def analyzeData(TBAdata: list[TBAMatch2025], scoutingData: list[MatchScouting202
         # print(dataKeys[i], i)
         # print(result)
         array = np.array(result).ravel()
-        XMatrix[dataKeys[i]] = result
-        if i < 4:
+        TBAOnlyXMatrix[dataKeys[i]] = result
+        if i < 1:
             autoPoints += array*OPRWeights[i]
-            autoCoral += array
-        elif i < 10:
+        elif i < 2:
             teleopPoints += array*OPRWeights[i]
-            teleopCoral += array
         # except Exception as e:
         #     print(i, e)
     # print("looped through results")
-    teamCoopertition = XMatrix["coopertition"]
-    teamParking /= teamMatchCount
-    teamMobility /= teamMatchCount
-    teamDeep /= teamMatchCount
-    teamShallow /= teamMatchCount
-    teamDeaths /= matchScoutingCount
+    autoClimb = autoClimb / teamMatchCount
+    endgameClimbL1 = endgameClimbL1 / teamMatchCount
+    endgameClimbL2 = endgameClimbL2 / teamMatchCount
+    endgameClimbL3 = endgameClimbL3 / teamMatchCount
+
+    teamDeaths = teamDeaths / matchScoutingCount
+    teamDefenses = teamDefenses / matchScoutingCount
+    
     for i in range(len(teamDeaths)):
         if math.isnan(teamDeaths[i]):
             teamDeaths[i] = 0
-    autoPoints += teamMobility * 3
-    algaeTotal = XMatrix["net"] + XMatrix["processor"]
-    algaePoints = XMatrix["net"] * 4 + \
-        XMatrix["processor"]*2
-    coralTotal = autoCoral + teleopCoral
-    teleopCoralPoints = np.zeros(len(teams))
-    for i, x in enumerate([XMatrix[f'teleop_scoring_l_{i}'] for i in range(1, 5)]):
-        teleopCoralPoints += (x * OPRWeights[4+i])
-    autoCoralPoints = np.zeros(len(teams))
-    for i, x in enumerate([XMatrix[f'auto_scoring_l_{i}'] for i in range(1, 5)]):
-        autoCoralPoints += (x * OPRWeights[i])
-    coralPoints = autoCoralPoints+teleopCoralPoints
-    l_1 = XMatrix['auto_scoring_l_1'] + XMatrix['teleop_scoring_l_1']
-    l_2 = XMatrix['auto_scoring_l_2'] + XMatrix['teleop_scoring_l_2']
-    l_3 = XMatrix['auto_scoring_l_3'] + XMatrix['teleop_scoring_l_3']
-    l_4 = XMatrix['auto_scoring_l_4'] + XMatrix['teleop_scoring_l_4']
-    piecesScored = coralTotal + algaeTotal
-    endgamePoints = teamDeep * 12 + teamParking * 2 + teamShallow*6
-    teamClimbingPoints = teamDeep * 12 + teamShallow * 6
-    # teleopPoints += teamFeeding
+    for i in range(len(teamDefenses)):
+        if math.isnan(teamDefenses[i]):
+            teamDefenses[i] = 0
+    for i in range(len(autoPassing)):
+        if math.isnan(autoPassing[i]):
+            autoPassing[i] = 0
+    for i in range(len(teleopPassing)):
+        if math.isnan(teleopPassing[i]):
+            teleopPassing[i] = 0
+    L1Points = 10
+    L2Points = 20
+    L3Points = 30
+    autoClimbPoints = 15
+    endgameClimbingPoints = endgameClimbL1 * L1Points + endgameClimbL2 * L2Points + endgameClimbL3 * L3Points   
+    autoClimbingPoints = autoClimb * autoClimbPoints   
+    endgamePoints = endgameClimbingPoints       
+    autoPoints += autoClimbingPoints 
+    teamClimbingPoints = autoClimbingPoints + endgameClimbingPoints
     teamOPR = endgamePoints + autoPoints + teleopPoints
 
-    XMatrix.insert(0, 'parking', pd.Series(teamParking))
+    XMatrix['auto_fuel_scored'] = autoPoints
+    XMatrix['teleop_fuel_scored'] = teleopPoints
     XMatrix.insert(0, 'death_rate', pd.Series(teamDeaths))
-    XMatrix.insert(0, 'mobility', pd.Series(teamMobility))
+    XMatrix.insert(0, 'defense_rate', pd.Series(teamDefenses))
     XMatrix.insert(0, 'climbing_points', pd.Series(teamClimbingPoints))
-    XMatrix.insert(0, 'deep_climb_rate', pd.Series(teamDeep))
-    XMatrix.insert(0, 'shallow_climb_rate', pd.Series(teamShallow))
-    XMatrix.insert(0, 'auto_coral', pd.Series(autoCoral))
-    XMatrix.insert(0, 'auto_coral_points', pd.Series(autoCoralPoints))
-    XMatrix.insert(0, 'teleop_coral', pd.Series(teleopCoral))
-    XMatrix.insert(0, 'teleop_coral_points', pd.Series(teleopCoralPoints))
-    XMatrix.insert(0, 'coral_total', pd.Series(coralTotal))
-    XMatrix.insert(0, 'coral_points', pd.Series(coralPoints))
-    XMatrix.insert(0, 'algae_total', pd.Series(algaeTotal))
-    XMatrix.insert(0, 'algae_points', pd.Series(algaePoints))
-    XMatrix.insert(0, 'total_pieces', pd.Series(piecesScored))
-    XMatrix.insert(0, 'l_1_total', pd.Series(l_1))
-    XMatrix.insert(0, 'l_2_total', pd.Series(l_2))
-    XMatrix.insert(0, 'l_3_total', pd.Series(l_3))
-    XMatrix.insert(0, 'l_4_total', pd.Series(l_4))
     XMatrix.insert(0, 'auto_points', pd.Series(autoPoints))
     XMatrix.insert(0, 'teleop_points', pd.Series(teleopPoints))
     XMatrix.insert(0, 'endgame_points', pd.Series(endgamePoints))
+    XMatrix.insert(0, 'auto_climb_rate', pd.Series(autoClimb))
+    XMatrix.insert(0, 'endgame_climb_L1_rate', pd.Series(endgameClimbL1))
+    XMatrix.insert(0, 'endgame_climb_L2_rate', pd.Series(endgameClimbL2))
+    XMatrix.insert(0, 'endgame_climb_L3_rate', pd.Series(endgameClimbL3))
+    XMatrix.insert(0, 'teleop_pass', pd.Series(teleopPassing))
+    XMatrix.insert(0, 'auto_pass', pd.Series(autoPassing))
+    XMatrix.insert(0, 'total_pass', pd.Series(teleopPassing + autoPassing))
     XMatrix.insert(0, 'OPR', pd.Series(teamOPR))
+    XMatrix.insert(0, 'scouting_data_count', pd.Series(matchScoutingCount))
     XMatrix.insert(0, 'match_count', pd.Series(teamMatchCount))
     XMatrix.insert(0, 'team_number', pd.Series(teams))
-    # print(XMatrix)
+    XMatrix.insert(
+    0,
+    'total_fuel_scored',
+    XMatrix['auto_fuel_scored'] + XMatrix['teleop_fuel_scored']
+)
+    blankDefenseEntry = {
+        "auto_fuel_denied": 0,
+        "teleop_fuel_denied": 0,
+
+        "auto_fuel_scored": 0,
+        "teleop_fuel_scored": 0,
+        "total_fuel_scored": 0,
+        "foul_points": 0,
+
+        "station1": 0,
+        "station2": 0,
+        "station3": 0,
+
+        "station1_auto_tower": "",
+        "station2_auto_tower": "",
+        "station3_auto_tower": "",
+
+        "station1_endgame_tower": "",
+        "station2_endgame_tower": "",
+        "station3_endgame_tower": "",
+
+        "match_number": 0,
+        "allianceStr": "",
+    }
+    defenseMatchList = []
+    for row in data:
+        if not row.score_breakdown == None:
+            for allianceStr in row.alliances:
+                if allianceStr == 'red':
+                    opponentStr = 'blue'
+                else:
+                    opponentStr = 'red'
+                defenseMatchEntry = copy.deepcopy(blankDefenseEntry)
+                defenseMatchEntry["allianceStr"] = allianceStr
+                defenseMatchEntry["match_number"] = row.match_number
+                for k in range(3):
+                    defenseMatchEntry["station" +
+                                  str(k + 1)] = row.alliances[allianceStr].team_keys[k][3:]
+                opp1auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp2auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp3auto = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'auto_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'auto_fuel_scored'].values) > 0 else 0
+                opp1teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[0][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                opp2teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[1][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                opp3teleop = XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'teleop_fuel_scored'].values[0] if len(XMatrix.loc[XMatrix['team_number'] == row.alliances[opponentStr].team_keys[2][3:], 'teleop_fuel_scored'].values) > 0 else 0
+                predictedAutoPoints = opp1auto+opp2auto+opp3auto
+                predictedTeleopPoints = opp1teleop+opp2teleop+opp3teleop
+                defenseMatchEntry["auto_fuel_denied"] = predictedAutoPoints - row.score_breakdown[opponentStr].hubScore.autoCount
+                defenseMatchEntry["teleop_fuel_denied"] = predictedTeleopPoints - row.score_breakdown[opponentStr].hubScore.teleopCount
+
+            
+                defenseMatchList.append(copy.deepcopy(defenseMatchEntry))
+    defenseMatchDataFrame = pd.DataFrame(defenseMatchList)
+    
+    YDefenseMatrix = pd.DataFrame(defenseMatchDataFrame[DefenseOnlyKeys])
+    XMatrixDefense = pd.DataFrame(APseudoInverseDefense @ YDefenseMatrix)
+    for key in XMatrixDefense.columns:
+        XMatrix[key] = XMatrixDefense[key]
     return XMatrix, ratings

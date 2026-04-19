@@ -1,30 +1,25 @@
 import copy
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from models.match_scouting_2025 import Data2025, MatchScouting2025, Scoring2025
+from models.pit_scouting_2026 import Auto2026
+from models.scout_info import ScoutInfo
+from models.match_scouting_2026 import Data2026, MatchScouting2026, Miscellaneous2026, Scoring2026
 
 
-def dataOPR(scoutData: MatchScouting2025) -> int:
+def dataOPR(scoutData: MatchScouting2026) -> int:
     auto = scoutData.data.auto_scoring
     teleop = scoutData.data.teleop_scoring
     opr = 0
-    opr += auto.l_1 * 3
-    opr += auto.l_2 * 4
-    opr += auto.l_3 * 6
-    opr += auto.l_4 * 7
-    opr += teleop.l_1 * 2
-    opr += teleop.l_2 * 3
-    opr += teleop.l_3 * 4
-    opr += teleop.l_4 * 5
-    opr += auto.processor * 6
-    opr += teleop.net * 4
+    opr += auto.fuel_cycles * 1
+    opr += teleop.fuel_cycles * 1
     return opr
 
 
-def removeOutliers(data: list[MatchScouting2025]) -> list[MatchScouting2025]:
+def removeOutliers(data: list[MatchScouting2026]) -> list[MatchScouting2026]:
     teams = []
-    teamEntryList: list[list[tuple[int, MatchScouting2025]]] = []
+    teamEntryList: list[list[tuple[int, MatchScouting2026]]] = []
     for entry in data:
         if not teams.__contains__(entry.team_number):
             teams.append(entry.team_number)
@@ -32,17 +27,17 @@ def removeOutliers(data: list[MatchScouting2025]) -> list[MatchScouting2025]:
     for entry in data:
         teamEntryList[teams.index(entry.team_number)].append(
             (dataOPR(entry), entry))
-    noOutliers: list[list[MatchScouting2025]] = []
+    noOutliers: list[list[MatchScouting2026]] = []
     for teamEntries in teamEntryList:
         noOutliers.append(remove_outliers_iqr(teamEntries))
-    retval: list[MatchScouting2025] = []
+    retval: list[MatchScouting2026] = []
     for teamEntries in noOutliers:
         for entry in teamEntries:
             retval.append(entry)
     return retval
 
 
-def remove_outliers_iqr(data: list[tuple[int, MatchScouting2025]]) -> list[MatchScouting2025]:
+def remove_outliers_iqr(data: list[tuple[int, MatchScouting2026]]) -> list[MatchScouting2026]:
     opr_values = np.array([opr for opr, entry in data])
     q1 = np.percentile(opr_values, 25)
     q3 = np.percentile(opr_values, 75)
@@ -55,7 +50,7 @@ def remove_outliers_iqr(data: list[tuple[int, MatchScouting2025]]) -> list[Match
     return filtered_entries
 
 
-def remove_outliers(data: list[tuple[int, MatchScouting2025]]) -> list[MatchScouting2025]:
+def remove_outliers(data: list[tuple[int, MatchScouting2026]]) -> list[MatchScouting2026]:
     opr_values = np.array([opr for opr, entry in data])
     z_scores = (opr_values - np.mean(opr_values)) / np.std(opr_values)
     threshold = 3
@@ -85,7 +80,8 @@ def average(lst: list):
         return sum(numeric_values) / len(numeric_values)
 
 
-def getError(combination: dict[str, MatchScouting2025], TBAMatch: pd.Series) -> float:
+def getError(combination: dict[str, MatchScouting2026], TBAMatch: pd.Series) -> float:
+    # print("running getError")
     error = 0
     total = 0
     errorPercent = 1.0
@@ -94,25 +90,31 @@ def getError(combination: dict[str, MatchScouting2025], TBAMatch: pd.Series) -> 
         data.append(flatten_dict(combination[team].data.dict(
             exclude={'auto', 'miscellaneous'})))
     addedData = data[0]
-    processor = 0
+    fuel_cycles = 0
+    # print("First half of getError")
     for i in range(3):
-        processor += data[i]['auto_scoring_processor']
-        processor += data[i]['teleop_scoring_processor']
-    error += abs(TBAMatch['processor']-processor)
-    total += abs(TBAMatch["processor"])
+        # print("auto_fuel_cycles", data[i]['auto_fuel_cycles'])
+        # print("teleop_fuel_cycles", data[i]['teleop_fuel_cycles'])
+        fuel_cycles += data[i].get('auto_fuel_scored', 0)
+        fuel_cycles += data[i].get('teleop_fuel_scored', 0)
+        # print("First += in getError")
+    error += abs((TBAMatch['autoCount'] + (TBAMatch['teleopCount'] + TBAMatch['endGameCount']))-fuel_cycles)
+    total += abs(TBAMatch['autoCount'] + (TBAMatch['teleopCount'] + TBAMatch['endGameCount']))
+    # print(type(TBAMatch['autoCount']), TBAMatch['autoCount'])
+    # print(type(TBAMatch['teleopCount']), TBAMatch['teleopCount'])
+    # print(type(TBAMatch['endGameCount']), TBAMatch['endGameCount'])
     for field in addedData:
-        if not field == "auto_scoring_net" and not field == "teleop_scoring_net":
-            if not field == 'auto_scoring_processor' and not field == 'teleop_scoring_processor':
-                addedData[field] = data[0][field] + \
-                    data[1][field] + data[2][field]
-                total += abs(TBAMatch[field])
-                error += abs(TBAMatch[field] - addedData[field])
+        if field not in ["auto_fuel_scored", "teleop_fuel_scored"]:
+            addedData[field] = data[0][field] + \
+                data[1][field] + data[2][field]
+            total += abs(TBAMatch[field])
+            error += abs(TBAMatch[field] - addedData[field])
     if total > 0:
         errorPercent = error / total
     return errorPercent
 
 
-def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) -> dict:
+def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) -> dict:
     scouts = []
     scoutTrusts: list[list[float]] = []
     scoutTrustRatings = []
@@ -125,16 +127,16 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
         scoutTrustRatings.append(0)
     # print("made list of all scouts")
     for game in TBADict:
-        entries: list[MatchScouting2025] = []
-        teamEntries: dict[str, list[MatchScouting2025]] = {}
-        teams = []
+        entries: list[MatchScouting2026] = []
+        teamEntries: dict[int, list[MatchScouting2026]] = {}
+        teams: list[int] = []
         # get combination-based error
         for entry in scoutingData:
             if entry.match_number == game["match_number"]:
                 for i in range(3):
                     if (
                         game["station" + str(i + 1)]
-                        == entry.team_number
+                        == str(entry.team_number)
                     ):
                         entries.append(entry)
                         if not teams.__contains__(entry.team_number):
@@ -144,7 +146,7 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
             teamEntries[entry.team_number] = []
         for entry in entries:
             teamEntries[entry.team_number].append(entry)
-        combinations: list[dict[str, MatchScouting2025]] = []
+        combinations: list[dict[int, MatchScouting2026]] = []
         if len(teams) == 3:
             for team0 in teamEntries[teams[0]]:
                 for team1 in teamEntries[teams[1]]:
@@ -154,7 +156,9 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
                         )
             combinationError = []
             for i in range(len(combinations)):
+                # print("getError running")
                 combinationError.append(getError(combinations[i], game))
+                # print("getError ran")
             combinationTrust = [
                 1 - combinationError[i] for i in range(len(combinationError))
             ]
@@ -170,13 +174,21 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
                 for entry in teamEntries[teams[i]]:
                     flattenedEntry = flatten_dict(
                         entry.data.dict(exclude={'auto', 'miscellaneous'}))
+
                     for field in flattenedEntry:
-                        teamAverage[field] = 0
+                        if isinstance(flattenedEntry[field], (int, float)):
+                            teamAverage[field] = 0
+
                 for entry in teamEntries[teams[i]]:
                     flattenedEntry = flatten_dict(
                         entry.data.dict(exclude={'auto', 'miscellaneous'}))
+
                     for field in flattenedEntry:
-                        teamAverage[field] += flattenedEntry[field]
+                        if isinstance(flattenedEntry[field], (int, float)):
+                            # print("First +=  in scoutRatings running")
+                            teamAverage[field] += flattenedEntry[field]
+                            # print("First += in scoutRatings finished")
+
                 for field in teamAverage:
                     teamAverage[field] /= len(teamEntries[teams[i]])
                 for entry in teamEntries[teams[i]]:
@@ -204,8 +216,11 @@ def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]
     return retval
 
 
-def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]):
+def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]):
+    scoutingData = copy.deepcopy(scoutingData)
+    # print("fething scout ratings")
     scoutRatings = getScoutRatings(TBAData, scoutingData)
+    # print("fetched scout ratings")
     # print("got one time ratings")
     for j in range(10):
         scouts = scoutRatings["scouts"]
@@ -220,15 +235,15 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
             scoutTrusts.append([])
             scoutTrustRatings.append(0)
         for game in TBADict:
-            entries: list[MatchScouting2025] = []
-            teamEntries: dict[str, list[MatchScouting2025]] = {}
-            teams = []
+            entries: list[MatchScouting2026] = []
+            teamEntries: dict[int, list[MatchScouting2026]] = {}
+            teams: list[int] = []
             for entry in scoutingData:
                 if entry.match_number == game["match_number"]:
                     for i in range(3):
                         if (
                             game["station" + str(i + 1)]
-                            == entry.team_number
+                            == str(entry.team_number)
                         ):
                             entries.append(entry)
                             if not teams.__contains__(
@@ -241,13 +256,13 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
             for entry in entries:
                 teamEntries[entry.team_number].append(entry)
             # get combination-based error
-            combinations: list[dict[str, MatchScouting2025]] = []
+            combinations: list[dict[int, MatchScouting2026]] = []
             if len(teams) == 3:
                 for team0 in teamEntries[teams[0]]:
                     for team1 in teamEntries[teams[1]]:
                         for team2 in teamEntries[teams[2]]:
                             combinations.append(
-                                {teams[0]: team0, teams[1]                                    : team1, teams[2]: team2}
+                                {teams[0]: team0, teams[1]: team1, teams[2]: team2}
                             )
                 combinationError = []
                 for i in range(len(combinations)):
@@ -275,12 +290,16 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
                     for entry in teamEntries[teams[i]]:
                         flattenedEntry = flatten_dict(
                             entry.data.dict(exclude={'auto', 'miscellaneous'}))
+                        # print("First += encouterd")
                         totalTrust += oldTrustRatings[scoutRatings["scouts"].index(
                             entry.scout_info.user_id)]
+                        # print("Finished 1 +=")
                         for field in flattenedEntry:
+                            # print("Second += encounted")
                             teamAverage[field] += flattenedEntry[field] * \
                                 oldTrustRatings[scoutRatings["scouts"].index(
                                     entry.scout_info.user_id)]
+                            # print("Finished 2 +=")
                     for field in teamAverage:
                         if totalTrust == 0:
                             teamAverage[field] = 0
@@ -314,61 +333,64 @@ def getMarkovianRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2
     return scoutRatings
 
 
-def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2025]) -> tuple[list[MatchScouting2025], list]:
-    # print("Removed selected Pieces")
+def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) -> tuple[list[MatchScouting2026], list]:
+    # print("Running TeamBased Data")
     teams = []
-    teamMatches: list[dict[int, list[MatchScouting2025]]] = []
     retval = []
     # print("removed outliers")
     scoutRatings = getMarkovianRatings(TBAData, scoutingData)
+    # print("error in outliers ratings")
     scoutingData = removeOutliers(scoutingData)
     # print("got markovian ratings")
     for entry in scoutingData:
         if not teams.__contains__(entry.team_number):
             teams.append(entry.team_number)
-            teamMatches.append({})
-        if not entry.match_number in teamMatches[teams.index(entry.team_number)]:
-            teamMatches[teams.index(entry.team_number)
-                        ][entry.match_number] = []
-        teamMatches[teams.index(entry.team_number)][entry.match_number].append(
-            entry.match_number)
     # print("made list of teams")
+    # print(teamMatches)
     for team in teams:
-        for match, matches in teamMatches[teams.index(team)]:
-            teamEntries: list[MatchScouting2025] = matches
-            returnEntry = MatchScouting2025(event_code='', team_number=team, match_number=0, scout_info=teamEntries[0].scout_info, data=Data2025(auto=teamEntries[0].data.auto, auto_scoring=Scoring2025(
-                l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), teleop_scoring=Scoring2025(l_1=0, l_2=0, l_3=0, l_4=0, net=0, processor=0), miscellaneous=teamEntries[0].data.miscellaneous))
+        teamEntries: dict[int, list[MatchScouting2026]] = {}
+        for entry in scoutingData:
+            if entry.team_number == team:
+                teamEntries[entry.match_number] = []
+        for entry in scoutingData:
+            if entry.team_number == team:
+                teamEntries[entry.match_number].append(entry)
+        # print("error is between 327 and 336")
+        for match in teamEntries:
+            # print("inside for loop")
+            returnEntry = MatchScouting2026(event_code='', team_number=team, match_number=match, 
+                                            scout_info=ScoutInfo(user_id="", first_name="", username="", team_number=0), 
+                                            data=Data2026(
+                                                auto=Auto2026(starting_position_meters_from_hub_center=0, field_side=[], preload=False, both_sides=False, contacts_robot=False, auto_pieces=0, climb=False, steps=[]), 
+                                                auto_scoring=Scoring2026(fuel_cycles=0, passing_cycles=0, scoring_cycles=0, cycles_completed=0), 
+                                            teleop_scoring=Scoring2026(fuel_cycles=0, passing_cycles=0, scoring_cycles=0, cycles_completed=0), 
+                                            miscellaneous=Miscellaneous2026(died=False, defense=False, comments="")), time=0)
             totalTrust = 0
-            for entry in teamEntries:
+            # print("got scouting error")
+            for entry in teamEntries[match]:
                 entryTrust = scoutRatings["trustRatings"][scoutRatings["scouts"].index(
                     entry.scout_info.user_id)]
+                # print("total trust before ran")
                 totalTrust += entryTrust
-                returnEntry.data.teleop_scoring.l_1 += entry.data.teleop_scoring.l_1*entryTrust
-                returnEntry.data.teleop_scoring.l_2 += entry.data.teleop_scoring.l_2*entryTrust
-                returnEntry.data.teleop_scoring.l_3 += entry.data.teleop_scoring.l_3*entryTrust
-                returnEntry.data.teleop_scoring.l_4 += entry.data.teleop_scoring.l_4*entryTrust
-                returnEntry.data.teleop_scoring.net += entry.data.teleop_scoring.net*entryTrust
-                returnEntry.data.teleop_scoring.processor += entry.data.teleop_scoring.processor*entryTrust
-                returnEntry.data.auto_scoring.l_1 += entry.data.auto_scoring.l_1*entryTrust
-                returnEntry.data.auto_scoring.l_2 += entry.data.auto_scoring.l_2*entryTrust
-                returnEntry.data.auto_scoring.l_3 += entry.data.auto_scoring.l_3*entryTrust
-                returnEntry.data.auto_scoring.l_4 += entry.data.auto_scoring.l_4*entryTrust
-                returnEntry.data.auto_scoring.net += entry.data.auto_scoring.net*entryTrust
-                returnEntry.data.auto_scoring.processor += entry.data.auto_scoring.processor*entryTrust
+                # print("total trust ran")
+                returnEntry.data.auto_scoring.fuel_cycles += entry.data.auto_scoring.fuel_cycles*entryTrust
+                returnEntry.data.teleop_scoring.fuel_cycles += entry.data.teleop_scoring.fuel_cycles*entryTrust
+                returnEntry.data.auto_scoring.passing_cycles += entry.data.auto_scoring.passing_cycles*entryTrust
+                returnEntry.data.teleop_scoring.passing_cycles += entry.data.teleop_scoring.passing_cycles*entryTrust
+                # print(type(entry.data.auto_scoring.fuel_cycles))
+                # print(type(entry.data.teleop_scoring.fuel_cycles))
+                # print(type(entry.data.auto_scoring.passing_cycles))
+                # print(type(entry.data.teleop_scoring.passing_cycles))
             if not totalTrust == 0:
-                returnEntry.data.teleop_scoring.l_1 /= totalTrust
-                returnEntry.data.teleop_scoring.l_2 /= totalTrust
-                returnEntry.data.teleop_scoring.l_3 /= totalTrust
-                returnEntry.data.teleop_scoring.l_4 /= totalTrust
-                returnEntry.data.teleop_scoring.net /= totalTrust
-                returnEntry.data.teleop_scoring.processor /= totalTrust
-                returnEntry.data.auto_scoring.l_1 /= totalTrust
-                returnEntry.data.auto_scoring.l_2 /= totalTrust
-                returnEntry.data.auto_scoring.l_3 /= totalTrust
-                returnEntry.data.auto_scoring.l_4 /= totalTrust
-                returnEntry.data.auto_scoring.net /= totalTrust
-                returnEntry.data.auto_scoring.processor /= totalTrust
+                returnEntry.data.teleop_scoring.fuel_cycles /= totalTrust
+                returnEntry.data.auto_scoring.fuel_cycles /= totalTrust
+                returnEntry.data.auto_scoring.passing_cycles /= totalTrust
+                returnEntry.data.teleop_scoring.passing_cycles /= totalTrust
+                # print(type(entry.data.auto_scoring.fuel_cycles))
+                # print(type(entry.data.teleop_scoring.fuel_cycles))
+                # print(type(entry.data.auto_scoring.passing_cycles))
+                # print(type(entry.data.teleop_scoring.passing_cycles))
             retval.append(returnEntry)
-    retval = removeOutliers(retval)
     # print("removed more outliers")
+    # print("Finished Teambased data")
     return retval, scoutRatings

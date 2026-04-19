@@ -32,9 +32,9 @@ class ReefData(BaseModel):
 
 
 class ScoreBreakdown2025(BaseModel):
-    adjustPoints: int
+    adjustPoints: int = 0
     algaePoints: int
-    autoBonusAchieved: bool
+    autoBonusAchieved: bool = False
     autoCoralCount: int
     autoCoralPoints: int
     autoLineRobot1: str
@@ -43,9 +43,9 @@ class ScoreBreakdown2025(BaseModel):
     autoMobilityPoints: int
     autoPoints: int
     autoReef: ReefData
-    bargeBonusAchieved: bool
-    coopertitionCriteriaMet: bool
-    coralBonusAchieved: bool
+    bargeBonusAchieved: bool = False
+    coopertitionCriteriaMet: bool = False
+    coralBonusAchieved: bool = False
     endGameBargePoints: int
     endGameRobot1: str
     endGameRobot2: str

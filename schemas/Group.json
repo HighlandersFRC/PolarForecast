@@ -20,6 +20,44 @@
                     "name": "9998 other Cool Team",
                     "affiliation": "frc9998"
                 }
+            ],
+            "picklists": [
+                {
+                    "id": "loltspmo",
+                    "name": "First Picks",
+                    "ordered list": [
+                        {
+                            "number": "frcGoated",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcMid",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcGarbo",
+                            "comments": "skibidi sigma"
+                        }
+                    ]
+                },
+                {
+                    "picklist_id": "loltspmo2",
+                    "name": "Second Picks",
+                    "ordered list": [
+                        {
+                            "number": "frcGoated",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcMid",
+                            "comments": "skibidi sigma"
+                        },
+                        {
+                            "number": "frcGarbo",
+                            "comments": "skibidi sigma"
+                        }
+                    ]
+                }
             ]
         }
     ],

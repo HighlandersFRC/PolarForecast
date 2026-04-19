@@ -1,0 +1,79 @@
+{
+    "user_id": "id",
+    "team_number": 9999,
+    "event_code": "2025event",
+    "time": 1738537931,
+    "data": {
+        "driver_experience_events": 5,
+        "drive_train": "tank",
+        "can_score_coral": true,
+        "coral_levels": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "can_score_processor": true,
+        "can_score_net": true,
+        "ground_coral_pickup": true,
+        "feeder_coral_pickup": true,
+        "ground_algae_pickup": true,
+        "reef_algae_pickup": true,
+        "climbing": [
+            "shallow",
+            "deep"
+        ],
+        "spare_parts": 4,
+        "favorite_color": "black",
+        "autos": [
+            {
+                "starting_position_meters_from_processor": 3.5,
+                "steps": [
+                    {
+                        "name": "place_coral",
+                        "extra_data": {
+                            "position": "A1"
+                        }
+                    },
+                    {
+                        "name": "reef_algae",
+                        "extra_data": {
+                            "position": 0
+                        }
+                    },
+                    {
+                        "name": "feeder_pickup",
+                        "extra_data": {
+                            "processor_side": true,
+                            "position": "left || right || center"
+                        }
+                    },
+                    {
+                        "name": "coral_mark_pickup",
+                        "extra_data": {
+                            "position": "processor || middle || other",
+                            "algae": true,
+                            "coral": true
+                        }
+                    },
+                    {
+                        "name": "net_algae",
+                        "extra_data": {
+                            "position": "left || right || center"
+                        }
+                    },
+                    {
+                        "name": "processor",
+                        "extra_data": {}
+                    }
+                ],
+                "field_side": [
+                    "red",
+                    "blue"
+                ],
+                "exit": true,
+                "preload": true
+            }
+        ]
+    }
+}

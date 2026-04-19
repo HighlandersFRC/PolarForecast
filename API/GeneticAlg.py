@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 import random
 import numpy as np
 import pandas as pd
@@ -9,35 +10,45 @@ class geneticAlg:
         self,
         errorFunction,
         functionInputs,
+        mins,
+        maxs,
         startingValue: pd.DataFrame,
         mutationPercent: float,
     ) -> None:
         self.errorFunction = errorFunction
         self.startingValue = startingValue
         self.mutationPercent = mutationPercent
+        self.generationNumber = 0
         self.numParents = 3
         self.populationSize = 0
+        self.mins = mins
+        self.maxs = maxs
         for i in range(self.numParents+1):
             self.populationSize += i
         self.functionInputs = functionInputs
 
-    def mutate_gene(self, current_value, sigma):
-        mutated_value = current_value + np.random.normal(0, sigma)
-        if mutated_value < 0:
-            return 0
-        else:
-            return mutated_value
+    def clamp(self, min, max, value):
+        return np.max([min, np.min([max, value])])
+
+    def mutate_gene(self, current_value, max, min):
+        sigma = 1  # (max - min)/(1.0+float(self.generationNumber)*0.05)
+        mutated_value = np.random.normal(current_value, sigma)
+        return mutated_value
 
     def mutateGenes(self, mutant: pd.DataFrame) -> pd.DataFrame:
-        mutant = copy.deepcopy(mutant)
+        mutant = pd.DataFrame(copy.deepcopy(mutant))
         for column in mutant.columns:
-            if column != "team_number":
+            if column != "team_number" and column in self.mins:
                 for index, value in mutant[column].items():
-                    rand = random.random()
+                    rand = np.random.random()
+                    max = self.maxs[column]
+                    min = self.mins[column]
+                    mutant.at[index, column] = self.clamp(min, max, value)
                     if rand < self.mutationPercent:
                         mutant.at[index, column] = self.mutate_gene(
-                            value,
-                            1.5,
+                            current_value=value,
+                            max=max,
+                            min=min,
                         )
         return mutant
 
@@ -48,11 +59,10 @@ class geneticAlg:
     ) -> pd.DataFrame:
         mask = np.random.randint(0, 2, size=parent1.shape).astype(bool)
         child1 = np.where(mask, parent1, parent2)
-        return pd.DataFrame(child1)
+        return pd.DataFrame(child1, columns=parent1.columns)
 
     def generateOriginalPopulation(self, startingValue: pd.DataFrame) -> list:
         population = []
-        population.append(pd.DataFrame(copy.deepcopy(startingValue)))
         while len(population) < self.populationSize:
             population.append(self.mutateGenes(startingValue))
         return population
@@ -68,18 +78,10 @@ class geneticAlg:
         return population
 
     def getParents(self, population: list) -> list:
-        returnPopulation = []
-        parentsFound = False
-        while not parentsFound:
-            for i in range(int(len(population)/2)):
-                if self.errorFunction(population[i*2], self.functionInputs) < self.errorFunction(population[i*2+1], self.functionInputs):
-                    returnPopulation.append(population[i*2])
-                else:
-                    returnPopulation.append(population[i*2+1])
-                if len(returnPopulation) == self.numParents:
-                    parentsFound = True
-                    break
-        return returnPopulation
+        returnPopulation = copy.deepcopy(population)
+        population.sort(key=lambda x: self.errorFunction(
+            x, self.functionInputs))
+        return returnPopulation[:self.numParents]
 
     def setBestSolution(self, population: list):
         population = copy.deepcopy(population)
@@ -95,13 +97,13 @@ class geneticAlg:
             self.improved = False
 
     def run(self):
-        np.random.seed(1186244499)
+        np.random.seed(datetime.now().microsecond)
         self.population = self.generateOriginalPopulation(self.startingValue)
         self.bestSolutionError = -1.0
         self.setBestSolution(self.population)
         foundSolution = False
         self.generationsSinceImprovement = 0
-        generationNumber = 0
+        self.generationNumber = 0
         while not foundSolution:
             self.parents = self.getParents(self.population)
             self.population = self.generateNewPopulation(self.parents)
@@ -112,9 +114,7 @@ class geneticAlg:
                 self.generationsSinceImprovement += 1
             if self.generationsSinceImprovement >= 25:
                 foundSolution = True
-            if generationNumber > 10000:
+            if self.generationNumber > 1500:
                 foundSolution = True
-            generationNumber += 1
-            # print("generation", generationNumber)
-            # print("error", self.bestSolutionError)
+            self.generationNumber += 1
         return [self.bestSolution, self.bestSolutionError]

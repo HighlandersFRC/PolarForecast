@@ -56,7 +56,7 @@ ENABLE_TBA = os.environ.get("PF_TBA_ENABLE", True)  # Enable Blue ALliance
 # Specifies if the Polar Forecast API should Poll Blue Alliance for Data.
 TBA_POLLING = os.environ.get("PF_TBA_POLLING", True)
 # Polling invterval in seconds.
-TBA_POLLING_INTERVAL = os.environ.get("PF_TBA_POLLING_INTERVAL", 30 * 60)
+TBA_POLLING_INTERVAL = os.environ.get("PF_TBA_POLLING_INTERVAL", 10 * 60)
 TBA_API_KEY = os.environ.get("PF_TBA_API_KEY", "")
 logging.info("Using TBA API Key: "+TBA_API_KEY)
 if len(TBA_API_KEY) == 0:
@@ -108,12 +108,22 @@ MONGO_CONNECTION = os.environ.get(
     "PF_MONGO_CONNECTION", "mongodb://localhost:27017")
 
 APP_HOST = os.environ.get("APP_HOST", "")
-ALLOW_ORIGINS = [
-    "127.0.0.1:8000",
+_default_allow_origins = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
     "http://localhost:8080",
+    "https://polarforecastfrc.com",
+    "https://www.polarforecastfrc.com",
+    "https://polarforecast-frc.com",
+    "https://www.polarforecast-frc.com",
+    "https://highlanderscouting.azurewebsites.net",
+    "https://highlanderscoutingkc.azurewebsites.net",
 ]
+_allow_origins_from_env = os.environ.get("PF_ALLOW_ORIGINS", "").strip()
+_env_allow_origins = []
+if _allow_origins_from_env:
+    _env_allow_origins = [origin.strip() for origin in _allow_origins_from_env.split(",") if origin.strip()]
+ALLOW_ORIGINS = list(dict.fromkeys(_default_allow_origins + _env_allow_origins))
 # Password
 EDIT_PASSWORD = os.environ.get("PF_EDIT_PASSWORD", "")
 KEYCLOAK_ADMIN = os.environ.get("KEYCLOAK_ADMIN", "")
