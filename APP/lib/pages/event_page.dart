@@ -2424,6 +2424,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       commentsController,
                       'Comments',
                       maxLines: 3,
+                      maxLength: 500,
                       accent: primaryBlue,
                       textCol: textPrimary,
                       onChanged: (val) {
@@ -2527,6 +2528,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       bool isNum = false,
       IconData? prefixIcon,
       int maxLines = 1,
+      int? maxLength, // Add this
       required Color accent,
       required Color textCol,
       Function(String)? onChanged}) {
@@ -2535,6 +2537,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       enabled: enabled,
       onChanged: onChanged,
       maxLines: maxLines,
+      maxLength: maxLength, // Add this
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
       inputFormatters: isNum ? [FilteringTextInputFormatter.digitsOnly] : [],
       style: TextStyle(fontFamily: 'Font', color: textCol),
@@ -2545,6 +2548,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             TextStyle(color: accent.withOpacity(0.8), fontFamily: 'Font'),
         filled: true,
         fillColor: Colors.black26,
+        counterStyle: TextStyle(
+            color: accent.withOpacity(0.6), fontFamily: 'Font'), // Add this
         enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: accent.withOpacity(0.3))),
         focusedBorder:
