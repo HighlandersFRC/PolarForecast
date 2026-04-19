@@ -70,6 +70,8 @@ class _PercentCounterState extends State<PercentCounter> {
 
     Color primary = Colors.blue;
 
+    // buildButton no longer wraps itself in Expanded —
+    // callers decide how to size it (Expanded inside a Row, or SizedBox, etc.)
     Widget buildButton({
       required String label,
       required Color color,
@@ -77,26 +79,23 @@ class _PercentCounterState extends State<PercentCounter> {
     }) {
       final bool isDisabled = onTap == null;
 
-      return Expanded(
-        child: Material(
-          color: isDisabled
-              ? Colors.grey.withOpacity(0.2)
-              : color.withOpacity(0.12),
+      return Material(
+        color:
+            isDisabled ? Colors.grey.withOpacity(0.2) : color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: onTap,
-            child: Container(
-              height: buttonHeight,
-              alignment: Alignment.center,
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: isDisabled ? Colors.grey : color,
-                  fontFamily: 'Font',
-                ),
+          onTap: onTap,
+          child: Container(
+            height: buttonHeight,
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: isDisabled ? Colors.grey : color,
+                fontFamily: 'Font',
               ),
             ),
           ),
@@ -155,26 +154,65 @@ class _PercentCounterState extends State<PercentCounter> {
 
             const SizedBox(height: 18),
 
-            /// -60 / +60
-            Row(
+            /// BUTTONS — all in one Column of Rows so every button
+            /// lives inside a Row and can safely use Expanded.
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(width: 14),
-                buildButton(
-                  label: '+60%',
-                  color: primary,
-                  onTap: disabled || atMax ? null : () => _updateValue(60),
+                // Top row: -10% spanning full width
+                Row(
+                  children: [
+                    Expanded(
+                      child: buildButton(
+                        label: '-10%',
+                        color: Colors.red,
+                        onTap: disabled || widget.value <= 0
+                            ? null
+                            : () => _updateValue(-10),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 14),
-                buildButton(
-                  label: '+80%',
-                  color: primary,
-                  onTap: disabled || atMax ? null : () => _updateValue(80),
-                ),
-                const SizedBox(width: 14),
-                buildButton(
-                  label: '+100%',
-                  color: primary,
-                  onTap: disabled || atMax ? null : () => _updateValue(100),
+                const SizedBox(height: 8),
+                // Bottom row: +10%, +60%, +80%, +100%
+                Row(
+                  children: [
+                    Expanded(
+                      child: buildButton(
+                        label: '+10%',
+                        color: primary,
+                        onTap:
+                            disabled || atMax ? null : () => _updateValue(10),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: buildButton(
+                        label: '+60%',
+                        color: primary,
+                        onTap:
+                            disabled || atMax ? null : () => _updateValue(60),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: buildButton(
+                        label: '+80%',
+                        color: primary,
+                        onTap:
+                            disabled || atMax ? null : () => _updateValue(80),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: buildButton(
+                        label: '+100%',
+                        color: primary,
+                        onTap:
+                            disabled || atMax ? null : () => _updateValue(100),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
