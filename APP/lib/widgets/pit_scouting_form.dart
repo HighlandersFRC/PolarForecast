@@ -9,6 +9,7 @@ import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import 'package:scouting_app/widgets/floatyCounter.dart';
+import 'package:scouting_app/widgets/intergerCounter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';
@@ -189,17 +190,12 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
           spare_parts: 0,
           favorite_color: '',
           autos: [],
-          can_feed_human_player: false,
-          can_pick_up_from_ground: false,
           fixedShooting: false,
           nearTower: false,
           nearHub: false,
-          go_over_bump: false,
           go_under_trench: false,
           can_climb: false,
           can_climb_in_autonomous: false,
-          automatically_shooting: false,
-          shooting_while_moving: false,
           auto: Auto2026(
               starting_position_meters_from_hub_center: 0,
               steps: [],
@@ -311,16 +307,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
             data: pitScoutingData.data.copyWith(comments: value),
           );
           break;
-        case 'can_feed_human_player':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_feed_human_player: value),
-          );
-          break;
-        case 'can_pick_up_from_ground':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(can_pick_up_from_ground: value),
-          );
-          break;
         case 'fixedShooting':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(fixedShooting: value),
@@ -349,11 +335,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'bps':
           pitScoutingData = pitScoutingData.copyWith(
               data: pitScoutingData.data.copyWith(bps: value));
-          break;
-        case 'go_over_bump':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(go_over_bump: value),
-          );
           break;
         case 'go_under_trench':
           pitScoutingData = pitScoutingData.copyWith(
@@ -395,16 +376,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
         case 'can_climb_in_autonomous':
           pitScoutingData = pitScoutingData.copyWith(
             data: pitScoutingData.data.copyWith(can_climb_in_autonomous: value),
-          );
-          break;
-        case 'automatically_shooting':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(automatically_shooting: value),
-          );
-          break;
-        case 'shooting_while_moving':
-          pitScoutingData = pitScoutingData.copyWith(
-            data: pitScoutingData.data.copyWith(shooting_while_moving: value),
           );
           break;
         case 'favorite_color':
@@ -806,34 +777,6 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                           SwitchListTile(
                                             activeThumbColor: Colors.blue,
                                             inactiveThumbColor: Colors.blue,
-                                            title: Text('Human Player Feed',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            value: pitScoutingData
-                                                .data.can_feed_human_player,
-                                            onChanged: widget.locked
-                                                ? null
-                                                : (value) => handleChange(
-                                                    'can_feed_human_player',
-                                                    value),
-                                          ),
-                                          SwitchListTile(
-                                            activeThumbColor: Colors.blue,
-                                            inactiveThumbColor: Colors.blue,
-                                            title: Text('Ground Pickup',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            value: pitScoutingData
-                                                .data.can_pick_up_from_ground,
-                                            onChanged: widget.locked
-                                                ? null
-                                                : (value) => handleChange(
-                                                    'can_pick_up_from_ground',
-                                                    value),
-                                          ),
-                                          SwitchListTile(
-                                            activeThumbColor: Colors.blue,
-                                            inactiveThumbColor: Colors.blue,
                                             title: Text('Can Go Under Trench',
                                                 style: TextStyle(
                                                     fontFamily: 'Font')),
@@ -843,50 +786,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                                 ? null
                                                 : (value) => handleChange(
                                                     'go_under_trench', value),
-                                          ),
-                                          SwitchListTile(
-                                            activeThumbColor: Colors.blue,
-                                            inactiveThumbColor: Colors.blue,
-                                            title: Text('Can Go Over Bump',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            value: pitScoutingData
-                                                .data.go_over_bump,
-                                            onChanged: widget.locked
-                                                ? null
-                                                : (value) => handleChange(
-                                                    'go_over_bump', value),
-                                          ),
-                                          SwitchListTile(
-                                            activeThumbColor: Colors.blue,
-                                            inactiveThumbColor: Colors.blue,
-                                            title: Text(
-                                                'Automatically Shooting',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            value: pitScoutingData
-                                                .data.automatically_shooting,
-                                            onChanged: widget.locked
-                                                ? null
-                                                : (value) => handleChange(
-                                                    'automatically_shooting',
-                                                    value),
-                                          ),
-                                          SwitchListTile(
-                                            activeThumbColor: Colors.blue,
-                                            inactiveThumbColor: Colors.blue,
-                                            title: Text(
-                                                'Can Shoot While Moving',
-                                                style: TextStyle(
-                                                    fontFamily: 'Font')),
-                                            value: pitScoutingData
-                                                .data.shooting_while_moving,
-                                            onChanged: widget.locked
-                                                ? null
-                                                : (value) => handleChange(
-                                                    'shooting_while_moving',
-                                                    value),
-                                          ),
+                                          )
                                         ],
                                       ),
                                     ),
@@ -1271,12 +1171,12 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                             BorderRadius.circular(12)),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
-                                      child: Counter(
+                                      child: IntegerCounter(
+                                        locked: widget.locked,
                                         label: 'Hopper Capacity',
                                         value: pitScoutingData
                                             .data.hopper_capacity,
-                                        max: 100000,
-                                        locked: widget.locked,
+                                        max: 1000,
                                         onChanged: (capacity) {
                                           setState(() {
                                             pitScoutingData =

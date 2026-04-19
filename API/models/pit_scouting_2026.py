@@ -49,18 +49,13 @@ class PitData2026(BaseModel):
     driver_experience_events: int
     drive_train: str
     type_of_shooter: str
-    can_feed_human_player: bool
-    can_pick_up_from_ground: bool
     fixedShooting: bool
     nearTower: bool
     nearHub: bool
-    go_over_bump: bool
     go_under_trench: bool
     can_climb: bool
     climbing: list[int]
     can_climb_in_autonomous: bool
-    automatically_shooting: bool
-    shooting_while_moving: bool
     main_strategy: str
     spare_parts: int
     auto_scoring: Scoring2026 = Field(default_factory=Scoring2026)

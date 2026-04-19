@@ -1,64 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class FloatyCounter extends StatefulWidget {
+class IntegerCounter extends StatefulWidget {
   final String label;
-  final double value;
-  final double max;
-  final double min;
-  final ValueChanged<double> onChanged;
-  final int decimalPlaces;
+  final int value;
+  final int max;
+  final int min;
+  final ValueChanged<int> onChanged;
   final bool locked;
-  final double step;
+  final int step;
 
-  const FloatyCounter({
+  const IntegerCounter({
     Key? key,
     required this.label,
     required this.value,
     required this.max,
     this.min = 0,
     required this.onChanged,
-    this.decimalPlaces = 2,
     this.locked = false,
-    this.step = 0.1,
+    this.step = 1,
   }) : super(key: key);
 
   @override
-  State<FloatyCounter> createState() => _FloatyCounterState();
+  State<IntegerCounter> createState() => _IntegerCounterState();
 }
 
-class _FloatyCounterState extends State<FloatyCounter> {
-  late double _currentValue;
+class _IntegerCounterState extends State<IntegerCounter> {
+  late int _currentValue;
   late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
     _currentValue = widget.value.clamp(widget.min, widget.max);
-    _controller = TextEditingController(
-      text: _currentValue.toStringAsFixed(widget.decimalPlaces),
-    );
+    _controller = TextEditingController(text: _currentValue.toString());
   }
 
   @override
-  void didUpdateWidget(FloatyCounter oldWidget) {
+  void didUpdateWidget(IntegerCounter oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _currentValue = widget.value.clamp(widget.min, widget.max);
-      _controller.text = _currentValue.toStringAsFixed(widget.decimalPlaces);
+      _controller.text = _currentValue.toString();
     }
   }
 
   void _manualSubmit(String val) {
-    final parsed = double.tryParse(val);
+    final parsed = int.tryParse(val);
     if (parsed != null) {
       setState(() {
         _currentValue = parsed.clamp(widget.min, widget.max);
-        _controller.text = _currentValue.toStringAsFixed(widget.decimalPlaces);
+        _controller.text = _currentValue.toString();
       });
       widget.onChanged(_currentValue);
     } else {
-      _controller.text = _currentValue.toStringAsFixed(widget.decimalPlaces);
+      _controller.text = _currentValue.toString();
     }
   }
 
@@ -92,11 +88,10 @@ class _FloatyCounterState extends State<FloatyCounter> {
             TextField(
               readOnly: widget.locked,
               controller: _controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                FilteringTextInputFormatter.digitsOnly,
               ],
               decoration: InputDecoration(
                 labelText: '${widget.min} – ${widget.max}',

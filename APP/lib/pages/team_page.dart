@@ -2015,7 +2015,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                   _buildDetailRow("Drive Train", data.drive_train, Colors.blue),
                   _buildDetailRow("Robot Height", "${data.robot_height}\"",
                       Colors.blueGrey),
-                  _buildBoolRow("Can Go Over Bump", data.go_over_bump),
                   _buildBoolRow("Can Go Under Trench", data.go_under_trench),
                 ],
               ),
@@ -2027,9 +2026,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                   _buildDetailRow("Type", data.type_of_shooter, Colors.orange),
                   _buildDetailRow(
                       "BPS", data.bps.toStringAsFixed(2), Colors.orange),
-                  _buildBoolRow("Auto Shooting", data.automatically_shooting),
-                  _buildBoolRow(
-                      "Shooting While Moving", data.shooting_while_moving),
                   _buildBoolRow("Fixed Shooting", data.fixedShooting),
                 ],
               ),
@@ -2038,8 +2034,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                 icon: Icons.download,
                 theme: theme,
                 children: [
-                  _buildBoolRow("Ground Pickup", data.can_pick_up_from_ground),
-                  _buildBoolRow("Human Feed", data.can_feed_human_player),
                   _buildBoolRow("Near Tower", data.nearTower),
                   _buildBoolRow("Near Hub", data.nearHub),
                   _buildDetailRow("Hopper Capacity",
