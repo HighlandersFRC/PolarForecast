@@ -9,11 +9,11 @@ from models.match_scouting_2026 import Data2026, MatchScouting2026, Miscellaneou
 
 
 def dataOPR(scoutData: MatchScouting2026) -> int:
-    auto = scoutData.data.auto_scoring
-    teleop = scoutData.data.teleop_scoring
+    # auto = scoutData.data.auto_scoring
+    # teleop = scoutData.data.teleop_scoring
     opr = 0
-    opr += auto.fuel_cycles * 1
-    opr += teleop.fuel_cycles * 1
+    # opr += auto.fuel_cycles * 1
+    # opr += teleop.fuel_cycles * 1
     return opr
 
 
@@ -373,8 +373,6 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) 
                 # print("total trust before ran")
                 totalTrust += entryTrust
                 # print("total trust ran")
-                returnEntry.data.auto_scoring.fuel_cycles += entry.data.auto_scoring.fuel_cycles*entryTrust
-                returnEntry.data.teleop_scoring.fuel_cycles += entry.data.teleop_scoring.fuel_cycles*entryTrust
                 returnEntry.data.auto_scoring.passing_cycles += entry.data.auto_scoring.passing_cycles*entryTrust
                 returnEntry.data.teleop_scoring.passing_cycles += entry.data.teleop_scoring.passing_cycles*entryTrust
                 # print(type(entry.data.auto_scoring.fuel_cycles))
@@ -382,8 +380,6 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) 
                 # print(type(entry.data.auto_scoring.passing_cycles))
                 # print(type(entry.data.teleop_scoring.passing_cycles))
             if not totalTrust == 0:
-                returnEntry.data.teleop_scoring.fuel_cycles /= totalTrust
-                returnEntry.data.auto_scoring.fuel_cycles /= totalTrust
                 returnEntry.data.auto_scoring.passing_cycles /= totalTrust
                 returnEntry.data.teleop_scoring.passing_cycles /= totalTrust
                 # print(type(entry.data.auto_scoring.fuel_cycles))

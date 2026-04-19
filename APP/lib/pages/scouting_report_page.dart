@@ -89,7 +89,7 @@ class _ScoutingReportPageState extends State<ScoutingReportPage> {
                       color: Colors.grey[400], size: 48),
                   const SizedBox(height: 16),
                   Text(
-                    'No data available',
+                    'Not enough data this year',
                     style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
                 ],

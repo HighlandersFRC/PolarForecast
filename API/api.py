@@ -1471,7 +1471,7 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     GroupCollection.find_one_and_update(
         {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
     updateGroupStatus(DB_Entry, event)
-    updateGroupData(DB_Entry, event)
+    updateGroupData(DB_Entry, event, event_type=1)
     updateGroupGridPitData(DB_Entry, event)
     return get_group(group_name=group_name, token=token)
 
