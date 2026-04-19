@@ -65,12 +65,10 @@ class _PercentCounterState extends State<PercentCounter> {
     const double buttonHeight = 50;
     const double fontSize = 32;
 
-    final bool atMin = widget.value <= 0;
     final bool atMax = widget.value >= widget.max;
     final bool disabled = widget.locked;
 
     Color primary = Colors.blue;
-    Color danger = Colors.red;
 
     Widget buildButton({
       required String label,

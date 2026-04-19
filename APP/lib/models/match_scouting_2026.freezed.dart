@@ -573,9 +573,6 @@ AutoScoring _$AutoScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AutoScoring {
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
   int get fuel_scored => throw _privateConstructorUsedError;
   int get fuel_scored_hopper => throw _privateConstructorUsedError;
   int get hopper_capacity => throw _privateConstructorUsedError;
@@ -685,20 +682,19 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
       {required this.fuel_scored,
-      required this.fuel_scored_hopper,
-      required this.hopper_capacity});
+      this.fuel_scored_hopper = -1,
+      this.hopper_capacity = 32});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
 
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
   @override
   final int fuel_scored;
   @override
+  @JsonKey()
   final int fuel_scored_hopper;
   @override
+  @JsonKey()
   final int hopper_capacity;
 
   @override
@@ -743,15 +739,12 @@ class _$AutoScoringImpl implements _AutoScoring {
 abstract class _AutoScoring implements AutoScoring {
   factory _AutoScoring(
       {required final int fuel_scored,
-      required final int fuel_scored_hopper,
-      required final int hopper_capacity}) = _$AutoScoringImpl;
+      final int fuel_scored_hopper,
+      final int hopper_capacity}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
 
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
   @override
   int get fuel_scored;
   @override
@@ -882,8 +875,8 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
       {required this.fuel_scored,
-      required this.fuel_scored_hopper,
-      required this.hopper_capacity});
+      this.fuel_scored_hopper = -1,
+      this.hopper_capacity = 32});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$TeleopScoringImplFromJson(json);
@@ -891,8 +884,10 @@ class _$TeleopScoringImpl implements _TeleopScoring {
   @override
   final int fuel_scored;
   @override
+  @JsonKey()
   final int fuel_scored_hopper;
   @override
+  @JsonKey()
   final int hopper_capacity;
 
   @override
@@ -937,8 +932,8 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
       {required final int fuel_scored,
-      required final int fuel_scored_hopper,
-      required final int hopper_capacity}) = _$TeleopScoringImpl;
+      final int fuel_scored_hopper,
+      final int hopper_capacity}) = _$TeleopScoringImpl;
 
   factory _TeleopScoring.fromJson(Map<String, dynamic> json) =
       _$TeleopScoringImpl.fromJson;
