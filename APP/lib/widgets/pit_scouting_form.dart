@@ -771,7 +771,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2),
                                       child: Column(
                                         children: [
                                           SwitchListTile(
@@ -806,7 +807,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2),
                                       child: Column(
                                         children: [
                                           SwitchListTile(
@@ -900,7 +902,8 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2),
                                       child: Column(
                                         children: [
                                           SwitchListTile(
