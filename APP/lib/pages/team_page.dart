@@ -614,9 +614,6 @@ class _StatsTabState extends State<_StatsTab> {
     'match_count': 'Match Count',
     'OPR': 'OPR',
     'OPRRank': 'OPR Rank',
-    'total_pass': 'Total Pass',
-    'auto_pass': 'Auto Pass',
-    'teleop_pass': 'Teleop Pass',
     'endgame_points': 'Endgame Points',
     'teleop_points': 'Teleop Points',
     'auto_points': 'Auto Points',
@@ -644,11 +641,6 @@ class _StatsTabState extends State<_StatsTab> {
       'endgame_points',
       'climbing_points',
       'foul_points',
-    ],
-    'Passing': [
-      'total_pass',
-      'auto_pass',
-      'teleop_pass',
     ],
     'Fuel Scored': [
       'auto_fuel_cycles',

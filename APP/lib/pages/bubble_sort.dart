@@ -1131,30 +1131,6 @@ class _BubbleSortState extends State<BubbleSort> {
                       opsStats.endgame_points, side),
                   _buildStatRow("Climbing Points", stats.climbing_points,
                       opsStats.climbing_points, side),
-                  _buildStatRow("Total Pass", stats.total_pass,
-                      opsStats.total_pass, side),
-
-                  // Auto Pass - Clickable
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AutoComparisonContainerPage(
-                            eventCode: widget.eventCode,
-                            leftTeamNumber: teamNumber,
-                            rightTeamNumber: opsStats.team_number,
-                            teamNames: names,
-                          ),
-                        ),
-                      );
-                    },
-                    child: _buildStatRow(
-                        "Auto Pass", stats.auto_pass, opsStats.auto_pass, side),
-                  ),
-
-                  _buildStatRow("Teleop Pass", stats.teleop_pass,
-                      opsStats.teleop_pass, side),
 
                   // Auto Fuel - Clickable
                   GestureDetector(
@@ -1468,9 +1444,6 @@ class _BubbleSortState extends State<BubbleSort> {
         teleop_points: 0,
         endgame_points: 0,
         climbing_points: 0,
-        total_pass: 0,
-        auto_pass: 0,
-        teleop_pass: 0,
         total_fuel_scored: 0,
         foul_points: 0,
         death_rate: 0,

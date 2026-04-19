@@ -65,7 +65,6 @@ class _PicklistPageState extends State<PicklistPage> {
       'Auto Points',
       'Teleop Points',
       'Endgame Points',
-      'Teleop Pass',
       'Sim RP',
       'Death Rate',
       'Defense Rate'
@@ -84,7 +83,6 @@ class _PicklistPageState extends State<PicklistPage> {
         stats?.auto_points.toStringAsFixed(2) ?? '',
         stats?.teleop_points.toStringAsFixed(2) ?? '',
         stats?.endgame_points.toStringAsFixed(2) ?? '',
-        stats?.teleop_pass.toStringAsFixed(2) ?? '',
         stats?.simulated_rp.toString() ?? '',
         stats?.death_rate.toStringAsFixed(2) ?? '',
         stats?.defense_rate.toStringAsFixed(2) ?? '',
@@ -145,9 +143,6 @@ class _PicklistPageState extends State<PicklistPage> {
     'Auto Points': (t) => t.auto_points,
     'Teleop Points': (t) => t.teleop_points,
     'Endgame Points': (t) => t.endgame_points,
-    'Total Pass': (t) => t.total_pass,
-    'Auto Pass': (t) => t.auto_pass,
-    'Teleop Pass': (t) => t.teleop_pass,
     'Climbing Points': (t) => t.climbing_points,
     'Auto Fuel Scored': (t) => t.auto_fuel_scored,
     'Teleop Fuel Scored': (t) => t.teleop_fuel_scored,
@@ -1358,13 +1353,6 @@ class _PicklistPageState extends State<PicklistPage> {
                                                                     .toStringAsFixed(
                                                                         1),
                                                                 Colors.orange),
-                                                            _buildStatBadge(
-                                                                'Pass',
-                                                                teamStats
-                                                                    .teleop_pass
-                                                                    .toStringAsFixed(
-                                                                        1),
-                                                                Colors.blue),
                                                           ],
                                                         ],
                                                       ),
@@ -1639,13 +1627,6 @@ class _PicklistPageState extends State<PicklistPage> {
                                                                 .toStringAsFixed(
                                                                     1),
                                                             Colors.orange),
-                                                        _buildStatBadge(
-                                                            'Pass',
-                                                            teamStats
-                                                                .teleop_pass
-                                                                .toStringAsFixed(
-                                                                    1),
-                                                            Colors.blue),
                                                         _buildStatBadge(
                                                             'Death',
                                                             '${(teamStats.death_rate * 100).toStringAsFixed(0)}%',

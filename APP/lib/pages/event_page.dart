@@ -782,14 +782,7 @@ class _TeamDataSource extends DataGridSource {
               opr: e.value,
               scouting: scouting);
         }
-        if (e.columnName == 'teleop_pass') {
-          return _PassingMenuOnClick(
-              teamNumber: int.parse(row.getCells()[0].value.toString()),
-              color: color,
-              auto: false,
-              passingDPR: e.value,
-              rankings: rankings);
-        }
+
         if (e.columnName == 'teleop_fuel_scored') {
           return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
@@ -991,9 +984,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
         };
         List<String> seriesLabels = [
           'auto_scoring_fuel_scored',
-          'auto_scoring_passing_cycles',
           'teleop_scoring_fuel_scored',
-          'teleop_scoring_passing_cycles',
         ];
         for (var series in seriesLabels) {
           seriesData[series] = [];
@@ -1104,85 +1095,6 @@ class _OvertimeChartOnClick extends StatelessWidget {
                   ));
         }
       },
-    );
-  }
-}
-
-class _PassingMenuOnClick extends StatelessWidget {
-  final bool auto;
-  final int teamNumber;
-  final Color color;
-  final double passingDPR;
-  final List<TeamStats2026> rankings;
-
-  _PassingMenuOnClick({
-    required this.auto,
-    required this.teamNumber,
-    required this.color,
-    required this.passingDPR,
-    required this.rankings,
-  });
-
-  final GlobalKey containerKey = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      key: containerKey,
-      onTap: () {
-        final ctx = containerKey.currentContext;
-        if (ctx == null) return;
-
-        final renderBox = ctx.findRenderObject() as RenderBox;
-
-        final overlay = Overlay.of(context, rootOverlay: true)
-            .context
-            .findRenderObject() as RenderBox;
-
-        final items = <PopupMenuEntry<void>>[
-          PopupMenuItem<void>(
-            child: Text(
-              'Team $teamNumber',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-          PopupMenuItem<void>(
-            child: Text(
-              'Passing DPR: ${passingDPR.toStringAsFixed(1)}',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-          PopupMenuItem<void>(
-            child: Text(
-              auto ? 'Auto' : 'TeleOp',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-        ];
-
-        showMenu<void>(
-          context: context,
-          position: RelativeRect.fromRect(
-            renderBox.localToGlobal(Offset.zero) & renderBox.size,
-            Offset.zero & overlay.size,
-          ),
-          items: items,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        alignment: Alignment.center,
-        color: color,
-        child: Text(
-          '${(passingDPR * 10).roundToDouble() / 10}',
-          style: const TextStyle(
-            fontFamily: 'Font',
-            color: Colors.white,
-            decoration: TextDecoration.underline,
-            decorationThickness: 2,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1477,9 +1389,7 @@ class _ChartsTabState extends State<_ChartsTab> {
               };
               List<String> seriesLabels = [
                 'auto_scoring_fuel_scored',
-                'auto_scoring_passing_cycles',
                 'teleop_scoring_fuel_scored',
-                'teleop_scoring_passing_cycles',
               ];
               for (var series in seriesLabels) {
                 seriesData[series] = [];
@@ -1891,16 +1801,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                     Field(
                         name: 'Auto Fuel',
                         key: 'auto_fuel_scored',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Teleop Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Auto Pass',
-                        key: 'auto_pass',
                         enabled: true,
                         weight: 1),
                     Field(
