@@ -16,7 +16,6 @@ import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/deaths_form.dart';
 import 'package:scouting_app/widgets/login_widget.dart';
 import 'package:scouting_app/widgets/polar_forecast_app_bar.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SnowField extends StatefulWidget {
@@ -737,7 +736,6 @@ class _BubbleSortState extends State<BubbleSort> {
         widget.onSwap(j, j + 1);
       }
 
-      // Always persist after a comparison decision, even when no swap occurs.
       widget.onAutoSave();
 
       if (shouldSwap) {
@@ -787,37 +785,62 @@ class _BubbleSortState extends State<BubbleSort> {
   }
 
   Widget _debugBarChart() {
-    final current = orderHistory.isEmpty
-        ? widget.picks.map((e) => e.number).toList()
-        : orderHistory.last;
+    final total = widget.picks.length;
+    // Maximum possible comparisons for bubble sort: n*(n-1)/2
+    final maxSteps = total > 1 ? (total * (total - 1) / 2).toInt() : 1;
+    final progress = (stepCount / maxSteps).clamp(0.0, 1.0);
+    final percent = (progress * 100).toStringAsFixed(0);
 
-    return SizedBox(
-      height: 250,
-      child: SfCartesianChart(
-        primaryXAxis: CategoryAxis(),
-        primaryYAxis: NumericAxis(
-          isInversed: true,
-          minimum: 1,
-        ),
-        series: <ColumnSeries<_BarData, String>>[
-          ColumnSeries<_BarData, String>(
-            dataSource: current.asMap().entries.map((e) {
-              return _BarData(
-                team: e.value,
-                position: e.key + 1,
-              );
-            }).toList(),
-            xValueMapper: (d, _) => d.team,
-            yValueMapper: (d, _) => d.position,
-            pointColorMapper: (d, index) {
-              final isActive = index == j || index == j + 1;
-              if (isActive) return Colors.orange;
-              return Colors.blue;
-            },
-            dataLabelSettings: const DataLabelSettings(
-              isVisible: true,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Sorting Progress',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              Text(
+                '$percent%  ($stepCount / $maxSteps)',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 14,
+              backgroundColor: Colors.blue.withOpacity(0.15),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isDone ? Colors.green : Colors.orange,
+              ),
             ),
-          )
+          ),
+          if (isDone) ...[
+            const SizedBox(height: 6),
+            Text(
+              '✓ Sorting complete!',
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -986,7 +1009,6 @@ class _BubbleSortState extends State<BubbleSort> {
                         runSpacing: 4,
                         children: [
                           _pill('Pick #$pickIndex', Colors.blue),
-                          _pill(side, Colors.purple),
                           _pill('Rank #${stats.rank}', rankColor),
                         ],
                       ),
@@ -1800,10 +1822,4 @@ class _BubbleSortState extends State<BubbleSort> {
       ),
     );
   }
-}
-
-class _BarData {
-  final String team;
-  final int position;
-  _BarData({required this.team, required this.position});
 }
