@@ -39,10 +39,9 @@ class AutoScoring with _$AutoScoring {
     // required int intake_amount,
     // required int shoot_amount,
 
-    required int passing_cycles,
-    required int scoring_cycles,
-    required int fuel_cycles,
-    required int cycles_completed,
+    required int fuel_scored,
+    required int fuel_scored_hopper,
+    required int hopper_capacity,
   }) = _AutoScoring;
 
   factory AutoScoring.fromJson(Map<String, dynamic> json) =>
@@ -52,8 +51,9 @@ class AutoScoring with _$AutoScoring {
 @freezed
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
-    required int fuel_cycles,
-    required int passing_cycles,
+    required int fuel_scored,
+    required int fuel_scored_hopper,
+    required int hopper_capacity,
   }) = _TeleopScoring;
 
   factory TeleopScoring.fromJson(Map<String, dynamic> json) =>

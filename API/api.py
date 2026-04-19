@@ -3013,8 +3013,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_endgame_points": 0,
                     "blue_auto_fuel_cycles": 0,
                     "blue_teleop_fuel_cycles": 0,
-                    "blue_auto_passing_cycles": 0,
-                    "blue_teleop_passing_cycles": 0,
+                   
 
                     "blue_actual_score": match.score_breakdown["blue"].totalPoints,
 
@@ -3029,8 +3028,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_endgame_points": 0,
                     "red_auto_fuel_cycles": 0,
                     "red_teleop_fuel_cycles": 0,
-                    "red_auto_passing_cycles": 0,
-                    "red_teleop_passing_cycles": 0,
+                   
 
                     "red_actual_score": match.score_breakdown["red"].totalPoints,
 
@@ -3054,8 +3052,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_endgame_points": 0,
                     "blue_auto_fuel_cycles": 0,
                     "blue_teleop_fuel_cycles": 0,
-                    "blue_auto_passing_cycles": 0,
-                    "blue_teleop_passing_cycles": 0,
+                    
 
                     "blue_actual_score": None,
 
@@ -3070,8 +3067,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_endgame_points": 0,
                     "red_auto_fuel_cycles": 0,
                     "red_teleop_fuel_cycles": 0,
-                    "red_auto_passing_cycles": 0,
-                    "red_teleop_passing_cycles": 0,
+                   
 
                     "red_actual_score": None,
 

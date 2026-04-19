@@ -1779,8 +1779,8 @@ class _ScoutingCard extends StatelessWidget {
                 //     label: 'Fuel',
                 //     value: data.data.auto_scoring.fuel_cycles.toString()),
                 _StatChip(
-                    label: 'Pass',
-                    value: data.data.auto_scoring.passing_cycles.toString()),
+                    label: 'Fuel Scored in Auto',
+                    value: data.data.auto_scoring.fuel_scored.toString()),
               ],
             ),
             const SizedBox(height: 12),
@@ -1792,8 +1792,8 @@ class _ScoutingCard extends StatelessWidget {
                 //     label: 'Fuel',
                 //     value: data.data.teleop_scoring.fuel_cycles.toString()),
                 _StatChip(
-                    label: 'Pass',
-                    value: data.data.teleop_scoring.passing_cycles.toString()),
+                    label: 'Fuel Scored in Teleop',
+                    value: data.data.teleop_scoring.fuel_scored.toString()),
               ],
             ),
             const SizedBox(height: 12),

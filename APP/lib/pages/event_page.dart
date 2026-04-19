@@ -17,6 +17,7 @@ import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
+import 'package:scouting_app/widgets/percentage_counter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/match_details_2026.dart';
@@ -459,11 +460,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       allowFiltering: false,
     ),
     GridColumn(
-        allowSorting: true,
-        label: Text('Teleop Passing', style: TextStyle(fontFamily: 'Font')),
-        columnName: 'teleop_pass',
-        allowFiltering: false),
-    GridColumn(
       allowSorting: true,
       label: Text('Climb Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'climbing_points',
@@ -508,7 +504,6 @@ class _RankingsTabState extends State<_RankingsTab> {
     'teleop_fuel_denied': true,
     'defense_rate': true,
     'death_rate': true,
-    'teleop_pass': true,
   };
   List<MatchScouting2026> scouting = [];
   Map<String, num> minValues = {};
@@ -1930,6 +1925,8 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
+  PitScouting2026? pitData;
+
   late final TextEditingController eventCodeController,
       teamNumberController,
       matchNumberController,
@@ -1956,14 +1953,35 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             contacts_robot: false,
           ),
           auto_scoring: AutoScoring(
-              passing_cycles: 0,
-              scoring_cycles: 0,
-              cycles_completed: 0,
-              fuel_cycles: 0),
-          teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+              fuel_scored_hopper: 0,
+              fuel_scored: 0,
+              hopper_capacity: pitData?.data.hopper_capacity ?? 32),
+          teleop_scoring: TeleopScoring(
+              fuel_scored: 0,
+              fuel_scored_hopper: 0,
+              hopper_capacity: pitData?.data.hopper_capacity ?? 32),
           miscellaneous:
               Miscellaneous(died: false, comments: '', defense: false)),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
+  Future<void> _fetchPitData(int teamNumber) async {
+    if (teamNumber <= 0) return;
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    try {
+      final fetched = await apiService.fetchTeamPitScouting(
+          int.parse(widget.widget.tournament.page.split('/')[3])
+              .toString(), // year: 2026
+          widget.widget.tournament.page.split('/')[4], // event: cancmp
+          "frc${teamNumber}" // team: 254
+          );
+      if (mounted) {
+        setState(() {
+          pitData = fetched;
+        });
+      }
+    } catch (e) {
+      // Pit data not found yet, that's fine
+    }
+  }
 
   @override
   initState() {
@@ -2073,6 +2091,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         data: data.data.copyWith(
             auto: data.data.auto
                 .copyWith(field_side: [index < 3 ? 'red' : 'blue'])));
+    teamNumberController.text = team.substring(3);
+    data = data.copyWith(team_number: int.parse(team.substring(3)));
+    _fetchPitData(int.parse(team.substring(3)));
   }
   // TODO: When adding offline use this for qr generation
   // String _generateQRCodeData() {
@@ -2086,8 +2107,24 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _submit() {
     HapticFeedback.heavyImpact();
+    print('pitData: $pitData');
+    print('pitData?.data?.hopper_capacity: ${pitData?.data.hopper_capacity}');
+    final int capacity = pitData?.data.hopper_capacity ?? 32;
+    print('capacity: $capacity');
+    final submitData = data.copyWith(
+      data: data.data.copyWith(
+        auto_scoring:
+            data.data.auto_scoring.copyWith(hopper_capacity: capacity),
+        teleop_scoring:
+            data.data.teleop_scoring.copyWith(hopper_capacity: capacity),
+      ),
+    );
+    print(
+        'submitData auto hopper_capacity: ${submitData.data.auto_scoring.hopper_capacity}');
+    print(
+        'submitData teleop hopper_capacity: ${submitData.data.teleop_scoring.hopper_capacity}');
     ApiService api = Provider.of<ApiService>(context, listen: false);
-    api.post_match_scouting(data).then((_) {
+    api.post_match_scouting(submitData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Submitted Successfully',
               style: TextStyle(fontFamily: 'Font'))));
@@ -2114,8 +2151,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _update() {
     HapticFeedback.heavyImpact();
+    final int capacity = pitData?.data.hopper_capacity ?? 32;
+    final submitData = data.copyWith(
+      data: data.data.copyWith(
+        auto_scoring:
+            data.data.auto_scoring.copyWith(hopper_capacity: capacity),
+        teleop_scoring:
+            data.data.teleop_scoring.copyWith(hopper_capacity: capacity),
+      ),
+    );
     ApiService api = Provider.of<ApiService>(context, listen: false);
-    api.update_match_scouting(data).then((_) {
+    api.update_match_scouting(submitData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Submitted Successfully',
               style: TextStyle(fontFamily: 'Font'))));
@@ -2124,7 +2170,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       });
     }).onError((error, trace) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
+          content:
+              Text(error.toString(), style: TextStyle(fontFamily: 'Font'))));
     });
   }
 
@@ -2141,11 +2188,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 climb: false,
                 contacts_robot: false),
             auto_scoring: AutoScoring(
-                passing_cycles: 0,
-                scoring_cycles: 0,
-                cycles_completed: 0,
-                fuel_cycles: 0),
-            teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+                fuel_scored: 0,
+                fuel_scored_hopper: 0,
+                hopper_capacity: pitData?.data.hopper_capacity ?? 32),
+            teleop_scoring: TeleopScoring(
+                fuel_scored: 0,
+                fuel_scored_hopper: 0,
+                hopper_capacity: pitData?.data.hopper_capacity ?? 32),
             miscellaneous:
                 Miscellaneous(died: false, comments: '', defense: false)));
     setState(() {
@@ -2332,6 +2381,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
                                     data.copyWith(team_number: teamNumber));
+                                _fetchPitData(teamNumber); // <-- add this
                               }
                             },
                           ),
@@ -2378,42 +2428,65 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     //           auto_scoring: data.data.auto_scoring
                     //               .copyWith(fuel_cycles: val))));
                     // }),
-                    _buildCounterRow(
-                        'Passed Balls', data.data.auto_scoring.passing_cycles,
-                        (val) {
+
+                    _buildCounterRow('Fuel Scored in Auto',
+                        data.data.auto_scoring.fuel_scored, (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
                               auto_scoring: data.data.auto_scoring
-                                  .copyWith(passing_cycles: val))));
+                                  .copyWith(fuel_scored: val))));
+                    }),
+                    const Divider(
+                      color: Colors.blue,
+                      height: 32,
+                      thickness: 10,
+                    ),
+                    _buildHopperCounterRow('Hoppers Scored in Auto',
+                        data.data.auto_scoring.fuel_scored_hopper, (val) {
+                      setState(() => data = data.copyWith(
+                          data: data.data.copyWith(
+                              auto_scoring: data.data.auto_scoring
+                                  .copyWith(fuel_scored_hopper: val))));
                     }),
                   ],
                 ),
 
                 // 3. TELEOP PHASE
                 _buildDarkCard(
-                  title: 'Teleop Phase',
-                  icon: Icons.videogame_asset_outlined,
-                  cardColor: const Color.fromARGB(30, 155, 39, 176),
-                  accentColor: Colors.purple,
-                  children: [
-                    // _buildCounterRow(
-                    //     'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
-                    //     (val) {
-                    //   setState(() => data = data.copyWith(
-                    //       data: data.data.copyWith(
-                    //           teleop_scoring: data.data.teleop_scoring
-                    //               .copyWith(fuel_cycles: val))));
-                    // }),
-                    _buildCounterRow(
-                        'Passed Balls', data.data.teleop_scoring.passing_cycles,
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              teleop_scoring: data.data.teleop_scoring
-                                  .copyWith(passing_cycles: val))));
-                    }),
-                  ],
-                ),
+                    title: 'Teleop Phase',
+                    icon: Icons.videogame_asset_outlined,
+                    cardColor: const Color.fromARGB(30, 155, 39, 176),
+                    accentColor: Colors.purple,
+                    children: [
+                      // _buildCounterRow(
+                      //     'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
+                      //     (val) {
+                      //   setState(() => data = data.copyWith(
+                      //       data: data.data.copyWith(
+                      //           teleop_scoring: data.data.teleop_scoring
+                      //               .copyWith(fuel_cycles: val))));
+                      // }),
+
+                      _buildCounterRow('Fuel Scored in Teleop',
+                          data.data.teleop_scoring.fuel_scored, (val) {
+                        setState(() => data = data.copyWith(
+                            data: data.data.copyWith(
+                                teleop_scoring: data.data.teleop_scoring
+                                    .copyWith(fuel_scored: val))));
+                      }),
+                      const Divider(
+                        color: Colors.blue,
+                        height: 32,
+                        thickness: 10,
+                      ),
+                      _buildHopperCounterRow('Hoppers Scored in Teleop',
+                          data.data.teleop_scoring.fuel_scored_hopper, (val) {
+                        setState(() => data = data.copyWith(
+                            data: data.data.copyWith(
+                                teleop_scoring: data.data.teleop_scoring
+                                    .copyWith(fuel_scored_hopper: val))));
+                      }),
+                    ]),
 
                 // 4. MISCELLANEOUS
                 _buildDarkCard(
@@ -2650,6 +2723,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         onChanged: onChanged,
       ),
     );
+  }
+
+  Widget _buildHopperCounterRow(
+      String label, int val, Function(int) onChanged) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: PercentCounter(label: label, onChanged: onChanged, value: val));
   }
 
   Widget _buildSwitch(String label, bool val, Color textCol, Color accent,
