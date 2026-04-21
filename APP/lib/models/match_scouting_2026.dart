@@ -36,7 +36,7 @@ class Data with _$Data {
 class AutoScoring with _$AutoScoring {
   factory AutoScoring({
     required int fuel_scored,
-    @Default(-1) int fuel_scored_hopper,
+    @Default(0) int fuel_scored_hopper,
     @Default(32) int hopper_capacity,
   }) = _AutoScoring;
 
@@ -48,7 +48,7 @@ class AutoScoring with _$AutoScoring {
 class TeleopScoring with _$TeleopScoring {
   factory TeleopScoring({
     required int fuel_scored,
-    @Default(-1) int fuel_scored_hopper,
+    @Default(0) int fuel_scored_hopper,
     @Default(32) int hopper_capacity,
   }) = _TeleopScoring;
 

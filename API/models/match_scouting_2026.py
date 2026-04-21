@@ -8,21 +8,17 @@ from models.pit_scouting_2026 import PitData2026
 
 class Scoring2026(BaseModel):
     fuel_scored: int = 0
-    fuel_scored_hopper: int = -1
+    fuel_scored_hopper: Optional[int] = None
     hopper_capacity: int = 32
 
     @root_validator
     def calculate_fuel_scored(cls, values):
-        hopper = values.get('fuel_scored_hopper', -1)
+        hopper = values.get('fuel_scored_hopper')
         capacity = values.get('hopper_capacity', 32)
-        
-        if hopper >= 0:
-            hopper_result = int((hopper / 100) * capacity)
-        else:
-            hopper_result = 0
-        
-        counter = values.get('fuel_scored', 0)
-        values['fuel_scored'] = counter + hopper_result
+
+        if hopper is not None:
+            values['fuel_scored'] += int((hopper / 100) * capacity)
+
         return values
 
 class Miscellaneous2026(BaseModel):

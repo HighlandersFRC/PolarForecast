@@ -9,7 +9,7 @@ import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/counter.dart';
 import 'package:scouting_app/widgets/floatyCounter.dart';
-import 'package:scouting_app/widgets/intergerCounter.dart';
+import 'package:scouting_app/widgets/integer_counter.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';

@@ -682,7 +682,7 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
       {required this.fuel_scored,
-      this.fuel_scored_hopper = -1,
+      this.fuel_scored_hopper = 0,
       this.hopper_capacity = 32});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
@@ -875,7 +875,7 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
       {required this.fuel_scored,
-      this.fuel_scored_hopper = -1,
+      this.fuel_scored_hopper = 0,
       this.hopper_capacity = 32});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>

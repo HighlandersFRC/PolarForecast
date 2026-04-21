@@ -2385,14 +2385,19 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       height: 32,
                       thickness: 10,
                     ),
-                    _buildHopperCounterRow('Hoppers Scored in Auto',
-                        data.data.auto_scoring.fuel_scored_hopper.clamp(0, 999),
-                        (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              auto_scoring: data.data.auto_scoring
-                                  .copyWith(fuel_scored_hopper: val))));
-                    }),
+                    _buildHopperCounterRow(
+                      'Hoppers Scored in Auto',
+                      (data.data.auto_scoring.fuel_scored_hopper).clamp(0, 999),
+                      (val) {
+                        setState(() => data = data.copyWith(
+                              data: data.data.copyWith(
+                                auto_scoring: data.data.auto_scoring.copyWith(
+                                  fuel_scored_hopper: val,
+                                ),
+                              ),
+                            ));
+                      },
+                    ),
                   ],
                 ),
 
@@ -2411,7 +2416,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       //           teleop_scoring: data.data.teleop_scoring
                       //               .copyWith(fuel_cycles: val))));
                       // }),
-
                       _buildCounterRow('Fuel Scored in Teleop',
                           data.data.teleop_scoring.fuel_scored, (val) {
                         setState(() => data = data.copyWith(
@@ -2425,14 +2429,20 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         thickness: 10,
                       ),
                       _buildHopperCounterRow(
-                          'Hoppers Scored in Teleop',
-                          data.data.teleop_scoring.fuel_scored_hopper
-                              .clamp(0, 999), (val) {
-                        setState(() => data = data.copyWith(
-                            data: data.data.copyWith(
-                                teleop_scoring: data.data.teleop_scoring
-                                    .copyWith(fuel_scored_hopper: val))));
-                      }),
+                        'Hoppers Scored in Teleop',
+                        (data.data.teleop_scoring.fuel_scored_hopper)
+                            .clamp(0, 999),
+                        (val) {
+                          setState(() => data = data.copyWith(
+                                data: data.data.copyWith(
+                                  teleop_scoring:
+                                      data.data.teleop_scoring.copyWith(
+                                    fuel_scored_hopper: val,
+                                  ),
+                                ),
+                              ));
+                        },
+                      ),
                     ]),
 
                 // 4. MISCELLANEOUS
