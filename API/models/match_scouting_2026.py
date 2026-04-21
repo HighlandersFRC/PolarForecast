@@ -13,9 +13,14 @@ class Scoring2026(BaseModel):
 
     @root_validator
     def calculate_fuel_scored(cls, values):
-        hopper = values.get('fuel_scored_hopper', 0)
+        hopper = values.get('fuel_scored_hopper', -1)
         capacity = values.get('hopper_capacity', 32)
-        hopper_result = int((hopper / 100) * capacity)
+        
+        if hopper >= 0:
+            hopper_result = int((hopper / 100) * capacity)
+        else:
+            hopper_result = 0
+        
         counter = values.get('fuel_scored', 0)
         values['fuel_scored'] = counter + hopper_result
         return values

@@ -11,6 +11,7 @@ import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/picture_data.dart';
+import 'package:scouting_app/models/scout_info.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
@@ -1825,6 +1826,9 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
+  int get _hopperCapacity => (pitData?.data.hopper_capacity ?? 0) > 0
+      ? pitData!.data.hopper_capacity
+      : 32;
   PitScouting2026? pitData;
 
   late final TextEditingController eventCodeController,
@@ -1852,14 +1856,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             climb: false,
             contacts_robot: false,
           ),
-          auto_scoring: AutoScoring(
-              fuel_scored_hopper: 0,
-              fuel_scored: 0,
-              hopper_capacity: pitData?.data.hopper_capacity ?? 32),
-          teleop_scoring: TeleopScoring(
-              fuel_scored: 0,
-              fuel_scored_hopper: 0,
-              hopper_capacity: pitData?.data.hopper_capacity ?? 32),
+          auto_scoring:
+              AutoScoring(fuel_scored: 0, hopper_capacity: _hopperCapacity),
+          teleop_scoring:
+              TeleopScoring(fuel_scored: 0, hopper_capacity: _hopperCapacity),
           miscellaneous:
               Miscellaneous(died: false, comments: '', defense: false)),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
@@ -1876,10 +1876,55 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       if (mounted) {
         setState(() {
           pitData = fetched;
+          data = data.copyWith(
+            data: data.data.copyWith(
+              auto_scoring: data.data.auto_scoring
+                  .copyWith(hopper_capacity: _hopperCapacity),
+              teleop_scoring: data.data.teleop_scoring
+                  .copyWith(hopper_capacity: _hopperCapacity),
+            ),
+          );
         });
       }
     } catch (e) {
-      // Pit data not found yet, that's fine
+      if (mounted) {
+        setState(() {
+          pitData = PitScouting2026(
+            // ... other required fields ...
+            data: PitData2026(
+              hopper_capacity: 32,
+              driver_experience_events: 0,
+              drive_train: '',
+              type_of_shooter: '',
+              fixedShooting: false,
+              nearTower: false,
+              nearHub: false,
+              go_under_trench: false,
+              can_climb: false,
+              climbing: [],
+              can_climb_in_autonomous: false,
+              main_strategy: '',
+              spare_parts: 0,
+              favorite_color: '',
+              bps: 0,
+              comments: '',
+              robot_height: 0,
+              straddling_pole_climb_right: false,
+              straddling_pole_climb_left: false,
+              left_pole_climb: false,
+              right_pole_climb: false,
+              center_pole_climb: false,
+
+              // ... other required fields with defaults ...
+            ),
+            user_id: '',
+            scout_info: ScoutInfo(first_name: '', user_id: '', team_number: 0),
+            team_number: 0,
+            event_code: '',
+            time: 0,
+          );
+        });
+      }
     }
   }
 
@@ -2007,16 +2052,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _submit() {
     HapticFeedback.heavyImpact();
+
     print('pitData: $pitData');
     print('pitData?.data?.hopper_capacity: ${pitData?.data.hopper_capacity}');
-    final int capacity = pitData?.data.hopper_capacity ?? 32;
+    final int capacity = _hopperCapacity;
     print('capacity: $capacity');
     final submitData = data.copyWith(
       data: data.data.copyWith(
         auto_scoring:
-            data.data.auto_scoring.copyWith(hopper_capacity: capacity),
+            data.data.auto_scoring.copyWith(hopper_capacity: _hopperCapacity),
         teleop_scoring:
-            data.data.teleop_scoring.copyWith(hopper_capacity: capacity),
+            data.data.teleop_scoring.copyWith(hopper_capacity: _hopperCapacity),
       ),
     );
     print(
@@ -2051,7 +2097,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _update() {
     HapticFeedback.heavyImpact();
-    final int capacity = pitData?.data.hopper_capacity ?? 32;
+    final int capacity = _hopperCapacity;
     final submitData = data.copyWith(
       data: data.data.copyWith(
         auto_scoring:
@@ -2089,11 +2135,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 contacts_robot: false),
             auto_scoring: AutoScoring(
                 fuel_scored: 0,
-                fuel_scored_hopper: 0,
                 hopper_capacity: pitData?.data.hopper_capacity ?? 32),
             teleop_scoring: TeleopScoring(
                 fuel_scored: 0,
-                fuel_scored_hopper: 0,
                 hopper_capacity: pitData?.data.hopper_capacity ?? 32),
             miscellaneous:
                 Miscellaneous(died: false, comments: '', defense: false)));
@@ -2342,7 +2386,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       thickness: 10,
                     ),
                     _buildHopperCounterRow('Hoppers Scored in Auto',
-                        data.data.auto_scoring.fuel_scored_hopper, (val) {
+                        data.data.auto_scoring.fuel_scored_hopper.clamp(0, 999),
+                        (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
                               auto_scoring: data.data.auto_scoring
@@ -2379,8 +2424,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         height: 32,
                         thickness: 10,
                       ),
-                      _buildHopperCounterRow('Hoppers Scored in Teleop',
-                          data.data.teleop_scoring.fuel_scored_hopper, (val) {
+                      _buildHopperCounterRow(
+                          'Hoppers Scored in Teleop',
+                          data.data.teleop_scoring.fuel_scored_hopper
+                              .clamp(0, 999), (val) {
                         setState(() => data = data.copyWith(
                             data: data.data.copyWith(
                                 teleop_scoring: data.data.teleop_scoring
