@@ -2983,8 +2983,8 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
 
 
 def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
-    ENERGIZED_THRESHOLD   = 240 if eventType >= 1 else 100
-    SUPERCHARGED_THRESHOLD = 360  
+    ENERGIZED_THRESHOLD   = 360
+    SUPERCHARGED_THRESHOLD = 500  
     TRAVERSAL_THRESHOLD   = 50  
 
     matchPredictions = []
