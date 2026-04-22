@@ -212,7 +212,7 @@ class ApiService {
           can_climb: false,
           can_climb_in_autonomous: false,
           main_strategy: '',
-          hopper_capacity: 0,
+          hopper_capacity: 32,
           bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,
