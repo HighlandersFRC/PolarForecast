@@ -11,7 +11,6 @@ import 'package:scouting_app/main.dart';
 import 'package:scouting_app/models/group.dart';
 import 'package:scouting_app/models/match_scouting_2026.dart';
 import 'package:scouting_app/models/picture_data.dart';
-import 'package:scouting_app/models/scout_info.dart';
 import 'package:scouting_app/models/team_stats_2026.dart';
 import 'package:scouting_app/pages/not_found_page.dart';
 import 'package:scouting_app/utils.dart';
@@ -1889,40 +1888,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          pitData = PitScouting2026(
-            // ... other required fields ...
-            data: PitData2026(
-              hopper_capacity: 32,
-              driver_experience_events: 0,
-              drive_train: '',
-              type_of_shooter: '',
-              fixedShooting: false,
-              nearTower: false,
-              nearHub: false,
-              go_under_trench: false,
-              can_climb: false,
-              climbing: [],
-              can_climb_in_autonomous: false,
-              main_strategy: '',
-              spare_parts: 0,
-              favorite_color: '',
-              bps: 0,
-              comments: '',
-              robot_height: 0,
-              straddling_pole_climb_right: false,
-              straddling_pole_climb_left: false,
-              left_pole_climb: false,
-              right_pole_climb: false,
-              center_pole_climb: false,
-
-              // ... other required fields with defaults ...
-            ),
-            user_id: '',
-            scout_info: ScoutInfo(first_name: '', user_id: '', team_number: 0),
-            team_number: 0,
-            event_code: '',
-            time: 0,
-          );
+          pitData = apiService.defaultPitScouting("2026",
+              widget.widget.tournament.key.substring(4), "frc${teamNumber}");
         });
       }
     }
