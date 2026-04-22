@@ -3,22 +3,19 @@ from typing import List, Optional, Union
 
 from models.scout_info import ScoutInfo
 from models.pit_scouting_2026 import Auto2026
-from models.pit_scouting_2026 import PitData2026
 
 
 class Scoring2026(BaseModel):
     fuel_scored: int = 0
-    fuel_scored_hopper: Optional[int] = None
+    fuel_scored_hopper: int = 0
     hopper_capacity: int = 32
 
     @root_validator
     def calculate_fuel_scored(cls, values):
-        hopper = values.get('fuel_scored_hopper')
+        hopper = values.get('fuel_scored_hopper', 0)
         capacity = values.get('hopper_capacity', 32)
-
-        if hopper is not None:
-            values['fuel_scored'] += int((hopper / 100) * capacity)
-
+        counter = values.get('fuel_scored', 0)
+        values['fuel_scored'] = counter + int((hopper / 100) * capacity)
         return values
 
 class Miscellaneous2026(BaseModel):

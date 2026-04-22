@@ -2036,9 +2036,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
         data: data.data.copyWith(
             auto: data.data.auto
                 .copyWith(field_side: [index < 3 ? 'red' : 'blue'])));
-    teamNumberController.text = team.substring(3);
-    data = data.copyWith(team_number: int.parse(team.substring(3)));
-    _fetchPitData(int.parse(team.substring(3)));
+    String teamNumberText = team.substring(3);
+    teamNumberController.text = teamNumberText;
+    data = data.copyWith(team_number: int.parse(teamNumberText));
+    _fetchPitData(int.parse(teamNumberText));
   }
   // TODO: When adding offline use this for qr generation
   // String _generateQRCodeData() {
@@ -2053,10 +2054,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
   void _submit() {
     HapticFeedback.heavyImpact();
 
-    print('pitData: $pitData');
-    print('pitData?.data?.hopper_capacity: ${pitData?.data.hopper_capacity}');
-    final int capacity = _hopperCapacity;
-    print('capacity: $capacity');
     final submitData = data.copyWith(
       data: data.data.copyWith(
         auto_scoring:
@@ -2065,10 +2062,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             data.data.teleop_scoring.copyWith(hopper_capacity: _hopperCapacity),
       ),
     );
-    print(
-        'submitData auto hopper_capacity: ${submitData.data.auto_scoring.hopper_capacity}');
-    print(
-        'submitData teleop hopper_capacity: ${submitData.data.teleop_scoring.hopper_capacity}');
+
     ApiService api = Provider.of<ApiService>(context, listen: false);
     api.post_match_scouting(submitData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -2325,7 +2319,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
                                     data.copyWith(team_number: teamNumber));
-                                _fetchPitData(teamNumber); // <-- add this
+                                _fetchPitData(teamNumber);
                               }
                             },
                           ),
@@ -2585,7 +2579,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       bool isNum = false,
       IconData? prefixIcon,
       int maxLines = 1,
-      int? maxLength, // Add this
+      int? maxLength,
       required Color accent,
       required Color textCol,
       Function(String)? onChanged}) {
@@ -2691,7 +2685,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       String label, int val, Function(int) onChanged) {
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: PercentCounter(label: label, onChanged: onChanged, value: val));
+        child: PercentCounter(
+            label: label, onChanged: onChanged, value: val, max: 999));
   }
 
   Widget _buildSwitch(String label, bool val, Color textCol, Color accent,

@@ -8,7 +8,6 @@ class IntegerCounter extends StatefulWidget {
   final int min;
   final ValueChanged<int> onChanged;
   final bool locked;
-  final int step;
 
   const IntegerCounter({
     Key? key,
@@ -18,7 +17,6 @@ class IntegerCounter extends StatefulWidget {
     this.min = 0,
     required this.onChanged,
     this.locked = false,
-    this.step = 1,
   }) : super(key: key);
 
   @override

@@ -13,7 +13,7 @@ class PercentCounter extends StatefulWidget {
     Key? key,
     required this.label,
     required this.value,
-    this.max = 100000000000000000,
+    this.max = 1000,
     required this.onChanged,
     this.locked = false,
   }) : super(key: key);
@@ -29,6 +29,12 @@ class _PercentCounterState extends State<PercentCounter> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.value.toString());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
