@@ -255,8 +255,7 @@ def run_opr_regression(
                     teamYEntry = [
                         teamYEntry[i] + (newY[i] / len(teamMatchesList[team]) / numEntries)
                         for i in range(len(teamYEntry))
-                    ]
-
+                    ] if numEntries > 0 else teamYEntry
         YMatrix.loc[len(YMatrix)] = teamYEntry
         teamAEntry = blankAEntry.copy()
         teamAEntry[team] = 1
