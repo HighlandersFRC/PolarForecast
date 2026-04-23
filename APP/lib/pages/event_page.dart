@@ -292,7 +292,7 @@ class _TBATabState extends State<_TBATab> {
   void initState() {
     super.initState();
     tbaUrl =
-        'https://www.thebluealliance.com/event/${widget.widget.tournament.page.split('/')[3]}${widget.widget.tournament.page.split('/')[4]}';
+        'https://www.thebluealliance.com/event/${widget.widget.tournament.key.substring(0, 4)}${widget.widget.tournament.key.substring(4, 8)}';
   }
 
   Future<void> _openTBA() async {
@@ -1867,11 +1867,9 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       final fetched = await apiService.fetchTeamPitScouting(
-          int.parse(widget.widget.tournament.page.split('/')[3])
-              .toString(), // year: 2026
-          widget.widget.tournament.page.split('/')[4], // event: cancmp
-          "frc${teamNumber}" // team: 254
-          );
+          widget.widget.tournament.key.substring(0, 4),
+          widget.widget.tournament.key.substring(4),
+          "frc${teamNumber}");
       if (mounted) {
         setState(() {
           pitData = fetched;
@@ -1888,8 +1886,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          pitData = apiService.defaultPitScouting("2026",
-              widget.widget.tournament.key.substring(4), "frc${teamNumber}");
+          pitData = apiService.defaultPitScouting(
+              widget.widget.tournament.key.substring(0, 4),
+              widget.widget.tournament.key.substring(4),
+              "frc${teamNumber}");
         });
       }
     }
@@ -1997,7 +1997,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       index = Random().nextInt(6);
       team = teams[index];
     }
-    teamNumberController.text = team.substring(3);
     data = data.copyWith(
         team_number: int.parse(team.substring(3)),
         data: data.data.copyWith(
@@ -2008,15 +2007,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     data = data.copyWith(team_number: int.parse(teamNumberText));
     _fetchPitData(int.parse(teamNumberText));
   }
-  // TODO: When adding offline use this for qr generation
-  // String _generateQRCodeData() {
-  //   try {
-  //     return jsonEncode(data.toJson());
-  //   } catch (e) {
-  //     print('Error generating QR code data: $e');
-  //     return '';
-  //   }
-  // }
 
   void _submit() {
     HapticFeedback.heavyImpact();
@@ -2235,7 +2225,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 ),
                 const SizedBox(height: 24),
 
-                // 1. PRE-MATCH INFO
                 _buildDarkCard(
                   title: 'Pre-Match Info',
                   icon: Icons.assignment_outlined,
@@ -2299,7 +2288,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ],
                 ),
 
-                // 2. AUTO PHASE
                 _buildDarkCard(
                   title: 'Autonomous',
                   icon: Icons.smart_toy_outlined,
@@ -2325,15 +2313,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       matchScouting: true,
                     ),
                     const SizedBox(height: 12),
-                    // _buildCounterRow(
-                    //     'Fuel Amount', data.data.auto_scoring.fuel_cycles,
-                    //     (val) {
-                    //   setState(() => data = data.copyWith(
-                    //       data: data.data.copyWith(
-                    //           auto_scoring: data.data.auto_scoring
-                    //               .copyWith(fuel_cycles: val))));
-                    // }),
-
                     _buildCounterRow('Fuel Scored in Auto',
                         data.data.auto_scoring.fuel_scored, (val) {
                       setState(() => data = data.copyWith(
@@ -2362,21 +2341,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ],
                 ),
 
-                // 3. TELEOP PHASE
                 _buildDarkCard(
                     title: 'Teleop Phase',
                     icon: Icons.videogame_asset_outlined,
                     cardColor: const Color.fromARGB(30, 155, 39, 176),
                     accentColor: Colors.purple,
                     children: [
-                      // _buildCounterRow(
-                      //     'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
-                      //     (val) {
-                      //   setState(() => data = data.copyWith(
-                      //       data: data.data.copyWith(
-                      //           teleop_scoring: data.data.teleop_scoring
-                      //               .copyWith(fuel_cycles: val))));
-                      // }),
                       _buildCounterRow('Fuel Scored in Teleop',
                           data.data.teleop_scoring.fuel_scored, (val) {
                         setState(() => data = data.copyWith(
@@ -2406,7 +2376,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       ),
                     ]),
 
-                // 4. MISCELLANEOUS
                 _buildDarkCard(
                   title: 'Post-Match & Misc',
                   icon: Icons.widgets_outlined,
@@ -2457,7 +2426,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ],
                 ),
 
-                // BUTTONS
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
@@ -2734,8 +2702,8 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
       }
 
       final fetchedStatus = await apiService.fetchPitStatus(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
+        int.parse(widget.widget.tournament.key.substring(0, 4)),
+        widget.widget.tournament.key.substring(4),
       );
 
       if (!mounted) return;
@@ -3245,8 +3213,8 @@ class _QualsTabState extends State<_QualsTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       final fetchedStatus = await apiService.fetchQualMatches(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
+          int.parse(widget.widget.tournament.key.substring(0, 4)),
+          widget.widget.tournament.key.substring(4));
       if (mounted) {
         setState(() {
           statuses = fetchedStatus;
@@ -3372,8 +3340,8 @@ class _ElimsTabState extends State<_ElimsTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       final fetchedStatus = await apiService.fetchQualMatches(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
+          int.parse(widget.widget.tournament.key.substring(0, 4)),
+          widget.widget.tournament.key.substring(4));
       if (mounted) {
         setState(() {
           statuses = fetchedStatus;

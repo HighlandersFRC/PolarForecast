@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import warnings
 from models.match_scouting_2026 import MatchScouting2026
-from models.tba_match_2026 import HubScore, TBAMatch2026
+from models.tba_match_2026 import TBAMatch2026
 from GeneticAlg import geneticAlg
 
 from RemoveBadData import (
@@ -79,9 +79,7 @@ def build_opr_match_list(data):
 
             try:
                 for k in range(3):
-                    oprMatchEntry[f"station{k+1}"] = (
-                        row.alliances[allianceStr].team_keys[k][3:]
-                    )
+                    oprMatchEntry[f"station{k+1}"] = row.alliances[allianceStr].team_keys[k][3:]
             except (KeyError, IndexError, TypeError):
                 continue
 
@@ -106,7 +104,6 @@ def build_opr_match_list(data):
 
             oprMatchList.append(oprMatchEntry)
 
-    # IMPORTANT FIX
     oprMatchDataFrame = pd.DataFrame(
         oprMatchList,
         columns=blankOprEntry.keys()
@@ -120,7 +117,7 @@ def build_team_index(oprMatchDataFrame):
     teams = []
     for k in range(3):
         for matchTeam in oprMatchDataFrame["station" + str(k + 1)]:
-            if not teams.__contains__(matchTeam):
+            if not matchTeam in teams:
                 teams.append(matchTeam)
     teams.sort()
     team_idx_map = {team: i for i, team in enumerate(teams)}
@@ -432,9 +429,8 @@ def compute_defense_dpr(data, XMatrix, teams, DefenseOnlyKeys):
 
             try:
                 for k in range(3):
-                    defenseMatchEntry[f"station{k + 1}"] = (
-                        row.alliances[allianceStr].team_keys[k][3:]
-                    )
+                    defenseMatchEntry[f"station{k + 1}"] = row.alliances[allianceStr].team_keys[k][3:]
+                
 
                 opp_keys = [
                     row.alliances[opponentStr].team_keys[i][3:]
@@ -452,12 +448,10 @@ def compute_defense_dpr(data, XMatrix, teams, DefenseOnlyKeys):
 
             actual_breakdown = row.score_breakdown[opponentStr]
 
-            defenseMatchEntry["auto_fuel_denied"] = (
-                predictedAutoPoints - actual_breakdown.hubScore.autoCount
-            )
-            defenseMatchEntry["teleop_fuel_denied"] = (
-                predictedTeleopPoints - actual_breakdown.hubScore.teleopCount
-            )
+            defenseMatchEntry["auto_fuel_denied"] = predictedAutoPoints - actual_breakdown.hubScore.autoCount
+            
+            defenseMatchEntry["teleop_fuel_denied"] = predictedTeleopPoints - actual_breakdown.hubScore.teleopCount
+            
 
             defenseMatchList.append(defenseMatchEntry)
 

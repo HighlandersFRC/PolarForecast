@@ -198,26 +198,13 @@ class _PercentCounterState extends State<PercentCounter> {
                     children: [
                       Expanded(
                         child: buildButton(
-                          label: '+10%',
-                          color: accentColor,
-                          onTap:
-                              disabled || atMax ? null : () => _updateValue(10),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: buildButton(
                           label: '+60%',
                           color: accentColor,
                           onTap:
                               disabled || atMax ? null : () => _updateValue(60),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
+                      const SizedBox(width: 10),
                       Expanded(
                         child: buildButton(
                           label: '+80%',
@@ -226,16 +213,6 @@ class _PercentCounterState extends State<PercentCounter> {
                               disabled || atMax ? null : () => _updateValue(80),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: buildButton(
-                          label: '+100%',
-                          color: accentColor,
-                          onTap: disabled || atMax
-                              ? null
-                              : () => _updateValue(100),
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -243,11 +220,11 @@ class _PercentCounterState extends State<PercentCounter> {
                     children: [
                       Expanded(
                         child: buildButton(
-                          label: 'REDUCE 10%',
-                          color: Colors.redAccent,
-                          onTap: disabled || widget.value <= 0
+                          label: '+100%',
+                          color: accentColor,
+                          onTap: disabled || atMax
                               ? null
-                              : () => _updateValue(-10),
+                              : () => _updateValue(100),
                         ),
                       ),
                     ],

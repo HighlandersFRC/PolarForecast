@@ -11,7 +11,6 @@ from models.match_scouting_2026 import Data2026, MatchScouting2026, Miscellaneou
 def dataOPR(scoutData: MatchScouting2026) -> int:
     auto = scoutData.data.auto_scoring
     teleop = scoutData.data.teleop_scoring
-    opr = 0
     opr = auto.fuel_scored + teleop.fuel_scored
     return opr
 
@@ -79,7 +78,7 @@ def average(lst: list):
         return sum(numeric_values) / len(numeric_values)
 
 
-def getError(combination: dict[str, MatchScouting2026], tbaMatch: pd.Series) -> float:
+def getError(combination: dict[str, MatchScouting2026], tba_match: pd.Series) -> float:
    
     error = 0
     total = 0
@@ -91,21 +90,19 @@ def getError(combination: dict[str, MatchScouting2026], tbaMatch: pd.Series) -> 
     addedData = data[0]
     fuel_scored = 0
     for i in range(3):
-     
-        fuel_scored += data[i]['auto_fuel_scored']
-        fuel_scored += data[i]['teleop_fuel_scored']
-    error += abs((tbaMatch['autoPoints'] + (tbaMatch['teleopCount'] + tbaMatch['endGameCount']))-fuel_scored)
-    total += abs(tbaMatch['autoPoints'] + (tbaMatch['teleopCount'] + tbaMatch['endGameCount']))
+        fuel_scored += data[i]['auto_scoring_fuel_scored']
+        fuel_scored += data[i]['teleop_scoring_fuel_scored']
+    error += abs((tba_match['autoPoints'] + (tba_match['teleopCount'] + tba_match['endGameCount']))-fuel_scored)
+    total += abs(tba_match['autoPoints'] + (tba_match['teleopCount'] + tba_match['endGameCount']))
     for field in addedData:
-        if not field == "auto_fuel_scored" and not field == "teleop_fuel_scored":
+        if not field == "auto_scoring_fuel_scored" and not field == "teleop_scoring_fuel_scored":
             addedData[field] = data[0][field] + \
                 data[1][field] + data[2][field]
-            total += abs(tbaMatch[field])
-            error += abs(tbaMatch[field] - addedData[field])
+            total += abs(tba_match[field])
+            error += abs(tba_match[field] - addedData[field])
     if total > 0:
         errorPercent = error / total
     return errorPercent
-
 
 def getScoutRatings(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) -> dict:
     scouts = []
