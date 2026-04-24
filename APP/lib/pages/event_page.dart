@@ -167,7 +167,6 @@ class EventPage extends StatefulWidget {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final tournaments = apiService.fetchTournaments();
 
-    // print(eventKey);
     return FutureBuilder(
         future: tournaments,
         builder: (context, tournaments) {
@@ -361,7 +360,6 @@ class _TBATabState extends State<_TBATab> {
 
                 const SizedBox(height: 24),
 
-                // 🔥 Clean CTA button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -386,7 +384,6 @@ class _TBATabState extends State<_TBATab> {
 
                 const SizedBox(height: 12),
 
-                // subtle link text
                 TextButton(
                   onPressed: _openTBA,
                   child: Text(
@@ -519,7 +516,6 @@ class _RankingsTabState extends State<_RankingsTab> {
   }
 
   void updateGrid() {
-    // Helper to safely convert any dynamic value to a number
     num _safeNum(dynamic val) {
       if (val == null) return 0;
       if (val is num) return val;
@@ -529,7 +525,6 @@ class _RankingsTabState extends State<_RankingsTab> {
     minValues = {};
     maxValues = {};
 
-    // Compute min/max for heatmap columns
     for (var column in dataColumns) {
       if (heatMapFromKey[column.columnName] == true) {
         final columnKey = column.columnName;
@@ -544,7 +539,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       }
     }
 
-    // Build DataGrid rows
     dataRows = [];
     for (var rank in rankings) {
       List<DataGridCell> cells = [];
@@ -556,14 +550,12 @@ class _RankingsTabState extends State<_RankingsTab> {
 
           num value = _safeNum(rawValue);
 
-          // Heatmap: round to 1 decimal for display
           if (heatMapFromKey[columnKey] == true) {
             cells.add(DataGridCell(
               columnName: columnKey,
               value: (value * 10).roundToDouble() / 10,
             ));
           } else {
-            // Keep original value for non-heatmap columns
             cells.add(DataGridCell(
               columnName: columnKey,
               value: rawValue ?? 0,
@@ -641,7 +633,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       );
     }
 
-    // Check if rankings are empty or if Rank is 0
     bool noData = rankings.isEmpty || rankings.any((r) => r.rank == 0);
     if (noData) {
       return Center(
@@ -650,11 +641,11 @@ class _RankingsTabState extends State<_RankingsTab> {
           children: [
             Icon(
               Icons
-                  .folder_off_outlined, // Or Icons.search_off, Icons.folder_off
+                  .folder_off_outlined,
               size: 48,
               color: Theme.of(context)
                   .colorScheme
-                  .outline, // Subtle gray/themed color
+                  .outline, 
             ),
             const SizedBox(height: 16),
             Text(
@@ -694,7 +685,6 @@ class _RankingsTabState extends State<_RankingsTab> {
             String csv = ListToCsvConverter().convert(csvData);
             final bytes = utf8.encode(csv);
 
-            // ✅ CROSS-PLATFORM FIX
             await downloadFile(bytes, '${widget.tournament.display}.csv');
           },
           style: ElevatedButton.styleFrom(
@@ -770,7 +760,6 @@ class _TeamDataSource extends DataGridSource {
           );
         }
         if (e.columnName == 'team_number') {
-          // print(e.columnName.runtimeType);
           return Container(
               color: color,
               child: TeamLink(int.parse(e.value.toString()), tournament));
@@ -1372,7 +1361,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                   }
                 });
               } else if (landscape) {
-                // Reset flag if needed for landscape changes
                 _hasAdjustedForLandscape = false;
               }
               List<MatchScouting2026> teamScoutingData = [];
@@ -1516,12 +1504,11 @@ class _ChartsTabState extends State<_ChartsTab> {
                       return const Center(child: Text('Error loading images'));
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const SizedBox.shrink(); // no image
+                      return const SizedBox.shrink(); 
                     }
 
                     final allImages = snapshot.data!;
 
-                    // Priority list: full_robot > wires > any
                     List<PictureData> images = allImages
                         .where((img) => img.image_type == 'full_robot')
                         .toList();
@@ -1632,13 +1619,11 @@ class _ChartsTabState extends State<_ChartsTab> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Top controls: centered
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Team 1 dropdown
                         DropdownButton<int>(
                           items: [
                             DropdownMenuItem(
@@ -1660,7 +1645,6 @@ class _ChartsTabState extends State<_ChartsTab> {
 
                         const SizedBox(width: 16),
 
-                        // Compare toggle button
                         ElevatedButton.icon(
                           icon: Icon(
                               comparing ? Icons.toggle_on : Icons.toggle_off),
@@ -1674,13 +1658,11 @@ class _ChartsTabState extends State<_ChartsTab> {
                             comparing = !comparing;
                             if (!comparing)
                               secondTeam =
-                                  0; // reset second team when turning off
                           }),
                         ),
 
                         const SizedBox(width: 16),
 
-                        // Team 2 dropdown (only visible if comparing)
                         if (comparing)
                           DropdownButton<int>(
                             items: [
@@ -1704,11 +1686,9 @@ class _ChartsTabState extends State<_ChartsTab> {
                     ),
                   ),
 
-                  // Charts and images row
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Team 1 Card
                       Expanded(
                         child: _TeamCard(
                           teamIndex: selectedTeam,
@@ -1719,7 +1699,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                         ),
                       ),
 
-                      // Team 2 Card (only if comparing)
                       if (comparing)
                         Expanded(
                           child: _TeamCard(
@@ -1745,7 +1724,7 @@ class _ChartsTabState extends State<_ChartsTab> {
           Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-              child: BarChartWithWeights(
+              child: BarChartWithWeights( 
                   title: 'OPR By Game Period',
                   data: rankings,
                   number: 24,
@@ -1901,7 +1880,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     eventCodeController =
         TextEditingController(text: widget.widget.tournament.key);
 
-    // Add a listener to display a QR code if submission fails
     teamNumberController =
         TextEditingController(text: data.team_number.toString());
     matchNumberController =
@@ -1937,7 +1915,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             });
           }
           groups = _groups;
-          // print(groups);
           loading = false;
         }).onError((e, stackTrace) {
           if (mounted) {
@@ -2142,7 +2119,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Dark Mode Palette
     const Color backgroundDb = Color(0xFF0F111A);
     const Color cardDb = Color(0xFF1A1D29);
     const Color primaryBlue = Color(0xFF47A7FF);
@@ -2211,7 +2187,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             constraints: const BoxConstraints(maxWidth: 850),
             child: Column(
               children: [
-                // HEADER
 
                 Text(
                   widget.widget.tournament.display,
@@ -2270,7 +2245,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.precision_manufacturing,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               int teamNumber = int.tryParse(value) ?? -1;
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
@@ -2471,7 +2446,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     ]));
   }
 
-// UI HELPERS (Dark Mode)
 
   Widget _buildDarkCard(
       {required String title,

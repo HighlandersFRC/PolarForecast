@@ -338,8 +338,5 @@ def TeamBasedData(TBAData: pd.DataFrame, scoutingData: list[MatchScouting2026]) 
                 totalTrust += entryTrust
                 returnEntry.data.auto_scoring.fuel_scored += entry.data.auto_scoring.fuel_scored*entryTrust
                 returnEntry.data.teleop_scoring.fuel_scored += entry.data.teleop_scoring.fuel_scored*entryTrust
-            if not totalTrust == 0:
-                returnEntry.data.teleop_scoring.fuel_scored /= totalTrust
-                returnEntry.data.auto_scoring.fuel_scored /= totalTrust
             retval.append(returnEntry)
     return retval, scoutRatings
