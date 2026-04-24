@@ -8,9 +8,7 @@ from models.match_scouting_2026 import MatchScouting2026
 from models.tba_match_2026 import TBAMatch2026
 from GeneticAlg import geneticAlg
 
-from RemoveBadData import (
-    TeamBasedData,
-)
+from RemoveBadData import TeamBasedData
 
 warnings.filterwarnings("ignore")
 
@@ -312,8 +310,7 @@ def run_genetic_algorithms(
         result = ga.run()
         for key in result[0].columns:
             values = result[0][key].dropna().tolist()
-            if values:
-                results.append(values)
+            results.append(values)
 
     for i in range(len(TBA_ONLY_KEYS)):
         ga = geneticAlg(

@@ -2206,7 +2206,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.tag,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               int matchNumber = int.tryParse(value) ?? -1;
                               if (matchNumber >= 0 && matchNumber < 500) {
                                 setState(() => data =
@@ -2225,7 +2225,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.precision_manufacturing,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               int teamNumber = int.tryParse(value) ?? 0;
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
@@ -2366,7 +2366,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       maxLength: 500,
                       accent: primaryBlue,
                       textCol: textPrimary,
-                      onChanged: (val) {
+                      onSubmitted: (val) {
                         setState(() {
                           data = data.copyWith(
                               data: data.data.copyWith(
@@ -2466,11 +2466,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       int? maxLength,
       required Color accent,
       required Color textCol,
-      Function(String)? onChanged}) {
+      Function(String)? onSubmitted}) {
     return TextField(
       controller: controller,
       enabled: enabled,
-      onSubmitted: onChanged,
+      onSubmitted: onSubmitted,
       maxLines: maxLines,
       maxLength: maxLength, // Add this
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
@@ -2803,7 +2803,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Form Progress',
+                    'Pit Progress',
                     style: TextStyle(
                       fontFamily: 'Font', // clean modern font
                       fontSize: 14,

@@ -52,7 +52,7 @@ class ScoreBreakdown2026(BaseModel):
     hubScore: HubScore
     majorFoulCount: int
     minorFoulCount: int
-    penalties: str
+    penalties: Optional[str] = None 
     rp: int
     superchargedAchieved: bool
     totalAutoPoints: int

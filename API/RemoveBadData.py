@@ -77,9 +77,10 @@ def average(lst: list):
     else:
         return sum(numeric_values) / len(numeric_values)
 
+def tower_to_points(tower_str):
+            return {"Level1": 15, "Level2": 15, "Level3": 15}.get(tower_str, 0)
 
 def getError(combination: dict[str, MatchScouting2026], tba_match: pd.Series) -> float:
-   
     error = 0
     total = 0
     errorPercent = 1.0
@@ -87,19 +88,20 @@ def getError(combination: dict[str, MatchScouting2026], tba_match: pd.Series) ->
     for team in combination:
         data.append(flatten_dict(combination[team].data.dict(
             exclude={'auto', 'miscellaneous'})))
-    addedData = data[0]
+
     fuel_scored = 0
     for i in range(3):
         fuel_scored += data[i]['auto_scoring_fuel_scored']
         fuel_scored += data[i]['teleop_scoring_fuel_scored']
-    error += abs((tba_match['autoPoints'] + (tba_match['teleopCount'] + tba_match['endGameCount']))-fuel_scored)
-    total += abs(tba_match['autoPoints'] + (tba_match['teleopCount'] + tba_match['endGameCount']))
-    for field in addedData:
-        if not field == "auto_scoring_fuel_scored" and not field == "teleop_scoring_fuel_scored":
-            addedData[field] = data[0][field] + \
-                data[1][field] + data[2][field]
-            total += abs(tba_match[field])
-            error += abs(tba_match[field] - addedData[field])
+
+    auto_climb_points = tower_to_points(tba_match['station1_auto_tower']) +  tower_to_points(tba_match['station2_auto_tower']) + tower_to_points(tba_match['station3_auto_tower'])
+    
+
+    tba_total = auto_climb_points + tba_match['auto_fuel_scored'] + tba_match['teleop_fuel_scored'] + tba_match['endgame_scoring']
+
+    error += abs(tba_total - fuel_scored)
+    total += abs(tba_total)
+
     if total > 0:
         errorPercent = error / total
     return errorPercent
