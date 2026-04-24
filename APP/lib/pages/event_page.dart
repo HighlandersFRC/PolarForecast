@@ -334,9 +334,7 @@ class _TBATabState extends State<_TBATab> {
                   size: 48,
                   color: Colors.blue,
                 ),
-
                 const SizedBox(height: 16),
-
                 Text(
                   "View Event on The Blue Alliance",
                   style: TextStyle(
@@ -346,9 +344,7 @@ class _TBATabState extends State<_TBATab> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 12),
-
                 Text(
                   '${widget.tournament.display}',
                   style: TextStyle(
@@ -357,9 +353,7 @@ class _TBATabState extends State<_TBATab> {
                     fontFamily: 'Font',
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -381,9 +375,7 @@ class _TBATabState extends State<_TBATab> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 TextButton(
                   onPressed: _openTBA,
                   child: Text(
@@ -640,12 +632,9 @@ class _RankingsTabState extends State<_RankingsTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons
-                  .folder_off_outlined,
+              Icons.folder_off_outlined,
               size: 48,
-              color: Theme.of(context)
-                  .colorScheme
-                  .outline, 
+              color: Theme.of(context).colorScheme.outline,
             ),
             const SizedBox(height: 16),
             Text(
@@ -1504,7 +1493,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                       return const Center(child: Text('Error loading images'));
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const SizedBox.shrink(); 
+                      return const SizedBox.shrink();
                     }
 
                     final allImages = snapshot.data!;
@@ -1642,9 +1631,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                           }),
                           value: selectedTeam,
                         ),
-
                         const SizedBox(width: 16),
-
                         ElevatedButton.icon(
                           icon: Icon(
                               comparing ? Icons.toggle_on : Icons.toggle_off),
@@ -1656,13 +1643,10 @@ class _ChartsTabState extends State<_ChartsTab> {
                           ),
                           onPressed: () => setState(() {
                             comparing = !comparing;
-                            if (!comparing)
-                              secondTeam =
+                            if (!comparing) secondTeam = 0;
                           }),
                         ),
-
                         const SizedBox(width: 16),
-
                         if (comparing)
                           DropdownButton<int>(
                             items: [
@@ -1685,7 +1669,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                       ],
                     ),
                   ),
-
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1698,7 +1681,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                           scouting: scouting,
                         ),
                       ),
-
                       if (comparing)
                         Expanded(
                           child: _TeamCard(
@@ -1724,7 +1706,7 @@ class _ChartsTabState extends State<_ChartsTab> {
           Divider(color: Colors.blue),
           Padding(
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-              child: BarChartWithWeights( 
+              child: BarChartWithWeights(
                   title: 'OPR By Game Period',
                   data: rankings,
                   number: 24,
@@ -2187,7 +2169,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             constraints: const BoxConstraints(maxWidth: 850),
             child: Column(
               children: [
-
                 Text(
                   widget.widget.tournament.display,
                   textAlign: TextAlign.center,
@@ -2199,7 +2180,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 _buildDarkCard(
                   title: 'Pre-Match Info',
                   icon: Icons.assignment_outlined,
@@ -2245,8 +2225,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.precision_manufacturing,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onSubmitted: (value) {
-                              int teamNumber = int.tryParse(value) ?? -1;
+                            onChanged: (value) {
+                              int teamNumber = int.tryParse(value) ?? 0;
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
                                     data.copyWith(team_number: teamNumber));
@@ -2262,7 +2242,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         DRIVER_STATIONS, cardDb, primaryBlue, textPrimary),
                   ],
                 ),
-
                 _buildDarkCard(
                   title: 'Autonomous',
                   icon: Icons.smart_toy_outlined,
@@ -2315,7 +2294,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     ),
                   ],
                 ),
-
                 _buildDarkCard(
                     title: 'Teleop Phase',
                     icon: Icons.videogame_asset_outlined,
@@ -2350,7 +2328,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         },
                       ),
                     ]),
-
                 _buildDarkCard(
                   title: 'Post-Match & Misc',
                   icon: Icons.widgets_outlined,
@@ -2400,7 +2377,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
@@ -2445,7 +2421,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       ),
     ]));
   }
-
 
   Widget _buildDarkCard(
       {required String title,
@@ -2495,7 +2470,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     return TextField(
       controller: controller,
       enabled: enabled,
-      onChanged: onChanged,
+      onSubmitted: onChanged,
       maxLines: maxLines,
       maxLength: maxLength, // Add this
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
