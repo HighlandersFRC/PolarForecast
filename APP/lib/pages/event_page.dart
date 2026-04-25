@@ -1962,9 +1962,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             auto: data.data.auto
                 .copyWith(field_side: [index < 3 ? 'red' : 'blue'])));
     String teamNumberText = team.substring(3);
+    int parsedTeamNumber = int.parse(teamNumberText);
     teamNumberController.text = teamNumberText;
-    data = data.copyWith(team_number: int.parse(teamNumberText));
-    _fetchPitData(int.parse(teamNumberText));
+    data = data.copyWith(team_number: parsedTeamNumber);
+    _fetchPitData(parsedTeamNumber);
   }
 
   void _submit() {
@@ -2472,7 +2473,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       enabled: enabled,
       onSubmitted: onSubmitted,
       maxLines: maxLines,
-      maxLength: maxLength, // Add this
+      maxLength: maxLength,
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
       inputFormatters: isNum ? [FilteringTextInputFormatter.digitsOnly] : [],
       style: TextStyle(fontFamily: 'Font', color: textCol),

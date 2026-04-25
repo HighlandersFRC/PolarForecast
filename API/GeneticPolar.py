@@ -75,11 +75,8 @@ def build_opr_match_list(data):
             oprMatchEntry["allianceStr"] = allianceStr
             oprMatchEntry["match_number"] = row.match_number
 
-            try:
-                for k in range(3):
-                    oprMatchEntry[f"station{k+1}"] = row.alliances[allianceStr].team_keys[k][3:]
-            except (KeyError, IndexError, TypeError):
-                continue
+            for k in range(3):
+                oprMatchEntry[f"station{k+1}"] = row.alliances[allianceStr].team_keys[k][3:]
 
             oprMatchEntry["station1_auto_tower"] = breakdown.autoTowerRobot1
             oprMatchEntry["station2_auto_tower"] = breakdown.autoTowerRobot2
@@ -424,17 +421,14 @@ def compute_defense_dpr(data, XMatrix, teams, DefenseOnlyKeys):
             defenseMatchEntry["allianceStr"] = allianceStr
             defenseMatchEntry["match_number"] = row.match_number
 
-            try:
-                for k in range(3):
-                    defenseMatchEntry[f"station{k + 1}"] = row.alliances[allianceStr].team_keys[k][3:]
+            for k in range(3):
+                defenseMatchEntry[f"station{k + 1}"] = row.alliances[allianceStr].team_keys[k][3:]
                 
 
-                opp_keys = [
-                    row.alliances[opponentStr].team_keys[i][3:]
-                    for i in range(3)
-                ]
-            except (KeyError, IndexError, TypeError):
-                continue
+            opp_keys = [
+                row.alliances[opponentStr].team_keys[i][3:]
+                for i in range(3)
+            ]
 
             predictedAutoPoints = sum(
                 get_val(team, "auto_fuel_scored") for team in opp_keys

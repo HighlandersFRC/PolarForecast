@@ -1471,7 +1471,12 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     GroupCollection.find_one_and_update(
         {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
     updateGroupStatus(DB_Entry, event)
-    updateGroupData(DB_Entry, event, event_type=1)
+    etags = list(ETagCollection.find({}))
+    for eventData in etags:
+        if eventData["key"] == event.event_code:
+            eventData = eventData
+            break
+        updateGroupData(DB_Entry, event, eventData["event"]["event_type"])
     updateGroupGridPitData(DB_Entry, event)
     return get_group(group_name=group_name, token=token)
 
@@ -2983,9 +2988,18 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
 
 
 def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
-    ENERGIZED_THRESHOLD   = 360
-    SUPERCHARGED_THRESHOLD = 500  
+    ENERGIZED_THRESHOLD = 100
+    SUPERCHARGED_THRESHOLD = 360  
     TRAVERSAL_THRESHOLD   = 50  
+
+    if eventType == 1:
+        ENERGIZED_THRESHOLD = 240
+        SUPERCHARGED_THRESHOLD = 360
+    else:
+        ENERGIZED_THRESHOLD = 360
+        SUPERCHARGED_THRESHOLD = 500
+
+    
 
     matchPredictions = []
     for match in TBAData:

@@ -78,12 +78,16 @@ def average(lst: list):
         return sum(numeric_values) / len(numeric_values)
 
 def tower_to_points(tower_str):
-            return {"Level1": 15, "Level2": 15, "Level3": 15}.get(tower_str, 0)
+        return {
+                "Level1": 15, 
+                "Level2": 15, 
+                "Level3": 15
+               }.get(tower_str, 0)
 
 def getError(combination: dict[str, MatchScouting2026], tba_match: pd.Series) -> float:
     error = 0
     total = 0
-    errorPercent = 1.0
+    errorPercent = 1.0  
     data = []
     for team in combination:
         data.append(flatten_dict(combination[team].data.dict(

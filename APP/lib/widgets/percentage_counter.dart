@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,11 +23,13 @@ class PercentCounter extends StatefulWidget {
 
 class _PercentCounterState extends State<PercentCounter> {
   late TextEditingController _controller;
+  late int _sanitizedValue;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.value.toString());
+    _sanitizedValue = _sanitizeValue(widget.value);
+    _controller = TextEditingController(text: _sanitizedValue.toString());
   }
 
   @override
@@ -41,22 +42,29 @@ class _PercentCounterState extends State<PercentCounter> {
   void didUpdateWidget(covariant PercentCounter oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
-      _controller.text = widget.value.toString();
+      _sanitizedValue = _sanitizeValue(widget.value);
+      _controller.text = _sanitizedValue.toString();
     }
+  }
+
+  int _sanitizeValue(int value) {
+    return value.clamp(0, widget.max);
   }
 
   void _updateValue(int delta) {
     if (widget.locked) return;
     HapticFeedback.lightImpact();
-    int newValue = math.max(0, math.min(widget.value + delta, widget.max));
-    widget.onChanged(newValue);
+    _sanitizedValue = (_sanitizedValue + delta).clamp(0, widget.max);
+    widget.onChanged(_sanitizedValue);
+    _controller.text = _sanitizedValue.toString();
   }
 
   void _submitText(String text) {
     int? parsed = int.tryParse(text);
     if (parsed == null) return;
-    parsed = math.max(0, math.min(parsed, widget.max));
-    widget.onChanged(parsed);
+    _sanitizedValue = parsed.clamp(0, widget.max);
+    widget.onChanged(_sanitizedValue);
+    _controller.text = _sanitizedValue.toString();
   }
 
   @override

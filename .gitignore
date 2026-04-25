@@ -9,7 +9,6 @@ __pycache__/
 /API/fixkeycloak.py
 
 /API/runRegressionOnScouts.py
-/API/predictions.py
 
 .vscode/
 .dart_tool/
