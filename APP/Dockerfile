@@ -1,28 +1,32 @@
-# Provide nginx webserver
-FROM nginx:stable
+FROM debian:bookworm-slim AS builder
 
-# Set directory to Copy App
 WORKDIR /app
 
-# Prerequisites
-RUN apt update && apt install -y curl git unzip xz-utils zip libglu1-mesa
+RUN apt-get update && apt-get install -y \
+    curl git unzip xz-utils zip libglu1-mesa wget ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Download Flutter SDK
-RUN git clone https://github.com/flutter/flutter.git
-ENV PATH "$PATH:/app/flutter/bin"
+RUN git clone https://github.com/flutter/flutter.git --depth 1 -b stable /flutter
+ENV PATH="/flutter/bin:${PATH}"
 
-# Run basic check to download Dark SDK
-RUN flutter doctor
+RUN flutter precache --web
 
-# Copy Flutter App into Image
+COPY pubspec.yaml pubspec.lock ./
+RUN flutter pub get
+
 COPY . .
 
-# Copy nginx config
+RUN dart run build_runner build --delete-conflicting-outputs
+
+RUN flutter build web --release \
+    --dart-define=PF_API_ENDPOINT=http://127.0.0.1:8000 \
+    --dart-define=PF_KEYCLOAK_LOGIN_IP=http://localhost:8080 \
+    --dart-define=KEYCLOAK_REALM=polarforecast \
+    --dart-define=KEYCLOAK_APP_CLIENT_ID=polarforecast-gui \
+    --dart-define=APP_DOMAIN=http://localhost:3000 \
+    --dart-define=APP_TBA_KEY=NtlbulTTKEs3Gy7deIFd5j4WpF9qmdNT4CL7ee3tWgjTPwvQhTWxmwIeY9xYlan5
+
+FROM nginx:stable
+COPY --from=builder /app/build/web /usr/share/nginx/html
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-RUN chmod +x /app/entrypoint.sh
-
-# Open http port
 EXPOSE 3000
-
-# Set custom entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
