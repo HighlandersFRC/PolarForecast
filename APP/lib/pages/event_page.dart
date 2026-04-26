@@ -2471,7 +2471,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     return TextField(
       controller: controller,
       enabled: enabled,
-      onSubmitted: onSubmitted,
+      onChanged: onSubmitted,
       maxLines: maxLines,
       maxLength: maxLength,
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
