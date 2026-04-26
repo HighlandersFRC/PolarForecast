@@ -1,0 +1,1 @@
+python -m uvicorn api:app --reload --env-file ../local.env
