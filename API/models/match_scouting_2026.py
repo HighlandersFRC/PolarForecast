@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import List, Optional, Union
 
 from models.scout_info import ScoutInfo
@@ -6,11 +6,17 @@ from models.pit_scouting_2026 import Auto2026
 
 
 class Scoring2026(BaseModel):
-    fuel_cycles: int = 0
-    passing_cycles: int = 0
-    scoring_cycles: int = 0
-    cycles_completed: int = 0
-   
+    fuel_scored: int = 0
+    fuel_scored_hopper: int = 0
+    hopper_capacity: int = 32
+
+    @root_validator
+    def calculate_fuel_scored(cls, values):
+        hopper = values.get('fuel_scored_hopper', 0)
+        capacity = values.get('hopper_capacity', 32)
+        counter = values.get('fuel_scored', 0)
+        values['fuel_scored'] = counter + int((hopper / 100) * capacity)
+        return values
 
 class Miscellaneous2026(BaseModel):
     died: bool = False
@@ -31,5 +37,4 @@ class MatchScouting2026(BaseModel):
     match_number: int
     scout_info: ScoutInfo
     data: Data2026
-    time: float= 0  # Will be set by server, so default is fine
-    
+    time: float = 0

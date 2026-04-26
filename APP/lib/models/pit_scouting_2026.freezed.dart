@@ -346,18 +346,13 @@ mixin _$PitData2026 {
   int get driver_experience_events => throw _privateConstructorUsedError;
   String get drive_train => throw _privateConstructorUsedError;
   String get type_of_shooter => throw _privateConstructorUsedError;
-  bool get can_feed_human_player => throw _privateConstructorUsedError;
-  bool get can_pick_up_from_ground => throw _privateConstructorUsedError;
   bool get fixedShooting => throw _privateConstructorUsedError;
   bool get nearTower => throw _privateConstructorUsedError;
   bool get nearHub => throw _privateConstructorUsedError;
-  bool get go_over_bump => throw _privateConstructorUsedError;
   bool get go_under_trench => throw _privateConstructorUsedError;
   bool get can_climb => throw _privateConstructorUsedError;
   List<int> get climbing => throw _privateConstructorUsedError;
   bool get can_climb_in_autonomous => throw _privateConstructorUsedError;
-  bool get automatically_shooting => throw _privateConstructorUsedError;
-  bool get shooting_while_moving => throw _privateConstructorUsedError;
   String get main_strategy => throw _privateConstructorUsedError;
   int get spare_parts => throw _privateConstructorUsedError;
   String get favorite_color => throw _privateConstructorUsedError;
@@ -394,18 +389,13 @@ abstract class $PitData2026CopyWith<$Res> {
       {int driver_experience_events,
       String drive_train,
       String type_of_shooter,
-      bool can_feed_human_player,
-      bool can_pick_up_from_ground,
       bool fixedShooting,
       bool nearTower,
       bool nearHub,
-      bool go_over_bump,
       bool go_under_trench,
       bool can_climb,
       List<int> climbing,
       bool can_climb_in_autonomous,
-      bool automatically_shooting,
-      bool shooting_while_moving,
       String main_strategy,
       int spare_parts,
       String favorite_color,
@@ -442,18 +432,13 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
     Object? driver_experience_events = null,
     Object? drive_train = null,
     Object? type_of_shooter = null,
-    Object? can_feed_human_player = null,
-    Object? can_pick_up_from_ground = null,
     Object? fixedShooting = null,
     Object? nearTower = null,
     Object? nearHub = null,
-    Object? go_over_bump = null,
     Object? go_under_trench = null,
     Object? can_climb = null,
     Object? climbing = null,
     Object? can_climb_in_autonomous = null,
-    Object? automatically_shooting = null,
-    Object? shooting_while_moving = null,
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
@@ -482,14 +467,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
           ? _value.type_of_shooter
           : type_of_shooter // ignore: cast_nullable_to_non_nullable
               as String,
-      can_feed_human_player: null == can_feed_human_player
-          ? _value.can_feed_human_player
-          : can_feed_human_player // ignore: cast_nullable_to_non_nullable
-              as bool,
-      can_pick_up_from_ground: null == can_pick_up_from_ground
-          ? _value.can_pick_up_from_ground
-          : can_pick_up_from_ground // ignore: cast_nullable_to_non_nullable
-              as bool,
       fixedShooting: null == fixedShooting
           ? _value.fixedShooting
           : fixedShooting // ignore: cast_nullable_to_non_nullable
@@ -501,10 +478,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
       nearHub: null == nearHub
           ? _value.nearHub
           : nearHub // ignore: cast_nullable_to_non_nullable
-              as bool,
-      go_over_bump: null == go_over_bump
-          ? _value.go_over_bump
-          : go_over_bump // ignore: cast_nullable_to_non_nullable
               as bool,
       go_under_trench: null == go_under_trench
           ? _value.go_under_trench
@@ -521,14 +494,6 @@ class _$PitData2026CopyWithImpl<$Res, $Val extends PitData2026>
       can_climb_in_autonomous: null == can_climb_in_autonomous
           ? _value.can_climb_in_autonomous
           : can_climb_in_autonomous // ignore: cast_nullable_to_non_nullable
-              as bool,
-      automatically_shooting: null == automatically_shooting
-          ? _value.automatically_shooting
-          : automatically_shooting // ignore: cast_nullable_to_non_nullable
-              as bool,
-      shooting_while_moving: null == shooting_while_moving
-          ? _value.shooting_while_moving
-          : shooting_while_moving // ignore: cast_nullable_to_non_nullable
               as bool,
       main_strategy: null == main_strategy
           ? _value.main_strategy
@@ -616,18 +581,13 @@ abstract class _$$PitData2026ImplCopyWith<$Res>
       {int driver_experience_events,
       String drive_train,
       String type_of_shooter,
-      bool can_feed_human_player,
-      bool can_pick_up_from_ground,
       bool fixedShooting,
       bool nearTower,
       bool nearHub,
-      bool go_over_bump,
       bool go_under_trench,
       bool can_climb,
       List<int> climbing,
       bool can_climb_in_autonomous,
-      bool automatically_shooting,
-      bool shooting_while_moving,
       String main_strategy,
       int spare_parts,
       String favorite_color,
@@ -663,18 +623,13 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
     Object? driver_experience_events = null,
     Object? drive_train = null,
     Object? type_of_shooter = null,
-    Object? can_feed_human_player = null,
-    Object? can_pick_up_from_ground = null,
     Object? fixedShooting = null,
     Object? nearTower = null,
     Object? nearHub = null,
-    Object? go_over_bump = null,
     Object? go_under_trench = null,
     Object? can_climb = null,
     Object? climbing = null,
     Object? can_climb_in_autonomous = null,
-    Object? automatically_shooting = null,
-    Object? shooting_while_moving = null,
     Object? main_strategy = null,
     Object? spare_parts = null,
     Object? favorite_color = null,
@@ -703,14 +658,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
           ? _value.type_of_shooter
           : type_of_shooter // ignore: cast_nullable_to_non_nullable
               as String,
-      can_feed_human_player: null == can_feed_human_player
-          ? _value.can_feed_human_player
-          : can_feed_human_player // ignore: cast_nullable_to_non_nullable
-              as bool,
-      can_pick_up_from_ground: null == can_pick_up_from_ground
-          ? _value.can_pick_up_from_ground
-          : can_pick_up_from_ground // ignore: cast_nullable_to_non_nullable
-              as bool,
       fixedShooting: null == fixedShooting
           ? _value.fixedShooting
           : fixedShooting // ignore: cast_nullable_to_non_nullable
@@ -722,10 +669,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
       nearHub: null == nearHub
           ? _value.nearHub
           : nearHub // ignore: cast_nullable_to_non_nullable
-              as bool,
-      go_over_bump: null == go_over_bump
-          ? _value.go_over_bump
-          : go_over_bump // ignore: cast_nullable_to_non_nullable
               as bool,
       go_under_trench: null == go_under_trench
           ? _value.go_under_trench
@@ -742,14 +685,6 @@ class __$$PitData2026ImplCopyWithImpl<$Res>
       can_climb_in_autonomous: null == can_climb_in_autonomous
           ? _value.can_climb_in_autonomous
           : can_climb_in_autonomous // ignore: cast_nullable_to_non_nullable
-              as bool,
-      automatically_shooting: null == automatically_shooting
-          ? _value.automatically_shooting
-          : automatically_shooting // ignore: cast_nullable_to_non_nullable
-              as bool,
-      shooting_while_moving: null == shooting_while_moving
-          ? _value.shooting_while_moving
-          : shooting_while_moving // ignore: cast_nullable_to_non_nullable
               as bool,
       main_strategy: null == main_strategy
           ? _value.main_strategy
@@ -818,18 +753,13 @@ class _$PitData2026Impl implements _PitData2026 {
       {required this.driver_experience_events,
       required this.drive_train,
       required this.type_of_shooter,
-      required this.can_feed_human_player,
-      required this.can_pick_up_from_ground,
       required this.fixedShooting,
       required this.nearTower,
       required this.nearHub,
-      required this.go_over_bump,
       required this.go_under_trench,
       required this.can_climb,
       required final List<int> climbing,
       required this.can_climb_in_autonomous,
-      required this.automatically_shooting,
-      required this.shooting_while_moving,
       required this.main_strategy,
       required this.spare_parts,
       required this.favorite_color,
@@ -857,17 +787,11 @@ class _$PitData2026Impl implements _PitData2026 {
   @override
   final String type_of_shooter;
   @override
-  final bool can_feed_human_player;
-  @override
-  final bool can_pick_up_from_ground;
-  @override
   final bool fixedShooting;
   @override
   final bool nearTower;
   @override
   final bool nearHub;
-  @override
-  final bool go_over_bump;
   @override
   final bool go_under_trench;
   @override
@@ -882,10 +806,6 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   final bool can_climb_in_autonomous;
-  @override
-  final bool automatically_shooting;
-  @override
-  final bool shooting_while_moving;
   @override
   final String main_strategy;
   @override
@@ -927,7 +847,7 @@ class _$PitData2026Impl implements _PitData2026 {
 
   @override
   String toString() {
-    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, type_of_shooter: $type_of_shooter, can_feed_human_player: $can_feed_human_player, can_pick_up_from_ground: $can_pick_up_from_ground, fixedShooting: $fixedShooting, nearTower: $nearTower, nearHub: $nearHub, go_over_bump: $go_over_bump, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, automatically_shooting: $automatically_shooting, shooting_while_moving: $shooting_while_moving, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, comments: $comments, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
+    return 'PitData2026(driver_experience_events: $driver_experience_events, drive_train: $drive_train, type_of_shooter: $type_of_shooter, fixedShooting: $fixedShooting, nearTower: $nearTower, nearHub: $nearHub, go_under_trench: $go_under_trench, can_climb: $can_climb, climbing: $climbing, can_climb_in_autonomous: $can_climb_in_autonomous, main_strategy: $main_strategy, spare_parts: $spare_parts, favorite_color: $favorite_color, auto: $auto, hopper_capacity: $hopper_capacity, bps: $bps, comments: $comments, autos: $autos, robot_height: $robot_height, straddling_pole_climb_right: $straddling_pole_climb_right, straddling_pole_climb_left: $straddling_pole_climb_left, left_pole_climb: $left_pole_climb, right_pole_climb: $right_pole_climb, center_pole_climb: $center_pole_climb)';
   }
 
   @override
@@ -941,17 +861,11 @@ class _$PitData2026Impl implements _PitData2026 {
                 other.drive_train == drive_train) &&
             (identical(other.type_of_shooter, type_of_shooter) ||
                 other.type_of_shooter == type_of_shooter) &&
-            (identical(other.can_feed_human_player, can_feed_human_player) ||
-                other.can_feed_human_player == can_feed_human_player) &&
-            (identical(other.can_pick_up_from_ground, can_pick_up_from_ground) ||
-                other.can_pick_up_from_ground == can_pick_up_from_ground) &&
             (identical(other.fixedShooting, fixedShooting) ||
                 other.fixedShooting == fixedShooting) &&
             (identical(other.nearTower, nearTower) ||
                 other.nearTower == nearTower) &&
             (identical(other.nearHub, nearHub) || other.nearHub == nearHub) &&
-            (identical(other.go_over_bump, go_over_bump) ||
-                other.go_over_bump == go_over_bump) &&
             (identical(other.go_under_trench, go_under_trench) ||
                 other.go_under_trench == go_under_trench) &&
             (identical(other.can_climb, can_climb) ||
@@ -959,10 +873,6 @@ class _$PitData2026Impl implements _PitData2026 {
             const DeepCollectionEquality().equals(other._climbing, _climbing) &&
             (identical(other.can_climb_in_autonomous, can_climb_in_autonomous) ||
                 other.can_climb_in_autonomous == can_climb_in_autonomous) &&
-            (identical(other.automatically_shooting, automatically_shooting) ||
-                other.automatically_shooting == automatically_shooting) &&
-            (identical(other.shooting_while_moving, shooting_while_moving) ||
-                other.shooting_while_moving == shooting_while_moving) &&
             (identical(other.main_strategy, main_strategy) ||
                 other.main_strategy == main_strategy) &&
             (identical(other.spare_parts, spare_parts) ||
@@ -978,17 +888,20 @@ class _$PitData2026Impl implements _PitData2026 {
             const DeepCollectionEquality().equals(other._autos, _autos) &&
             (identical(other.robot_height, robot_height) ||
                 other.robot_height == robot_height) &&
-            (identical(other.straddling_pole_climb_right, straddling_pole_climb_right) ||
+            (identical(other.straddling_pole_climb_right,
+                    straddling_pole_climb_right) ||
                 other.straddling_pole_climb_right ==
                     straddling_pole_climb_right) &&
-            (identical(other.straddling_pole_climb_left, straddling_pole_climb_left) ||
+            (identical(other.straddling_pole_climb_left,
+                    straddling_pole_climb_left) ||
                 other.straddling_pole_climb_left ==
                     straddling_pole_climb_left) &&
             (identical(other.left_pole_climb, left_pole_climb) ||
                 other.left_pole_climb == left_pole_climb) &&
             (identical(other.right_pole_climb, right_pole_climb) ||
                 other.right_pole_climb == right_pole_climb) &&
-            (identical(other.center_pole_climb, center_pole_climb) || other.center_pole_climb == center_pole_climb));
+            (identical(other.center_pole_climb, center_pole_climb) ||
+                other.center_pole_climb == center_pole_climb));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -998,18 +911,13 @@ class _$PitData2026Impl implements _PitData2026 {
         driver_experience_events,
         drive_train,
         type_of_shooter,
-        can_feed_human_player,
-        can_pick_up_from_ground,
         fixedShooting,
         nearTower,
         nearHub,
-        go_over_bump,
         go_under_trench,
         can_climb,
         const DeepCollectionEquality().hash(_climbing),
         can_climb_in_autonomous,
-        automatically_shooting,
-        shooting_while_moving,
         main_strategy,
         spare_parts,
         favorite_color,
@@ -1047,18 +955,13 @@ abstract class _PitData2026 implements PitData2026 {
       {required final int driver_experience_events,
       required final String drive_train,
       required final String type_of_shooter,
-      required final bool can_feed_human_player,
-      required final bool can_pick_up_from_ground,
       required final bool fixedShooting,
       required final bool nearTower,
       required final bool nearHub,
-      required final bool go_over_bump,
       required final bool go_under_trench,
       required final bool can_climb,
       required final List<int> climbing,
       required final bool can_climb_in_autonomous,
-      required final bool automatically_shooting,
-      required final bool shooting_while_moving,
       required final String main_strategy,
       required final int spare_parts,
       required final String favorite_color,
@@ -1084,17 +987,11 @@ abstract class _PitData2026 implements PitData2026 {
   @override
   String get type_of_shooter;
   @override
-  bool get can_feed_human_player;
-  @override
-  bool get can_pick_up_from_ground;
-  @override
   bool get fixedShooting;
   @override
   bool get nearTower;
   @override
   bool get nearHub;
-  @override
-  bool get go_over_bump;
   @override
   bool get go_under_trench;
   @override
@@ -1103,10 +1000,6 @@ abstract class _PitData2026 implements PitData2026 {
   List<int> get climbing;
   @override
   bool get can_climb_in_autonomous;
-  @override
-  bool get automatically_shooting;
-  @override
-  bool get shooting_while_moving;
   @override
   String get main_strategy;
   @override

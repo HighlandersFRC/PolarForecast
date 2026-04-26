@@ -174,18 +174,18 @@ class ApiService {
       // Defensive null check
       if (response == null || response is! Map<String, dynamic>) {
         print('Warning: Pit scouting API returned null or invalid data');
-        return _defaultPitScouting(year, event, team);
+        return defaultPitScouting(year, event, team);
       }
 
       return PitScouting2026.fromJson(response);
     } catch (e) {
       print('Error fetching pit scouting data: $e');
-      return _defaultPitScouting(year, event, team);
+      return defaultPitScouting(year, event, team);
     }
   }
 
 // Helper to create a default PitScouting2026 object
-  PitScouting2026 _defaultPitScouting(String year, String event, String team) {
+  PitScouting2026 defaultPitScouting(String year, String event, String team) {
     return PitScouting2026(
       scout_info: get_scout_info(''), // pass token if needed
       team_number: int.tryParse(team.replaceAll(RegExp(r'\D'), '')) ?? 0,
@@ -208,16 +208,11 @@ class ApiService {
           spare_parts: 0,
           favorite_color: '',
           autos: [],
-          can_feed_human_player: false,
-          can_pick_up_from_ground: false,
-          go_over_bump: false,
           go_under_trench: false,
           can_climb: false,
           can_climb_in_autonomous: false,
-          automatically_shooting: false,
-          shooting_while_moving: false,
           main_strategy: '',
-          hopper_capacity: 0,
+          hopper_capacity: 32,
           bps: 0,
           robot_height: 0,
           straddling_pole_climb_right: false,

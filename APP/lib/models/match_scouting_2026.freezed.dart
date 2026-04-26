@@ -573,13 +573,9 @@ AutoScoring _$AutoScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AutoScoring {
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
-  int get passing_cycles => throw _privateConstructorUsedError;
-  int get scoring_cycles => throw _privateConstructorUsedError;
-  int get fuel_cycles => throw _privateConstructorUsedError;
-  int get cycles_completed => throw _privateConstructorUsedError;
+  int get fuel_scored => throw _privateConstructorUsedError;
+  int get fuel_scored_hopper => throw _privateConstructorUsedError;
+  int get hopper_capacity => throw _privateConstructorUsedError;
 
   /// Serializes this AutoScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -597,11 +593,7 @@ abstract class $AutoScoringCopyWith<$Res> {
           AutoScoring value, $Res Function(AutoScoring) then) =
       _$AutoScoringCopyWithImpl<$Res, AutoScoring>;
   @useResult
-  $Res call(
-      {int passing_cycles,
-      int scoring_cycles,
-      int fuel_cycles,
-      int cycles_completed});
+  $Res call({int fuel_scored, int fuel_scored_hopper, int hopper_capacity});
 }
 
 /// @nodoc
@@ -619,27 +611,22 @@ class _$AutoScoringCopyWithImpl<$Res, $Val extends AutoScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? passing_cycles = null,
-    Object? scoring_cycles = null,
-    Object? fuel_cycles = null,
-    Object? cycles_completed = null,
+    Object? fuel_scored = null,
+    Object? fuel_scored_hopper = null,
+    Object? hopper_capacity = null,
   }) {
     return _then(_value.copyWith(
-      passing_cycles: null == passing_cycles
-          ? _value.passing_cycles
-          : passing_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored: null == fuel_scored
+          ? _value.fuel_scored
+          : fuel_scored // ignore: cast_nullable_to_non_nullable
               as int,
-      scoring_cycles: null == scoring_cycles
-          ? _value.scoring_cycles
-          : scoring_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored_hopper: null == fuel_scored_hopper
+          ? _value.fuel_scored_hopper
+          : fuel_scored_hopper // ignore: cast_nullable_to_non_nullable
               as int,
-      fuel_cycles: null == fuel_cycles
-          ? _value.fuel_cycles
-          : fuel_cycles // ignore: cast_nullable_to_non_nullable
-              as int,
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -653,11 +640,7 @@ abstract class _$$AutoScoringImplCopyWith<$Res>
       __$$AutoScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {int passing_cycles,
-      int scoring_cycles,
-      int fuel_cycles,
-      int cycles_completed});
+  $Res call({int fuel_scored, int fuel_scored_hopper, int hopper_capacity});
 }
 
 /// @nodoc
@@ -673,27 +656,22 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? passing_cycles = null,
-    Object? scoring_cycles = null,
-    Object? fuel_cycles = null,
-    Object? cycles_completed = null,
+    Object? fuel_scored = null,
+    Object? fuel_scored_hopper = null,
+    Object? hopper_capacity = null,
   }) {
     return _then(_$AutoScoringImpl(
-      passing_cycles: null == passing_cycles
-          ? _value.passing_cycles
-          : passing_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored: null == fuel_scored
+          ? _value.fuel_scored
+          : fuel_scored // ignore: cast_nullable_to_non_nullable
               as int,
-      scoring_cycles: null == scoring_cycles
-          ? _value.scoring_cycles
-          : scoring_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored_hopper: null == fuel_scored_hopper
+          ? _value.fuel_scored_hopper
+          : fuel_scored_hopper // ignore: cast_nullable_to_non_nullable
               as int,
-      fuel_cycles: null == fuel_cycles
-          ? _value.fuel_cycles
-          : fuel_cycles // ignore: cast_nullable_to_non_nullable
-              as int,
-      cycles_completed: null == cycles_completed
-          ? _value.cycles_completed
-          : cycles_completed // ignore: cast_nullable_to_non_nullable
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -703,29 +681,25 @@ class __$$AutoScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AutoScoringImpl implements _AutoScoring {
   _$AutoScoringImpl(
-      {required this.passing_cycles,
-      required this.scoring_cycles,
-      required this.fuel_cycles,
-      required this.cycles_completed});
+      {required this.fuel_scored,
+      this.fuel_scored_hopper = 0,
+      this.hopper_capacity = 32});
 
   factory _$AutoScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$AutoScoringImplFromJson(json);
 
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
   @override
-  final int passing_cycles;
+  final int fuel_scored;
   @override
-  final int scoring_cycles;
+  @JsonKey()
+  final int fuel_scored_hopper;
   @override
-  final int fuel_cycles;
-  @override
-  final int cycles_completed;
+  @JsonKey()
+  final int hopper_capacity;
 
   @override
   String toString() {
-    return 'AutoScoring(passing_cycles: $passing_cycles, scoring_cycles: $scoring_cycles, fuel_cycles: $fuel_cycles, cycles_completed: $cycles_completed)';
+    return 'AutoScoring(fuel_scored: $fuel_scored, fuel_scored_hopper: $fuel_scored_hopper, hopper_capacity: $hopper_capacity)';
   }
 
   @override
@@ -733,20 +707,18 @@ class _$AutoScoringImpl implements _AutoScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AutoScoringImpl &&
-            (identical(other.passing_cycles, passing_cycles) ||
-                other.passing_cycles == passing_cycles) &&
-            (identical(other.scoring_cycles, scoring_cycles) ||
-                other.scoring_cycles == scoring_cycles) &&
-            (identical(other.fuel_cycles, fuel_cycles) ||
-                other.fuel_cycles == fuel_cycles) &&
-            (identical(other.cycles_completed, cycles_completed) ||
-                other.cycles_completed == cycles_completed));
+            (identical(other.fuel_scored, fuel_scored) ||
+                other.fuel_scored == fuel_scored) &&
+            (identical(other.fuel_scored_hopper, fuel_scored_hopper) ||
+                other.fuel_scored_hopper == fuel_scored_hopper) &&
+            (identical(other.hopper_capacity, hopper_capacity) ||
+                other.hopper_capacity == hopper_capacity));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, passing_cycles, scoring_cycles,
-      fuel_cycles, cycles_completed);
+  int get hashCode => Object.hash(
+      runtimeType, fuel_scored, fuel_scored_hopper, hopper_capacity);
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -766,25 +738,19 @@ class _$AutoScoringImpl implements _AutoScoring {
 
 abstract class _AutoScoring implements AutoScoring {
   factory _AutoScoring(
-      {required final int passing_cycles,
-      required final int scoring_cycles,
-      required final int fuel_cycles,
-      required final int cycles_completed}) = _$AutoScoringImpl;
+      {required final int fuel_scored,
+      final int fuel_scored_hopper,
+      final int hopper_capacity}) = _$AutoScoringImpl;
 
   factory _AutoScoring.fromJson(Map<String, dynamic> json) =
       _$AutoScoringImpl.fromJson;
 
-// required int feed_amount,
-// required int intake_amount,
-// required int shoot_amount,
   @override
-  int get passing_cycles;
+  int get fuel_scored;
   @override
-  int get scoring_cycles;
+  int get fuel_scored_hopper;
   @override
-  int get fuel_cycles;
-  @override
-  int get cycles_completed;
+  int get hopper_capacity;
 
   /// Create a copy of AutoScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -800,8 +766,9 @@ TeleopScoring _$TeleopScoringFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TeleopScoring {
-  int get fuel_cycles => throw _privateConstructorUsedError;
-  int get passing_cycles => throw _privateConstructorUsedError;
+  int get fuel_scored => throw _privateConstructorUsedError;
+  int get fuel_scored_hopper => throw _privateConstructorUsedError;
+  int get hopper_capacity => throw _privateConstructorUsedError;
 
   /// Serializes this TeleopScoring to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -819,7 +786,7 @@ abstract class $TeleopScoringCopyWith<$Res> {
           TeleopScoring value, $Res Function(TeleopScoring) then) =
       _$TeleopScoringCopyWithImpl<$Res, TeleopScoring>;
   @useResult
-  $Res call({int fuel_cycles, int passing_cycles});
+  $Res call({int fuel_scored, int fuel_scored_hopper, int hopper_capacity});
 }
 
 /// @nodoc
@@ -837,17 +804,22 @@ class _$TeleopScoringCopyWithImpl<$Res, $Val extends TeleopScoring>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fuel_cycles = null,
-    Object? passing_cycles = null,
+    Object? fuel_scored = null,
+    Object? fuel_scored_hopper = null,
+    Object? hopper_capacity = null,
   }) {
     return _then(_value.copyWith(
-      fuel_cycles: null == fuel_cycles
-          ? _value.fuel_cycles
-          : fuel_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored: null == fuel_scored
+          ? _value.fuel_scored
+          : fuel_scored // ignore: cast_nullable_to_non_nullable
               as int,
-      passing_cycles: null == passing_cycles
-          ? _value.passing_cycles
-          : passing_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored_hopper: null == fuel_scored_hopper
+          ? _value.fuel_scored_hopper
+          : fuel_scored_hopper // ignore: cast_nullable_to_non_nullable
+              as int,
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
     ) as $Val);
   }
@@ -861,7 +833,7 @@ abstract class _$$TeleopScoringImplCopyWith<$Res>
       __$$TeleopScoringImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int fuel_cycles, int passing_cycles});
+  $Res call({int fuel_scored, int fuel_scored_hopper, int hopper_capacity});
 }
 
 /// @nodoc
@@ -877,17 +849,22 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fuel_cycles = null,
-    Object? passing_cycles = null,
+    Object? fuel_scored = null,
+    Object? fuel_scored_hopper = null,
+    Object? hopper_capacity = null,
   }) {
     return _then(_$TeleopScoringImpl(
-      fuel_cycles: null == fuel_cycles
-          ? _value.fuel_cycles
-          : fuel_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored: null == fuel_scored
+          ? _value.fuel_scored
+          : fuel_scored // ignore: cast_nullable_to_non_nullable
               as int,
-      passing_cycles: null == passing_cycles
-          ? _value.passing_cycles
-          : passing_cycles // ignore: cast_nullable_to_non_nullable
+      fuel_scored_hopper: null == fuel_scored_hopper
+          ? _value.fuel_scored_hopper
+          : fuel_scored_hopper // ignore: cast_nullable_to_non_nullable
+              as int,
+      hopper_capacity: null == hopper_capacity
+          ? _value.hopper_capacity
+          : hopper_capacity // ignore: cast_nullable_to_non_nullable
               as int,
     ));
   }
@@ -897,19 +874,25 @@ class __$$TeleopScoringImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TeleopScoringImpl implements _TeleopScoring {
   _$TeleopScoringImpl(
-      {required this.fuel_cycles, required this.passing_cycles});
+      {required this.fuel_scored,
+      this.fuel_scored_hopper = 0,
+      this.hopper_capacity = 32});
 
   factory _$TeleopScoringImpl.fromJson(Map<String, dynamic> json) =>
       _$$TeleopScoringImplFromJson(json);
 
   @override
-  final int fuel_cycles;
+  final int fuel_scored;
   @override
-  final int passing_cycles;
+  @JsonKey()
+  final int fuel_scored_hopper;
+  @override
+  @JsonKey()
+  final int hopper_capacity;
 
   @override
   String toString() {
-    return 'TeleopScoring(fuel_cycles: $fuel_cycles, passing_cycles: $passing_cycles)';
+    return 'TeleopScoring(fuel_scored: $fuel_scored, fuel_scored_hopper: $fuel_scored_hopper, hopper_capacity: $hopper_capacity)';
   }
 
   @override
@@ -917,15 +900,18 @@ class _$TeleopScoringImpl implements _TeleopScoring {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$TeleopScoringImpl &&
-            (identical(other.fuel_cycles, fuel_cycles) ||
-                other.fuel_cycles == fuel_cycles) &&
-            (identical(other.passing_cycles, passing_cycles) ||
-                other.passing_cycles == passing_cycles));
+            (identical(other.fuel_scored, fuel_scored) ||
+                other.fuel_scored == fuel_scored) &&
+            (identical(other.fuel_scored_hopper, fuel_scored_hopper) ||
+                other.fuel_scored_hopper == fuel_scored_hopper) &&
+            (identical(other.hopper_capacity, hopper_capacity) ||
+                other.hopper_capacity == hopper_capacity));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, fuel_cycles, passing_cycles);
+  int get hashCode => Object.hash(
+      runtimeType, fuel_scored, fuel_scored_hopper, hopper_capacity);
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.
@@ -945,16 +931,19 @@ class _$TeleopScoringImpl implements _TeleopScoring {
 
 abstract class _TeleopScoring implements TeleopScoring {
   factory _TeleopScoring(
-      {required final int fuel_cycles,
-      required final int passing_cycles}) = _$TeleopScoringImpl;
+      {required final int fuel_scored,
+      final int fuel_scored_hopper,
+      final int hopper_capacity}) = _$TeleopScoringImpl;
 
   factory _TeleopScoring.fromJson(Map<String, dynamic> json) =
       _$TeleopScoringImpl.fromJson;
 
   @override
-  int get fuel_cycles;
+  int get fuel_scored;
   @override
-  int get passing_cycles;
+  int get fuel_scored_hopper;
+  @override
+  int get hopper_capacity;
 
   /// Create a copy of TeleopScoring
   /// with the given fields replaced by the non-null parameter values.

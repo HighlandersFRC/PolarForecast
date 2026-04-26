@@ -614,9 +614,6 @@ class _StatsTabState extends State<_StatsTab> {
     'match_count': 'Match Count',
     'OPR': 'OPR',
     'OPRRank': 'OPR Rank',
-    'total_pass': 'Total Pass',
-    'auto_pass': 'Auto Pass',
-    'teleop_pass': 'Teleop Pass',
     'endgame_points': 'Endgame Points',
     'teleop_points': 'Teleop Points',
     'auto_points': 'Auto Points',
@@ -644,11 +641,6 @@ class _StatsTabState extends State<_StatsTab> {
       'endgame_points',
       'climbing_points',
       'foul_points',
-    ],
-    'Passing': [
-      'total_pass',
-      'auto_pass',
-      'teleop_pass',
     ],
     'Fuel Scored': [
       'auto_fuel_cycles',
@@ -1779,8 +1771,8 @@ class _ScoutingCard extends StatelessWidget {
                 //     label: 'Fuel',
                 //     value: data.data.auto_scoring.fuel_cycles.toString()),
                 _StatChip(
-                    label: 'Pass',
-                    value: data.data.auto_scoring.passing_cycles.toString()),
+                    label: 'Fuel Scored in Auto',
+                    value: data.data.auto_scoring.fuel_scored.toString()),
               ],
             ),
             const SizedBox(height: 12),
@@ -1792,8 +1784,8 @@ class _ScoutingCard extends StatelessWidget {
                 //     label: 'Fuel',
                 //     value: data.data.teleop_scoring.fuel_cycles.toString()),
                 _StatChip(
-                    label: 'Pass',
-                    value: data.data.teleop_scoring.passing_cycles.toString()),
+                    label: 'Fuel Scored in Teleop',
+                    value: data.data.teleop_scoring.fuel_scored.toString()),
               ],
             ),
             const SizedBox(height: 12),
@@ -2023,7 +2015,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                   _buildDetailRow("Drive Train", data.drive_train, Colors.blue),
                   _buildDetailRow("Robot Height", "${data.robot_height}\"",
                       Colors.blueGrey),
-                  _buildBoolRow("Can Go Over Bump", data.go_over_bump),
                   _buildBoolRow("Can Go Under Trench", data.go_under_trench),
                 ],
               ),
@@ -2035,9 +2026,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                   _buildDetailRow("Type", data.type_of_shooter, Colors.orange),
                   _buildDetailRow(
                       "BPS", data.bps.toStringAsFixed(2), Colors.orange),
-                  _buildBoolRow("Auto Shooting", data.automatically_shooting),
-                  _buildBoolRow(
-                      "Shooting While Moving", data.shooting_while_moving),
                   _buildBoolRow("Fixed Shooting", data.fixedShooting),
                 ],
               ),
@@ -2046,8 +2034,6 @@ class _PitScoutingTabState extends State<_PitScoutingTab> {
                 icon: Icons.download,
                 theme: theme,
                 children: [
-                  _buildBoolRow("Ground Pickup", data.can_pick_up_from_ground),
-                  _buildBoolRow("Human Feed", data.can_feed_human_player),
                   _buildBoolRow("Near Tower", data.nearTower),
                   _buildBoolRow("Near Hub", data.nearHub),
                   _buildDetailRow("Hopper Capacity",

@@ -1471,7 +1471,12 @@ def add_event_to_group(group_name: str, event: str, token: str = Depends(check_t
     GroupCollection.find_one_and_update(
         {"name": group_name}, {'$set': {"events": [event.dict() for event in DB_Entry.events]}})
     updateGroupStatus(DB_Entry, event)
-    updateGroupData(DB_Entry, event, event_type=1)
+    etags = list(ETagCollection.find({}))
+    for eventData in etags:
+        if eventData["key"] == event.event_code:
+            eventData = eventData
+            break
+        updateGroupData(DB_Entry, event, eventData["event"]["event_type"])
     updateGroupGridPitData(DB_Entry, event)
     return get_group(group_name=group_name, token=token)
 
@@ -2799,9 +2804,6 @@ def updateData(event_code: str, event_type: int):
                     "team_number": team[3:],
                     "match_count": 0,
                     "OPR": 0.0,
-                    "total_pass": 0.0,
-                    "auto_pass": 0.0,
-                    "teleop_pass": 0.0,
                     "endgame_points": 0.0,
                     "teleop_points": 0.0,
                     "auto_points": 0.0,
@@ -2921,9 +2923,6 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
                     "team_number": team[3:],
                     "match_count": 0,
                     "OPR": 0.0,
-                    "total_pass": 0.0,
-                    "auto_pass": 0.0,
-                    "teleop_pass": 0.0,
                     "endgame_points": 0.0,
                     "teleop_points": 0.0,
                     "auto_points": 0.0,
@@ -2989,9 +2988,18 @@ def updateGroupData(group: Group, event_code: str, event_type: int):
 
 
 def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: int):
-    ENERGIZED_THRESHOLD   = 240 if eventType >= 1 else 100
+    ENERGIZED_THRESHOLD = 100
     SUPERCHARGED_THRESHOLD = 360  
     TRAVERSAL_THRESHOLD   = 50  
+
+    if eventType == 1:
+        ENERGIZED_THRESHOLD = 240
+        SUPERCHARGED_THRESHOLD = 360
+    else:
+        ENERGIZED_THRESHOLD = 360
+        SUPERCHARGED_THRESHOLD = 500
+
+    
 
     matchPredictions = []
     for match in TBAData:
@@ -3013,8 +3021,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_endgame_points": 0,
                     "blue_auto_fuel_cycles": 0,
                     "blue_teleop_fuel_cycles": 0,
-                    "blue_auto_passing_cycles": 0,
-                    "blue_teleop_passing_cycles": 0,
+                   
 
                     "blue_actual_score": match.score_breakdown["blue"].totalPoints,
 
@@ -3029,8 +3036,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_endgame_points": 0,
                     "red_auto_fuel_cycles": 0,
                     "red_teleop_fuel_cycles": 0,
-                    "red_auto_passing_cycles": 0,
-                    "red_teleop_passing_cycles": 0,
+                   
 
                     "red_actual_score": match.score_breakdown["red"].totalPoints,
 
@@ -3054,8 +3060,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "blue_endgame_points": 0,
                     "blue_auto_fuel_cycles": 0,
                     "blue_teleop_fuel_cycles": 0,
-                    "blue_auto_passing_cycles": 0,
-                    "blue_teleop_passing_cycles": 0,
+                    
 
                     "blue_actual_score": None,
 
@@ -3070,8 +3075,7 @@ def updatePredictions(TBAData: list[TBAMatch2026], calculatedData, eventType: in
                     "red_endgame_points": 0,
                     "red_auto_fuel_cycles": 0,
                     "red_teleop_fuel_cycles": 0,
-                    "red_auto_passing_cycles": 0,
-                    "red_teleop_passing_cycles": 0,
+                   
 
                     "red_actual_score": None,
 

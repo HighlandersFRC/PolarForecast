@@ -17,6 +17,7 @@ import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
+import 'package:scouting_app/widgets/percentage_counter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/match_details_2026.dart';
@@ -166,7 +167,6 @@ class EventPage extends StatefulWidget {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final tournaments = apiService.fetchTournaments();
 
-    // print(eventKey);
     return FutureBuilder(
         future: tournaments,
         builder: (context, tournaments) {
@@ -291,7 +291,7 @@ class _TBATabState extends State<_TBATab> {
   void initState() {
     super.initState();
     tbaUrl =
-        'https://www.thebluealliance.com/event/${widget.widget.tournament.page.split('/')[3]}${widget.widget.tournament.page.split('/')[4]}';
+        'https://www.thebluealliance.com/event/${widget.widget.tournament.key.substring(0, 4)}${widget.widget.tournament.key.substring(4, 8)}';
   }
 
   Future<void> _openTBA() async {
@@ -334,9 +334,7 @@ class _TBATabState extends State<_TBATab> {
                   size: 48,
                   color: Colors.blue,
                 ),
-
                 const SizedBox(height: 16),
-
                 Text(
                   "View Event on The Blue Alliance",
                   style: TextStyle(
@@ -346,9 +344,7 @@ class _TBATabState extends State<_TBATab> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 12),
-
                 Text(
                   '${widget.tournament.display}',
                   style: TextStyle(
@@ -357,10 +353,7 @@ class _TBATabState extends State<_TBATab> {
                     fontFamily: 'Font',
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // 🔥 Clean CTA button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -382,10 +375,7 @@ class _TBATabState extends State<_TBATab> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
-                // subtle link text
                 TextButton(
                   onPressed: _openTBA,
                   child: Text(
@@ -459,11 +449,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       allowFiltering: false,
     ),
     GridColumn(
-        allowSorting: true,
-        label: Text('Teleop Passing', style: TextStyle(fontFamily: 'Font')),
-        columnName: 'teleop_pass',
-        allowFiltering: false),
-    GridColumn(
       allowSorting: true,
       label: Text('Climb Points', style: TextStyle(fontFamily: 'Font')),
       columnName: 'climbing_points',
@@ -508,7 +493,6 @@ class _RankingsTabState extends State<_RankingsTab> {
     'teleop_fuel_denied': true,
     'defense_rate': true,
     'death_rate': true,
-    'teleop_pass': true,
   };
   List<MatchScouting2026> scouting = [];
   Map<String, num> minValues = {};
@@ -524,7 +508,6 @@ class _RankingsTabState extends State<_RankingsTab> {
   }
 
   void updateGrid() {
-    // Helper to safely convert any dynamic value to a number
     num _safeNum(dynamic val) {
       if (val == null) return 0;
       if (val is num) return val;
@@ -534,7 +517,6 @@ class _RankingsTabState extends State<_RankingsTab> {
     minValues = {};
     maxValues = {};
 
-    // Compute min/max for heatmap columns
     for (var column in dataColumns) {
       if (heatMapFromKey[column.columnName] == true) {
         final columnKey = column.columnName;
@@ -549,7 +531,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       }
     }
 
-    // Build DataGrid rows
     dataRows = [];
     for (var rank in rankings) {
       List<DataGridCell> cells = [];
@@ -561,14 +542,12 @@ class _RankingsTabState extends State<_RankingsTab> {
 
           num value = _safeNum(rawValue);
 
-          // Heatmap: round to 1 decimal for display
           if (heatMapFromKey[columnKey] == true) {
             cells.add(DataGridCell(
               columnName: columnKey,
               value: (value * 10).roundToDouble() / 10,
             ));
           } else {
-            // Keep original value for non-heatmap columns
             cells.add(DataGridCell(
               columnName: columnKey,
               value: rawValue ?? 0,
@@ -646,7 +625,6 @@ class _RankingsTabState extends State<_RankingsTab> {
       );
     }
 
-    // Check if rankings are empty or if Rank is 0
     bool noData = rankings.isEmpty || rankings.any((r) => r.rank == 0);
     if (noData) {
       return Center(
@@ -654,12 +632,9 @@ class _RankingsTabState extends State<_RankingsTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons
-                  .folder_off_outlined, // Or Icons.search_off, Icons.folder_off
+              Icons.folder_off_outlined,
               size: 48,
-              color: Theme.of(context)
-                  .colorScheme
-                  .outline, // Subtle gray/themed color
+              color: Theme.of(context).colorScheme.outline,
             ),
             const SizedBox(height: 16),
             Text(
@@ -699,7 +674,6 @@ class _RankingsTabState extends State<_RankingsTab> {
             String csv = ListToCsvConverter().convert(csvData);
             final bytes = utf8.encode(csv);
 
-            // ✅ CROSS-PLATFORM FIX
             await downloadFile(bytes, '${widget.tournament.display}.csv');
           },
           style: ElevatedButton.styleFrom(
@@ -775,7 +749,6 @@ class _TeamDataSource extends DataGridSource {
           );
         }
         if (e.columnName == 'team_number') {
-          // print(e.columnName.runtimeType);
           return Container(
               color: color,
               child: TeamLink(int.parse(e.value.toString()), tournament));
@@ -787,14 +760,7 @@ class _TeamDataSource extends DataGridSource {
               opr: e.value,
               scouting: scouting);
         }
-        if (e.columnName == 'teleop_pass') {
-          return _PassingMenuOnClick(
-              teamNumber: int.parse(row.getCells()[0].value.toString()),
-              color: color,
-              auto: false,
-              passingDPR: e.value,
-              rankings: rankings);
-        }
+
         if (e.columnName == 'teleop_fuel_scored') {
           return _FuelMenuOnClick(
               teamNumber: int.parse(row.getCells()[0].value.toString()),
@@ -996,9 +962,7 @@ class _OvertimeChartOnClick extends StatelessWidget {
         };
         List<String> seriesLabels = [
           'auto_scoring_fuel_scored',
-          'auto_scoring_passing_cycles',
           'teleop_scoring_fuel_scored',
-          'teleop_scoring_passing_cycles',
         ];
         for (var series in seriesLabels) {
           seriesData[series] = [];
@@ -1109,85 +1073,6 @@ class _OvertimeChartOnClick extends StatelessWidget {
                   ));
         }
       },
-    );
-  }
-}
-
-class _PassingMenuOnClick extends StatelessWidget {
-  final bool auto;
-  final int teamNumber;
-  final Color color;
-  final double passingDPR;
-  final List<TeamStats2026> rankings;
-
-  _PassingMenuOnClick({
-    required this.auto,
-    required this.teamNumber,
-    required this.color,
-    required this.passingDPR,
-    required this.rankings,
-  });
-
-  final GlobalKey containerKey = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      key: containerKey,
-      onTap: () {
-        final ctx = containerKey.currentContext;
-        if (ctx == null) return;
-
-        final renderBox = ctx.findRenderObject() as RenderBox;
-
-        final overlay = Overlay.of(context, rootOverlay: true)
-            .context
-            .findRenderObject() as RenderBox;
-
-        final items = <PopupMenuEntry<void>>[
-          PopupMenuItem<void>(
-            child: Text(
-              'Team $teamNumber',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-          PopupMenuItem<void>(
-            child: Text(
-              'Passing DPR: ${passingDPR.toStringAsFixed(1)}',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-          PopupMenuItem<void>(
-            child: Text(
-              auto ? 'Auto' : 'TeleOp',
-              style: TextStyle(fontFamily: 'Font'),
-            ),
-          ),
-        ];
-
-        showMenu<void>(
-          context: context,
-          position: RelativeRect.fromRect(
-            renderBox.localToGlobal(Offset.zero) & renderBox.size,
-            Offset.zero & overlay.size,
-          ),
-          items: items,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        alignment: Alignment.center,
-        color: color,
-        child: Text(
-          '${(passingDPR * 10).roundToDouble() / 10}',
-          style: const TextStyle(
-            fontFamily: 'Font',
-            color: Colors.white,
-            decoration: TextDecoration.underline,
-            decorationThickness: 2,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1465,7 +1350,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                   }
                 });
               } else if (landscape) {
-                // Reset flag if needed for landscape changes
                 _hasAdjustedForLandscape = false;
               }
               List<MatchScouting2026> teamScoutingData = [];
@@ -1482,9 +1366,7 @@ class _ChartsTabState extends State<_ChartsTab> {
               };
               List<String> seriesLabels = [
                 'auto_scoring_fuel_scored',
-                'auto_scoring_passing_cycles',
                 'teleop_scoring_fuel_scored',
-                'teleop_scoring_passing_cycles',
               ];
               for (var series in seriesLabels) {
                 seriesData[series] = [];
@@ -1611,12 +1493,11 @@ class _ChartsTabState extends State<_ChartsTab> {
                       return const Center(child: Text('Error loading images'));
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const SizedBox.shrink(); // no image
+                      return const SizedBox.shrink();
                     }
 
                     final allImages = snapshot.data!;
 
-                    // Priority list: full_robot > wires > any
                     List<PictureData> images = allImages
                         .where((img) => img.image_type == 'full_robot')
                         .toList();
@@ -1727,13 +1608,11 @@ class _ChartsTabState extends State<_ChartsTab> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Top controls: centered
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Team 1 dropdown
                         DropdownButton<int>(
                           items: [
                             DropdownMenuItem(
@@ -1752,10 +1631,7 @@ class _ChartsTabState extends State<_ChartsTab> {
                           }),
                           value: selectedTeam,
                         ),
-
                         const SizedBox(width: 16),
-
-                        // Compare toggle button
                         ElevatedButton.icon(
                           icon: Icon(
                               comparing ? Icons.toggle_on : Icons.toggle_off),
@@ -1767,15 +1643,10 @@ class _ChartsTabState extends State<_ChartsTab> {
                           ),
                           onPressed: () => setState(() {
                             comparing = !comparing;
-                            if (!comparing)
-                              secondTeam =
-                                  0; // reset second team when turning off
+                            if (!comparing) secondTeam = 0;
                           }),
                         ),
-
                         const SizedBox(width: 16),
-
-                        // Team 2 dropdown (only visible if comparing)
                         if (comparing)
                           DropdownButton<int>(
                             items: [
@@ -1798,12 +1669,9 @@ class _ChartsTabState extends State<_ChartsTab> {
                       ],
                     ),
                   ),
-
-                  // Charts and images row
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Team 1 Card
                       Expanded(
                         child: _TeamCard(
                           teamIndex: selectedTeam,
@@ -1813,8 +1681,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                           scouting: scouting,
                         ),
                       ),
-
-                      // Team 2 Card (only if comparing)
                       if (comparing)
                         Expanded(
                           child: _TeamCard(
@@ -1899,16 +1765,6 @@ class _ChartsTabState extends State<_ChartsTab> {
                         enabled: true,
                         weight: 1),
                     Field(
-                        name: 'Teleop Pass',
-                        key: 'teleop_pass',
-                        enabled: true,
-                        weight: 1),
-                    Field(
-                        name: 'Auto Pass',
-                        key: 'auto_pass',
-                        enabled: true,
-                        weight: 1),
-                    Field(
                         name: 'Climb',
                         key: 'climbing_points',
                         enabled: true,
@@ -1930,6 +1786,11 @@ class _MatchScoutingTab extends StatefulWidget {
 }
 
 class _MatchScoutingTabState extends State<_MatchScoutingTab> {
+  int get _hopperCapacity => (pitData?.data.hopper_capacity ?? 0) > 0
+      ? pitData!.data.hopper_capacity
+      : 32;
+  PitScouting2026? pitData;
+
   late final TextEditingController eventCodeController,
       teamNumberController,
       matchNumberController,
@@ -1955,15 +1816,45 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             climb: false,
             contacts_robot: false,
           ),
-          auto_scoring: AutoScoring(
-              passing_cycles: 0,
-              scoring_cycles: 0,
-              cycles_completed: 0,
-              fuel_cycles: 0),
-          teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+          auto_scoring:
+              AutoScoring(fuel_scored: 0, hopper_capacity: _hopperCapacity),
+          teleop_scoring:
+              TeleopScoring(fuel_scored: 0, hopper_capacity: _hopperCapacity),
           miscellaneous:
               Miscellaneous(died: false, comments: '', defense: false)),
       time: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000);
+  Future<void> _fetchPitData(int teamNumber) async {
+    if (teamNumber <= 0) return;
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    try {
+      final fetched = await apiService.fetchTeamPitScouting(
+          widget.widget.tournament.key.substring(0, 4),
+          widget.widget.tournament.key.substring(4),
+          "frc${teamNumber}");
+      if (mounted) {
+        setState(() {
+          pitData = fetched;
+          data = data.copyWith(
+            data: data.data.copyWith(
+              auto_scoring: data.data.auto_scoring
+                  .copyWith(hopper_capacity: _hopperCapacity),
+              teleop_scoring: data.data.teleop_scoring
+                  .copyWith(hopper_capacity: _hopperCapacity),
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          pitData = apiService.defaultPitScouting(
+              widget.widget.tournament.key.substring(0, 4),
+              widget.widget.tournament.key.substring(4),
+              "frc${teamNumber}");
+        });
+      }
+    }
+  }
 
   @override
   initState() {
@@ -1971,7 +1862,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     eventCodeController =
         TextEditingController(text: widget.widget.tournament.key);
 
-    // Add a listener to display a QR code if submission fails
     teamNumberController =
         TextEditingController(text: data.team_number.toString());
     matchNumberController =
@@ -2007,7 +1897,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             });
           }
           groups = _groups;
-          // print(groups);
           loading = false;
         }).onError((e, stackTrace) {
           if (mounted) {
@@ -2067,27 +1956,32 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       index = Random().nextInt(6);
       team = teams[index];
     }
-    teamNumberController.text = team.substring(3);
     data = data.copyWith(
         team_number: int.parse(team.substring(3)),
         data: data.data.copyWith(
             auto: data.data.auto
                 .copyWith(field_side: [index < 3 ? 'red' : 'blue'])));
+    String teamNumberText = team.substring(3);
+    int parsedTeamNumber = int.parse(teamNumberText);
+    teamNumberController.text = teamNumberText;
+    data = data.copyWith(team_number: parsedTeamNumber);
+    _fetchPitData(parsedTeamNumber);
   }
-  // TODO: When adding offline use this for qr generation
-  // String _generateQRCodeData() {
-  //   try {
-  //     return jsonEncode(data.toJson());
-  //   } catch (e) {
-  //     print('Error generating QR code data: $e');
-  //     return '';
-  //   }
-  // }
 
   void _submit() {
     HapticFeedback.heavyImpact();
+
+    final submitData = data.copyWith(
+      data: data.data.copyWith(
+        auto_scoring:
+            data.data.auto_scoring.copyWith(hopper_capacity: _hopperCapacity),
+        teleop_scoring:
+            data.data.teleop_scoring.copyWith(hopper_capacity: _hopperCapacity),
+      ),
+    );
+
     ApiService api = Provider.of<ApiService>(context, listen: false);
-    api.post_match_scouting(data).then((_) {
+    api.post_match_scouting(submitData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Submitted Successfully',
               style: TextStyle(fontFamily: 'Font'))));
@@ -2114,8 +2008,17 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   void _update() {
     HapticFeedback.heavyImpact();
+    final int capacity = _hopperCapacity;
+    final submitData = data.copyWith(
+      data: data.data.copyWith(
+        auto_scoring:
+            data.data.auto_scoring.copyWith(hopper_capacity: capacity),
+        teleop_scoring:
+            data.data.teleop_scoring.copyWith(hopper_capacity: capacity),
+      ),
+    );
     ApiService api = Provider.of<ApiService>(context, listen: false);
-    api.update_match_scouting(data).then((_) {
+    api.update_match_scouting(submitData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Submitted Successfully',
               style: TextStyle(fontFamily: 'Font'))));
@@ -2124,7 +2027,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       });
     }).onError((error, trace) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString(), style: TextStyle(fontFamily: 'Font'))));
+          content:
+              Text(error.toString(), style: TextStyle(fontFamily: 'Font'))));
     });
   }
 
@@ -2141,11 +2045,11 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                 climb: false,
                 contacts_robot: false),
             auto_scoring: AutoScoring(
-                passing_cycles: 0,
-                scoring_cycles: 0,
-                cycles_completed: 0,
-                fuel_cycles: 0),
-            teleop_scoring: TeleopScoring(fuel_cycles: 0, passing_cycles: 0),
+                fuel_scored: 0,
+                hopper_capacity: pitData?.data.hopper_capacity ?? 32),
+            teleop_scoring: TeleopScoring(
+                fuel_scored: 0,
+                hopper_capacity: pitData?.data.hopper_capacity ?? 32),
             miscellaneous:
                 Miscellaneous(died: false, comments: '', defense: false)));
     setState(() {
@@ -2198,7 +2102,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Dark Mode Palette
     const Color backgroundDb = Color(0xFF0F111A);
     const Color cardDb = Color(0xFF1A1D29);
     const Color primaryBlue = Color(0xFF47A7FF);
@@ -2267,8 +2170,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             constraints: const BoxConstraints(maxWidth: 850),
             child: Column(
               children: [
-                // HEADER
-
                 Text(
                   widget.widget.tournament.display,
                   textAlign: TextAlign.center,
@@ -2280,8 +2181,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // 1. PRE-MATCH INFO
                 _buildDarkCard(
                   title: 'Pre-Match Info',
                   icon: Icons.assignment_outlined,
@@ -2308,7 +2207,7 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.tag,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onChanged: (value) {
+                            onSubmitted: (value) {
                               int matchNumber = int.tryParse(value) ?? -1;
                               if (matchNumber >= 0 && matchNumber < 500) {
                                 setState(() => data =
@@ -2327,11 +2226,12 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                             prefixIcon: Icons.precision_manufacturing,
                             accent: primaryBlue,
                             textCol: textPrimary,
-                            onChanged: (value) {
-                              int teamNumber = int.tryParse(value) ?? -1;
+                            onSubmitted: (value) {
+                              int teamNumber = int.tryParse(value) ?? 0;
                               if (teamNumber >= 0 && teamNumber < 20000) {
                                 setState(() => data =
                                     data.copyWith(team_number: teamNumber));
+                                _fetchPitData(teamNumber);
                               }
                             },
                           ),
@@ -2343,8 +2243,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                         DRIVER_STATIONS, cardDb, primaryBlue, textPrimary),
                   ],
                 ),
-
-                // 2. AUTO PHASE
                 _buildDarkCard(
                   title: 'Autonomous',
                   icon: Icons.smart_toy_outlined,
@@ -2370,52 +2268,67 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       matchScouting: true,
                     ),
                     const SizedBox(height: 12),
-                    // _buildCounterRow(
-                    //     'Fuel Amount', data.data.auto_scoring.fuel_cycles,
-                    //     (val) {
-                    //   setState(() => data = data.copyWith(
-                    //       data: data.data.copyWith(
-                    //           auto_scoring: data.data.auto_scoring
-                    //               .copyWith(fuel_cycles: val))));
-                    // }),
-                    _buildCounterRow(
-                        'Passed Balls', data.data.auto_scoring.passing_cycles,
-                        (val) {
+                    _buildCounterRow('Fuel Scored in Auto',
+                        data.data.auto_scoring.fuel_scored, (val) {
                       setState(() => data = data.copyWith(
                           data: data.data.copyWith(
                               auto_scoring: data.data.auto_scoring
-                                  .copyWith(passing_cycles: val))));
+                                  .copyWith(fuel_scored: val))));
                     }),
+                    const Divider(
+                      color: Colors.blue,
+                      height: 32,
+                      thickness: 10,
+                    ),
+                    _buildHopperCounterRow(
+                      'Hoppers Scored in Auto',
+                      (data.data.auto_scoring.fuel_scored_hopper).clamp(0, 999),
+                      (val) {
+                        setState(() => data = data.copyWith(
+                              data: data.data.copyWith(
+                                auto_scoring: data.data.auto_scoring.copyWith(
+                                  fuel_scored_hopper: val,
+                                ),
+                              ),
+                            ));
+                      },
+                    ),
                   ],
                 ),
-
-                // 3. TELEOP PHASE
                 _buildDarkCard(
-                  title: 'Teleop Phase',
-                  icon: Icons.videogame_asset_outlined,
-                  cardColor: const Color.fromARGB(30, 155, 39, 176),
-                  accentColor: Colors.purple,
-                  children: [
-                    // _buildCounterRow(
-                    //     'Fuel Amount', data.data.teleop_scoring.fuel_cycles,
-                    //     (val) {
-                    //   setState(() => data = data.copyWith(
-                    //       data: data.data.copyWith(
-                    //           teleop_scoring: data.data.teleop_scoring
-                    //               .copyWith(fuel_cycles: val))));
-                    // }),
-                    _buildCounterRow(
-                        'Passed Balls', data.data.teleop_scoring.passing_cycles,
+                    title: 'Teleop Phase',
+                    icon: Icons.videogame_asset_outlined,
+                    cardColor: const Color.fromARGB(30, 155, 39, 176),
+                    accentColor: Colors.purple,
+                    children: [
+                      _buildCounterRow('Fuel Scored in Teleop',
+                          data.data.teleop_scoring.fuel_scored, (val) {
+                        setState(() => data = data.copyWith(
+                            data: data.data.copyWith(
+                                teleop_scoring: data.data.teleop_scoring
+                                    .copyWith(fuel_scored: val))));
+                      }),
+                      const Divider(
+                        color: Colors.blue,
+                        height: 32,
+                        thickness: 10,
+                      ),
+                      _buildHopperCounterRow(
+                        'Hoppers Scored in Teleop',
+                        (data.data.teleop_scoring.fuel_scored_hopper)
+                            .clamp(0, 999),
                         (val) {
-                      setState(() => data = data.copyWith(
-                          data: data.data.copyWith(
-                              teleop_scoring: data.data.teleop_scoring
-                                  .copyWith(passing_cycles: val))));
-                    }),
-                  ],
-                ),
-
-                // 4. MISCELLANEOUS
+                          setState(() => data = data.copyWith(
+                                data: data.data.copyWith(
+                                  teleop_scoring:
+                                      data.data.teleop_scoring.copyWith(
+                                    fuel_scored_hopper: val,
+                                  ),
+                                ),
+                              ));
+                        },
+                      ),
+                    ]),
                 _buildDarkCard(
                   title: 'Post-Match & Misc',
                   icon: Icons.widgets_outlined,
@@ -2451,9 +2364,10 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                       commentsController,
                       'Comments',
                       maxLines: 3,
+                      maxLength: 500,
                       accent: primaryBlue,
                       textCol: textPrimary,
-                      onChanged: (val) {
+                      onSubmitted: (val) {
                         setState(() {
                           data = data.copyWith(
                               data: data.data.copyWith(
@@ -2464,8 +2378,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                     ),
                   ],
                 ),
-
-                // BUTTONS
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
@@ -2511,8 +2423,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     ]));
   }
 
-// UI HELPERS (Dark Mode)
-
   Widget _buildDarkCard(
       {required String title,
       required IconData icon,
@@ -2554,14 +2464,16 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
       bool isNum = false,
       IconData? prefixIcon,
       int maxLines = 1,
+      int? maxLength,
       required Color accent,
       required Color textCol,
-      Function(String)? onChanged}) {
+      Function(String)? onSubmitted}) {
     return TextField(
       controller: controller,
       enabled: enabled,
-      onChanged: onChanged,
+      onChanged: onSubmitted,
       maxLines: maxLines,
+      maxLength: maxLength,
       keyboardType: isNum ? TextInputType.number : TextInputType.text,
       inputFormatters: isNum ? [FilteringTextInputFormatter.digitsOnly] : [],
       style: TextStyle(fontFamily: 'Font', color: textCol),
@@ -2572,6 +2484,8 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
             TextStyle(color: accent.withOpacity(0.8), fontFamily: 'Font'),
         filled: true,
         fillColor: Colors.black26,
+        counterStyle: TextStyle(
+            color: accent.withOpacity(0.6), fontFamily: 'Font'), // Add this
         enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: accent.withOpacity(0.3))),
         focusedBorder:
@@ -2652,6 +2566,14 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     );
   }
 
+  Widget _buildHopperCounterRow(
+      String label, int val, Function(int) onChanged) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: PercentCounter(
+            label: label, onChanged: onChanged, value: val, max: 999));
+  }
+
   Widget _buildSwitch(String label, bool val, Color textCol, Color accent,
       Function(bool) onChanged) {
     return Row(
@@ -2730,8 +2652,8 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
       }
 
       final fetchedStatus = await apiService.fetchPitStatus(
-        int.parse(widget.widget.tournament.page.split('/')[3]),
-        widget.widget.tournament.page.split('/')[4],
+        int.parse(widget.widget.tournament.key.substring(0, 4)),
+        widget.widget.tournament.key.substring(4),
       );
 
       if (!mounted) return;
@@ -2882,7 +2804,7 @@ class _PitScoutingTabState extends State<_PitScoutingTab> with RouteAware {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Form Progress',
+                    'Pit Progress',
                     style: TextStyle(
                       fontFamily: 'Font', // clean modern font
                       fontSize: 14,
@@ -3241,8 +3163,8 @@ class _QualsTabState extends State<_QualsTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       final fetchedStatus = await apiService.fetchQualMatches(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
+          int.parse(widget.widget.tournament.key.substring(0, 4)),
+          widget.widget.tournament.key.substring(4));
       if (mounted) {
         setState(() {
           statuses = fetchedStatus;
@@ -3368,8 +3290,8 @@ class _ElimsTabState extends State<_ElimsTab> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     try {
       final fetchedStatus = await apiService.fetchQualMatches(
-          int.parse(widget.widget.tournament.page.split('/')[3]),
-          widget.widget.tournament.page.split('/')[4]);
+          int.parse(widget.widget.tournament.key.substring(0, 4)),
+          widget.widget.tournament.key.substring(4));
       if (mounted) {
         setState(() {
           statuses = fetchedStatus;

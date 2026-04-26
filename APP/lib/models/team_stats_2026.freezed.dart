@@ -27,9 +27,6 @@ mixin _$TeamStats2026 {
   double get match_count => throw _privateConstructorUsedError;
   double get OPR => throw _privateConstructorUsedError;
   int? get OPRRank => throw _privateConstructorUsedError;
-  double get total_pass => throw _privateConstructorUsedError;
-  double get auto_pass => throw _privateConstructorUsedError;
-  double get teleop_pass => throw _privateConstructorUsedError;
   double get endgame_points => throw _privateConstructorUsedError;
   double get teleop_points => throw _privateConstructorUsedError;
   double get auto_points => throw _privateConstructorUsedError;
@@ -69,9 +66,6 @@ abstract class $TeamStats2026CopyWith<$Res> {
       double match_count,
       double OPR,
       int? OPRRank,
-      double total_pass,
-      double auto_pass,
-      double teleop_pass,
       double endgame_points,
       double teleop_points,
       double auto_points,
@@ -110,9 +104,6 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
     Object? match_count = null,
     Object? OPR = null,
     Object? OPRRank = freezed,
-    Object? total_pass = null,
-    Object? auto_pass = null,
-    Object? teleop_pass = null,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
@@ -157,18 +148,6 @@ class _$TeamStats2026CopyWithImpl<$Res, $Val extends TeamStats2026>
           ? _value.OPRRank
           : OPRRank // ignore: cast_nullable_to_non_nullable
               as int?,
-      total_pass: null == total_pass
-          ? _value.total_pass
-          : total_pass // ignore: cast_nullable_to_non_nullable
-              as double,
-      auto_pass: null == auto_pass
-          ? _value.auto_pass
-          : auto_pass // ignore: cast_nullable_to_non_nullable
-              as double,
-      teleop_pass: null == teleop_pass
-          ? _value.teleop_pass
-          : teleop_pass // ignore: cast_nullable_to_non_nullable
-              as double,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -245,9 +224,6 @@ abstract class _$$TeamStats2026ImplCopyWith<$Res>
       double match_count,
       double OPR,
       int? OPRRank,
-      double total_pass,
-      double auto_pass,
-      double teleop_pass,
       double endgame_points,
       double teleop_points,
       double auto_points,
@@ -284,9 +260,6 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
     Object? match_count = null,
     Object? OPR = null,
     Object? OPRRank = freezed,
-    Object? total_pass = null,
-    Object? auto_pass = null,
-    Object? teleop_pass = null,
     Object? endgame_points = null,
     Object? teleop_points = null,
     Object? auto_points = null,
@@ -331,18 +304,6 @@ class __$$TeamStats2026ImplCopyWithImpl<$Res>
           ? _value.OPRRank
           : OPRRank // ignore: cast_nullable_to_non_nullable
               as int?,
-      total_pass: null == total_pass
-          ? _value.total_pass
-          : total_pass // ignore: cast_nullable_to_non_nullable
-              as double,
-      auto_pass: null == auto_pass
-          ? _value.auto_pass
-          : auto_pass // ignore: cast_nullable_to_non_nullable
-              as double,
-      teleop_pass: null == teleop_pass
-          ? _value.teleop_pass
-          : teleop_pass // ignore: cast_nullable_to_non_nullable
-              as double,
       endgame_points: null == endgame_points
           ? _value.endgame_points
           : endgame_points // ignore: cast_nullable_to_non_nullable
@@ -414,9 +375,6 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
       this.match_count = 0,
       this.OPR = 0.0,
       this.OPRRank,
-      this.total_pass = 0.0,
-      this.auto_pass = 0.0,
-      this.teleop_pass = 0.0,
       this.endgame_points = 0.0,
       this.teleop_points = 0.0,
       this.auto_points = 0.0,
@@ -451,15 +409,6 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
   final double OPR;
   @override
   final int? OPRRank;
-  @override
-  @JsonKey()
-  final double total_pass;
-  @override
-  @JsonKey()
-  final double auto_pass;
-  @override
-  @JsonKey()
-  final double teleop_pass;
   @override
   @JsonKey()
   final double endgame_points;
@@ -505,7 +454,7 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
 
   @override
   String toString() {
-    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, total_pass: $total_pass, auto_pass: $auto_pass, teleop_pass: $teleop_pass, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_scored: $auto_fuel_scored, teleop_fuel_scored: $teleop_fuel_scored, total_fuel_scored: $total_fuel_scored, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank, auto_fuel_denied: $auto_fuel_denied, teleop_fuel_denied: $teleop_fuel_denied)';
+    return 'TeamStats2026(historical: $historical, key: $key, rank: $rank, team_number: $team_number, match_count: $match_count, OPR: $OPR, OPRRank: $OPRRank, endgame_points: $endgame_points, teleop_points: $teleop_points, auto_points: $auto_points, climbing_points: $climbing_points, death_rate: $death_rate, defense_rate: $defense_rate, auto_fuel_scored: $auto_fuel_scored, teleop_fuel_scored: $teleop_fuel_scored, total_fuel_scored: $total_fuel_scored, foul_points: $foul_points, simulated_rp: $simulated_rp, simulated_rank: $simulated_rank, auto_fuel_denied: $auto_fuel_denied, teleop_fuel_denied: $teleop_fuel_denied)';
   }
 
   @override
@@ -523,12 +472,6 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
                 other.match_count == match_count) &&
             (identical(other.OPR, OPR) || other.OPR == OPR) &&
             (identical(other.OPRRank, OPRRank) || other.OPRRank == OPRRank) &&
-            (identical(other.total_pass, total_pass) ||
-                other.total_pass == total_pass) &&
-            (identical(other.auto_pass, auto_pass) ||
-                other.auto_pass == auto_pass) &&
-            (identical(other.teleop_pass, teleop_pass) ||
-                other.teleop_pass == teleop_pass) &&
             (identical(other.endgame_points, endgame_points) ||
                 other.endgame_points == endgame_points) &&
             (identical(other.teleop_points, teleop_points) ||
@@ -570,9 +513,6 @@ class _$TeamStats2026Impl implements _TeamStats2026 {
         match_count,
         OPR,
         OPRRank,
-        total_pass,
-        auto_pass,
-        teleop_pass,
         endgame_points,
         teleop_points,
         auto_points,
@@ -614,9 +554,6 @@ abstract class _TeamStats2026 implements TeamStats2026 {
       final double match_count,
       final double OPR,
       final int? OPRRank,
-      final double total_pass,
-      final double auto_pass,
-      final double teleop_pass,
       final double endgame_points,
       final double teleop_points,
       final double auto_points,
@@ -649,12 +586,6 @@ abstract class _TeamStats2026 implements TeamStats2026 {
   double get OPR;
   @override
   int? get OPRRank;
-  @override
-  double get total_pass;
-  @override
-  double get auto_pass;
-  @override
-  double get teleop_pass;
   @override
   double get endgame_points;
   @override

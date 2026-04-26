@@ -49,30 +49,30 @@ Map<String, dynamic> _$$DataImplToJson(_$DataImpl instance) =>
 
 _$AutoScoringImpl _$$AutoScoringImplFromJson(Map<String, dynamic> json) =>
     _$AutoScoringImpl(
-      passing_cycles: (json['passing_cycles'] as num).toInt(),
-      scoring_cycles: (json['scoring_cycles'] as num).toInt(),
-      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
-      cycles_completed: (json['cycles_completed'] as num).toInt(),
+      fuel_scored: (json['fuel_scored'] as num).toInt(),
+      fuel_scored_hopper: (json['fuel_scored_hopper'] as num?)?.toInt() ?? 0,
+      hopper_capacity: (json['hopper_capacity'] as num?)?.toInt() ?? 32,
     );
 
 Map<String, dynamic> _$$AutoScoringImplToJson(_$AutoScoringImpl instance) =>
     <String, dynamic>{
-      'passing_cycles': instance.passing_cycles,
-      'scoring_cycles': instance.scoring_cycles,
-      'fuel_cycles': instance.fuel_cycles,
-      'cycles_completed': instance.cycles_completed,
+      'fuel_scored': instance.fuel_scored,
+      'fuel_scored_hopper': instance.fuel_scored_hopper,
+      'hopper_capacity': instance.hopper_capacity,
     };
 
 _$TeleopScoringImpl _$$TeleopScoringImplFromJson(Map<String, dynamic> json) =>
     _$TeleopScoringImpl(
-      fuel_cycles: (json['fuel_cycles'] as num).toInt(),
-      passing_cycles: (json['passing_cycles'] as num).toInt(),
+      fuel_scored: (json['fuel_scored'] as num).toInt(),
+      fuel_scored_hopper: (json['fuel_scored_hopper'] as num?)?.toInt() ?? 0,
+      hopper_capacity: (json['hopper_capacity'] as num?)?.toInt() ?? 32,
     );
 
 Map<String, dynamic> _$$TeleopScoringImplToJson(_$TeleopScoringImpl instance) =>
     <String, dynamic>{
-      'fuel_cycles': instance.fuel_cycles,
-      'passing_cycles': instance.passing_cycles,
+      'fuel_scored': instance.fuel_scored,
+      'fuel_scored_hopper': instance.fuel_scored_hopper,
+      'hopper_capacity': instance.hopper_capacity,
     };
 
 _$MiscellaneousImpl _$$MiscellaneousImplFromJson(Map<String, dynamic> json) =>
