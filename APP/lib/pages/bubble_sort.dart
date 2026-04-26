@@ -840,19 +840,6 @@ class _BubbleSortState extends State<BubbleSort> {
               ),
             ],
           ),
-          // Secondary detail line
-          if (!isDone)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Analyzing your preferences...',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey[400],
-                ),
-              ),
-            ),
         ],
       ),
     );
