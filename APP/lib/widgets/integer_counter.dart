@@ -99,6 +99,7 @@ class _IntegerCounterState extends State<IntegerCounter> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               ),
+              onChanged: _manualSubmit,
               onSubmitted: _manualSubmit,
               onEditingComplete: () => _manualSubmit(_controller.text),
             ),
