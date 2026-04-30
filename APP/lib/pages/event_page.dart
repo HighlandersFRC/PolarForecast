@@ -17,7 +17,6 @@ import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/utils/download.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/widgets/modifedCounter.dart';
-import 'package:scouting_app/widgets/percentage_counter.dart';
 import 'package:scouting_app/widgets/pit_scouting_link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/match_details_2026.dart';
@@ -2275,24 +2274,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                               auto_scoring: data.data.auto_scoring
                                   .copyWith(fuel_scored: val))));
                     }),
-                    const Divider(
-                      color: Colors.blue,
-                      height: 32,
-                      thickness: 10,
-                    ),
-                    _buildHopperCounterRow(
-                      'Hoppers Scored in Auto',
-                      (data.data.auto_scoring.fuel_scored_hopper).clamp(0, 999),
-                      (val) {
-                        setState(() => data = data.copyWith(
-                              data: data.data.copyWith(
-                                auto_scoring: data.data.auto_scoring.copyWith(
-                                  fuel_scored_hopper: val,
-                                ),
-                              ),
-                            ));
-                      },
-                    ),
                   ],
                 ),
                 _buildDarkCard(
@@ -2308,26 +2289,6 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
                                 teleop_scoring: data.data.teleop_scoring
                                     .copyWith(fuel_scored: val))));
                       }),
-                      const Divider(
-                        color: Colors.blue,
-                        height: 32,
-                        thickness: 10,
-                      ),
-                      _buildHopperCounterRow(
-                        'Hoppers Scored in Teleop',
-                        (data.data.teleop_scoring.fuel_scored_hopper)
-                            .clamp(0, 999),
-                        (val) {
-                          setState(() => data = data.copyWith(
-                                data: data.data.copyWith(
-                                  teleop_scoring:
-                                      data.data.teleop_scoring.copyWith(
-                                    fuel_scored_hopper: val,
-                                  ),
-                                ),
-                              ));
-                        },
-                      ),
                     ]),
                 _buildDarkCard(
                   title: 'Post-Match & Misc',
@@ -2566,13 +2527,13 @@ class _MatchScoutingTabState extends State<_MatchScoutingTab> {
     );
   }
 
-  Widget _buildHopperCounterRow(
-      String label, int val, Function(int) onChanged) {
-    return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: PercentCounter(
-            label: label, onChanged: onChanged, value: val, max: 999));
-  }
+  // Widget _buildHopperCounterRow(
+  //     String label, int val, Function(int) onChanged) {
+  //   return Padding(
+  //       padding: const EdgeInsets.symmetric(vertical: 8),
+  //       child: PercentCounter(
+  //           label: label, onChanged: onChanged, value: val, max: 999));
+  // }
 
   Widget _buildSwitch(String label, bool val, Color textCol, Color accent,
       Function(bool) onChanged) {
