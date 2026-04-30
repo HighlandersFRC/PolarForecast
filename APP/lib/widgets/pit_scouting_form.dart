@@ -8,8 +8,7 @@ import 'package:scouting_app/models/pit_scouting_2026.dart';
 import 'package:scouting_app/widgets/auto_pieces_2026.dart';
 import 'package:scouting_app/utils.dart';
 import 'package:scouting_app/widgets/counter.dart';
-import 'package:scouting_app/widgets/floatyCounter.dart';
-import 'package:scouting_app/widgets/integer_counter.dart';
+import 'package:scouting_app/widgets/counter_float.dart';
 import '../api_service.dart';
 import '../models/scout_info.dart';
 import '../models/tournament.dart';
@@ -1117,7 +1116,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                             BorderRadius.circular(12)),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
-                                      child: FloatyCounter(
+                                      child: DoubleCounter(
                                         locked: widget.locked,
                                         label: 'Robot Height (Inches)',
                                         value:
@@ -1147,7 +1146,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                             BorderRadius.circular(12)),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
-                                      child: FloatyCounter(
+                                      child: DoubleCounter(
                                         locked: widget.locked,
                                         label: 'Fuel Per Second',
                                         value: pitScoutingData.data.bps,
@@ -1174,7 +1173,7 @@ class _PitScoutingFormState extends State<PitScoutingForm> {
                                             BorderRadius.circular(12)),
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
-                                      child: IntegerCounter(
+                                      child: Counter(
                                         locked: widget.locked,
                                         label: 'Hopper Capacity',
                                         value: pitScoutingData

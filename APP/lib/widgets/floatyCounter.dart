@@ -106,6 +106,7 @@ class _FloatyCounterState extends State<FloatyCounter> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               ),
+              onChanged: _manualSubmit,
               onSubmitted: _manualSubmit,
               onEditingComplete: () => _manualSubmit(_controller.text),
             ),
